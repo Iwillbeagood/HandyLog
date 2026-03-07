@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Sample</string>
+	<string name="btn_complete">확인</string>
+	<string name="btn_setting">설정</string>
+	<string name="btn_update">업데이트</string>
+	<string name="btn_select_complete">선택완료</string>
+	<string name="btn_yes">예</string>
+	<string name="btn_no">아니요</string>
+	<string name="btn_exit">종료</string>
+	<string name="btn_login">로그인</string>
+	<string name="btn_open">열기</string>
+	<string name="btn_close">닫기</string>
+	<string name="btn_cancel">취소</string>
+
+</resources>

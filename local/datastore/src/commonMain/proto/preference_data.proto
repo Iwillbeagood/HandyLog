@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package com.hand.log;
+
+message PreferenceData {
+  int32 counter = 1;
+}

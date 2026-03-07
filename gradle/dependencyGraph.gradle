@@ -1,0 +1,257 @@
+// from: https://github.com/DroidKaigi/conference-app-2021/blob/main/gradle/dependencyGraph.gradle
+// from: https://github.com/JakeWharton/SdkSearch/blob/3351cad9bfacb0a364858e843774147143f58c7a/gradle/projectDependencyGraph.gradle
+tasks.register('projectDependencyGraph') {
+	def projectInfoProvider = providers.provider {
+		def allProjects = rootProject.allprojects
+
+		def filteredProjects = allProjects.findAll { proj ->
+			proj.path.startsWith(':domain:') ||
+				proj.path.startsWith(':feature:') ||
+				proj.path.startsWith(':data:') ||
+				proj.path.startsWith(':local:') ||
+				proj.path.startsWith(':remote:')
+		}
+
+		def projectPaths = filteredProjects.collect { it.path }
+
+		def multiplatformProjectPaths = filteredProjects.findAll {
+			it.plugins.hasPlugin('org.jetbrains.kotlin.multiplatform')
+		}.collect { it.path }
+
+		def jsProjectPaths = filteredProjects.findAll {
+			it.plugins.hasPlugin('kotlin2js')
+		}.collect { it.path }
+
+		def androidProjectPaths = filteredProjects.findAll {
+			it.plugins.hasPlugin('com.android.application')
+		}.collect { it.path }
+
+		def androidLibraryProjectPaths = filteredProjects.findAll {
+			it.plugins.hasPlugin('com.android.library')
+		}.collect { it.path }
+
+		def androidDynamicFeatureProjectPaths = filteredProjects.findAll {
+			it.plugins.hasPlugin('com.android.dynamic-feature')
+		}.collect { it.path }
+
+		def javaProjectPaths = filteredProjects.findAll {
+			it.plugins.hasPlugin('java-library') || it.plugins.hasPlugin('java')
+		}.collect { it.path }
+
+		def dependencies = [:]
+		filteredProjects.each { proj ->
+			proj.configurations.configureEach { config ->
+				if (config.name.toLowerCase().contains("test")) return
+				config.dependencies
+					.withType(ProjectDependency)
+					.collect { it.dependencyProject.path }
+					.findAll { depPath -> projectPaths.contains(depPath) } // 필터링된 프로젝트만
+					.each { depPath ->
+						def key = "${proj.path} -> ${depPath}"
+						def traits = dependencies.computeIfAbsent(key) { [] }
+
+						if (config.name.toLowerCase().endsWith('implementation')) {
+							traits.add('style=dotted')
+						}
+					}
+			}
+		}
+
+		def domainModules = projectPaths.findAll { it.startsWith(':domain:') }
+		def dataModules = projectPaths.findAll { it.startsWith(':data:') }
+		def featureModules = projectPaths.findAll { it.startsWith(':feature:') }
+
+		// 추가: 최상단 레이어에 포함될 :local:, :remote: 모듈 수집
+		def localModules = projectPaths.findAll { it == ':local' || it.startsWith(':local:') }
+		def remoteModules = projectPaths.findAll { it == ':remote' || it.startsWith(':remote:') }
+
+		// 기존: data 내 local/remote 계층 탐지
+		def dataLocalRemoteModules = dataModules.findAll { p ->
+			p == ':data:database' || p == ':data:network' ||
+			(p =~ /:data:.*local.*/) || (p =~ /:data:.*remote.*/)
+		}
+		def dataNonLocalRemoteModules = dataModules.findAll { !dataLocalRemoteModules.contains(it) }
+
+		// 유지: special 모듈(downstream) 분리
+		def dataSpecialModules = [':data:datasource', ':data:repositoryImpl'].findAll { target ->
+			projectPaths.contains(target)
+		}
+
+		// other data = local/remote 및 special 을 제외한 data
+		def dataOtherModules = dataNonLocalRemoteModules.findAll { !dataSpecialModules.contains(it) }
+
+		// 추가: 최상단(Local/Remote) 레이어 = :local:, :remote:, data의 local/remote
+		def localRemoteTop = []
+		localRemoteTop.addAll(localModules)
+		localRemoteTop.addAll(remoteModules)
+		localRemoteTop.addAll(dataLocalRemoteModules)
+
+		return [
+			rootProjectName: rootProject.name,
+			rootProjectDir: rootProject.rootDir,
+			projectPaths: projectPaths,
+			domainModules: domainModules,
+			dataModules: dataModules,
+			featureModules: featureModules,
+			// 추가 반환
+			localModules: localModules,
+			remoteModules: remoteModules,
+			dataLocalRemoteModules: dataLocalRemoteModules,
+			dataNonLocalRemoteModules: dataNonLocalRemoteModules,
+			localRemoteTop: localRemoteTop,
+			// 갱신된 other/special
+			dataSpecialModules: dataSpecialModules,
+			dataOtherModules: dataOtherModules,
+			multiplatformProjectPaths: multiplatformProjectPaths,
+			jsProjectPaths: jsProjectPaths,
+			androidProjectPaths: androidProjectPaths,
+			androidLibraryProjectPaths: androidLibraryProjectPaths,
+			androidDynamicFeatureProjectPaths: androidDynamicFeatureProjectPaths,
+			javaProjectPaths: javaProjectPaths,
+			dependencies: dependencies
+		]
+	}
+
+	doLast {
+		def projectInfo = projectInfoProvider.get()
+
+		def dotFileName = 'project.dot'
+		def dot = new File(projectInfo.rootProjectDir, dotFileName)
+		dot.parentFile.mkdirs()
+		dot.delete()
+
+		dot << 'digraph {\n'
+		dot << "  graph [label=\"${projectInfo.rootProjectName}\\n \",labelloc=t,fontsize=30,ranksep=2.0];\n"
+		dot << '  node [style=filled, fillcolor="#bbbbbb"];\n'
+		dot << '  rankdir=TB;\n'
+
+		// 최상단: Local/Remote Layer (local/remote 네임스페이스 + data의 local/remote)
+		if (!projectInfo.localRemoteTop.isEmpty()) {
+			dot << '\n  # Local/Remote Layer (Top)\n'
+			dot << '  { rank=min; '
+			projectInfo.localRemoteTop.each { module ->
+				dot << "\"${module}\"; "
+			}
+			dot << '}\n'
+		}
+
+		// 그 아래: Data Layer (local/remote 제외 전체)
+		if (!projectInfo.dataNonLocalRemoteModules.isEmpty()) {
+			dot << '\n  # Data Layer (Below Local/Remote)\n'
+			dot << '  { rank=same; '
+			projectInfo.dataNonLocalRemoteModules.each { module ->
+				dot << "\"${module}\"; "
+			}
+			dot << '}\n'
+		}
+
+		// 배치 힌트: Local/Remote -> Data (invisible)
+		if (!projectInfo.localRemoteTop.isEmpty() && !projectInfo.dataNonLocalRemoteModules.isEmpty()) {
+			dot << '\n  # Layout hint: place Local/Remote above Data\n'
+			projectInfo.localRemoteTop.each { upper ->
+				projectInfo.dataNonLocalRemoteModules.each { lower ->
+					dot << "  \"${upper}\" -> \"${lower}\" [style=invis, weight=200, constraint=true];\n"
+				}
+			}
+		}
+
+		// 배치 힌트: other data -> special data (special 을 아래로)
+		if (!projectInfo.dataSpecialModules.isEmpty() && !projectInfo.dataOtherModules.isEmpty()) {
+			dot << '\n  # Layout hint: place special data modules under other data modules\n'
+			projectInfo.dataOtherModules.each { other ->
+				projectInfo.dataSpecialModules.each { special ->
+					dot << "  \"${other}\" -> \"${special}\" [style=invis, weight=200, constraint=true];\n"
+				}
+			}
+		}
+
+		// 그 아래: Domain Layer
+		if (!projectInfo.domainModules.isEmpty()) {
+			dot << '\n  # Domain Layer (Below Data)\n'
+			dot << '  { rank=same; '
+			projectInfo.domainModules.each { module ->
+				dot << "\"${module}\"; "
+			}
+			dot << '}\n'
+		}
+
+		// 배치 힌트: Data -> Domain (domain 을 더 아래로)
+		if (!projectInfo.domainModules.isEmpty()) {
+			def allData = []
+			allData.addAll(projectInfo.localRemoteTop ?: [])
+			allData.addAll(projectInfo.dataNonLocalRemoteModules ?: [])
+			if (!allData.isEmpty()) {
+				dot << '\n  # Layout hint: place Domain under all Data\n'
+				allData.each { d ->
+					projectInfo.domainModules.each { domain ->
+						dot << "  \"${d}\" -> \"${domain}\" [style=invis, weight=200, constraint=true];\n"
+					}
+				}
+			}
+		}
+
+		// 최하단: Feature Layer
+		if (!projectInfo.featureModules.isEmpty()) {
+			dot << '\n  # Feature Layer (Bottom)\n'
+			dot << '  { rank=max; '
+			projectInfo.featureModules.each { module ->
+				dot << "\"${module}\"; "
+			}
+			dot << '}\n'
+		}
+
+		// 배치 힌트: Domain -> Feature (feature 을 가장 아래로)
+		if (!projectInfo.featureModules.isEmpty() && !projectInfo.domainModules.isEmpty()) {
+			dot << '\n  # Layout hint: place Feature under Domain\n'
+			projectInfo.domainModules.each { domain ->
+				projectInfo.featureModules.each { feature ->
+					dot << "  \"${domain}\" -> \"${feature}\" [style=invis, weight=200, constraint=true];\n"
+				}
+			}
+		}
+
+		dot << '\n  # Projects\n\n'
+		projectInfo.projectPaths.sort().each { projectPath ->
+			def traits = []
+
+			if (projectInfo.multiplatformProjectPaths.contains(projectPath)) {
+				traits.add('fillcolor="#ffd2b3"')
+			} else if (projectInfo.jsProjectPaths.contains(projectPath)) {
+				traits.add('fillcolor="#ffffba"')
+			} else if (projectInfo.androidProjectPaths.contains(projectPath)) {
+				traits.add('fillcolor="#baffc9"')
+			} else if (projectInfo.androidLibraryProjectPaths.contains(projectPath)) {
+				traits.add('fillcolor="#81D4FA"')
+			} else if (projectInfo.androidDynamicFeatureProjectPaths.contains(projectPath)) {
+				traits.add('fillcolor="#c9baff"')
+			} else if (projectInfo.javaProjectPaths.contains(projectPath)) {
+				traits.add('fillcolor="#ffb3ba"')
+			} else {
+				traits.add('fillcolor="#eeeeee"')
+			}
+
+			dot << "  \"${projectPath}\" [${traits.join(", ")}];\n"
+		}
+
+		dot << '\n  # Dependencies\n\n'
+		projectInfo.dependencies.forEach { key, traits ->
+			def parts = key.split(' -> ')
+			dot << "  \"${parts[0]}\" -> \"${parts[1]}\""
+			if (!traits.isEmpty()) {
+				dot << " [${traits.join(", ")}]"
+			}
+			dot << '\n'
+		}
+
+		dot << '}\n'
+
+		def p = "dot -Tpng -O ${dotFileName}".execute([], dot.parentFile)
+		p.waitFor()
+		if (p.exitValue() != 0) {
+			throw new RuntimeException(p.errorStream.text)
+		}
+		dot.delete()
+
+		println("Project module dependency graph created at ${dot.absolutePath}.png")
+	}
+}
