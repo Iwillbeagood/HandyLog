@@ -8,10 +8,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import handylog.core.designsystem.generated.resources.Res
+import handylog.core.designsystem.generated.resources.pretendard_bold
+import handylog.core.designsystem.generated.resources.pretendard_medium
+import handylog.core.designsystem.generated.resources.pretendard_reqular
 import org.jetbrains.compose.resources.Font
 
 val TextUnit.nonScaledSp
@@ -27,7 +29,7 @@ val TextStyle.nonScaledSp
 		lineHeight = this.lineHeight.nonScaledSp,
 	)
 
-val notosanskr
+val pretendard
 	@Composable
 	get() = FontFamily(
 		Font(Res.font.pretendard_bold, FontWeight.Bold),
@@ -35,242 +37,164 @@ val notosanskr
 		Font(Res.font.pretendard_reqular, FontWeight.Normal),
 	)
 
-private val notosanskrStyle = TextStyle(
-	fontWeight = FontWeight.Normal,
-	lineHeightStyle = LineHeightStyle(
-		alignment = LineHeightStyle.Alignment.Center,
-		trim = LineHeightStyle.Trim.None,
-	),
-)
+@Immutable
+data class HandyTypography(
+	val default: TextStyle,
 
-val typography = HandyTypography(
-	bold32 = notosanskrStyle.copy(
+	val bold32: TextStyle = default.copy(
 		fontSize = 32.sp,
 		lineHeight = 40.sp,
 		fontWeight = FontWeight.Bold,
 	),
-	bold30 = notosanskrStyle.copy(
+	val bold30: TextStyle = default.copy(
 		fontSize = 30.sp,
 		lineHeight = 38.sp,
 		fontWeight = FontWeight.Bold,
 	),
-	bold28 = notosanskrStyle.copy(
+	val bold28: TextStyle = default.copy(
 		fontSize = 28.sp,
 		lineHeight = 34.sp,
 		fontWeight = FontWeight.Bold,
 	),
-	bold26 = notosanskrStyle.copy(
+	val bold26: TextStyle = default.copy(
 		fontSize = 26.sp,
 		lineHeight = 34.sp,
 		fontWeight = FontWeight.Bold,
 	),
-	bold24 = notosanskrStyle.copy(
+	val bold24: TextStyle = default.copy(
 		fontSize = 24.sp,
 		lineHeight = 32.sp,
 		fontWeight = FontWeight.Bold,
 	),
-	medium24 = notosanskrStyle.copy(
+	val medium24: TextStyle = default.copy(
 		fontSize = 24.sp,
 		lineHeight = 32.sp,
 		fontWeight = FontWeight.Medium,
 	),
-	regular24 = notosanskrStyle.copy(
+	val regular24: TextStyle = default.copy(
 		fontSize = 24.sp,
 		lineHeight = 32.sp,
 	),
-	bold22 = notosanskrStyle.copy(
+	val bold22: TextStyle = default.copy(
 		fontSize = 22.sp,
 		lineHeight = 30.sp,
 		fontWeight = FontWeight.Bold,
 	),
-	medium22 = notosanskrStyle.copy(
+	val medium22: TextStyle = default.copy(
 		fontSize = 22.sp,
 		lineHeight = 30.sp,
 		fontWeight = FontWeight.Medium,
 	),
-	regular22 = notosanskrStyle.copy(
+	val regular22: TextStyle = default.copy(
 		fontSize = 22.sp,
 		lineHeight = 30.sp,
 	),
-	bold20 = notosanskrStyle.copy(
+	val bold20: TextStyle = default.copy(
 		fontSize = 20.sp,
 		lineHeight = 28.sp,
 		fontWeight = FontWeight.Bold,
 	),
-	medium20 = notosanskrStyle.copy(
+	val medium20: TextStyle = default.copy(
 		fontSize = 20.sp,
 		lineHeight = 28.sp,
 		fontWeight = FontWeight.Medium,
 	),
-	regular20 = notosanskrStyle.copy(
+	val regular20: TextStyle = default.copy(
 		fontSize = 20.sp,
 		lineHeight = 28.sp,
 	),
-	bold18 = notosanskrStyle.copy(
+	val bold18: TextStyle = default.copy(
 		fontSize = 18.sp,
 		lineHeight = 26.sp,
 		fontWeight = FontWeight.Bold,
 	),
-	medium18 = notosanskrStyle.copy(
+	val medium18: TextStyle = default.copy(
 		fontSize = 18.sp,
 		lineHeight = 26.sp,
 		fontWeight = FontWeight.Medium,
 	),
-	regular18 = notosanskrStyle.copy(
+	val regular18: TextStyle = default.copy(
 		fontSize = 18.sp,
 		lineHeight = 26.sp,
 	),
-	bold16 = notosanskrStyle.copy(
+	val bold16: TextStyle = default.copy(
 		fontSize = 16.sp,
 		lineHeight = 24.sp,
 		fontWeight = FontWeight.Bold,
 	),
-	medium16 = notosanskrStyle.copy(
+	val medium16: TextStyle = default.copy(
 		fontSize = 16.sp,
 		lineHeight = 24.sp,
 		fontWeight = FontWeight.Medium,
 	),
-	regular16 = notosanskrStyle.copy(
+	val regular16: TextStyle = default.copy(
 		fontSize = 16.sp,
 		lineHeight = 24.sp,
 	),
-	bold14 = notosanskrStyle.copy(
+	val bold14: TextStyle = default.copy(
 		fontSize = 14.sp,
 		lineHeight = 20.sp,
 		fontWeight = FontWeight.Bold,
 		letterSpacing = 0.25.sp,
 	),
-	medium14 = notosanskrStyle.copy(
+	val medium14: TextStyle = default.copy(
 		fontSize = 14.sp,
 		lineHeight = 20.sp,
 		fontWeight = FontWeight.Medium,
 		letterSpacing = 0.25.sp,
 	),
-	regular14 = notosanskrStyle.copy(
+	val regular14: TextStyle = default.copy(
 		fontSize = 14.sp,
 		lineHeight = 20.sp,
 	),
-	bold12 = notosanskrStyle.copy(
+	val bold12: TextStyle = default.copy(
 		fontSize = 12.sp,
 		lineHeight = 16.sp,
 		fontWeight = FontWeight.Bold,
 	),
-	medium12 = notosanskrStyle.copy(
+	val medium12: TextStyle = default.copy(
 		fontSize = 12.sp,
 		lineHeight = 16.sp,
 		fontWeight = FontWeight.Medium,
 	),
-	regular12 = notosanskrStyle.copy(
+	val regular12: TextStyle = default.copy(
 		fontSize = 12.sp,
 		lineHeight = 16.sp,
 	),
-	bold10 = notosanskrStyle.copy(
+	val bold10: TextStyle = default.copy(
 		fontSize = 10.sp,
+		lineHeight = 14.sp,
 		fontWeight = FontWeight.Bold,
-		lineHeight = 14.sp,
 	),
-	medium10 = notosanskrStyle.copy(
+	val medium10: TextStyle = default.copy(
 		fontSize = 10.sp,
+		lineHeight = 14.sp,
 		fontWeight = FontWeight.Medium,
-		lineHeight = 14.sp,
 	),
-	regular10 = notosanskrStyle.copy(
+	val regular10: TextStyle = default.copy(
 		fontSize = 10.sp,
 		lineHeight = 14.sp,
 	),
-	medium8 = notosanskrStyle.copy(
+	val medium8: TextStyle = default.copy(
 		fontSize = 11.sp,
 		lineHeight = 16.sp,
 		fontWeight = FontWeight.Medium,
 		letterSpacing = (-0.2).sp,
 	),
-)
+) {
+	companion object {
+		fun with(
+			fontFamily: FontFamily = FontFamily.Default,
+			fontWeight: FontWeight = FontWeight.Normal,
+		) = HandyTypography(
+			default = TextStyle(
+				fontFamily = fontFamily,
+				fontWeight = fontWeight,
+			),
+		)
+	}
+}
 
-@Immutable
-data class HandyTypography(
-	val bold32: TextStyle,
-	val bold30: TextStyle,
-	val bold28: TextStyle,
-
-	val bold26: TextStyle,
-
-	val bold24: TextStyle,
-	val medium24: TextStyle,
-	val regular24: TextStyle,
-
-	val bold22: TextStyle,
-	val medium22: TextStyle,
-	val regular22: TextStyle,
-
-	val bold20: TextStyle,
-	val medium20: TextStyle,
-	val regular20: TextStyle,
-
-	val bold18: TextStyle,
-	val medium18: TextStyle,
-	val regular18: TextStyle,
-
-	val bold16: TextStyle,
-	val medium16: TextStyle,
-	val regular16: TextStyle,
-
-	val bold14: TextStyle,
-	val medium14: TextStyle,
-	val regular14: TextStyle,
-
-	val bold12: TextStyle,
-	val medium12: TextStyle,
-	val regular12: TextStyle,
-
-	val bold10: TextStyle,
-	val medium10: TextStyle,
-	val regular10: TextStyle,
-
-	val medium8: TextStyle,
-)
-
-val LocalTypography = staticCompositionLocalOf {
-	HandyTypography(
-		bold32 = notosanskrStyle,
-		bold30 = notosanskrStyle,
-		bold28 = notosanskrStyle,
-
-		bold26 = notosanskrStyle,
-
-		bold24 = notosanskrStyle,
-		medium24 = notosanskrStyle,
-		regular24 = notosanskrStyle,
-
-		black22 = notosanskrStyle,
-		bold22 = notosanskrStyle,
-		medium22 = notosanskrStyle,
-		regular22 = notosanskrStyle,
-		light22 = notosanskrStyle,
-
-		bold20 = notosanskrStyle,
-		medium20 = notosanskrStyle,
-		regular20 = notosanskrStyle,
-
-		bold18 = notosanskrStyle,
-		medium18 = notosanskrStyle,
-		regular18 = notosanskrStyle,
-
-		bold16 = notosanskrStyle,
-		medium16 = notosanskrStyle,
-		regular16 = notosanskrStyle,
-
-		bold14 = notosanskrStyle,
-		medium14 = notosanskrStyle,
-		regular14 = notosanskrStyle,
-
-		bold12 = notosanskrStyle,
-		medium12 = notosanskrStyle,
-		regular12 = notosanskrStyle,
-
-		bold10 = notosanskrStyle,
-		medium10 = notosanskrStyle,
-		regular10 = notosanskrStyle,
-
-		medium8 = notosanskrStyle,
-	)
+internal val LocalTypography = staticCompositionLocalOf<HandyTypography> {
+	error("HandyTypography를 provide 해야합니다.")
 }

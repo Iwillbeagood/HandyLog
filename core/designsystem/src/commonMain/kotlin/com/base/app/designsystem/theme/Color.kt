@@ -1,35 +1,35 @@
-package com.hand.log.designsystem.theme
+package com.base.app.designsystem.theme
 
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
 
-val LocalHmmColorScheme = compositionLocalOf<HmmColorScheme> {
+val LocalHmmColorScheme = compositionLocalOf<MainColorScheme> {
 	error("No KTCColorScheme provided")
 }
 
-data class HmmColorScheme(
-	val white: Color = HmmColor.White1,
-	val black: Color = HmmColor.Black,
-	val green2: Color = HmmColor.Green1,
-	val green4: Color = HmmColor.Green2,
-	val green5: Color = HmmColor.Green3,
-	val blue1: Color = HmmColor.Blue1,
-	val blue2: Color = HmmColor.Blue2,
-	val blue3: Color = HmmColor.Blue3,
-	val blue5: Color = HmmColor.Blue5,
-	val blue6: Color = HmmColor.Blue6,
-	val red1: Color = HmmColor.Red1,
-	val red3: Color = HmmColor.Red2,
-	val gray4: Color = HmmColor.Gray4,
-	val gray5: Color = HmmColor.Gray5,
-	val olive1: Color = HmmColor.Olive1,
-	val purple1: Color = HmmColor.Purple1,
-	val orange1: Color = HmmColor.Orange1,
-	val yellow1: Color = HmmColor.Yellow1,
-	val pink1: Color = HmmColor.Pink1,
+data class MainColorScheme(
+	val white: Color = MainColor.White1,
+	val black: Color = MainColor.Black,
+	val green2: Color = MainColor.Green1,
+	val green4: Color = MainColor.Green2,
+	val green5: Color = MainColor.Green3,
+	val blue1: Color = MainColor.Blue1,
+	val blue2: Color = MainColor.Blue2,
+	val blue3: Color = MainColor.Blue3,
+	val blue5: Color = MainColor.Blue5,
+	val blue6: Color = MainColor.Blue6,
+	val red1: Color = MainColor.Red1,
+	val red3: Color = MainColor.Red2,
+	val gray4: Color = MainColor.Gray4,
+	val gray5: Color = MainColor.Gray5,
+	val olive1: Color = MainColor.Olive1,
+	val purple1: Color = MainColor.Purple1,
+	val orange1: Color = MainColor.Orange1,
+	val yellow1: Color = MainColor.Yellow1,
+	val pink1: Color = MainColor.Pink1,
 )
 
-internal object HmmColor {
+internal object MainColor {
 	val Main = Color(0xFF1693ff)
 
 	val White1 = Color(0xFCFFFFFF)
