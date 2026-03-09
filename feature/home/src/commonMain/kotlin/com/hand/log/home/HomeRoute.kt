@@ -13,22 +13,22 @@ import com.hand.log.navigation.interop.rememberShowSnackBar
 
 @Composable
 internal fun HomeRoute(
-	viewModel: HomeViewModel
+	viewModel: HomeViewModel,
 ) {
-    val homeState by viewModel.homeState.collectAsStateWithLifecycle()
-    val homeModalEffect by viewModel.homeModalEffect.collectAsStateWithLifecycle()
+	val homeState by viewModel.homeState.collectAsStateWithLifecycle()
+	val homeModalEffect by viewModel.homeModalEffect.collectAsStateWithLifecycle()
 	val navAction = LocalNavigateActionInterop.current
 	val showSnackbar = rememberShowSnackBar()
 
-    HomeContent(
-        homeState = homeState,
-        onGoBack = navAction::popBackStack
-    )
+	HomeContent(
+		homeState = homeState,
+		onGoBack = navAction::popBackStack,
+	)
 
-    HomeModalContent(
-        homeModalEffect = homeModalEffect,
-        onDismissRequest = viewModel::dismissDialog,
-    )
+	HomeModalContent(
+		homeModalEffect = homeModalEffect,
+		onDismissRequest = viewModel::dismissDialog,
+	)
 
 	LaunchedEffect(true) {
 		viewModel.homeEffect.collect { effect ->
@@ -41,21 +41,21 @@ internal fun HomeRoute(
 
 @Composable
 private fun HomeContent(
-    homeState: HomeState,
-    onGoBack: () -> Unit,
+	homeState: HomeState,
+	onGoBack: () -> Unit,
 ) {
 	TopAppBarScaffold(
 		title = "TODO: 타이틀을 알맞게 설정해야 합니다.",
 		onBackEvent = onGoBack,
-    ) {
-        HmFadeAnimatedVisibility(homeState is HomeState.HomeData) {
-            if (homeState is HomeState.HomeData) {
-                HomeScreen(
-                    homeState = homeState
-                )
-            }
-        }
-    }
+	) {
+		HmFadeAnimatedVisibility(homeState is HomeState.HomeData) {
+			if (homeState is HomeState.HomeData) {
+				HomeScreen(
+					homeState = homeState,
+				)
+			}
+		}
+	}
 }
 
 @Composable
@@ -63,7 +63,7 @@ private fun HomeModalContent(
 	homeModalEffect: HomeModalEffect,
 	onDismissRequest: () -> Unit,
 ) {
-    when (homeModalEffect) {
-        HomeModalEffect.Idle -> {}
-    }
+	when (homeModalEffect) {
+		HomeModalEffect.Idle -> {}
+	}
 }

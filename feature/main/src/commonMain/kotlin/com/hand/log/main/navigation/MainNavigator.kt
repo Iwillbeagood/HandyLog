@@ -15,8 +15,8 @@ internal class MainNavigator {
 	val routeStack: StateFlow<RouteStack> = _routeStack.asStateFlow()
 
 	fun navigate(
-        route: Route,
-        launchMode: LaunchMode = LaunchMode.STANDARD,
+		route: Route,
+		launchMode: LaunchMode = LaunchMode.STANDARD,
 	) {
 		_routeStack.update { current ->
 			when (launchMode) {
@@ -41,7 +41,6 @@ internal class MainNavigator {
 			}
 		}
 	}
-
 
 	fun goBack() {
 		_routeStack.update { current ->

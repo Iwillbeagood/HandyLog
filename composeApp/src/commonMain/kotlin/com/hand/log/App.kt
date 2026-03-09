@@ -27,8 +27,8 @@ internal fun App(
 	val toastManager by remember { mutableStateOf(ToastManager()) }
 
 	val mainActionInterop = object : MainActionInterop {
-		override fun onFinish() {  }
-		override fun onRestart() {  }
+		override fun onFinish() { }
+		override fun onRestart() { }
 		override fun onShowToast(message: String, toastDurationType: ToastDurationType) {
 			toastManager.showToast(message, toastDurationType)
 		}

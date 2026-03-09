@@ -8,11 +8,11 @@ import com.hand.log.navigation.navigation.MainTabRoute
 import org.koin.compose.viewmodel.koinViewModel
 
 fun EntryProviderScope<NavKey>.homeNavGraph() {
-    entry<MainTabRoute.Home> { _ ->
-        val homeViewModel: HomeViewModel = koinViewModel()
+	entry<MainTabRoute.Home> { _ ->
+		val homeViewModel: HomeViewModel = koinViewModel()
 
-        HomeRoute(
-            viewModel = homeViewModel,
-        )
-    }
+		HomeRoute(
+			viewModel = homeViewModel,
+		)
+	}
 }

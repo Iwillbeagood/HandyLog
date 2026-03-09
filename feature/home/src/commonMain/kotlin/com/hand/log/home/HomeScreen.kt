@@ -6,18 +6,15 @@ import com.hand.log.designsystem.theme.HandLogTheme
 
 @Composable
 internal fun HomeScreen(
-    homeState: HomeState.HomeData,
+	homeState: HomeState.HomeData,
 ) {
-    HomeScreen(
-    )
+	HomeScreen()
 }
 
 @ThemePreviews
 @Composable
 private fun HomeScreenPreview() {
 	HandLogTheme {
-        HomeScreen(
-
-        )
-    }
+		HomeScreen()
+	}
 }

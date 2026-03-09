@@ -7,14 +7,14 @@ import com.hand.log.domain.model.etc.error.MessageType
 @Stable
 internal sealed interface HomeModalEffect {
 
-    @Immutable
-    data object Idle : HomeModalEffect
+	@Immutable
+	data object Idle : HomeModalEffect
 
 }
 
 @Stable
 internal sealed interface HomeEffect {
 
-    @Immutable
-    data class ShowSnackBar(val messageType: MessageType) : HomeEffect
+	@Immutable
+	data class ShowSnackBar(val messageType: MessageType) : HomeEffect
 }

@@ -6,13 +6,13 @@ import org.koin.core.context.startKoin
 
 class HandLogApplication : Application() {
 
-    override fun onCreate() {
-        super.onCreate()
+	override fun onCreate() {
+		super.onCreate()
 
-        startKoin(
+		startKoin(
 			handLogAppDeclaration {
-                androidContext(this@HandLogApplication)
-            },
-        )
-    }
+				androidContext(this@HandLogApplication)
+			},
+		)
+	}
 }

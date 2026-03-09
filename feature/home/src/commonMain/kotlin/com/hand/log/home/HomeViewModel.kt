@@ -15,22 +15,22 @@ import kotlinx.coroutines.launch
 
 internal class HomeViewModel : ViewModel() {
 
-    private val _homeState: MutableStateFlow<HomeState> = MutableStateFlow(HomeState.Loading)
-    val homeState: StateFlow<HomeState> get() = _homeState
+	private val _homeState: MutableStateFlow<HomeState> = MutableStateFlow(HomeState.Loading)
+	val homeState: StateFlow<HomeState> get() = _homeState
 
-    private val _homeModalEffect = MutableStateFlow<HomeModalEffect>(HomeModalEffect.Idle)
-    val homeModalEffect: StateFlow<HomeModalEffect> get() = _homeModalEffect
+	private val _homeModalEffect = MutableStateFlow<HomeModalEffect>(HomeModalEffect.Idle)
+	val homeModalEffect: StateFlow<HomeModalEffect> get() = _homeModalEffect
 
-    private val _homeEffect = MutableSharedFlow<HomeEffect>()
-    val homeEffect: SharedFlow<HomeEffect> get() = _homeEffect.asSharedFlow()
+	private val _homeEffect = MutableSharedFlow<HomeEffect>()
+	val homeEffect: SharedFlow<HomeEffect> get() = _homeEffect.asSharedFlow()
 
-    fun dismissDialog() {
-        _homeModalEffect.update { HomeModalEffect.Idle }
-    }
+	fun dismissDialog() {
+		_homeModalEffect.update { HomeModalEffect.Idle }
+	}
 
-    private fun showSnackBar(messageType: MessageType) {
-        viewModelScope.launch {
-            _homeEffect.emit(HomeEffect.ShowSnackBar(messageType))
-        }
-    }
+	private fun showSnackBar(messageType: MessageType) {
+		viewModelScope.launch {
+			_homeEffect.emit(HomeEffect.ShowSnackBar(messageType))
+		}
+	}
 }

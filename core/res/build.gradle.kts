@@ -10,5 +10,3 @@ compose.resources {
 	publicResClass = true
 	nameOfResClass = "Res"
 }
-
-

@@ -9,20 +9,20 @@ import androidx.activity.enableEdgeToEdge
 import com.hand.log.utils.setActivityProvider
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+	override fun onCreate(savedInstanceState: Bundle?) {
+		super.onCreate(savedInstanceState)
 
 		setActivityProvider { this }
 
-        enableEdgeToEdge(
-            navigationBarStyle = SystemBarStyle.auto(
-                lightScrim = Color.TRANSPARENT,
-                darkScrim = Color.TRANSPARENT,
-            ),
-        )
+		enableEdgeToEdge(
+			navigationBarStyle = SystemBarStyle.auto(
+				lightScrim = Color.TRANSPARENT,
+				darkScrim = Color.TRANSPARENT,
+			),
+		)
 
-        setContent {
-            App()
-        }
-    }
+		setContent {
+			App()
+		}
+	}
 }

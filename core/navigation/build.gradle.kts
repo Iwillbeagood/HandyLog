@@ -14,9 +14,7 @@ kotlin {
 
 			api(libs.androidx.navigation3.runtime)
 			api(libs.androidx.navigation3.ui)
-			api(libs.androidx.navigation3.serialization)
 			implementation(libs.kotlinx.serialization.json)
-			implementation(libs.androidx.lifecycle.viewmodel.navigation3)
 		}
 	}
 }
