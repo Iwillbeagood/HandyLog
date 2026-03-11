@@ -1,18 +1,3 @@
-/*
- * Copyright 2024 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.hand.log.database.dao
 
 import androidx.room.Dao
@@ -22,84 +7,85 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.hand.log.database.entity.ActionEntity
-import com.hand.log.database.entity.HandHistoryEntity
-import com.hand.log.database.entity.PlayerHandEntity
+import com.hand.log.database.entity.HandActionEntity
+import com.hand.log.database.entity.HandCommunityCardEntity
+import com.hand.log.database.entity.HandEntity
+import com.hand.log.database.entity.HandPlayerEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface HandHistoryDao {
-    // HandHistory operations
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertHandHistory(handHistory: HandHistoryEntity)
 
-    @Update
-    suspend fun updateHandHistory(handHistory: HandHistoryEntity)
+	@Insert(onConflict = OnConflictStrategy.REPLACE)
+	suspend fun insertHand(hand: HandEntity)
 
-    @Delete
-    suspend fun deleteHandHistory(handHistory: HandHistoryEntity)
+	@Update
+	suspend fun updateHand(hand: HandEntity)
 
-    @Query("SELECT * FROM hand_history ORDER BY date DESC")
-    fun getAllHandHistories(): Flow<List<HandHistoryEntity>>
+	@Delete
+	suspend fun deleteHand(hand: HandEntity)
 
-    @Query("SELECT * FROM hand_history WHERE id = :handId")
-    suspend fun getHandHistoryById(handId: String): HandHistoryEntity?
+	@Query("SELECT * FROM hands ORDER BY date DESC")
+	fun getAllHands(): Flow<List<HandEntity>>
 
-    @Query("SELECT * FROM hand_history WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
-    fun getHandHistoriesByDateRange(startDate: Long, endDate: Long): Flow<List<HandHistoryEntity>>
+	@Query("SELECT * FROM hands WHERE id = :handId")
+	suspend fun getHandById(handId: String): HandEntity?
 
-    // PlayerHand operations
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPlayerHand(playerHand: PlayerHandEntity)
+	@Query("SELECT * FROM hands WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
+	fun getHandsByDateRange(startDate: Long, endDate: Long): Flow<List<HandEntity>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPlayerHands(playerHands: List<PlayerHandEntity>)
+	// HandPlayer operations
+	@Insert(onConflict = OnConflictStrategy.REPLACE)
+	suspend fun insertPlayers(players: List<HandPlayerEntity>)
 
-    @Query("SELECT * FROM player_hand WHERE handHistoryId = :handId")
-    suspend fun getPlayerHandsForHistory(handId: String): List<PlayerHandEntity>
+	@Query("SELECT * FROM hand_players WHERE handId = :handId")
+	suspend fun getPlayersForHand(handId: String): List<HandPlayerEntity>
 
-    @Query("DELETE FROM player_hand WHERE handHistoryId = :handId")
-    suspend fun deletePlayerHandsForHistory(handId: String)
+	@Query("DELETE FROM hand_players WHERE handId = :handId")
+	suspend fun deletePlayersForHand(handId: String)
 
-    // Action operations
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAction(action: ActionEntity)
+	// HandAction operations
+	@Insert(onConflict = OnConflictStrategy.REPLACE)
+	suspend fun insertActions(actions: List<HandActionEntity>)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertActions(actions: List<ActionEntity>)
+	@Query("SELECT * FROM hand_actions WHERE handId = :handId ORDER BY actionOrder ASC")
+	suspend fun getActionsForHand(handId: String): List<HandActionEntity>
 
-    @Query("SELECT * FROM hand_action WHERE handHistoryId = :handId ORDER BY actionIndex ASC")
-    suspend fun getActionsForHistory(handId: String): List<ActionEntity>
+	@Query("DELETE FROM hand_actions WHERE handId = :handId")
+	suspend fun deleteActionsForHand(handId: String)
 
-    @Query("DELETE FROM hand_action WHERE handHistoryId = :handId")
-    suspend fun deleteActionsForHistory(handId: String)
+	// HandCommunityCard operations
+	@Insert(onConflict = OnConflictStrategy.REPLACE)
+	suspend fun insertCommunityCards(cards: List<HandCommunityCardEntity>)
 
-    // Transaction to insert complete hand history with related data
-    @Transaction
-    suspend fun insertCompleteHandHistory(
-        handHistory: HandHistoryEntity,
-        playerHands: List<PlayerHandEntity>,
-        actions: List<ActionEntity>
-    ) {
-        insertHandHistory(handHistory)
-        insertPlayerHands(playerHands)
-        insertActions(actions)
-    }
+	@Query("SELECT * FROM hand_community_cards WHERE handId = :handId ORDER BY cardIndex ASC")
+	suspend fun getCommunityCardsForHand(handId: String): List<HandCommunityCardEntity>
 
-    // Transaction to delete complete hand history with related data
-    @Transaction
-    suspend fun deleteCompleteHandHistory(handId: String) {
-        deletePlayerHandsForHistory(handId)
-        deleteActionsForHistory(handId)
-        // Delete the hand history itself
-        val handHistory = getHandHistoryById(handId)
-        handHistory?.let { deleteHandHistory(it) }
-    }
+	@Query("DELETE FROM hand_community_cards WHERE handId = :handId")
+	suspend fun deleteCommunityCardsForHand(handId: String)
 
-    @Query("DELETE FROM hand_history")
-    suspend fun deleteAllHandHistories()
+	@Transaction
+	suspend fun insertCompleteHand(
+		hand: HandEntity,
+		players: List<HandPlayerEntity>,
+		actions: List<HandActionEntity>,
+		communityCards: List<HandCommunityCardEntity>
+	) {
+		insertHand(hand)
+		insertPlayers(players)
+		insertActions(actions)
+		insertCommunityCards(communityCards)
+	}
 
-    @Query("SELECT COUNT(*) FROM hand_history")
-    suspend fun getHandHistoryCount(): Int
+	@Transaction
+	suspend fun deleteCompleteHand(handId: String) {
+		val hand = getHandById(handId)
+		hand?.let { deleteHand(it) }
+	}
+
+	@Query("DELETE FROM hands")
+	suspend fun deleteAllHands()
+
+	@Query("SELECT COUNT(*) FROM hands")
+	suspend fun getHandCount(): Int
 }
-
