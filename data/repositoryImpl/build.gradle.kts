@@ -9,7 +9,6 @@ android.namespace = "com.hand.log.data.repositoryimpl"
 kotlin {
 	sourceSets {
 		commonMain.dependencies {
-			implementation(projects.domain.model)
 			implementation(projects.domain.repository)
 			implementation(projects.data.datasource)
 		}

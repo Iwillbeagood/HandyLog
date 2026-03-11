@@ -1,4 +1,4 @@
-package com.base.app.designsystem.theme
+package com.hand.log.designsystem.theme
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable

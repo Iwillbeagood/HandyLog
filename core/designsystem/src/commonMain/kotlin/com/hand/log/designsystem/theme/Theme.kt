@@ -1,5 +1,5 @@
 // Theme.kt
-package com.base.app.designsystem.theme
+package com.hand.log.designsystem.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

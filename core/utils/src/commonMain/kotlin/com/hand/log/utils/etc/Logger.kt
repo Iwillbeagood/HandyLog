@@ -2,7 +2,7 @@ package com.hand.log.utils.etc
 
 import android.util.Log
 import com.hand.log.utils.BuildConfig.*
-import java.lang.StringBuilder
+import kotlin.collections.get
 
 object Logger : AndroidLogger {
 

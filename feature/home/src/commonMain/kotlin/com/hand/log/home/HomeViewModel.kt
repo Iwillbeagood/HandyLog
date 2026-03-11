@@ -2,7 +2,6 @@ package com.hand.log.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hand.log.domain.model.etc.error.MessageType
 import com.hand.log.home.contract.HomeEffect
 import com.hand.log.home.contract.HomeModalEffect
 import kotlinx.coroutines.flow.MutableSharedFlow

@@ -1,4 +1,4 @@
-package com.base.app.designsystem.component
+package com.hand.log.designsystem.component
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -34,12 +34,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.hand.log.designsystem.component.RegularButton
-import com.hand.log.designsystem.component.VerticalSpacer
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HmmTheme
 import com.hand.log.res.R
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ModalButton(
