@@ -1,6 +1,5 @@
 package com.hand.log.designsystem.component
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -14,31 +13,29 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandLogTheme
-import com.hand.log.designsystem.theme.HmmTheme
-import com.hand.log.res.R
+import com.hand.log.designsystem.theme.HandyTheme
+import handylog.core.res.generated.resources.Res
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun HmTopAppbar(
 	modifier: Modifier = Modifier,
 	title: String = "",
-	titleStyle: TextStyle = HmmTheme.typography.medium16,
-	contentColor: Color = MaterialTheme.colorScheme.onSurface,
-	containerColor: Color = MaterialTheme.colorScheme.surface,
-	lineColor: Color = MaterialTheme.colorScheme.outlineVariant,
-	iconId: Int = R.drawable.ic_back,
+	titleStyle: TextStyle = HandyTheme.typography.medium16,
+	contentColor: Color = HandyTheme.colorScheme.textPrimary,
+	containerColor: Color = HandyTheme.colorScheme.background,
+	lineColor: Color = HandyTheme.colorScheme.border,
 	navigationType: HmTopAppbarType = HmTopAppbarType.Default,
 	onBackEvent: () -> Unit = {},
 ) {
@@ -60,7 +57,7 @@ fun HmTopAppbar(
 			) {
 				TopAppbarIcon(
 					tint = contentColor,
-					icon = iconId,
+					icon = Res.drawable.arrow_left,
 					onClick = onBackEvent,
 				)
 			}
@@ -99,7 +96,7 @@ fun HmTopAppbar(
 @Composable
 fun TopAppbarIcon(
 	tint: Color,
-	@DrawableRes icon: Int,
+	icon: DrawableResource,
 	onClick: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {

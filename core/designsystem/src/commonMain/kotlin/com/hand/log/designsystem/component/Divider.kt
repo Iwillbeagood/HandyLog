@@ -2,19 +2,19 @@ package com.hand.log.designsystem.component
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.VerticalDivider
+import com.hand.log.designsystem.theme.HandyTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.hand.log.designsystem.etc.ThemePreviews
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun HmHorizontalDivider(
 	modifier: Modifier = Modifier,
-	lineColor: Color = MaterialTheme.colorScheme.outlineVariant,
+	lineColor: Color = HandyTheme.colorScheme.border,
 	thickness: Dp = 1.dp,
 ) {
 	HorizontalDivider(
@@ -27,7 +27,7 @@ fun HmHorizontalDivider(
 @Composable
 fun HmVerticalDivider(
 	modifier: Modifier = Modifier,
-	lineColor: Color = MaterialTheme.colorScheme.outlineVariant,
+	lineColor: Color = HandyTheme.colorScheme.border,
 ) {
 	VerticalDivider(
 		modifier = modifier,
@@ -36,7 +36,7 @@ fun HmVerticalDivider(
 	)
 }
 
-@ThemePreviews
+@Preview
 @Composable
 private fun HmHorizontalDividerPreview() {
 	HmHorizontalDivider(

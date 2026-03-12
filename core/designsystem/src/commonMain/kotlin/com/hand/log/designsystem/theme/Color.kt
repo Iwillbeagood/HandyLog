@@ -3,75 +3,73 @@ package com.hand.log.designsystem.theme
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
 
-val LocalHmmColorScheme = compositionLocalOf<MainColorScheme> {
-	error("No KTCColorScheme provided")
+val LocalHandyColorScheme = compositionLocalOf<HandyColorScheme> {
+	error("No HandyColorScheme provided")
 }
 
-data class MainColorScheme(
-	val white: Color = MainColor.White1,
-	val black: Color = MainColor.Black,
-	val green2: Color = MainColor.Green1,
-	val green4: Color = MainColor.Green2,
-	val green5: Color = MainColor.Green3,
-	val blue1: Color = MainColor.Blue1,
-	val blue2: Color = MainColor.Blue2,
-	val blue3: Color = MainColor.Blue3,
-	val blue5: Color = MainColor.Blue5,
-	val blue6: Color = MainColor.Blue6,
-	val red1: Color = MainColor.Red1,
-	val red3: Color = MainColor.Red2,
-	val gray4: Color = MainColor.Gray4,
-	val gray5: Color = MainColor.Gray5,
-	val olive1: Color = MainColor.Olive1,
-	val purple1: Color = MainColor.Purple1,
-	val orange1: Color = MainColor.Orange1,
-	val yellow1: Color = MainColor.Yellow1,
-	val pink1: Color = MainColor.Pink1,
+val DarkHandyColorScheme
+	get() = HandyColorScheme(
+		background = Color(0xFF14171E),           // 앱 배경
+		textPrimary = Color(0xFFF2F2F2),          // 기본 텍스트
+		card = Color(0xFF1D212A),                 // 카드/패널 배경
+		modalBackground = Color(0xFF191C24),      // 모달 배경
+		muted = Color(0xFF272B34),                // 비활성 영역 배경
+		textSecondary = Color(0xFF808897),        // 보조 텍스트
+		primary = Color(0xFF0FB67F),              // 주요 액션
+		onPrimary = Color(0xFFF2F2F2),            // 주요 액션 위 텍스트
+		accent = Color(0xFF22C38D),               // 강조
+		onAccent = Color(0xFFF2F2F2),             // 강조 위 텍스트
+		secondary = Color(0xFF2F3541),            // 보조 요소 배경
+		onSecondary = Color(0xFFF2F2F2),          // 보조 요소 텍스트
+		error = Color(0xFFDC2828),                // 경고/삭제
+		border = Color(0xFF30353F),               // 테두리
+		inputBorder = Color(0xFF2B303A),          // 입력 필드 테두리
+		focusRing = Color(0xFF0FB67F),            // 포커스 링
+		felt = Color(0xFF235C41),                 // 포커 테이블
+		feltLight = Color(0xFF2D6B4E),            // 포커 테이블 (밝은)
+		gold = Color(0xFFF7C530),                 // 팟/칩 금액
+		goldMuted = Color(0xFFC39A22),            // 보조 금색
+		suitRed = Color(0xFFE83030),              // 하트/다이아
+		suitBlack = Color(0xFF363C49),            // 클럽/스페이드
+	)
+
+data class HandyColorScheme(
+	val background: Color,           // 앱 전체 배경
+	val card: Color,                 // 카드/패널 배경
+	val modalBackground: Color,      // 모달 배경
+	val muted: Color,                // 비활성 영역 배경
+
+	// 텍스트
+	val textPrimary: Color,          // 기본 텍스트
+	val textSecondary: Color,        // 보조/비활성 텍스트
+
+	// 액션
+	val primary: Color,              // 주요 액션 (에메랄드)
+	val onPrimary: Color,            // 주요 액션 위 텍스트
+	val accent: Color,               // 강조 색상
+	val onAccent: Color,             // 강조 위 텍스트
+
+	// 보조
+	val secondary: Color,            // 보조 요소 배경
+	val onSecondary: Color,          // 보조 요소 텍스트
+
+	// 상태
+	val error: Color,                // 경고/삭제
+
+	// 테두리
+	val border: Color,               // 일반 테두리
+	val inputBorder: Color,          // 입력 필드 테두리
+	val focusRing: Color,            // 포커스 링
+
+	// 포커 테이블
+	val felt: Color,                 // 테이블 배경
+	val feltLight: Color,            // 테이블 배경 (밝은)
+
+	// 칩/금액
+	val gold: Color,                 // 팟/칩 금액
+	val goldMuted: Color,            // 보조 금색
+
+	// 카드 문양
+	val suitRed: Color,              // 하트/다이아
+	val suitBlack: Color,            // 클럽/스페이드
 )
-
-internal object MainColor {
-	val Main = Color(0xFF1693ff)
-
-	val White1 = Color(0xFCFFFFFF)
-	val White2 = Color(0xFCEEEEEE)
-
-	val Black = Color(0xFF000000)
-
-	val Gray1 = Color(0xFF1F1F1F)
-	val Gray2 = Color(0xFF2D2D2D)
-	val Gray3 = Color(0xFF414550)
-	val Gray4 = Color(0xFF545454)
-	val Gray5 = Color(0xFF72757D)
-	val Gray6 = Color(0xFF868686)
-	val Gray7 = Color(0xFFB0B0B0)
-	val Gray8 = Color(0xFFC2C2C2)
-	val Gray9 = Color(0xFFDCDCDC)
-	val Gray10 = Color(0xFFF2F3F6)
-	val Gray11 = Color(0xFFFDFDFD)
-
-	val Yellow1 = Color(0xFFffeb00)
-
-	val Blue1 = Color(0xFF016acb)
-	val Blue2 = Color(0xFF447BFD)
-	val Blue3 = Color(0xFF7ac1ff)
-	val Blue4 = Color(0xFFdee0e4)
-	val Blue5 = Color(0xFFEDF2FF)
-	val Blue6 = Color(0xFF3BA4FF)
-
-	val Orange1 = Color(0xFFf6a819)
-
-	val Red1 = Color(0xFF9E0000)
-	val Red2 = Color(0xFFEA5D5D)
-	val Red3 = Color(0xFFFD4444)
-
-	val Pink1 = Color(0xFFF8DCDD)
-
-	val Green1 = Color(0xFF43902d)
-	val Green2 = Color(0xFF47c73c)
-	val Green3 = Color(0xFF2ECC71)
-
-	val Olive1 = Color(0xFF999900)
-
-	val Purple1 = Color(0xFFa75bf3)
-
-}
