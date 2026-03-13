@@ -1,6 +1,7 @@
-package com.hand.log.toast
+package com.hand.log.utils.toast
 
 import android.widget.Toast
+import com.hand.log.domain.model.etc.ToastDurationType
 import com.hand.log.utils.activityProvider
 
 actual open class ToastManager actual constructor() {

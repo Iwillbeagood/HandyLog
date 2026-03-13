@@ -1,5 +1,6 @@
-package com.hand.log.toast
+package com.hand.log.utils.toast
 
+import com.hand.log.domain.model.etc.ToastDurationType
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPointMake
