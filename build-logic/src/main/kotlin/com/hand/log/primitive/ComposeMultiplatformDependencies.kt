@@ -15,6 +15,7 @@ internal fun Project.composeMultiplatformDependencies() {
                 dependencies {
                     implementation(composeDependencies.runtime)
                     implementation(composeDependencies.foundation)
+                    implementation(composeDependencies.material3)
                     implementation(composeDependencies.ui)
                     implementation(composeDependencies.components.resources)
                     implementation(composeDependencies.components.uiToolingPreview)

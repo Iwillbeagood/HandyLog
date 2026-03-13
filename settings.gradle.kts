@@ -65,4 +65,6 @@ include(
 include(
     ":feature:main",
     ":feature:home",
+    ":feature:record",
+    ":feature:table",
 )

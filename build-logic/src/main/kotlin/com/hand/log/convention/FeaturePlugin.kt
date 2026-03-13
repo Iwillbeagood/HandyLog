@@ -34,7 +34,9 @@ class FeaturePlugin : Plugin<Project> {
                 commonMain {
                     dependencies {
                         implementation(project(":core:designsystem"))
+                        implementation(project(":core:ui"))
                         implementation(project(":core:navigation"))
+                        implementation(project(":core:res"))
                         implementation(project(":domain:model"))
                         implementation(project(":domain:usecase"))
                         implementation(project(":domain:repository"))

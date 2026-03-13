@@ -17,8 +17,12 @@ plugins {
 subprojects {
     apply(plugin = rootProject.libs.plugins.ktlint.get().pluginId)
 
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-        dependsOn("ktlintFormat")
+    afterEvaluate {
+        if (!plugins.hasPlugin("com.google.devtools.ksp")) {
+            tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+                dependsOn("ktlintFormat")
+            }
+        }
     }
 }
 
