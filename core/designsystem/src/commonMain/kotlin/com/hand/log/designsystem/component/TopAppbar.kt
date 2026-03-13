@@ -25,8 +25,10 @@ import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.arrow_left
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun HmTopAppbar(
@@ -141,7 +143,7 @@ sealed interface HmTopAppbarType {
 	data class IconButton(val icon: ImageVector, val onClick: () -> Unit) : HmTopAppbarType
 }
 
-@ThemePreviews
+@Preview
 @Composable
 fun BasicTopAppbarPreview() {
 	HandLogTheme {
@@ -151,7 +153,7 @@ fun BasicTopAppbarPreview() {
 	}
 }
 
-@ThemePreviews
+@Preview
 @Composable
 fun CustomTopAppbarPreview() {
 	HandLogTheme {
@@ -168,7 +170,7 @@ fun CustomTopAppbarPreview() {
 	}
 }
 
-@ThemePreviews
+@Preview
 @Composable
 fun IconButtonTopAppbarPreview() {
 	HandLogTheme {

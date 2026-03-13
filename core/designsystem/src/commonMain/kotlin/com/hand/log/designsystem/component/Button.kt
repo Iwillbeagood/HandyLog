@@ -6,7 +6,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -29,7 +28,6 @@ import com.hand.log.designsystem.etc.clickableSingle
 import com.hand.log.designsystem.etc.get
 import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
-import com.hand.log.designsystem.theme.nonScaledSp
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.btn_complete
 import org.jetbrains.compose.resources.stringResource

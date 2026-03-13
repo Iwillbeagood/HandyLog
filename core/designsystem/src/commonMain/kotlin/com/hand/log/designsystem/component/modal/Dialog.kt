@@ -24,7 +24,6 @@ import com.hand.log.designsystem.theme.HandyTheme
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.btn_no
 import handylog.core.res.generated.resources.btn_yes
-import ktc.cargo.driver.designsystem.component.modal.ModalButton
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 

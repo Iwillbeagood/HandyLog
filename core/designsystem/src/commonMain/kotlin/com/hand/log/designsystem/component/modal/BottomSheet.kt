@@ -29,7 +29,6 @@ import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.btn_complete
-import ktc.cargo.driver.designsystem.component.modal.ModalButton
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -78,7 +77,7 @@ fun BaseBottomSheet(
 				if (sheetTitle.isNotEmpty()) {
 					Text(
 						text = sheetTitle,
-						style = HandyTheme.typography.bold22,
+						style = HandyTheme.typography.bold16,
 						color = sheetTitleColor,
 					)
 				}

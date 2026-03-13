@@ -10,10 +10,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
-import handylog.core.designsystem.generated.resources.Res
-import handylog.core.designsystem.generated.resources.pretendard_bold
-import handylog.core.designsystem.generated.resources.pretendard_medium
-import handylog.core.designsystem.generated.resources.pretendard_reqular
+import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.pretendard_bold
+import handylog.core.res.generated.resources.pretendard_medium
+import handylog.core.res.generated.resources.pretendard_reqular
 import org.jetbrains.compose.resources.Font
 
 val TextUnit.nonScaledSp
