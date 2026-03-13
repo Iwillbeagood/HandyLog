@@ -14,6 +14,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.hand.log.home.navigation.homeNavGraph
+import com.hand.log.record.navigation.recordHandNavGraph
+import com.hand.log.table.navigation.tableNavGraph
 
 @Composable
 internal fun MainNavHost(
@@ -23,6 +25,8 @@ internal fun MainNavHost(
 ) {
 	val entryProvider = entryProvider<NavKey> {
 		homeNavGraph()
+		tableNavGraph()
+		recordHandNavGraph()
 	}
 
 	Box(

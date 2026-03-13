@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.theme.HandLogTheme
+import com.hand.log.navigation.navigation.MainTabRoute
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -31,7 +32,7 @@ internal fun MainBottomBar(
 	visible: Boolean,
 	bottomItems: PersistentList<MainBottomNavItem>,
 	currentItem: MainBottomNavItem?,
-	onItemClick: (MainBottomNavItem) -> Unit = {},
+	onItemClick: (MainTabRoute) -> Unit = {},
 ) {
 	AnimatedVisibility(
 		visible = visible,
@@ -67,7 +68,7 @@ internal fun MainBottomBar(
 						unselectedIconColor = MaterialTheme.colorScheme.onSecondary,
 						unselectedTextColor = MaterialTheme.colorScheme.onSecondary,
 					),
-					onClick = { onItemClick(item) },
+					onClick = { onItemClick(item.route) },
 					selected = item == currentItem,
 				)
 			}

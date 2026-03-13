@@ -2,7 +2,7 @@ package com.hand.log.interop
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
-import com.hand.log.toast.ToastDurationType
+import com.hand.log.domain.model.etc.ToastDurationType
 
 val LocalMainActionInterop = staticCompositionLocalOf<MainActionInterop> {
 	error("No MainActionInterop provided")

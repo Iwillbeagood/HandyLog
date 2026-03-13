@@ -8,8 +8,10 @@ kotlin {
 	sourceSets {
 		commonMain.dependencies {
 			implementation(projects.feature.home)
+			implementation(projects.feature.table)
+			implementation(projects.feature.record)
 			implementation(libs.kotlinx.immutable)
-			implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+			implementation(libs.jetbrains.lifecycle.viewmodel.navigation3)
 		}
 
 		appleMain {

@@ -54,9 +54,9 @@ internal class MainNavigator {
 		}
 	}
 
-	fun navigateTab(tab: MainBottomNavItem) {
+	fun navigateTab(tab: MainTabRoute) {
 		when (tab) {
-			MainBottomNavItem.Home -> {
+			MainTabRoute.Home -> {
 				navigate(MainTabRoute.Home, LaunchMode.CLEAR_ALL)
 			}
 		}

@@ -28,6 +28,16 @@ kotlin {
 		commonMain.dependencies {
 			implementation(projects.feature.main)
 			implementation(projects.feature.home)
+			implementation(projects.feature.table)
+			implementation(projects.feature.record)
+			implementation(projects.domain.model)
+			implementation(projects.domain.repository)
+			implementation(projects.data.datasource)
+			implementation(projects.data.repositoryImpl)
+			implementation(projects.local.database)
+			implementation(projects.core.designsystem)
+			implementation(projects.core.navigation)
+			implementation(projects.core.utils)
 
 			implementation(libs.androidx.lifecycle.runtime.compose)
 
