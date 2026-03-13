@@ -7,6 +7,7 @@ android.namespace = "com.hand.log.feature.home"
 kotlin {
 	sourceSets {
 		commonMain.dependencies {
+			implementation(libs.kotlinx.datetime)
 		}
 	}
 }

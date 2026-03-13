@@ -1,16 +1,22 @@
 package com.hand.log.home
 
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.designsystem.component.HmFadeAnimatedVisibility
-import com.hand.log.designsystem.component.TopAppBarScaffold
-import com.hand.log.home.contract.HomeEffect
+import com.hand.log.home.component.TableSetupSheet
 import com.hand.log.home.contract.HomeModalEffect
+import com.hand.log.home.contract.HomeState
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
-import com.hand.log.navigation.interop.rememberShowSnackBar
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun HomeRoute(
 	viewModel: HomeViewModel,
@@ -18,11 +24,15 @@ internal fun HomeRoute(
 	val homeState by viewModel.homeState.collectAsStateWithLifecycle()
 	val homeModalEffect by viewModel.homeModalEffect.collectAsStateWithLifecycle()
 	val navAction = LocalNavigateActionInterop.current
-	val showSnackbar = rememberShowSnackBar()
+
+	var showSetupSheet by remember { mutableStateOf(false) }
+	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+	val scope = rememberCoroutineScope()
 
 	HomeContent(
 		homeState = homeState,
-		onGoBack = navAction::popBackStack,
+		onNavigateToTableDetail = navAction::navigateToTableDetail,
+		onFabClick = { showSetupSheet = true },
 	)
 
 	HomeModalContent(
@@ -30,30 +40,45 @@ internal fun HomeRoute(
 		onDismissRequest = viewModel::dismissDialog,
 	)
 
-	LaunchedEffect(true) {
-		viewModel.homeEffect.collect { effect ->
-			when (effect) {
-				is HomeEffect.ShowSnackBar -> showSnackbar(effect.messageType)
-			}
-		}
+	if (showSetupSheet) {
+		TableSetupSheet(
+			sheetState = sheetState,
+			onDismissRequest = {
+				scope.launch { sheetState.hide() }.invokeOnCompletion {
+					showSetupSheet = false
+				}
+			},
+			onCreateTable = { date, location, gameType, startingStack, blinds, playerCount, heroSeat ->
+				viewModel.saveTable(
+					date = date,
+					location = location,
+					gameType = gameType,
+					startingStack = startingStack,
+					blinds = blinds,
+					playerCount = playerCount,
+					heroSeat = heroSeat,
+				)
+				scope.launch { sheetState.hide() }.invokeOnCompletion {
+					showSetupSheet = false
+				}
+			},
+		)
 	}
 }
 
 @Composable
 private fun HomeContent(
 	homeState: HomeState,
-	onGoBack: () -> Unit,
+	onNavigateToTableDetail: (String) -> Unit,
+	onFabClick: () -> Unit,
 ) {
-	TopAppBarScaffold(
-		title = "TODO: 타이틀을 알맞게 설정해야 합니다.",
-		onBackEvent = onGoBack,
-	) {
-		HmFadeAnimatedVisibility(homeState is HomeState.HomeData) {
-			if (homeState is HomeState.HomeData) {
-				HomeScreen(
-					homeState = homeState,
-				)
-			}
+	HmFadeAnimatedVisibility(homeState is HomeState.HomeData) {
+		if (homeState is HomeState.HomeData) {
+			HomeScreen(
+				homeState = homeState,
+				onNavigateToTableDetail = onNavigateToTableDetail,
+				onFabClick = onFabClick,
+			)
 		}
 	}
 }

@@ -8,12 +8,11 @@ internal sealed interface HomeModalEffect {
 
 	@Immutable
 	data object Idle : HomeModalEffect
-
 }
 
 @Stable
 internal sealed interface HomeEffect {
 
 	@Immutable
-	data class ShowSnackBar(val messageType: MessageType) : HomeEffect
+	data class ShowSnackBar(val message: String) : HomeEffect
 }
