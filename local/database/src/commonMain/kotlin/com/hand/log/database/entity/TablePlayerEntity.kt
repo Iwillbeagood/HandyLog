@@ -5,7 +5,7 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
 @Entity(
-	tableName = "hand_records",
+	tableName = "table_players",
 	foreignKeys = [
 		ForeignKey(
 			entity = PokerTableEntity::class,
@@ -15,18 +15,12 @@ import androidx.room.PrimaryKey
 		),
 	],
 )
-data class HandRecordEntity(
+data class TablePlayerEntity(
 	@PrimaryKey val id: String,
 	val tableId: String,
-	val createdAt: Long,
-	val blindsSb: Double? = null,
-	val blindsBb: Double? = null,
-	val heroCard1Rank: String? = null,
-	val heroCard1Suit: String? = null,
-	val heroCard2Rank: String? = null,
-	val heroCard2Suit: String? = null,
-	val heroStack: Double = 0.0,
-	val buttonSeat: Int = 1,
-	val result: Double? = null,
+	val seat: Int,
+	val stack: Double,
+	val tendency: String? = null,
 	val memo: String? = null,
+	val name: String? = null,
 )

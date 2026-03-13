@@ -5,20 +5,22 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
 @Entity(
-	tableName = "hand_community_cards",
+	tableName = "hand_street_actions",
 	foreignKeys = [
 		ForeignKey(
-			entity = HandEntity::class,
+			entity = HandRecordEntity::class,
 			parentColumns = ["id"],
 			childColumns = ["handId"],
-			onDelete = ForeignKey.CASCADE
-		)
-	]
+			onDelete = ForeignKey.CASCADE,
+		),
+	],
 )
-data class HandCommunityCardEntity(
+data class HandStreetActionEntity(
 	@PrimaryKey val id: String,
 	val handId: String,
-	val cardIndex: Int,
-	val rank: String,
-	val suit: String
+	val street: String,
+	val playerSeat: Int,
+	val actionType: String,
+	val amount: Double? = null,
+	val actionOrder: Int,
 )

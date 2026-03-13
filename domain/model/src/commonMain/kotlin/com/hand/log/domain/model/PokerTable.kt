@@ -1,0 +1,16 @@
+package com.hand.log.domain.model
+
+import kotlinx.datetime.LocalDate
+
+data class PokerTable(
+	val id: String,
+	val date: LocalDate,
+	val location: String? = null,
+	val gameType: GameType,
+	val startingStack: Double,
+	val blinds: Blinds? = null,
+	val playerCount: Int,
+	val heroSeat: Int,
+	val players: List<Player> = emptyList(),
+	val createdAt: Long,
+)
