@@ -9,6 +9,7 @@ kotlin {
 	sourceSets {
 		commonMain.dependencies {
 			implementation(projects.core.res)
+			implementation(projects.domain.model)
 		}
 	}
 }

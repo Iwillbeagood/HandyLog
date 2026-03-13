@@ -12,5 +12,10 @@ sealed interface MainTabRoute : Route {
 
 	@Serializable
 	data object Home : MainTabRoute
-
 }
+
+@Serializable
+data class TableDetail(val tableId: String) : Route
+
+@Serializable
+data class RecordHand(val tableId: String) : Route

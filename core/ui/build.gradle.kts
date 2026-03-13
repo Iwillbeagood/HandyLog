@@ -11,6 +11,9 @@ kotlin {
 		commonMain.dependencies {
 			implementation(compose.foundation)
 			implementation(compose.ui)
+			implementation(compose.material3)
+			implementation(projects.core.designsystem)
+			implementation(projects.domain.model)
 		}
 	}
 }

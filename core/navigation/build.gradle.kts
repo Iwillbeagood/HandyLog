@@ -12,8 +12,7 @@ kotlin {
 		commonMain.dependencies {
 			implementation(projects.domain.model)
 
-			api(libs.androidx.navigation3.runtime)
-			api(libs.androidx.navigation3.ui)
+			api(libs.jetbrains.navigation3.ui)
 			implementation(libs.kotlinx.serialization.json)
 		}
 	}

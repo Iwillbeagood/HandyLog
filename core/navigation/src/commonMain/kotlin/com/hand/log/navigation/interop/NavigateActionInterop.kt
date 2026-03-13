@@ -1,7 +1,7 @@
 package com.hand.log.navigation.interop
 
 import androidx.compose.runtime.staticCompositionLocalOf
-import com.hand.log.navigation.navigation.MainBottomNavItem
+import com.hand.log.navigation.navigation.MainTabRoute
 
 val LocalNavigateActionInterop = staticCompositionLocalOf<NavigateActionInterop> {
 	error("No NavigateActionInterop provided")
@@ -9,6 +9,7 @@ val LocalNavigateActionInterop = staticCompositionLocalOf<NavigateActionInterop>
 
 interface NavigateActionInterop {
 	fun popBackStack()
-	fun navigateBottomNav(item: MainBottomNavItem)
-//    fun navigateToIncomeList()
+	fun navigateBottomNav(item: MainTabRoute)
+	fun navigateToTableDetail(tableId: String)
+	fun navigateToRecordHand(tableId: String)
 }
