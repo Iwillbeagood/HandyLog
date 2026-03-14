@@ -25,6 +25,7 @@ import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.navigation.navigation.MainTabRoute
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -56,7 +57,7 @@ internal fun MainBottomBar(
 				NavigationBarItem(
 					icon = {
 						Icon(
-							imageVector = item.icon,
+							painter = painterResource(item.icon),
 							contentDescription = null,
 							modifier = Modifier.size(22.dp),
 						)

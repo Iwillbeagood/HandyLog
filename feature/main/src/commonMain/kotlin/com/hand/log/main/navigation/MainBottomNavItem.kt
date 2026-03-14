@@ -1,20 +1,18 @@
 package com.hand.log.main.navigation
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.vector.ImageVector
 import com.hand.log.navigation.navigation.MainTabRoute
 import com.hand.log.navigation.navigation.Route
+import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.dollar_sign
+import org.jetbrains.compose.resources.DrawableResource
 
 enum class MainBottomNavItem(
-	val titleRes: Int,
-	val icon: ImageVector,
+	val icon: DrawableResource,
 	val route: MainTabRoute,
 ) {
 	Home(
-		titleRes = 0,
-		icon = Icons.Default.Home,
+		icon = Res.drawable.dollar_sign,
 		route = MainTabRoute.Home,
 	),
 	;

@@ -1,9 +1,12 @@
 package com.hand.log.main.navigation
 
+import com.hand.log.navigation.interop.NavigateActionInterop
 import com.hand.log.navigation.navigation.LaunchMode
 import com.hand.log.navigation.navigation.MainTabRoute
+import com.hand.log.navigation.navigation.RecordHand
 import com.hand.log.navigation.navigation.Route
 import com.hand.log.navigation.navigation.RouteStack
+import com.hand.log.navigation.navigation.TableDetail
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,6 +16,24 @@ internal class MainNavigator {
 
 	private val _routeStack = MutableStateFlow(RouteStack(MainTabRoute.Home))
 	val routeStack: StateFlow<RouteStack> = _routeStack.asStateFlow()
+
+	val navigateActionInterop = object : NavigateActionInterop {
+		override fun popBackStack() {
+			goBack()
+		}
+
+		override fun navigateBottomNav(item: MainTabRoute) {
+			navigateTab(item)
+		}
+
+		override fun navigateToTableDetail(tableId: String) {
+			navigate(TableDetail(tableId))
+		}
+
+		override fun navigateToRecordHand(tableId: String) {
+			navigate(RecordHand(tableId))
+		}
+	}
 
 	fun navigate(
 		route: Route,
