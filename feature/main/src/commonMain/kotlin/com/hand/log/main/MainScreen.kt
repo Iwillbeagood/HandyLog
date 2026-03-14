@@ -27,6 +27,7 @@ fun MainScreen() {
 		MainScreenContent(
 			routeStack = routeStack,
 			onTabSelected = navigator::navigateTab,
+			onBack = navigator::goBack,
 		)
 	}
 }
@@ -35,6 +36,7 @@ fun MainScreen() {
 private fun MainScreenContent(
 	routeStack: RouteStack,
 	onTabSelected: (MainTabRoute) -> Unit,
+	onBack: () -> Unit,
 ) {
 	Scaffold(
 		contentWindowInsets = WindowInsets(),
@@ -49,6 +51,7 @@ private fun MainScreenContent(
 		content = {
 			MainNavHost(
 				backStack = routeStack.backStack,
+				onBack = onBack,
 			)
 		},
 	)

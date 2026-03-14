@@ -13,6 +13,7 @@ import com.hand.log.table.navigation.tableNavGraph
 @Composable
 internal fun MainNavHost(
 	backStack: List<NavKey>,
+	onBack: () -> Unit,
 ) {
 	val entryProvider = entryProvider {
 		homeNavGraph()
@@ -26,6 +27,7 @@ internal fun MainNavHost(
 			rememberViewModelStoreNavEntryDecorator(),
 		),
 		backStack = backStack,
+		onBack = onBack,
 		entryProvider = entryProvider,
 	)
 }
