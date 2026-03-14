@@ -5,12 +5,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.text.font.FontFamily
 import com.hand.log.data.datasoure.di.dataSourceModule
 import com.hand.log.data.repositoryImpl.di.repositoryModule
 import com.hand.log.database.di.databaseModule
 import com.hand.log.designsystem.theme.HandLogTheme
-import com.hand.log.designsystem.theme.pretendard
 import com.hand.log.domain.model.etc.ToastDurationType
 import com.hand.log.home.di.featureHomeModule
 import com.hand.log.main.MainScreen
@@ -24,9 +22,7 @@ import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
 
 @Composable
-internal fun App(
-	fontFamily: FontFamily = pretendard,
-) {
+internal fun App() {
 	val toastManager by remember { mutableStateOf(ToastManager()) }
 
 	val mainActionInterop = object : MainActionInterop {

@@ -56,7 +56,6 @@ internal fun TableDetailScreen(
 	val typography = HandyTheme.typography
 
 	BaseScaffold(
-		containerColor = colors.background,
 		topBar = {
 			HandyTopAppbar(
 				title = if (state.table.gameType == GameType.TOURNAMENT) "토너먼트" else "캐시",
