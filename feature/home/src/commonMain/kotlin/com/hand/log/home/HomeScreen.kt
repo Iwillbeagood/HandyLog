@@ -4,20 +4,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
+import com.hand.log.designsystem.component.HandyHorizontalDivider
+import com.hand.log.designsystem.component.HandyTopAppbar
+import com.hand.log.designsystem.component.IconButton
+import com.hand.log.designsystem.component.TopAppbarType
 import com.hand.log.designsystem.theme.HandLogTheme
-import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.GameType
 import com.hand.log.domain.model.PokerTable
@@ -27,7 +24,6 @@ import com.hand.log.home.contract.HomeState
 import com.hand.log.home.contract.TableListItem
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.plus
-import org.jetbrains.compose.resources.painterResource
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -35,45 +31,21 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 internal fun HomeScreen(
 	homeState: HomeState.HomeData,
 	onNavigateToTableDetail: (String) -> Unit,
-	onFabClick: () -> Unit,
+	onTableAdd: () -> Unit,
 ) {
-	val colors = HandyTheme.colorScheme
-
-	BaseScaffold(
-		floatingActionButton = {
-			FloatingActionButton(
-				onClick = onFabClick,
-				containerColor = colors.primary,
-				contentColor = colors.onPrimary,
-				shape = CircleShape,
-			) {
-				Icon(
-					painter = painterResource(Res.drawable.plus),
-					contentDescription = "새 테이블",
-				)
-			}
-		},
-	) {
+	BaseScaffold {
 		Column(
 			modifier = Modifier.fillMaxSize(),
 		) {
-			// Header
-			Column(
-				modifier = Modifier
-					.fillMaxWidth()
-					.padding(horizontal = 16.dp, vertical = 16.dp),
-			) {
-				Text(
-					text = "Poker Tracker",
-					style = HandyTheme.typography.bold20,
-					color = colors.textPrimary,
-				)
-				Text(
-					text = "핸드 히스토리 기록",
-					style = HandyTheme.typography.regular12,
-					color = colors.textSecondary,
-				)
-			}
+			HandyTopAppbar(
+				navigationType = TopAppbarType.Main,
+				iconButton = IconButton(
+					text = "새 테이블",
+					icon = Res.drawable.plus,
+					onClick = onTableAdd,
+				),
+			)
+			HandyHorizontalDivider()
 
 			if (homeState.tables.isEmpty()) {
 				EmptyState(modifier = Modifier.fillMaxSize())
@@ -82,8 +54,10 @@ internal fun HomeScreen(
 					modifier = Modifier.fillMaxSize(),
 					verticalArrangement = Arrangement.spacedBy(12.dp),
 					contentPadding = PaddingValues(
-						horizontal = 16.dp,
-						vertical = 8.dp,
+						start = 16.dp,
+						end = 16.dp,
+						top = 20.dp,
+						bottom = 12.dp,
 					),
 				) {
 					items(homeState.tables, key = { it.table.id }) { item ->
@@ -105,7 +79,7 @@ private fun HomeScreenEmptyPreview() {
 		HomeScreen(
 			homeState = HomeState.HomeData(tables = emptyList()),
 			onNavigateToTableDetail = {},
-			onFabClick = {},
+			onTableAdd = {},
 		)
 	}
 }
@@ -147,7 +121,7 @@ private fun HomeScreenWithDataPreview() {
 				),
 			),
 			onNavigateToTableDetail = {},
-			onFabClick = {},
+			onTableAdd = {},
 		)
 	}
 }

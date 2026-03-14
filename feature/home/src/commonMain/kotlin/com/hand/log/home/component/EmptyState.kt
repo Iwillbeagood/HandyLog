@@ -1,24 +1,20 @@
 package com.hand.log.home.component
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import handylog.core.res.generated.resources.Res
-import handylog.core.res.generated.resources.spade_filled
+import handylog.core.res.generated.resources.spade
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -31,21 +27,12 @@ internal fun EmptyState(modifier: Modifier = Modifier) {
 		horizontalAlignment = Alignment.CenterHorizontally,
 		verticalArrangement = Arrangement.Center,
 	) {
-		// Felt-gradient icon container
-		Box(
-			modifier = Modifier
-				.size(64.dp)
-				.clip(RoundedCornerShape(16.dp))
-				.background(colors.felt),
-			contentAlignment = Alignment.Center,
-		) {
-			Icon(
-				painter = painterResource(Res.drawable.spade_filled),
-				contentDescription = null,
-				tint = colors.primary,
-				modifier = Modifier.size(32.dp),
-			)
-		}
+		Icon(
+			painter = painterResource(Res.drawable.spade),
+			contentDescription = null,
+			tint = colors.primary,
+			modifier = Modifier.size(32.dp),
+		)
 
 		Spacer(modifier = Modifier.height(16.dp))
 

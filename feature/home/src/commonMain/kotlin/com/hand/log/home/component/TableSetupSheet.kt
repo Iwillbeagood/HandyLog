@@ -9,24 +9,21 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SheetState
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -36,11 +33,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.hand.log.ui.poker.SheetDragBlocker
+import kotlinx.datetime.LocalDate
+import org.jetbrains.compose.resources.painterResource
+import com.hand.log.designsystem.component.HandyNumberSelector
+import com.hand.log.designsystem.component.HandySectionLabel
+import com.hand.log.designsystem.component.HandySwitch
+import com.hand.log.designsystem.component.HandyTextField
+import com.hand.log.designsystem.component.HandyToggleGroup
+import com.hand.log.designsystem.component.RegularButton
+import com.hand.log.designsystem.component.VerticalSpacer
+import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.GameType
+import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.calendar
+import handylog.core.res.generated.resources.map_pin
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,11 +72,10 @@ internal fun TableSetupSheet(
 	) -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
-	val typography = HandyTheme.typography
 
 	var date by remember { mutableStateOf("") }
 	var location by remember { mutableStateOf("") }
-	var gameType by remember { mutableStateOf(GameType.CASH) }
+	var gameType by remember { mutableStateOf(GameType.TOURNAMENT) }
 	var startingStack by remember { mutableStateOf("") }
 	var sbText by remember { mutableStateOf("") }
 	var bbText by remember { mutableStateOf("") }
@@ -71,265 +84,401 @@ internal fun TableSetupSheet(
 	var playerCount by remember { mutableIntStateOf(9) }
 	var heroSeat by remember { mutableIntStateOf(1) }
 
-	val textFieldColors = OutlinedTextFieldDefaults.colors(
-		focusedBorderColor = colors.primary,
-		unfocusedBorderColor = colors.inputBorder,
-		focusedTextColor = colors.textPrimary,
-		unfocusedTextColor = colors.textPrimary,
-		cursorColor = colors.primary,
-		focusedLabelColor = colors.primary,
-		unfocusedLabelColor = colors.textSecondary,
-	)
-
 	ModalBottomSheet(
 		onDismissRequest = onDismissRequest,
 		sheetState = sheetState,
 		containerColor = colors.card,
 		contentColor = colors.textPrimary,
 	) {
-		Column(
+		TableSetupContent(
+			date = date,
+			onDateChange = { date = it },
+			location = location,
+			onLocationChange = { location = it },
+			gameType = gameType,
+			onGameTypeChange = { gameType = it },
+			startingStack = startingStack,
+			onStartingStackChange = { startingStack = it },
+			sbText = sbText,
+			onSbChange = { sbText = it },
+			bbText = bbText,
+			onBbChange = { bbText = it },
+			straddleEnabled = straddleEnabled,
+			onStraddleEnabledChange = { straddleEnabled = it },
+			straddleText = straddleText,
+			onStraddleChange = { straddleText = it },
+			playerCount = playerCount,
+			onPlayerCountChange = { count ->
+				playerCount = count
+				if (heroSeat > count) heroSeat = 1
+			},
+			heroSeat = heroSeat,
+			onHeroSeatChange = { heroSeat = it },
+			onCreateClick = {
+				val stack = startingStack.toDoubleOrNull() ?: 0.0
+				val blinds = if (gameType == GameType.CASH) {
+					val sb = sbText.toDoubleOrNull() ?: 0.0
+					val bb = bbText.toDoubleOrNull() ?: 0.0
+					val straddle = if (straddleEnabled) straddleText.toDoubleOrNull() else null
+					Blinds(sb = sb, bb = bb, straddle = straddle)
+				} else {
+					null
+				}
+				onCreateTable(
+					date,
+					location.takeIf { it.isNotBlank() },
+					gameType,
+					stack,
+					blinds,
+					playerCount,
+					heroSeat,
+				)
+			},
+			isCreateEnabled = date.isNotBlank() && startingStack.isNotBlank(),
+		)
+	}
+}
+
+@OptIn(ExperimentalTime::class)
+@Composable
+internal fun TableSetupContent(
+	date: String,
+	onDateChange: (String) -> Unit,
+	location: String,
+	onLocationChange: (String) -> Unit,
+	gameType: GameType,
+	onGameTypeChange: (GameType) -> Unit,
+	startingStack: String,
+	onStartingStackChange: (String) -> Unit,
+	sbText: String,
+	onSbChange: (String) -> Unit,
+	bbText: String,
+	onBbChange: (String) -> Unit,
+	straddleEnabled: Boolean,
+	onStraddleEnabledChange: (Boolean) -> Unit,
+	straddleText: String,
+	onStraddleChange: (String) -> Unit,
+	playerCount: Int,
+	onPlayerCountChange: (Int) -> Unit,
+	heroSeat: Int,
+	onHeroSeatChange: (Int) -> Unit,
+	onCreateClick: () -> Unit,
+	isCreateEnabled: Boolean,
+) {
+	val colors = HandyTheme.colorScheme
+	val typography = HandyTheme.typography
+
+	Column(
+		modifier = Modifier
+			.fillMaxWidth()
+			.nestedScroll(SheetDragBlocker)
+			.verticalScroll(rememberScrollState())
+			.padding(horizontal = 20.dp)
+			.padding(bottom = 32.dp),
+	) {
+		var showDatePicker by remember { mutableStateOf(false) }
+		val datePickerState = rememberDatePickerState()
+
+		Text(
+			text = "새 테이블 생성",
+			style = typography.bold20,
+			color = colors.textPrimary,
+		)
+		VerticalSpacer(16.dp)
+
+		// Date selector
+		HandySectionLabel("날짜")
+		Box(
 			modifier = Modifier
 				.fillMaxWidth()
-				.verticalScroll(rememberScrollState())
-				.padding(horizontal = 20.dp)
-				.padding(bottom = 32.dp),
-			verticalArrangement = Arrangement.spacedBy(16.dp),
+				.clip(RoundedCornerShape(8.dp))
+				.background(colors.muted, RoundedCornerShape(8.dp))
+				.border(1.dp, colors.inputBorder, RoundedCornerShape(8.dp))
+				.clickable { showDatePicker = true }
+				.padding(horizontal = 12.dp, vertical = 10.dp),
 		) {
-			Text(
-				text = "새 테이블 생성",
-				style = typography.bold20,
-				color = colors.textPrimary,
-			)
-
-			// Date input
-			OutlinedTextField(
-				value = date,
-				onValueChange = { date = it },
-				label = { Text("날짜 (YYYY-MM-DD)") },
-				modifier = Modifier.fillMaxWidth(),
-				singleLine = true,
-				colors = textFieldColors,
-			)
-
-			// Location input
-			OutlinedTextField(
-				value = location,
-				onValueChange = { location = it },
-				label = { Text("장소 (선택)") },
-				modifier = Modifier.fillMaxWidth(),
-				singleLine = true,
-				colors = textFieldColors,
-			)
-
-			// Game type toggle
-			SectionLabel("게임 유형")
-			Row(
-				modifier = Modifier.fillMaxWidth(),
-				horizontalArrangement = Arrangement.spacedBy(8.dp),
-			) {
-				GameType.entries.forEach { type ->
-					val isSelected = gameType == type
-					Box(
-						modifier = Modifier
-							.weight(1f)
-							.clip(RoundedCornerShape(8.dp))
-							.background(if (isSelected) colors.primary else colors.muted)
-							.clickable { gameType = type }
-							.padding(vertical = 12.dp),
-						contentAlignment = Alignment.Center,
-					) {
-						Text(
-							text = type.label,
-							style = typography.medium14,
-							color = if (isSelected) colors.onPrimary else colors.textSecondary,
-						)
-					}
-				}
-			}
-
-			// Starting stack
-			OutlinedTextField(
-				value = startingStack,
-				onValueChange = { startingStack = it },
-				label = { Text("시작 스택") },
-				modifier = Modifier.fillMaxWidth(),
-				singleLine = true,
-				keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-				colors = textFieldColors,
-			)
-
-			// Blinds (Cash only)
-			if (gameType == GameType.CASH) {
-				SectionLabel("블라인드")
-				Row(
-					modifier = Modifier.fillMaxWidth(),
-					horizontalArrangement = Arrangement.spacedBy(8.dp),
-				) {
-					OutlinedTextField(
-						value = sbText,
-						onValueChange = { sbText = it },
-						label = { Text("SB") },
-						modifier = Modifier.weight(1f),
-						singleLine = true,
-						keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-						colors = textFieldColors,
-					)
-					OutlinedTextField(
-						value = bbText,
-						onValueChange = { bbText = it },
-						label = { Text("BB") },
-						modifier = Modifier.weight(1f),
-						singleLine = true,
-						keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-						colors = textFieldColors,
-					)
-				}
-
-				// Straddle toggle
-				Row(
-					modifier = Modifier.fillMaxWidth(),
-					verticalAlignment = Alignment.CenterVertically,
-				) {
-					Text(
-						text = "스트래들",
-						style = typography.medium14,
-						color = colors.textPrimary,
-					)
-					Spacer(modifier = Modifier.weight(1f))
-					Switch(
-						checked = straddleEnabled,
-						onCheckedChange = { straddleEnabled = it },
-						colors = SwitchDefaults.colors(
-							checkedTrackColor = colors.primary,
-							checkedThumbColor = colors.onPrimary,
-						),
-					)
-				}
-
-				if (straddleEnabled) {
-					OutlinedTextField(
-						value = straddleText,
-						onValueChange = { straddleText = it },
-						label = { Text("스트래들 금액") },
-						modifier = Modifier.fillMaxWidth(),
-						singleLine = true,
-						keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-						colors = textFieldColors,
-					)
-				}
-			}
-
-			// Player count selector (2-10)
-			SectionLabel("플레이어 수")
-			SeatSelector(
-				range = 2..10,
-				selected = playerCount,
-				onSelect = { count ->
-					playerCount = count
-					if (heroSeat > count) heroSeat = 1
-				},
-			)
-
-			// Hero seat selector (1 ~ playerCount)
-			SectionLabel("내 좌석 번호")
-			SeatSelector(
-				range = 1..playerCount,
-				selected = heroSeat,
-				onSelect = { heroSeat = it },
-				useGold = true,
-			)
-
-			Spacer(modifier = Modifier.height(8.dp))
-
-			// Create button
-			Button(
-				onClick = {
-					val stack = startingStack.toDoubleOrNull() ?: 0.0
-					val blinds = if (gameType == GameType.CASH) {
-						val sb = sbText.toDoubleOrNull() ?: 0.0
-						val bb = bbText.toDoubleOrNull() ?: 0.0
-						val straddle = if (straddleEnabled) straddleText.toDoubleOrNull() else null
-						Blinds(sb = sb, bb = bb, straddle = straddle)
-					} else {
-						null
-					}
-					onCreateTable(
-						date,
-						location.takeIf { it.isNotBlank() },
-						gameType,
-						stack,
-						blinds,
-						playerCount,
-						heroSeat,
-					)
-				},
-				modifier = Modifier
-					.fillMaxWidth()
-					.height(52.dp),
-				enabled = date.isNotBlank() && startingStack.isNotBlank(),
-				shape = RoundedCornerShape(12.dp),
-				colors = ButtonDefaults.buttonColors(
-					containerColor = colors.primary,
-					contentColor = colors.onPrimary,
-					disabledContainerColor = colors.muted,
-					disabledContentColor = colors.textSecondary,
-				),
-			) {
+			Row(verticalAlignment = Alignment.CenterVertically) {
+				Icon(
+					painter = painterResource(Res.drawable.calendar),
+					contentDescription = null,
+					modifier = Modifier.size(12.dp),
+					tint = colors.textSecondary,
+				)
+				Spacer(modifier = Modifier.width(8.dp))
 				Text(
-					text = "테이블 생성",
-					style = typography.bold16,
+					text = date.ifEmpty { "날짜를 선택하세요" },
+					style = typography.regular14,
+					color = if (date.isEmpty()) colors.textSecondary.copy(alpha = 0.5f) else colors.textPrimary,
 				)
 			}
 		}
+
+		if (showDatePicker) {
+			DatePickerDialog(
+				onDismissRequest = { showDatePicker = false },
+				confirmButton = {
+					TextButton(onClick = {
+						datePickerState.selectedDateMillis?.let { millis ->
+							val instant = kotlin.time.Instant.fromEpochMilliseconds(millis)
+							val localDate = LocalDate.fromEpochDays(
+								(instant.epochSeconds / 86400).toInt()
+							)
+							onDateChange(localDate.toString())
+						}
+						showDatePicker = false
+					}) {
+						Text("확인")
+					}
+				},
+				dismissButton = {
+					TextButton(onClick = { showDatePicker = false }) {
+						Text("취소")
+					}
+				},
+			) {
+				DatePicker(state = datePickerState)
+			}
+		}
+		VerticalSpacer(16.dp)
+		HandyTextField(
+			value = location,
+			onValueChange = onLocationChange,
+			label = "장소 (선택)",
+			leadingIcon = Res.drawable.map_pin,
+		)
+
+		VerticalSpacer(16.dp)
+		HandySectionLabel("게임 유형")
+		HandyToggleGroup(
+			options = GameType.entries.toList(),
+			selected = gameType,
+			onSelect = onGameTypeChange,
+			label = { it.label },
+		)
+		VerticalSpacer(16.dp)
+
+		HandyTextField(
+			value = startingStack,
+			onValueChange = onStartingStackChange,
+			label = "시작 스택",
+			keyboardType = KeyboardType.Number,
+		)
+		if (gameType == GameType.CASH) {
+			VerticalSpacer(16.dp)
+			BlindsSection(
+				sbText = sbText,
+				onSbChange = onSbChange,
+				bbText = bbText,
+				onBbChange = onBbChange,
+				straddleEnabled = straddleEnabled,
+				onStraddleEnabledChange = onStraddleEnabledChange,
+				straddleText = straddleText,
+				onStraddleChange = onStraddleChange,
+			)
+		}
+
+		VerticalSpacer(16.dp)
+		HandySectionLabel("플레이어 수")
+		HandyNumberSelector(
+			range = 2..10,
+			selected = playerCount,
+			onSelect = onPlayerCountChange,
+		)
+
+		VerticalSpacer(16.dp)
+		HandySectionLabel("내 좌석 번호")
+		HandyNumberSelector(
+			range = 1..playerCount,
+			selected = heroSeat,
+			onSelect = onHeroSeatChange,
+			selectedColor = colors.gold,
+			selectedContentColor = colors.card,
+		)
+		VerticalSpacer(16.dp)
+		RegularButton(
+			text = "테이블 생성",
+			onClick = onCreateClick,
+			enabled = isCreateEnabled,
+			modifier = Modifier.fillMaxWidth(),
+		)
 	}
 }
 
 @Composable
-private fun SectionLabel(text: String) {
-	Text(
-		text = text,
-		style = HandyTheme.typography.regular12,
-		color = HandyTheme.colorScheme.textSecondary,
-	)
-}
-
-@Composable
-private fun SeatSelector(
-	range: IntRange,
-	selected: Int,
-	onSelect: (Int) -> Unit,
-	useGold: Boolean = false,
+private fun BlindsSection(
+	sbText: String,
+	onSbChange: (String) -> Unit,
+	bbText: String,
+	onBbChange: (String) -> Unit,
+	straddleEnabled: Boolean,
+	onStraddleEnabledChange: (Boolean) -> Unit,
+	straddleText: String,
+	onStraddleChange: (String) -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
 	val typography = HandyTheme.typography
-	val selectedBg = if (useGold) colors.gold else colors.primary
-	val selectedFg = if (useGold) colors.card else colors.onPrimary
 
-	Row(
-		modifier = Modifier.fillMaxWidth(),
-		horizontalArrangement = Arrangement.spacedBy(4.dp),
+	Column(
+		modifier = Modifier
+			.fillMaxWidth()
+			.background(colors.muted, RoundedCornerShape(12.dp))
+			.padding(12.dp),
+		verticalArrangement = Arrangement.spacedBy(12.dp),
 	) {
-		range.forEach { number ->
-			val isSelected = number == selected
-			Box(
-				modifier = Modifier
-					.size(40.dp)
-					.clip(RoundedCornerShape(8.dp))
-					.background(if (isSelected) selectedBg else colors.muted)
-					.border(
-						width = 1.dp,
-						color = if (isSelected) selectedBg else colors.inputBorder,
-						shape = RoundedCornerShape(8.dp),
-					)
-					.clickable { onSelect(number) },
-				contentAlignment = Alignment.Center,
-			) {
-				Text(
-					text = "$number",
-					style = typography.medium14,
-					color = if (isSelected) selectedFg else colors.textPrimary,
-				)
-			}
+		HandySectionLabel("블라인드")
+		Row(
+			modifier = Modifier.fillMaxWidth(),
+			horizontalArrangement = Arrangement.spacedBy(8.dp),
+		) {
+			HandyTextField(
+				value = sbText,
+				onValueChange = onSbChange,
+				label = "SB",
+				modifier = Modifier.weight(1f),
+				keyboardType = KeyboardType.Number,
+			)
+			HandyTextField(
+				value = bbText,
+				onValueChange = onBbChange,
+				label = "BB",
+				modifier = Modifier.weight(1f),
+				keyboardType = KeyboardType.Number,
+			)
 		}
+
+		Row(
+			modifier = Modifier.fillMaxWidth(),
+			verticalAlignment = Alignment.CenterVertically,
+		) {
+			Text(
+				text = "스트래들",
+				style = typography.medium10,
+				color = colors.textSecondary,
+			)
+			Spacer(modifier = Modifier.weight(1f))
+			HandySwitch(
+				checked = straddleEnabled,
+				onCheckedChange = onStraddleEnabledChange,
+			)
+		}
+
+		if (straddleEnabled) {
+			HandyTextField(
+				value = straddleText,
+				onValueChange = onStraddleChange,
+				label = "스트래들 금액",
+				keyboardType = KeyboardType.Number,
+			)
+		}
+	}
+}
+
+@Preview
+@Composable
+private fun BlindsSectionPreview() {
+	HandLogTheme {
+		BlindsSection(
+			sbText = "1000",
+			onSbChange = {},
+			bbText = "2000",
+			onBbChange = {},
+			straddleEnabled = true,
+			onStraddleEnabledChange = {},
+			straddleText = "4000",
+			onStraddleChange = {},
+		)
+	}
+}
+
+@Preview
+@Composable
+private fun TableSetupContentCashPreview() {
+	HandLogTheme {
+		TableSetupContent(
+			date = "2026-03-13",
+			onDateChange = {},
+			location = "강남 홀덤펍",
+			onLocationChange = {},
+			gameType = GameType.CASH,
+			onGameTypeChange = {},
+			startingStack = "200000",
+			onStartingStackChange = {},
+			sbText = "1000",
+			onSbChange = {},
+			bbText = "2000",
+			onBbChange = {},
+			straddleEnabled = false,
+			onStraddleEnabledChange = {},
+			straddleText = "",
+			onStraddleChange = {},
+			playerCount = 9,
+			onPlayerCountChange = {},
+			heroSeat = 5,
+			onHeroSeatChange = {},
+			onCreateClick = {},
+			isCreateEnabled = true,
+		)
+	}
+}
+
+@Preview
+@Composable
+private fun TableSetupContentTournamentPreview() {
+	HandLogTheme {
+		TableSetupContent(
+			date = "2026-03-13",
+			onDateChange = {},
+			location = "WPT Korea",
+			onLocationChange = {},
+			gameType = GameType.TOURNAMENT,
+			onGameTypeChange = {},
+			startingStack = "50000",
+			onStartingStackChange = {},
+			sbText = "",
+			onSbChange = {},
+			bbText = "",
+			onBbChange = {},
+			straddleEnabled = false,
+			onStraddleEnabledChange = {},
+			straddleText = "",
+			onStraddleChange = {},
+			playerCount = 6,
+			onPlayerCountChange = {},
+			heroSeat = 3,
+			onHeroSeatChange = {},
+			onCreateClick = {},
+			isCreateEnabled = true,
+		)
+	}
+}
+
+@Preview
+@Composable
+private fun TableSetupContentEmptyPreview() {
+	HandLogTheme {
+		TableSetupContent(
+			date = "",
+			onDateChange = {},
+			location = "",
+			onLocationChange = {},
+			gameType = GameType.CASH,
+			onGameTypeChange = {},
+			startingStack = "",
+			onStartingStackChange = {},
+			sbText = "",
+			onSbChange = {},
+			bbText = "",
+			onBbChange = {},
+			straddleEnabled = false,
+			onStraddleEnabledChange = {},
+			straddleText = "",
+			onStraddleChange = {},
+			playerCount = 9,
+			onPlayerCountChange = {},
+			heroSeat = 1,
+			onHeroSeatChange = {},
+			onCreateClick = {},
+			isCreateEnabled = false,
+		)
 	}
 }

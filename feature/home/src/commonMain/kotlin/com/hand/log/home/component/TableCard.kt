@@ -20,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.hand.log.designsystem.component.Badge
 import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Blinds
@@ -28,7 +27,12 @@ import com.hand.log.domain.model.GameType
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.home.contract.TableListItem
 import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.calendar
 import handylog.core.res.generated.resources.chevron_right
+import handylog.core.res.generated.resources.dollar_sign
+import handylog.core.res.generated.resources.dot
+import handylog.core.res.generated.resources.map_pin
+import handylog.core.res.generated.resources.trophy
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -60,23 +64,59 @@ internal fun TableCard(
 				verticalAlignment = Alignment.CenterVertically,
 				horizontalArrangement = Arrangement.spacedBy(8.dp),
 			) {
-				Badge(
-					text = table.gameType.label,
-					color = if (table.gameType == GameType.CASH) {
-						colors.primary.copy(alpha = 0.15f)
-					} else {
-						colors.gold.copy(alpha = 0.15f)
-					},
-					textColor = if (table.gameType == GameType.CASH) colors.primary else colors.gold,
-					pill = true,
-				)
+				// Game type badge with icon
+				Row(
+					verticalAlignment = Alignment.CenterVertically,
+					horizontalArrangement = Arrangement.spacedBy(4.dp),
+					modifier = Modifier
+						.clip(RoundedCornerShape(50))
+						.background(
+							if (table.gameType == GameType.CASH) {
+								colors.primary.copy(alpha = 0.15f)
+							} else {
+								colors.gold.copy(alpha = 0.15f)
+							},
+						)
+						.padding(horizontal = 8.dp, vertical = 3.dp),
+				) {
+					val badgeColor = if (table.gameType == GameType.CASH) colors.primary else colors.gold
+					Icon(
+						painter = painterResource(
+							if (table.gameType == GameType.TOURNAMENT) {
+								Res.drawable.trophy
+							} else {
+								Res.drawable.dollar_sign
+							},
+						),
+						contentDescription = null,
+						tint = badgeColor,
+						modifier = Modifier.size(12.dp),
+					)
+					Text(
+						text = table.gameType.label,
+						style = HandyTheme.typography.bold12,
+						color = badgeColor,
+					)
+				}
+
 				table.location?.let { location ->
 					if (location.isNotBlank()) {
-						Text(
-							text = location,
-							style = HandyTheme.typography.regular12,
-							color = colors.textSecondary,
-						)
+						Row(
+							verticalAlignment = Alignment.CenterVertically,
+							horizontalArrangement = Arrangement.spacedBy(4.dp),
+						) {
+							Icon(
+								painter = painterResource(Res.drawable.map_pin),
+								contentDescription = null,
+								tint = colors.textSecondary,
+								modifier = Modifier.size(10.dp),
+							)
+							Text(
+								text = location,
+								style = HandyTheme.typography.regular10,
+								color = colors.textSecondary,
+							)
+						}
 					}
 				}
 			}
@@ -87,22 +127,28 @@ internal fun TableCard(
 			Row(
 				verticalAlignment = Alignment.CenterVertically,
 			) {
+				Icon(
+					painter = painterResource(Res.drawable.calendar),
+					contentDescription = null,
+					tint = colors.textPrimary,
+					modifier = Modifier.size(12.dp),
+				)
+				Spacer(modifier = Modifier.width(4.dp))
 				Text(
 					text = table.date.toString(),
 					style = HandyTheme.typography.regular12,
-					color = colors.textSecondary,
+					color = colors.textPrimary,
 				)
-				DotSeparator()
+				Icon(
+					painter = painterResource(Res.drawable.dot),
+					contentDescription = null,
+					tint = colors.textSecondary,
+					modifier = Modifier.size(12.dp).padding(horizontal = 2.dp),
+				)
 				Text(
 					text = "${table.playerCount}명",
 					style = HandyTheme.typography.regular12,
-					color = colors.textSecondary,
-				)
-				DotSeparator()
-				Text(
-					text = "${formatChip(table.startingStack)} 스택",
-					style = HandyTheme.typography.regular12,
-					color = colors.textSecondary,
+					color = colors.textPrimary,
 				)
 			}
 
@@ -127,8 +173,8 @@ internal fun TableCard(
 			Spacer(modifier = Modifier.height(8.dp))
 			Text(
 				text = "${item.handCount}개 핸드 기록",
-				style = HandyTheme.typography.regular12,
-				color = colors.textSecondary,
+				style = HandyTheme.typography.regular10,
+				color = colors.textPrimary,
 			)
 		}
 
@@ -140,18 +186,6 @@ internal fun TableCard(
 			modifier = Modifier.size(20.dp),
 		)
 	}
-}
-
-@Composable
-private fun DotSeparator() {
-	val colors = HandyTheme.colorScheme
-	Spacer(modifier = Modifier.width(6.dp))
-	Text(
-		text = "•",
-		style = HandyTheme.typography.regular12,
-		color = colors.border,
-	)
-	Spacer(modifier = Modifier.width(6.dp))
 }
 
 private fun formatChip(value: Double): String {

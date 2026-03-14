@@ -77,7 +77,7 @@ private fun HomeContent(
 			HomeScreen(
 				homeState = homeState,
 				onNavigateToTableDetail = onNavigateToTableDetail,
-				onFabClick = onFabClick,
+				onTableAdd = onFabClick,
 			)
 		}
 	}

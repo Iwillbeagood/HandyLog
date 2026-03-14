@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -54,7 +56,7 @@ internal class HomeViewModel(
 		}
 	}
 
-	@OptIn(ExperimentalUuidApi::class)
+	@OptIn(ExperimentalUuidApi::class, ExperimentalTime::class)
 	fun saveTable(
 		date: String,
 		location: String?,
@@ -74,7 +76,7 @@ internal class HomeViewModel(
 				blinds = blinds,
 				playerCount = playerCount,
 				heroSeat = heroSeat,
-				createdAt = kotlinx.datetime.Clock.System.now().toEpochMilliseconds(),
+				createdAt = Clock.System.now().toEpochMilliseconds(),
 			)
 			pokerTableRepository.saveTable(table) {
 				viewModelScope.launch {
