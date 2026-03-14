@@ -1,97 +1,96 @@
 package com.hand.log.designsystem.component
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.hand.log.designsystem.etc.clickableSingle
 import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.arrow_left
+import handylog.core.res.generated.resources.spade_filled
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
-fun HmTopAppbar(
+fun HandyTopAppbar(
 	modifier: Modifier = Modifier,
 	title: String = "",
 	titleStyle: TextStyle = HandyTheme.typography.medium16,
 	contentColor: Color = HandyTheme.colorScheme.textPrimary,
 	containerColor: Color = HandyTheme.colorScheme.background,
-	lineColor: Color = HandyTheme.colorScheme.border,
-	navigationType: HmTopAppbarType = HmTopAppbarType.Default,
+	navigationType: TopAppbarType = TopAppbarType.Default,
 	onBackEvent: () -> Unit = {},
+	iconButton: IconButton? = null,
+	subContent: @Composable (() -> Unit)? = null,
 ) {
-	Box(
-		modifier = Modifier
+	Column(
+		modifier = modifier
 			.fillMaxWidth()
-			.height(50.dp)
-			.background(containerColor)
-			.statusBarsPadding(),
+			.background(containerColor),
 	) {
-		Row(
-			modifier = modifier.fillMaxSize(),
-			verticalAlignment = Alignment.CenterVertically,
+		Box(
+			modifier = Modifier
+				.fillMaxWidth()
+				.heightIn(min = 50.dp),
 		) {
 			Box(
-				modifier = Modifier
-					.size(50.dp)
-					.clickable(onClick = onBackEvent),
+				modifier = Modifier.align(Alignment.CenterStart),
 			) {
-				TopAppbarIcon(
-					tint = contentColor,
-					icon = Res.drawable.arrow_left,
-					onClick = onBackEvent,
-				)
+				when (navigationType) {
+					TopAppbarType.Main -> {
+						HomeLogo()
+					}
+					else -> {
+						TopAppbarIcon(
+							tint = contentColor,
+							icon = Res.drawable.arrow_left,
+							onClick = onBackEvent,
+						)
+					}
+				}
 			}
+
 			Text(
 				text = title,
 				color = contentColor,
 				style = titleStyle,
 				maxLines = 1,
 				overflow = TextOverflow.Ellipsis,
-				modifier = Modifier.weight(1f),
+				modifier = Modifier.align(Alignment.Center),
 			)
 
-			when (navigationType) {
-				is HmTopAppbarType.Custom -> {
-					navigationType.content()
-				}
-				is HmTopAppbarType.IconButton -> {
-					TopAppbarIcon(
-						tint = contentColor,
-						icon = navigationType.icon,
-						onClick = navigationType.onClick,
-					)
-				}
-				else -> {}
+			if (iconButton != null) {
+				TopAppbarIconButton(
+					iconButton = iconButton,
+					modifier = Modifier
+						.align(Alignment.CenterEnd)
+						.padding(end = 10.dp),
+				)
 			}
 		}
-		HmHorizontalDivider(
-			modifier = Modifier
-				.fillMaxWidth()
-				.align(Alignment.BottomCenter),
-			lineColor = lineColor,
-		)
+
+		if (subContent != null) {
+			subContent()
+		}
 	}
 }
 
@@ -105,7 +104,8 @@ fun TopAppbarIcon(
 	Box(
 		modifier = modifier
 			.size(50.dp)
-			.clickable(onClick = onClick),
+			.clip(RoundedCornerShape(4.dp))
+			.clickableSingle(onClick = onClick),
 	) {
 		Icon(
 			painter = painterResource(icon),
@@ -117,67 +117,119 @@ fun TopAppbarIcon(
 }
 
 @Composable
-fun TopAppbarIcon(
-	tint: Color,
-	icon: ImageVector,
-	onClick: () -> Unit,
+fun TopAppbarIconButton(
+	iconButton: IconButton,
 	modifier: Modifier = Modifier,
 ) {
+	val colors = HandyTheme.colorScheme
+
 	Box(
 		modifier = modifier
-			.size(50.dp)
-			.clickable(onClick = onClick),
+			.clickableSingle(onClick = iconButton.onClick)
+			.clip(RoundedCornerShape(6.dp))
+			.background(colors.primary),
+		contentAlignment = Alignment.Center,
 	) {
-		Icon(
-			imageVector = icon,
-			contentDescription = "menu Icon",
-			tint = tint,
-			modifier = Modifier.align(Alignment.Center),
-		)
-	}
-}
-
-sealed interface HmTopAppbarType {
-	data object Default : HmTopAppbarType
-	data class Custom(val content: @Composable () -> Unit) : HmTopAppbarType
-	data class IconButton(val icon: ImageVector, val onClick: () -> Unit) : HmTopAppbarType
-}
-
-@Preview
-@Composable
-fun BasicTopAppbarPreview() {
-	HandLogTheme {
-		HmTopAppbar(
-			title = "등록",
-		)
-	}
-}
-
-@Preview
-@Composable
-fun CustomTopAppbarPreview() {
-	HandLogTheme {
-		HmTopAppbar(
-			title = "정산",
-			navigationType = HmTopAppbarType.Custom {
+		Row(
+			verticalAlignment = Alignment.CenterVertically,
+			horizontalArrangement = Arrangement.spacedBy(6.dp),
+			modifier = Modifier
+				.padding(horizontal = 12.dp, vertical = 6.dp),
+		) {
+			Icon(
+				painter = painterResource(iconButton.icon),
+				contentDescription = null,
+				tint = colors.textPrimary,
+				modifier = Modifier.size(14.dp),
+			)
+			iconButton.text?.let {
 				Text(
-					modifier = Modifier
-						.padding(end = 5.dp),
-					text = "테스트",
+					text = it,
+					style = HandyTheme.typography.medium14,
+					color = colors.textPrimary,
 				)
-			},
+			}
+		}
+	}
+}
+
+@Composable
+private fun HomeLogo() {
+	val colors = HandyTheme.colorScheme
+
+	Row(
+		verticalAlignment = Alignment.CenterVertically,
+	) {
+		Box(
+			modifier = Modifier
+				.padding(start = 12.dp)
+				.size(28.dp)
+				.clip(RoundedCornerShape(8.dp))
+				.background(colors.felt),
+			contentAlignment = Alignment.Center,
+		) {
+			Icon(
+				painter = painterResource(Res.drawable.spade_filled),
+				contentDescription = null,
+				tint = colors.primary,
+				modifier = Modifier.size(14.dp),
+			)
+		}
+		HorizontalSpacer(8.dp)
+		Text(
+			text = "Handy",
+			style = HandyTheme.typography.bold16,
+			color = colors.primary,
+		)
+		Text(
+			text = "Log",
+			style = HandyTheme.typography.bold16,
+			color = colors.textPrimary,
+		)
+	}
+}
+
+sealed interface TopAppbarType {
+	data object Default : TopAppbarType
+	data object Main : TopAppbarType
+}
+
+data class IconButton(
+	val text: String? = null,
+	val icon: DrawableResource,
+	val onClick: () -> Unit,
+)
+
+@Preview
+@Composable
+private fun DefaultTopAppbarPreview() {
+	HandLogTheme {
+		HandyTopAppbar(
+			title = "등록",
+			navigationType = TopAppbarType.Default,
 		)
 	}
 }
 
 @Preview
 @Composable
-fun IconButtonTopAppbarPreview() {
+private fun MainTopAppbarPreview() {
 	HandLogTheme {
-		HmTopAppbar(
-			title = "정산",
-			navigationType = HmTopAppbarType.IconButton(
-				icon = Icons.Default.MoreVert,
+		HandyTopAppbar(
+			navigationType = TopAppbarType.Main,
+		)
+	}
+}
+
+@Preview
+@Composable
+private fun IconButtonTopAppbarPreview() {
+	HandLogTheme {
+		HandyTopAppbar(
+			title = "테이블 상세",
+			iconButton = IconButton(
+				text = "설정",
+				icon = Res.drawable.spade_filled,
 				onClick = {},
 			),
 		)

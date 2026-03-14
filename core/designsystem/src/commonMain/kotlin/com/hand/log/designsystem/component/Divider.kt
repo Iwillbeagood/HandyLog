@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
-fun HmHorizontalDivider(
+fun HandyHorizontalDivider(
 	modifier: Modifier = Modifier,
 	lineColor: Color = HandyTheme.colorScheme.border,
 	thickness: Dp = 1.dp,
@@ -39,7 +39,7 @@ fun HmVerticalDivider(
 @Preview
 @Composable
 private fun HmHorizontalDividerPreview() {
-	HmHorizontalDivider(
+	HandyHorizontalDivider(
 		modifier = Modifier.fillMaxWidth(),
 	)
 }

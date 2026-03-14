@@ -21,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.VerticalSpacer
@@ -34,7 +33,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 object BottomSheet {
 	@OptIn(ExperimentalMaterial3Api::class)
-	val sheetState = SheetState(true, Density(1f), SheetValue.Expanded, { true }, false)
+	val sheetState = SheetState(true, { 1f }, { 1f }, SheetValue.Expanded, { true }, false)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

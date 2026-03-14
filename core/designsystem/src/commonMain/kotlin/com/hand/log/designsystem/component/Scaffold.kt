@@ -62,34 +62,3 @@ fun BaseScaffold(
 		}
 	}
 }
-
-@Composable
-fun TopAppBarScaffold(
-	title: String,
-	onBackEvent: () -> Unit,
-	modifier: Modifier = Modifier,
-	statusBarColor: Color = HandyTheme.colorScheme.background,
-	contentPadding: PaddingValues = PaddingValues(0.dp),
-	bottomBar: @Composable () -> Unit = {},
-	floatingActionButton: @Composable () -> Unit = {},
-	containerColor: Color = HandyTheme.colorScheme.background,
-	contentColor: Color = contentColorFor(containerColor),
-	content: @Composable ColumnScope.() -> Unit,
-) {
-	BaseScaffold(
-		contentPadding = contentPadding,
-		statusBarColor = statusBarColor,
-		topBar = {
-			HmTopAppbar(
-				title = title,
-				onBackEvent = onBackEvent,
-			)
-		},
-		bottomBar = bottomBar,
-		floatingActionButton = floatingActionButton,
-		containerColor = containerColor,
-		contentColor = contentColor,
-		modifier = modifier,
-		content = content,
-	)
-}
