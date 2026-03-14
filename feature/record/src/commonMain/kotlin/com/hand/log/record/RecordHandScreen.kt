@@ -21,11 +21,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import com.hand.log.designsystem.component.HandyTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,11 +32,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
 import com.hand.log.designsystem.component.HandyTopAppbar
+import com.hand.log.designsystem.component.RegularButton
 import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
-import handylog.core.res.generated.resources.Res
-import handylog.core.res.generated.resources.arrow_left
-import org.jetbrains.compose.resources.painterResource
 import com.hand.log.domain.model.ActionType
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.GameType
@@ -221,8 +216,6 @@ private fun SetupStepContent(
 	onUpdateButtonSeat: (Int) -> Unit,
 	onUpdateBlinds: (String, String) -> Unit,
 ) {
-	val colors = HandyTheme.colorScheme
-
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
 		// Hero Cards
 		SectionTitle("히어로 카드")
@@ -245,21 +238,11 @@ private fun SetupStepContent(
 		}
 
 		// Hero Stack
-		SectionTitle("히어로 스택")
-		OutlinedTextField(
+		HandyTextField(
 			value = if (state.heroStack == 0.0) "" else state.heroStack.toLong().toString(),
 			onValueChange = onUpdateHeroStack,
-			placeholder = { Text("스택 입력", color = colors.textSecondary) },
-			keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-			modifier = Modifier.fillMaxWidth(),
-			singleLine = true,
-			colors = OutlinedTextFieldDefaults.colors(
-				focusedBorderColor = colors.primary,
-				unfocusedBorderColor = colors.inputBorder,
-				cursorColor = colors.primary,
-				focusedTextColor = colors.textPrimary,
-				unfocusedTextColor = colors.textPrimary,
-			),
+			label = "히어로 스택",
+			keyboardType = KeyboardType.Number,
 		)
 
 		// Button Seat
@@ -277,39 +260,23 @@ private fun SetupStepContent(
 				horizontalArrangement = Arrangement.spacedBy(8.dp),
 				modifier = Modifier.fillMaxWidth(),
 			) {
-				OutlinedTextField(
+				HandyTextField(
 					value = state.blinds?.sb?.toLong()?.toString() ?: "",
 					onValueChange = { sb ->
 						onUpdateBlinds(sb, state.blinds?.bb?.toLong()?.toString() ?: "")
 					},
-					placeholder = { Text("SB", color = colors.textSecondary) },
-					keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+					label = "SB",
 					modifier = Modifier.weight(1f),
-					singleLine = true,
-					colors = OutlinedTextFieldDefaults.colors(
-						focusedBorderColor = colors.primary,
-						unfocusedBorderColor = colors.inputBorder,
-						cursorColor = colors.primary,
-						focusedTextColor = colors.textPrimary,
-						unfocusedTextColor = colors.textPrimary,
-					),
+					keyboardType = KeyboardType.Number,
 				)
-				OutlinedTextField(
+				HandyTextField(
 					value = state.blinds?.bb?.toLong()?.toString() ?: "",
 					onValueChange = { bb ->
 						onUpdateBlinds(state.blinds?.sb?.toLong()?.toString() ?: "", bb)
 					},
-					placeholder = { Text("BB", color = colors.textSecondary) },
-					keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+					label = "BB",
 					modifier = Modifier.weight(1f),
-					singleLine = true,
-					colors = OutlinedTextFieldDefaults.colors(
-						focusedBorderColor = colors.primary,
-						unfocusedBorderColor = colors.inputBorder,
-						cursorColor = colors.primary,
-						focusedTextColor = colors.textPrimary,
-						unfocusedTextColor = colors.textPrimary,
-					),
+					keyboardType = KeyboardType.Number,
 				)
 			}
 		}
@@ -565,25 +532,11 @@ private fun StreetStepContent(
 			state.currentActionType == ActionType.RAISE ||
 			state.currentActionType == ActionType.ALL_IN
 		) {
-			Text(
-				text = "금액",
-				style = HandyTheme.typography.medium14,
-				color = colors.textSecondary,
-			)
-			OutlinedTextField(
+			HandyTextField(
 				value = state.currentActionAmount,
 				onValueChange = onUpdateActionAmount,
-				placeholder = { Text("금액 입력", color = colors.textSecondary) },
-				keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-				modifier = Modifier.fillMaxWidth(),
-				singleLine = true,
-				colors = OutlinedTextFieldDefaults.colors(
-					focusedBorderColor = colors.primary,
-					unfocusedBorderColor = colors.inputBorder,
-					cursorColor = colors.primary,
-					focusedTextColor = colors.textPrimary,
-					unfocusedTextColor = colors.textPrimary,
-				),
+				label = "금액",
+				keyboardType = KeyboardType.Number,
 			)
 
 			// Pot % quick buttons
@@ -634,37 +587,17 @@ private fun StreetStepContent(
 		// Result & Memo (show on all street steps for convenience)
 		if (state.currentStep == RecordStep.RIVER) {
 			Spacer(modifier = Modifier.height(8.dp))
-			SectionTitle("결과 (수익/손실)")
-			OutlinedTextField(
+			HandyTextField(
 				value = state.result,
 				onValueChange = onUpdateResult,
-				placeholder = { Text("결과 금액 (+/-)", color = colors.textSecondary) },
-				keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-				modifier = Modifier.fillMaxWidth(),
-				singleLine = true,
-				colors = OutlinedTextFieldDefaults.colors(
-					focusedBorderColor = colors.primary,
-					unfocusedBorderColor = colors.inputBorder,
-					cursorColor = colors.primary,
-					focusedTextColor = colors.textPrimary,
-					unfocusedTextColor = colors.textPrimary,
-				),
+				label = "결과 (수익/손실)",
+				keyboardType = KeyboardType.Number,
 			)
 
-			SectionTitle("메모")
-			OutlinedTextField(
+			HandyTextField(
 				value = state.memo,
 				onValueChange = onUpdateMemo,
-				placeholder = { Text("메모 입력", color = colors.textSecondary) },
-				modifier = Modifier.fillMaxWidth(),
-				minLines = 3,
-				colors = OutlinedTextFieldDefaults.colors(
-					focusedBorderColor = colors.primary,
-					unfocusedBorderColor = colors.inputBorder,
-					cursorColor = colors.primary,
-					focusedTextColor = colors.textPrimary,
-					unfocusedTextColor = colors.textPrimary,
-				),
+				label = "메모",
 			)
 		}
 
@@ -681,7 +614,6 @@ private fun BottomNavigationBar(
 	onSave: () -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
-	val typography = HandyTheme.typography
 	val isFirstStep = currentStep == RecordStep.SETUP
 	val isLastStep = currentStep == RecordStep.RIVER
 
@@ -693,56 +625,21 @@ private fun BottomNavigationBar(
 		horizontalArrangement = Arrangement.spacedBy(12.dp),
 	) {
 		if (!isFirstStep) {
-			Box(
-				modifier = Modifier
-					.weight(1f)
-					.height(48.dp)
-					.clip(RoundedCornerShape(12.dp))
-					.background(colors.muted, RoundedCornerShape(12.dp))
-					.clickable(onClick = onPrevious),
-				contentAlignment = Alignment.Center,
-			) {
-				Row(verticalAlignment = Alignment.CenterVertically) {
-					Icon(
-						painter = painterResource(Res.drawable.arrow_left),
-						contentDescription = null,
-						modifier = Modifier.size(16.dp),
-						tint = colors.textPrimary,
-					)
-					Spacer(modifier = Modifier.width(4.dp))
-					Text(
-						text = "이전",
-						style = typography.bold14,
-						color = colors.textPrimary,
-					)
-				}
-			}
-		}
-
-		val nextBgColor = if (canProceed) colors.primary else colors.secondary
-		val nextFgColor = if (canProceed) colors.onPrimary else colors.onSecondary
-
-		Box(
-			modifier = Modifier
-				.weight(1f)
-				.height(48.dp)
-				.clip(RoundedCornerShape(12.dp))
-				.background(nextBgColor, RoundedCornerShape(12.dp))
-				.then(
-					if (canProceed) {
-						Modifier.clickable(onClick = if (isLastStep) onSave else onNext)
-					} else {
-						Modifier
-					},
-				),
-			contentAlignment = Alignment.Center,
-		) {
-			Text(
-				text = if (isLastStep) "저장" else "다음",
-				style = typography.bold14,
-				color = nextFgColor,
+			RegularButton(
+				text = "이전",
+				onClick = onPrevious,
+				containerColor = colors.muted,
+				contentColor = colors.textPrimary,
+				modifier = Modifier.weight(1f),
 			)
 		}
+
+		RegularButton(
+			text = if (isLastStep) "저장" else "다음",
+			onClick = if (isLastStep) onSave else onNext,
+			enabled = canProceed,
+			modifier = Modifier.weight(1f),
+		)
 	}
 }
 
