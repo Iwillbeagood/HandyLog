@@ -72,7 +72,6 @@ internal class HomeViewModel(
 				Player(
 					seat = seat,
 					stack = startingStack,
-					name = if (seat == heroSeat) "Hero" else "Player $seat",
 				)
 			}
 			val table = PokerTable(
