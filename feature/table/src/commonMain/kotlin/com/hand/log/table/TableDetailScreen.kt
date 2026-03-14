@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -38,6 +39,7 @@ import com.hand.log.table.component.HandRecordCard
 import com.hand.log.table.component.PokerTableView
 import com.hand.log.table.contract.TableDetailState
 import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.map_pin
 import handylog.core.res.generated.resources.plus
 import handylog.core.res.generated.resources.settings
 import kotlinx.datetime.LocalDate
@@ -73,6 +75,14 @@ internal fun TableDetailScreen(
 						horizontalArrangement = Arrangement.Center,
 					) {
 						state.table.location?.let {
+							Icon(
+								painter = painterResource(Res.drawable.map_pin),
+								contentDescription = "위치 아이콘",
+								tint = colors.textSecondary,
+								modifier = Modifier
+									.size(14.dp)
+									.padding(end = 2.dp),
+							)
 							Text(
 								text = "$it · ",
 								style = typography.regular12,

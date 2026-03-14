@@ -221,7 +221,7 @@ internal fun TableSetupContent(
 						datePickerState.selectedDateMillis?.let { millis ->
 							val instant = kotlin.time.Instant.fromEpochMilliseconds(millis)
 							val localDate = LocalDate.fromEpochDays(
-								(instant.epochSeconds / 86400).toInt()
+								(instant.epochSeconds / 86400).toInt(),
 							)
 							onDateChange(localDate.toString())
 						}
