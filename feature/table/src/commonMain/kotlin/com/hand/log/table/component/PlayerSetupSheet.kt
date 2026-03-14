@@ -7,22 +7,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -30,19 +22,29 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.hand.log.designsystem.component.HandySectionLabel
+import com.hand.log.designsystem.component.HandyTextField
+import com.hand.log.designsystem.component.RegularButton
+import com.hand.log.designsystem.component.VerticalSpacer
+import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Player
 import com.hand.log.domain.model.PlayerTendency
+import com.hand.log.ui.poker.SheetDragBlocker
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun PlayerSetupSheet(
+	initialSeat: Int,
+	isHero: Boolean,
 	playerCount: Int,
+	startingStack: Double,
 	players: List<Player>,
 	onSave: (List<Player>) -> Unit,
 	onDismiss: () -> Unit,
@@ -57,219 +59,285 @@ internal fun PlayerSetupSheet(
 			},
 		)
 	}
-	var selectedSeat by remember { mutableStateOf(1) }
+
+	val currentPlayer = editingPlayers.find { it.seat == initialSeat }
+		?: Player(seat = initialSeat, stack = 0.0)
 
 	ModalBottomSheet(
 		onDismissRequest = onDismiss,
 		sheetState = sheetState,
-		containerColor = colors.modalBackground,
+		containerColor = colors.card,
+		contentColor = colors.textPrimary,
 	) {
-		Column(
-			modifier = Modifier
-				.fillMaxWidth()
-				.padding(horizontal = 16.dp)
-				.verticalScroll(rememberScrollState()),
-		) {
-			Text(
-				text = "플레이어 설정",
-				style = HandyTheme.typography.bold18,
-				color = colors.textPrimary,
-				modifier = Modifier.padding(bottom = 16.dp),
-			)
-
-			// Seat selector
-			Text(
-				text = "좌석 선택",
-				style = HandyTheme.typography.medium14,
-				color = colors.textSecondary,
-				modifier = Modifier.padding(bottom = 8.dp),
-			)
-
-			FlowRow(
-				horizontalArrangement = Arrangement.spacedBy(8.dp),
-				verticalArrangement = Arrangement.spacedBy(8.dp),
-				modifier = Modifier.padding(bottom = 16.dp),
-			) {
-				(1..playerCount).forEach { seat ->
-					val isSelected = seat == selectedSeat
-					val hasPlayer = editingPlayers.find { it.seat == seat }?.name?.isNotBlank() == true
-
-					Box(
-						modifier = Modifier
-							.size(40.dp)
-							.clip(CircleShape)
-							.background(
-								when {
-									isSelected -> colors.primary
-									hasPlayer -> colors.accent.copy(alpha = 0.2f)
-									else -> colors.muted
-								},
-							)
-							.clickable { selectedSeat = seat },
-						contentAlignment = Alignment.Center,
-					) {
-						Text(
-							text = "$seat",
-							color = if (isSelected) colors.onPrimary else colors.textPrimary,
-							style = HandyTheme.typography.bold14,
-						)
-					}
+		val onReset = {
+			val resetPlayers = editingPlayers.map {
+				if (it.seat == initialSeat) {
+					Player(
+						seat = initialSeat,
+						stack = startingStack,
+					)
+				} else {
+					it
 				}
 			}
+			onSave(resetPlayers)
+		}
 
-			// Player form for selected seat
-			val currentPlayer = editingPlayers.find { it.seat == selectedSeat }
-				?: Player(seat = selectedSeat, stack = 0.0)
-
-			Text(
-				text = "Seat $selectedSeat",
-				style = HandyTheme.typography.bold16,
-				color = colors.textPrimary,
-				modifier = Modifier.padding(bottom = 12.dp),
-			)
-
-			// Name
-			OutlinedTextField(
-				value = currentPlayer.name ?: "",
-				onValueChange = { name ->
-					editingPlayers = editingPlayers.map {
-						if (it.seat == selectedSeat) it.copy(name = name.ifBlank { null }) else it
-					}
-				},
-				label = { Text("이름", color = colors.textSecondary) },
-				placeholder = { Text("플레이어 이름", color = colors.textSecondary) },
-				modifier = Modifier.fillMaxWidth(),
-				singleLine = true,
-				colors = OutlinedTextFieldDefaults.colors(
-					focusedBorderColor = colors.primary,
-					unfocusedBorderColor = colors.inputBorder,
-					cursorColor = colors.primary,
-					focusedTextColor = colors.textPrimary,
-					unfocusedTextColor = colors.textPrimary,
-				),
-			)
-
-			Spacer(modifier = Modifier.height(8.dp))
-
-			// Stack
-			OutlinedTextField(
-				value = if (currentPlayer.stack > 0) currentPlayer.stack.toLong().toString() else "",
-				onValueChange = { stack ->
+		if (isHero) {
+			HeroSetupContent(
+				playerStack = if (currentPlayer.stack > 0) currentPlayer.stack.toLong().toString() else "",
+				onStackChange = { stack ->
 					val stackValue = stack.toDoubleOrNull() ?: 0.0
 					editingPlayers = editingPlayers.map {
-						if (it.seat == selectedSeat) it.copy(stack = stackValue) else it
+						if (it.seat == initialSeat) it.copy(stack = stackValue) else it
 					}
 				},
-				label = { Text("스택", color = colors.textSecondary) },
-				placeholder = { Text("스택 금액", color = colors.textSecondary) },
-				keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-				modifier = Modifier.fillMaxWidth(),
-				singleLine = true,
-				colors = OutlinedTextFieldDefaults.colors(
-					focusedBorderColor = colors.primary,
-					unfocusedBorderColor = colors.inputBorder,
-					cursorColor = colors.primary,
-					focusedTextColor = colors.textPrimary,
-					unfocusedTextColor = colors.textPrimary,
-				),
+				onResetClick = onReset,
+				onSaveClick = { onSave(editingPlayers) },
 			)
-
-			Spacer(modifier = Modifier.height(8.dp))
-
-			// Tendency
-			TendencySelector(
+		} else {
+			PlayerSetupContent(
+				seatNumber = initialSeat,
+				playerName = currentPlayer.name ?: "",
+				onNameChange = { name ->
+					editingPlayers = editingPlayers.map {
+						if (it.seat == initialSeat) it.copy(name = name.ifBlank { null }) else it
+					}
+				},
+				playerStack = if (currentPlayer.stack > 0) currentPlayer.stack.toLong().toString() else "",
+				onStackChange = { stack ->
+					val stackValue = stack.toDoubleOrNull() ?: 0.0
+					editingPlayers = editingPlayers.map {
+						if (it.seat == initialSeat) it.copy(stack = stackValue) else it
+					}
+				},
 				selectedTendency = currentPlayer.tendency,
-				onTendencySelected = { tendency ->
+				onTendencyChange = { tendency ->
 					editingPlayers = editingPlayers.map {
-						if (it.seat == selectedSeat) it.copy(tendency = tendency) else it
+						if (it.seat == initialSeat) it.copy(tendency = tendency) else it
 					}
 				},
-			)
-
-			Spacer(modifier = Modifier.height(8.dp))
-
-			// Memo
-			OutlinedTextField(
-				value = currentPlayer.memo ?: "",
-				onValueChange = { memo ->
+				playerMemo = currentPlayer.memo ?: "",
+				onMemoChange = { memo ->
 					editingPlayers = editingPlayers.map {
-						if (it.seat == selectedSeat) it.copy(memo = memo.ifBlank { null }) else it
+						if (it.seat == initialSeat) it.copy(memo = memo.ifBlank { null }) else it
 					}
 				},
-				label = { Text("메모", color = colors.textSecondary) },
-				placeholder = { Text("플레이어 메모", color = colors.textSecondary) },
-				modifier = Modifier.fillMaxWidth(),
-				minLines = 2,
-				colors = OutlinedTextFieldDefaults.colors(
-					focusedBorderColor = colors.primary,
-					unfocusedBorderColor = colors.inputBorder,
-					cursorColor = colors.primary,
-					focusedTextColor = colors.textPrimary,
-					unfocusedTextColor = colors.textPrimary,
-				),
+				onResetClick = onReset,
+				onSaveClick = { onSave(editingPlayers) },
 			)
+		}
+	}
+}
 
-			Spacer(modifier = Modifier.height(20.dp))
+@Composable
+private fun HeroSetupContent(
+	playerStack: String,
+	onStackChange: (String) -> Unit,
+	onResetClick: () -> Unit,
+	onSaveClick: () -> Unit,
+) {
+	val colors = HandyTheme.colorScheme
+	val typography = HandyTheme.typography
 
-			// Save button
-			Button(
-				onClick = { onSave(editingPlayers) },
-				modifier = Modifier
-					.fillMaxWidth()
-					.height(52.dp),
-				colors = ButtonDefaults.buttonColors(
-					containerColor = colors.primary,
-					contentColor = colors.onPrimary,
-				),
-				shape = RoundedCornerShape(12.dp),
-			) {
-				Text(
-					text = "저장",
-					style = HandyTheme.typography.bold16,
-				)
-			}
+	Column(
+		modifier = Modifier
+			.fillMaxWidth()
+			.nestedScroll(SheetDragBlocker)
+			.verticalScroll(rememberScrollState())
+			.padding(horizontal = 20.dp)
+			.padding(bottom = 32.dp),
+	) {
+		Text(
+			text = "Hero",
+			style = typography.bold20,
+			color = colors.gold,
+		)
 
-			Spacer(modifier = Modifier.height(24.dp))
+		VerticalSpacer(16.dp)
+		HandyTextField(
+			value = playerStack,
+			onValueChange = onStackChange,
+			label = "스택",
+			keyboardType = KeyboardType.Number,
+		)
+
+		VerticalSpacer(20.dp)
+		Row(
+			modifier = Modifier.fillMaxWidth(),
+			horizontalArrangement = Arrangement.spacedBy(8.dp),
+		) {
+			RegularButton(
+				text = "초기화",
+				onClick = onResetClick,
+				containerColor = colors.muted,
+				contentColor = colors.textSecondary,
+				modifier = Modifier.weight(1f),
+			)
+			RegularButton(
+				text = "저장",
+				onClick = onSaveClick,
+				modifier = Modifier.weight(1f),
+			)
 		}
 	}
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TendencySelector(
+internal fun PlayerSetupContent(
+	seatNumber: Int,
+	playerName: String,
+	onNameChange: (String) -> Unit,
+	playerStack: String,
+	onStackChange: (String) -> Unit,
 	selectedTendency: PlayerTendency?,
-	onTendencySelected: (PlayerTendency?) -> Unit,
+	onTendencyChange: (PlayerTendency?) -> Unit,
+	playerMemo: String,
+	onMemoChange: (String) -> Unit,
+	onResetClick: () -> Unit,
+	onSaveClick: () -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
+	val typography = HandyTheme.typography
 
-	Text(
-		text = "성향",
-		style = HandyTheme.typography.medium14,
-		color = colors.textSecondary,
-		modifier = Modifier.padding(bottom = 4.dp),
-	)
-
-	FlowRow(
-		horizontalArrangement = Arrangement.spacedBy(6.dp),
-		verticalArrangement = Arrangement.spacedBy(6.dp),
+	Column(
+		modifier = Modifier
+			.fillMaxWidth()
+			.nestedScroll(SheetDragBlocker)
+			.verticalScroll(rememberScrollState())
+			.padding(horizontal = 20.dp)
+			.padding(bottom = 32.dp),
 	) {
-		PlayerTendency.entries.forEach { tendency ->
-			val isSelected = tendency == selectedTendency
-			Box(
-				modifier = Modifier
-					.clip(RoundedCornerShape(8.dp))
-					.background(if (isSelected) colors.primary else colors.muted)
-					.clickable {
-						onTendencySelected(if (isSelected) null else tendency)
-					}
-					.padding(horizontal = 12.dp, vertical = 6.dp),
-			) {
-				Text(
-					text = tendency.label,
-					style = HandyTheme.typography.medium12,
-					color = if (isSelected) colors.onPrimary else colors.textSecondary,
+		Text(
+			text = "Seat $seatNumber",
+			style = typography.bold20,
+			color = colors.textPrimary,
+		)
+
+		VerticalSpacer(16.dp)
+		HandyTextField(
+			value = playerName,
+			onValueChange = onNameChange,
+			label = "이름",
+		)
+
+		VerticalSpacer(12.dp)
+		HandyTextField(
+			value = playerStack,
+			onValueChange = onStackChange,
+			label = "스택",
+			keyboardType = KeyboardType.Number,
+		)
+
+		VerticalSpacer(12.dp)
+		HandySectionLabel("성향")
+		FlowRow(
+			horizontalArrangement = Arrangement.spacedBy(6.dp),
+			verticalArrangement = Arrangement.spacedBy(6.dp),
+		) {
+			val tendencyOptions = listOf<PlayerTendency?>(null) + PlayerTendency.entries
+			tendencyOptions.forEach { tendency ->
+				val isSelected = tendency == selectedTendency
+				val label = tendency?.label ?: "없음"
+
+				HandyToggleChip(
+					text = label,
+					isSelected = isSelected,
+					onClick = { onTendencyChange(tendency) },
 				)
 			}
 		}
+
+		VerticalSpacer(12.dp)
+		HandyTextField(
+			value = playerMemo,
+			onValueChange = onMemoChange,
+			label = "메모",
+		)
+
+		VerticalSpacer(20.dp)
+		Row(
+			modifier = Modifier.fillMaxWidth(),
+			horizontalArrangement = Arrangement.spacedBy(8.dp),
+		) {
+			RegularButton(
+				text = "초기화",
+				onClick = onResetClick,
+				containerColor = colors.muted,
+				contentColor = colors.textSecondary,
+				modifier = Modifier.weight(1f),
+			)
+			RegularButton(
+				text = "저장",
+				onClick = onSaveClick,
+				modifier = Modifier.weight(1f),
+			)
+		}
+	}
+}
+
+@Composable
+private fun HandyToggleChip(
+	text: String,
+	isSelected: Boolean,
+	onClick: () -> Unit,
+) {
+	val colors = HandyTheme.colorScheme
+	val bgColor = if (isSelected) colors.primary else colors.muted
+	val fgColor = if (isSelected) colors.onPrimary else colors.textSecondary
+
+	Box(
+		modifier = Modifier
+			.clip(RoundedCornerShape(8.dp))
+			.background(bgColor, RoundedCornerShape(8.dp))
+			.clickable(onClick = onClick)
+			.padding(horizontal = 12.dp, vertical = 6.dp),
+	) {
+		Text(
+			text = text,
+			style = HandyTheme.typography.medium12,
+			color = fgColor,
+		)
+	}
+}
+
+@Preview
+@Composable
+private fun PlayerSetupContentPreview() {
+	HandLogTheme {
+		PlayerSetupContent(
+			seatNumber = 3,
+			playerName = "Hero",
+			onNameChange = {},
+			playerStack = "62000",
+			onStackChange = {},
+			selectedTendency = PlayerTendency.NIT,
+			onTendencyChange = {},
+			playerMemo = "타이트하게 플레이",
+			onMemoChange = {},
+			onResetClick = {},
+			onSaveClick = {},
+		)
+	}
+}
+
+@Preview
+@Composable
+private fun PlayerSetupContentEmptyPreview() {
+	HandLogTheme {
+		PlayerSetupContent(
+			seatNumber = 1,
+			playerName = "",
+			onNameChange = {},
+			playerStack = "",
+			onStackChange = {},
+			selectedTendency = null,
+			onTendencyChange = {},
+			playerMemo = "",
+			onMemoChange = {},
+			onResetClick = {},
+			onSaveClick = {},
+		)
 	}
 }
