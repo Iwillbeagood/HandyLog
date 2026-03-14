@@ -9,8 +9,6 @@ android.namespace = "com.hand.log.core.designsystem"
 kotlin {
 	sourceSets {
 		commonMain.dependencies {
-			implementation(compose.material3)
-			implementation(compose.materialIconsExtended)
 			implementation(projects.core.res)
 		}
 
