@@ -12,22 +12,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
+import com.hand.log.designsystem.component.HandyTopAppbar
+import com.hand.log.designsystem.component.IconButton
 import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Blinds
@@ -43,10 +37,13 @@ import com.hand.log.domain.model.Suit
 import com.hand.log.table.component.HandRecordCard
 import com.hand.log.table.component.PokerTableView
 import com.hand.log.table.contract.TableDetailState
+import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.plus
+import handylog.core.res.generated.resources.settings
 import kotlinx.datetime.LocalDate
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun TableDetailScreen(
 	state: TableDetailState.TableData,
@@ -56,48 +53,40 @@ internal fun TableDetailScreen(
 	onShowPlayerSetup: () -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
+	val typography = HandyTheme.typography
 
 	BaseScaffold(
 		containerColor = colors.background,
 		topBar = {
-			TopAppBar(
-				title = {
-					Column(
-						horizontalAlignment = Alignment.CenterHorizontally,
+			HandyTopAppbar(
+				title = if (state.table.gameType == GameType.TOURNAMENT) "토너먼트" else "캐시",
+				onBackEvent = onBack,
+				iconButton = IconButton(
+					text = "설정",
+					icon = Res.drawable.settings,
+					onClick = onShowPlayerSetup,
+				),
+				subContent = {
+					Row(
+						modifier = Modifier
+							.fillMaxWidth()
+							.padding(bottom = 8.dp),
+						horizontalArrangement = Arrangement.Center,
 					) {
+						state.table.location?.let {
+							Text(
+								text = "$it · ",
+								style = typography.regular12,
+								color = colors.textSecondary,
+							)
+						}
 						Text(
-							text = if (state.table.gameType == GameType.TOURNAMENT) "토너먼트" else "캐시",
-							style = HandyTheme.typography.bold14,
-							color = colors.textPrimary,
-						)
-						Text(
-							text = state.table.location ?: state.table.date.toString(),
-							style = HandyTheme.typography.regular12,
+							text = state.table.date.toString(),
+							style = typography.regular12,
 							color = colors.textSecondary,
 						)
 					}
 				},
-				navigationIcon = {
-					IconButton(onClick = onBack) {
-						Icon(
-							Icons.AutoMirrored.Filled.ArrowBack,
-							contentDescription = "뒤로",
-							tint = colors.textPrimary,
-						)
-					}
-				},
-				actions = {
-					IconButton(onClick = onShowPlayerSetup) {
-						Icon(
-							Icons.Default.Settings,
-							contentDescription = "플레이어 설정",
-							tint = colors.textPrimary,
-						)
-					}
-				},
-				colors = TopAppBarDefaults.topAppBarColors(
-					containerColor = colors.background,
-				),
 			)
 		},
 		floatingActionButton = {
@@ -108,7 +97,7 @@ internal fun TableDetailScreen(
 				shape = CircleShape,
 			) {
 				Icon(
-					Icons.Default.Add,
+					painter = painterResource(Res.drawable.plus),
 					contentDescription = "새 핸드 기록",
 				)
 			}
