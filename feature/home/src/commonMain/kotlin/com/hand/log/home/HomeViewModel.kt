@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.GameType
+import com.hand.log.domain.model.Player
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.repository.HandRecordRepository
 import com.hand.log.domain.repository.PokerTableRepository
@@ -67,6 +68,13 @@ internal class HomeViewModel(
 		heroSeat: Int,
 	) {
 		viewModelScope.launch {
+			val defaultPlayers = (1..playerCount).map { seat ->
+				Player(
+					seat = seat,
+					stack = startingStack,
+					name = if (seat == heroSeat) "Hero" else "Player $seat",
+				)
+			}
 			val table = PokerTable(
 				id = Uuid.random().toString(),
 				date = LocalDate.parse(date),
@@ -76,6 +84,7 @@ internal class HomeViewModel(
 				blinds = blinds,
 				playerCount = playerCount,
 				heroSeat = heroSeat,
+				players = defaultPlayers,
 				createdAt = Clock.System.now().toEpochMilliseconds(),
 			)
 			pokerTableRepository.saveTable(table) {
