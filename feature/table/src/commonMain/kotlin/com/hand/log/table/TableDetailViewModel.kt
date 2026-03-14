@@ -79,8 +79,40 @@ internal class TableDetailViewModel(
 		}
 	}
 
-	fun showPlayerSetup() {
-		_modalEffect.update { TableDetailModalEffect.ShowPlayerSetup }
+	fun showPlayerSetup(seat: Int) {
+		_modalEffect.update { TableDetailModalEffect.ShowPlayerSetup(initialSeat = seat) }
+	}
+
+	fun showTableEdit() {
+		_modalEffect.update { TableDetailModalEffect.ShowTableEdit }
+	}
+
+	fun updateTable(
+		date: String,
+		location: String?,
+		gameType: com.hand.log.domain.model.GameType,
+		startingStack: Double,
+		blinds: com.hand.log.domain.model.Blinds?,
+		playerCount: Int,
+		heroSeat: Int,
+	) {
+		val current = _state.value as? TableDetailState.TableData ?: return
+		viewModelScope.launch {
+			val updatedTable = current.table.copy(
+				date = kotlinx.datetime.LocalDate.parse(date),
+				location = location,
+				gameType = gameType,
+				startingStack = startingStack,
+				blinds = blinds,
+				playerCount = playerCount,
+				heroSeat = heroSeat,
+			)
+			tableRepository.saveTable(updatedTable) {
+				viewModelScope.launch {
+					_effect.emit(TableDetailEffect.ShowSnackBar("테이블이 수정되었습니다"))
+				}
+			}
+		}
 	}
 
 	fun dismissModal() {

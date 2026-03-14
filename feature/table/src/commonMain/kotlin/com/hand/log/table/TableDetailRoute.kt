@@ -5,7 +5,10 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.designsystem.component.HmFadeAnimatedVisibility
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
+import com.hand.log.domain.model.Blinds
+import com.hand.log.domain.model.GameType
 import com.hand.log.table.component.PlayerSetupSheet
+import com.hand.log.table.component.TableEditSheet
 import com.hand.log.table.contract.TableDetailModalEffect
 import com.hand.log.table.contract.TableDetailState
 
@@ -25,7 +28,8 @@ internal fun TableDetailRoute(
 				onBack = navAction::popBackStack,
 				onNavigateToRecordHand = { navAction.navigateToRecordHand(tableData.table.id) },
 				onDeleteHand = viewModel::deleteHand,
-				onShowPlayerSetup = viewModel::showPlayerSetup,
+				onSeatClick = viewModel::showPlayerSetup,
+				onShowTableEdit = viewModel::showTableEdit,
 			)
 		}
 	}
@@ -35,6 +39,7 @@ internal fun TableDetailRoute(
 		modalEffect = modalEffect,
 		onDismiss = viewModel::dismissModal,
 		onUpdatePlayers = viewModel::updatePlayers,
+		onUpdateTable = viewModel::updateTable,
 	)
 }
 
@@ -44,16 +49,32 @@ private fun TableDetailModalContent(
 	modalEffect: TableDetailModalEffect,
 	onDismiss: () -> Unit,
 	onUpdatePlayers: (List<com.hand.log.domain.model.Player>) -> Unit,
+	onUpdateTable: (String, String?, GameType, Double, Blinds?, Int, Int) -> Unit,
 ) {
 	when (modalEffect) {
 		TableDetailModalEffect.Idle -> {}
-		TableDetailModalEffect.ShowPlayerSetup -> {
+		is TableDetailModalEffect.ShowPlayerSetup -> {
 			if (state is TableDetailState.TableData) {
 				PlayerSetupSheet(
+					initialSeat = modalEffect.initialSeat,
+					isHero = modalEffect.initialSeat == state.table.heroSeat,
 					playerCount = state.table.playerCount,
+					startingStack = state.table.startingStack,
 					players = state.table.players,
 					onSave = { players ->
 						onUpdatePlayers(players)
+						onDismiss()
+					},
+					onDismiss = onDismiss,
+				)
+			}
+		}
+		TableDetailModalEffect.ShowTableEdit -> {
+			if (state is TableDetailState.TableData) {
+				TableEditSheet(
+					table = state.table,
+					onUpdate = { date, location, gameType, stack, blinds, playerCount, heroSeat ->
+						onUpdateTable(date, location, gameType, stack, blinds, playerCount, heroSeat)
 						onDismiss()
 					},
 					onDismiss = onDismiss,

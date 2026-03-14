@@ -10,7 +10,10 @@ internal sealed interface TableDetailModalEffect {
 	data object Idle : TableDetailModalEffect
 
 	@Immutable
-	data object ShowPlayerSetup : TableDetailModalEffect
+	data class ShowPlayerSetup(val initialSeat: Int) : TableDetailModalEffect
+
+	@Immutable
+	data object ShowTableEdit : TableDetailModalEffect
 }
 
 @Stable

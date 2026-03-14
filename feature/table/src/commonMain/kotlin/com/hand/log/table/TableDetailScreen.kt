@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
 import com.hand.log.designsystem.component.HandyTopAppbar
-import com.hand.log.designsystem.component.IconButton
 import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Blinds
@@ -38,6 +37,7 @@ import com.hand.log.domain.model.Suit
 import com.hand.log.table.component.HandRecordCard
 import com.hand.log.table.component.PokerTableView
 import com.hand.log.table.contract.TableDetailState
+import com.hand.log.designsystem.component.IconButton
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.map_pin
 import handylog.core.res.generated.resources.plus
@@ -52,7 +52,8 @@ internal fun TableDetailScreen(
 	onBack: () -> Unit,
 	onNavigateToRecordHand: () -> Unit,
 	onDeleteHand: (String) -> Unit,
-	onShowPlayerSetup: () -> Unit,
+	onSeatClick: (Int) -> Unit,
+	onShowTableEdit: () -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
 	val typography = HandyTheme.typography
@@ -65,7 +66,7 @@ internal fun TableDetailScreen(
 				iconButton = IconButton(
 					text = "설정",
 					icon = Res.drawable.settings,
-					onClick = onShowPlayerSetup,
+					onClick = onShowTableEdit,
 				),
 				subContent = {
 					Row(
@@ -121,6 +122,7 @@ internal fun TableDetailScreen(
 			item {
 				PokerTableView(
 					table = state.table,
+					onSeatClick = onSeatClick,
 					modifier = Modifier
 						.fillMaxWidth()
 						.padding(vertical = 8.dp),
@@ -254,7 +256,8 @@ private fun TableDetailScreenPreview() {
 			onBack = {},
 			onNavigateToRecordHand = {},
 			onDeleteHand = {},
-			onShowPlayerSetup = {},
+			onSeatClick = {},
+			onShowTableEdit = {},
 		)
 	}
 }
@@ -281,7 +284,8 @@ private fun TableDetailScreenEmptyPreview() {
 			onBack = {},
 			onNavigateToRecordHand = {},
 			onDeleteHand = {},
-			onShowPlayerSetup = {},
+			onSeatClick = {},
+			onShowTableEdit = {},
 		)
 	}
 }
