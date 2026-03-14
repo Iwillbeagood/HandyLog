@@ -16,14 +16,14 @@ val DarkHandyColorScheme
 		muted = Color(0xFF272B34), // 비활성 영역 배경
 		textSecondary = Color(0xFF808897), // 보조 텍스트
 		primary = Color(0xFF0FB67F), // 주요 액션
-		onPrimary = Color(0xFFF2F2F2), // 주요 액션 위 텍스트
+		onPrimary = Color(0xff000000), // 주요 액션 위 텍스트
 		accent = Color(0xFF22C38D), // 강조
 		onAccent = Color(0xFFF2F2F2), // 강조 위 텍스트
 		secondary = Color(0xFF2F3541), // 보조 요소 배경
 		onSecondary = Color(0xFFF2F2F2), // 보조 요소 텍스트
 		error = Color(0xFFDC2828), // 경고/삭제
-		border = Color(0xFF30353F), // 테두리
-		inputBorder = Color(0xFF2B303A), // 입력 필드 테두리
+		border = Color(0xFF4A5060), // 테두리
+		inputBorder = Color(0xFF414855), // 입력 필드 테두리
 		focusRing = Color(0xFF0FB67F), // 포커스 링
 		felt = Color(0xFF235C41), // 포커 테이블
 		feltLight = Color(0xFF2D6B4E), // 포커 테이블 (밝은)

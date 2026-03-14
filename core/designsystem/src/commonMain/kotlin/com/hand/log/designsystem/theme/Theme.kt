@@ -1,7 +1,6 @@
 // Theme.kt
 package com.hand.log.designsystem.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -57,8 +56,8 @@ val LocalDarkTheme = compositionLocalOf { true }
 
 @Composable
 fun HandLogTheme(
-	fontFamily: FontFamily = FontFamily.Default,
-	darkTheme: Boolean = isSystemInDarkTheme(),
+	fontFamily: FontFamily = pretendard,
+	darkTheme: Boolean = true,
 	content: @Composable () -> Unit,
 ) {
 	val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
