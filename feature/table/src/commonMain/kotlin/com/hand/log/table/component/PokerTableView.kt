@@ -53,7 +53,6 @@ internal fun PokerTableView(
 			modifier = Modifier
 				.fillMaxWidth()
 				.aspectRatio(1.6f),
-			contentAlignment = Alignment.Center,
 		) {
 			val density = LocalDensity.current
 			val containerWidthPx = with(density) { maxWidth.toPx() }
@@ -64,6 +63,7 @@ internal fun PokerTableView(
 				modifier = Modifier
 					.fillMaxWidth(0.80f)
 					.aspectRatio(1.7f)
+					.align(Alignment.Center)
 					.clip(RoundedCornerShape(40))
 					.background(colors.felt)
 					.border(2.dp, colors.feltLight, RoundedCornerShape(40)),
@@ -82,8 +82,8 @@ internal fun PokerTableView(
 				}
 			}
 
-			// Seats positioned around the oval
-			val seatCount = table.playerCount
+			// Total positions = playerCount + 1 (dealer at bottom center)
+			val totalPositions = table.playerCount + 1
 			val radiusX = containerWidthPx * 0.44f
 			val radiusY = containerHeightPx * 0.42f
 			val centerX = containerWidthPx / 2f
@@ -91,25 +91,39 @@ internal fun PokerTableView(
 			val seatSizeDp = 52.dp
 			val seatSizePx = with(density) { seatSizeDp.toPx() }
 
-			for (seatIndex in 1..seatCount) {
-				// Distribute seats evenly, starting from bottom
-				val angle = (2 * kotlin.math.PI * (seatIndex - 1) / seatCount) - (kotlin.math.PI / 2)
+			// Position 0 = Dealer (bottom center)
+			for (posIndex in 0 until totalPositions) {
+				val angle = (2 * kotlin.math.PI * posIndex / totalPositions) - (kotlin.math.PI / 2)
 				val x = centerX + radiusX * cos(angle).toFloat() - seatSizePx / 2f
 				val y = centerY + radiusY * sin(angle).toFloat() - seatSizePx / 2f
 
-				val player = table.players.find { it.seat == seatIndex }
-				val isHero = seatIndex == table.heroSeat
+				if (posIndex == 0) {
+					// Dealer position
+					SeatView(
+						seatNumber = 0,
+						player = null,
+						isHero = false,
+						isDealer = true,
+						modifier = Modifier
+							.size(seatSizeDp)
+							.offset { IntOffset(x.roundToInt(), y.roundToInt()) },
+					)
+				} else {
+					// Player seats: position 1 → seat 1, position 2 → seat 2, ...
+					val seatIndex = posIndex
+					val player = table.players.find { it.seat == seatIndex }
+					val isHero = seatIndex == table.heroSeat
 
-				SeatView(
-					seatNumber = seatIndex,
-					player = player,
-					isHero = isHero,
-					modifier = Modifier
-						.size(seatSizeDp)
-						.offset {
-							IntOffset(x.roundToInt(), y.roundToInt())
-						},
-				)
+					SeatView(
+						seatNumber = seatIndex,
+						player = player,
+						isHero = isHero,
+						isDealer = false,
+						modifier = Modifier
+							.size(seatSizeDp)
+							.offset { IntOffset(x.roundToInt(), y.roundToInt()) },
+					)
+				}
 			}
 		}
 	}
@@ -120,15 +134,18 @@ private fun SeatView(
 	seatNumber: Int,
 	player: Player?,
 	isHero: Boolean,
+	isDealer: Boolean = false,
 	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme
 	val borderColor = when {
+		isDealer -> colors.accent
 		isHero -> colors.gold
 		player != null -> colors.primary
 		else -> colors.border
 	}
 	val bgColor = when {
+		isDealer -> colors.accent.copy(alpha = 0.15f)
 		isHero -> colors.gold.copy(alpha = 0.15f)
 		player != null -> colors.secondary
 		else -> colors.muted
@@ -145,29 +162,39 @@ private fun SeatView(
 				.size(32.dp)
 				.clip(CircleShape)
 				.background(bgColor)
-				.then(
-					if (player != null || isHero) {
-						Modifier.border(2.dp, borderColor, CircleShape)
-					} else {
-						Modifier.border(
-							width = 1.dp,
-							color = colors.border,
-							shape = CircleShape,
-						)
-					},
+				.border(
+					width = if (isDealer || isHero || player != null) 2.dp else 1.dp,
+					color = borderColor,
+					shape = CircleShape,
 				),
 			contentAlignment = Alignment.Center,
 		) {
-			Text(
-				text = player?.name?.take(1) ?: "$seatNumber",
-				style = HandyTheme.typography.bold10,
-				color = if (isHero) colors.gold else colors.textPrimary,
-				textAlign = TextAlign.Center,
-			)
+			if (isDealer) {
+				Text(
+					text = "D",
+					style = HandyTheme.typography.bold12,
+					color = colors.accent,
+					textAlign = TextAlign.Center,
+				)
+			} else {
+				Text(
+					text = player?.name?.take(1) ?: "$seatNumber",
+					style = HandyTheme.typography.bold10,
+					color = if (isHero) colors.gold else colors.textPrimary,
+					textAlign = TextAlign.Center,
+				)
+			}
 		}
 
-		// Stack amount
-		if (player != null) {
+		// Label
+		if (isDealer) {
+			Text(
+				text = "Dealer",
+				style = HandyTheme.typography.medium8,
+				color = colors.accent,
+				maxLines = 1,
+			)
+		} else if (player != null) {
 			Text(
 				text = formatChips(player.stack),
 				style = HandyTheme.typography.medium8,
