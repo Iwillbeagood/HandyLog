@@ -22,23 +22,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,8 +33,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.hand.log.designsystem.component.BaseScaffold
+import com.hand.log.designsystem.component.HandyTopAppbar
 import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
+import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.arrow_left
+import org.jetbrains.compose.resources.painterResource
 import com.hand.log.domain.model.ActionType
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.GameType
@@ -60,7 +52,6 @@ import com.hand.log.ui.poker.CardSize
 import com.hand.log.ui.poker.PlayingCard
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun RecordHandScreen(
 	state: RecordHandState.Recording,
@@ -85,29 +76,12 @@ internal fun RecordHandScreen(
 ) {
 	val colors = HandyTheme.colorScheme
 
-	Scaffold(
+	BaseScaffold(
 		containerColor = colors.background,
 		topBar = {
-			TopAppBar(
-				title = {
-					Text(
-						text = "핸드 기록",
-						style = HandyTheme.typography.bold18,
-						color = colors.textPrimary,
-					)
-				},
-				navigationIcon = {
-					IconButton(onClick = onBack) {
-						Icon(
-							Icons.AutoMirrored.Filled.ArrowBack,
-							contentDescription = "뒤로",
-							tint = colors.textPrimary,
-						)
-					}
-				},
-				colors = TopAppBarDefaults.topAppBarColors(
-					containerColor = colors.background,
-				),
+			HandyTopAppbar(
+				title = "핸드 기록",
+				onBackEvent = onBack,
 			)
 		},
 		bottomBar = {
@@ -119,11 +93,9 @@ internal fun RecordHandScreen(
 				onSave = onSave,
 			)
 		},
-	) { paddingValues ->
+	) {
 		Column(
-			modifier = Modifier
-				.fillMaxSize()
-				.padding(paddingValues),
+			modifier = Modifier.fillMaxSize(),
 		) {
 			// Step indicator
 			StepIndicator(
@@ -492,12 +464,17 @@ private fun StreetStepContent(
 					modifier = Modifier.fillMaxWidth(),
 					horizontalArrangement = Arrangement.End,
 				) {
-					IconButton(onClick = onRemoveLastAction, modifier = Modifier.size(32.dp)) {
-						Icon(
-							Icons.Default.Delete,
-							contentDescription = "되돌리기",
-							tint = colors.error,
-							modifier = Modifier.size(18.dp),
+					Box(
+						modifier = Modifier
+							.size(32.dp)
+							.clip(RoundedCornerShape(6.dp))
+							.clickable(onClick = onRemoveLastAction),
+						contentAlignment = Alignment.Center,
+					) {
+						Text(
+							text = "취소",
+							style = HandyTheme.typography.medium12,
+							color = colors.error,
 						)
 					}
 				}
@@ -617,13 +594,17 @@ private fun StreetStepContent(
 				) {
 					listOf(33, 50, 75, 100).forEach { percent ->
 						val amount = (state.currentPot * percent / 100).toLong().toString()
-						OutlinedButton(
-							onClick = { onUpdateActionAmount(amount) },
-							shape = RoundedCornerShape(8.dp),
+						Box(
+							modifier = Modifier
+								.clip(RoundedCornerShape(8.dp))
+								.background(colors.muted, RoundedCornerShape(8.dp))
+								.clickable { onUpdateActionAmount(amount) }
+								.padding(horizontal = 16.dp, vertical = 10.dp),
 						) {
 							Text(
 								text = "$percent%",
 								style = HandyTheme.typography.medium14,
+								color = colors.textPrimary,
 							)
 						}
 					}
@@ -633,18 +614,19 @@ private fun StreetStepContent(
 
 		// Confirm action button
 		if (state.currentActionSeat != null && state.currentActionType != null) {
-			Button(
-				onClick = onConfirmAction,
-				modifier = Modifier.fillMaxWidth(),
-				colors = ButtonDefaults.buttonColors(
-					containerColor = colors.primary,
-					contentColor = colors.onPrimary,
-				),
-				shape = RoundedCornerShape(12.dp),
+			Box(
+				modifier = Modifier
+					.fillMaxWidth()
+					.height(48.dp)
+					.clip(RoundedCornerShape(12.dp))
+					.background(colors.primary, RoundedCornerShape(12.dp))
+					.clickable(onClick = onConfirmAction),
+				contentAlignment = Alignment.Center,
 			) {
 				Text(
 					text = "액션 추가",
 					style = HandyTheme.typography.bold14,
+					color = colors.onPrimary,
 				)
 			}
 		}
@@ -699,6 +681,7 @@ private fun BottomNavigationBar(
 	onSave: () -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
+	val typography = HandyTheme.typography
 	val isFirstStep = currentStep == RecordStep.SETUP
 	val isLastStep = currentStep == RecordStep.RIVER
 
@@ -709,64 +692,56 @@ private fun BottomNavigationBar(
 			.padding(horizontal = 16.dp, vertical = 12.dp),
 		horizontalArrangement = Arrangement.spacedBy(12.dp),
 	) {
-		// Back button
 		if (!isFirstStep) {
-			OutlinedButton(
-				onClick = onPrevious,
+			Box(
 				modifier = Modifier
 					.weight(1f)
-					.height(48.dp),
-				shape = RoundedCornerShape(12.dp),
+					.height(48.dp)
+					.clip(RoundedCornerShape(12.dp))
+					.background(colors.muted, RoundedCornerShape(12.dp))
+					.clickable(onClick = onPrevious),
+				contentAlignment = Alignment.Center,
 			) {
-				Icon(
-					Icons.AutoMirrored.Filled.ArrowBack,
-					contentDescription = null,
-					modifier = Modifier.size(18.dp),
-				)
-				Spacer(modifier = Modifier.width(4.dp))
-				Text(
-					text = "이전",
-					style = HandyTheme.typography.bold14,
-				)
+				Row(verticalAlignment = Alignment.CenterVertically) {
+					Icon(
+						painter = painterResource(Res.drawable.arrow_left),
+						contentDescription = null,
+						modifier = Modifier.size(16.dp),
+						tint = colors.textPrimary,
+					)
+					Spacer(modifier = Modifier.width(4.dp))
+					Text(
+						text = "이전",
+						style = typography.bold14,
+						color = colors.textPrimary,
+					)
+				}
 			}
 		}
 
-		// Next / Save button
-		Button(
-			onClick = if (isLastStep) onSave else onNext,
+		val nextBgColor = if (canProceed) colors.primary else colors.secondary
+		val nextFgColor = if (canProceed) colors.onPrimary else colors.onSecondary
+
+		Box(
 			modifier = Modifier
 				.weight(1f)
-				.height(48.dp),
-			enabled = canProceed,
-			colors = ButtonDefaults.buttonColors(
-				containerColor = if (isLastStep) colors.primary else colors.primary,
-				contentColor = colors.onPrimary,
-			),
-			shape = RoundedCornerShape(12.dp),
+				.height(48.dp)
+				.clip(RoundedCornerShape(12.dp))
+				.background(nextBgColor, RoundedCornerShape(12.dp))
+				.then(
+					if (canProceed) {
+						Modifier.clickable(onClick = if (isLastStep) onSave else onNext)
+					} else {
+						Modifier
+					},
+				),
+			contentAlignment = Alignment.Center,
 		) {
-			if (isLastStep) {
-				Icon(
-					Icons.Default.Check,
-					contentDescription = null,
-					modifier = Modifier.size(18.dp),
-				)
-				Spacer(modifier = Modifier.width(4.dp))
-				Text(
-					text = "저장",
-					style = HandyTheme.typography.bold14,
-				)
-			} else {
-				Text(
-					text = "다음",
-					style = HandyTheme.typography.bold14,
-				)
-				Spacer(modifier = Modifier.width(4.dp))
-				Icon(
-					Icons.AutoMirrored.Filled.ArrowForward,
-					contentDescription = null,
-					modifier = Modifier.size(18.dp),
-				)
-			}
+			Text(
+				text = if (isLastStep) "저장" else "다음",
+				style = typography.bold14,
+				color = nextFgColor,
+			)
 		}
 	}
 }
