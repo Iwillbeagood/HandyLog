@@ -19,13 +19,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.hand.log.designsystem.component.VerticalSpacer
-import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.btn_no
 import handylog.core.res.generated.resources.btn_yes
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
 
 @Composable
 fun BaseDialog(
@@ -220,10 +220,10 @@ fun ConfirmDialog(
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun DefaultDialogPreview() {
-	HandLogTheme {
+	ThemePreview {
 		DefaultDialog(
 			title = "화물등록",
 			content = "화물 등록을 하시겠습니까?",
@@ -233,10 +233,10 @@ private fun DefaultDialogPreview() {
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun ConfirmDialogPreview() {
-	HandLogTheme {
+	ThemePreview {
 		ConfirmDialog(
 			title = "생체 정보 변경",
 			content = "휴대폰에 등록된 지문이 변경되었습니다.\n다시 지문을 등록해주세요.",

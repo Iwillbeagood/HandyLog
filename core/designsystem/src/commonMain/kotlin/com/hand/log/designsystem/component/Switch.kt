@@ -9,12 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.etc.BooleanProvider
-import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
-import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
 
 @Composable
 fun HandySwitch(
@@ -51,12 +51,12 @@ fun HandySwitch(
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun SwitchPreview(
 	@PreviewParameter(BooleanProvider::class) checked: Boolean,
 ) {
-	HandLogTheme {
+	ThemePreview {
 		HandySwitch(
 			checked = checked,
 		) {

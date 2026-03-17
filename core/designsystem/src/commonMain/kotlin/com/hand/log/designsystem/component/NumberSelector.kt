@@ -17,13 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.designsystem.theme.nonScaledSp
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
 
 @Composable
-fun HandyNumberSelector(
+fun HandySelector(
 	range: IntRange,
 	selected: Int,
 	onSelect: (Int) -> Unit,
@@ -63,11 +63,80 @@ fun HandyNumberSelector(
 	}
 }
 
-@Preview
+@Composable
+fun HandySelector(
+	options: List<String>,
+	selected: String,
+	onSelect: (String) -> Unit,
+	modifier: Modifier = Modifier,
+	selectedColor: Color = HandyTheme.colorScheme.primary,
+	selectedContentColor: Color = HandyTheme.colorScheme.onPrimary,
+) {
+	val colors = HandyTheme.colorScheme
+	val typography = HandyTheme.typography
+
+	LazyRow(
+		modifier = modifier,
+		horizontalArrangement = Arrangement.spacedBy(4.dp),
+	) {
+		items(options) { option ->
+			val isSelected = option == selected
+			Box(
+				modifier = Modifier
+					.clip(RoundedCornerShape(8.dp))
+					.background(if (isSelected) selectedColor else colors.muted)
+					.border(
+						width = 1.dp,
+						color = if (isSelected) selectedColor else colors.inputBorder,
+						shape = RoundedCornerShape(8.dp),
+					)
+					.clickable { onSelect(option) }
+					.padding(horizontal = 12.dp, vertical = 10.dp),
+				contentAlignment = Alignment.Center,
+			) {
+				Text(
+					text = option,
+					style = typography.medium14.nonScaledSp,
+					color = if (isSelected) selectedContentColor else colors.textPrimary,
+				)
+			}
+		}
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun HandyStringSelectorPreview() {
+	ThemePreview {
+		HandySelector(
+			options = listOf("BTN", "SB", "BB", "UTG", "UTG+1", "LJ", "HJ", "CO"),
+			selected = "UTG",
+			onSelect = {},
+			modifier = Modifier.padding(16.dp),
+		)
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun HandyStringSelectorGoldPreview() {
+	ThemePreview {
+		HandySelector(
+			options = listOf("BTN", "SB", "BB", "UTG", "CO"),
+			selected = "BTN",
+			onSelect = {},
+			selectedColor = HandyTheme.colorScheme.gold,
+			selectedContentColor = HandyTheme.colorScheme.card,
+			modifier = Modifier.padding(16.dp),
+		)
+	}
+}
+
+@ThemePreviews
 @Composable
 private fun HandyNumberSelectorPreview() {
-	HandLogTheme {
-		HandyNumberSelector(
+	ThemePreview {
+		HandySelector(
 			range = 2..10,
 			selected = 6,
 			onSelect = {},
@@ -76,11 +145,11 @@ private fun HandyNumberSelectorPreview() {
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun HandyNumberSelectorGoldPreview() {
-	HandLogTheme {
-		HandyNumberSelector(
+	ThemePreview {
+		HandySelector(
 			range = 1..9,
 			selected = 3,
 			onSelect = {},

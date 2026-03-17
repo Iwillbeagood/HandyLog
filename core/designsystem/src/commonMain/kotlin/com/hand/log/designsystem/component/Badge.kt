@@ -14,9 +14,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
 
 @Composable
 fun Badge(
@@ -41,10 +41,10 @@ fun Badge(
 	)
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun BadgePreview() {
-	HandLogTheme {
+	ThemePreview {
 		val colors = HandyTheme.colorScheme
 		Row(
 			horizontalArrangement = Arrangement.spacedBy(6.dp),

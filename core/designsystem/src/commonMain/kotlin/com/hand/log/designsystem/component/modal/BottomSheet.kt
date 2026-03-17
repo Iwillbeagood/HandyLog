@@ -24,12 +24,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.VerticalSpacer
-import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.btn_complete
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
 
 object BottomSheet {
 	@OptIn(ExperimentalMaterial3Api::class)
@@ -134,10 +134,10 @@ fun DefaultBottomSheet(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview
+@ThemePreviews
 @Composable
 private fun HmBottomScaffoldPreview() {
-	HandLogTheme {
+	ThemePreview {
 		DefaultBottomSheet(
 			sheetState = BottomSheet.sheetState,
 			sheetTitle = "화물등록",

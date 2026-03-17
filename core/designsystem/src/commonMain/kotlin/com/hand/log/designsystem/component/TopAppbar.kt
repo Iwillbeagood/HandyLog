@@ -21,14 +21,14 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.etc.clickableSingle
-import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.arrow_left
 import handylog.core.res.generated.resources.spade_filled
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
 
 @Composable
 fun HandyTopAppbar(
@@ -200,10 +200,10 @@ data class IconButton(
 	val onClick: () -> Unit,
 )
 
-@Preview
+@ThemePreviews
 @Composable
 private fun DefaultTopAppbarPreview() {
-	HandLogTheme {
+	ThemePreview {
 		HandyTopAppbar(
 			title = "등록",
 			navigationType = TopAppbarType.Default,
@@ -211,20 +211,20 @@ private fun DefaultTopAppbarPreview() {
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun MainTopAppbarPreview() {
-	HandLogTheme {
+	ThemePreview {
 		HandyTopAppbar(
 			navigationType = TopAppbarType.Main,
 		)
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun IconButtonTopAppbarPreview() {
-	HandLogTheme {
+	ThemePreview {
 		HandyTopAppbar(
 			title = "테이블 상세",
 			iconButton = IconButton(

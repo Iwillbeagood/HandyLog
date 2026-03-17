@@ -14,9 +14,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
 
 @Composable
 fun <T> HandyToggleGroup(
@@ -54,10 +54,10 @@ fun <T> HandyToggleGroup(
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun HandyToggleGroupPreview() {
-	HandLogTheme {
+	ThemePreview {
 		HandyToggleGroup(
 			options = listOf("토너먼트", "캐시"),
 			selected = "캐시",

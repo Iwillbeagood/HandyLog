@@ -30,7 +30,7 @@ val DarkHandyColorScheme
 		gold = Color(0xFFF7C530), // 팟/칩 금액
 		goldMuted = Color(0xFFC39A22), // 보조 금색
 		suitRed = Color(0xFFE83030), // 하트/다이아
-		suitBlack = Color(0xFF363C49), // 클럽/스페이드
+		suitBlack = Color(0xFFF2F2F2), // 클럽/스페이드
 	)
 
 val LightHandyColorScheme

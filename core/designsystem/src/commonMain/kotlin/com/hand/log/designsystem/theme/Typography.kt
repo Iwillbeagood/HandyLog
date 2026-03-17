@@ -166,6 +166,11 @@ data class HandyTypography(
 		lineHeight = 14.sp,
 		fontWeight = FontWeight.Bold,
 	),
+	val bold8: TextStyle = default.copy(
+		fontSize = 8.sp,
+		lineHeight = 12.sp,
+		fontWeight = FontWeight.Bold,
+	),
 	val medium10: TextStyle = default.copy(
 		fontSize = 10.sp,
 		lineHeight = 14.sp,
@@ -174,6 +179,10 @@ data class HandyTypography(
 	val regular10: TextStyle = default.copy(
 		fontSize = 10.sp,
 		lineHeight = 14.sp,
+	),
+	val regular8: TextStyle = default.copy(
+		fontSize = 8.sp,
+		lineHeight = 12.sp,
 	),
 	val medium8: TextStyle = default.copy(
 		fontSize = 11.sp,

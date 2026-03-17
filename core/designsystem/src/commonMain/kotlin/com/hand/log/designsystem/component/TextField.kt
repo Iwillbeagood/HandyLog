@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,15 +24,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
-import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.calendar
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
 
 @Composable
 fun HandyTextField(
@@ -44,6 +47,7 @@ fun HandyTextField(
 ) {
 	val colors = HandyTheme.colorScheme
 	val typography = HandyTheme.typography
+	val focusManager = LocalFocusManager.current
 	val interactionSource = remember { MutableInteractionSource() }
 	val isFocused by interactionSource.collectIsFocusedAsState()
 	val borderColor = if (isFocused) colors.primary else colors.inputBorder
@@ -58,7 +62,8 @@ fun HandyTextField(
 			textStyle = typography.regular14.copy(color = colors.textPrimary),
 			singleLine = true,
 			cursorBrush = SolidColor(colors.primary),
-			keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+			keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = ImeAction.Done),
+			keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
 			interactionSource = interactionSource,
 			decorationBox = { innerTextField ->
 				Row(
@@ -94,10 +99,10 @@ fun HandyTextField(
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun HandyTextFieldEmptyPreview() {
-	HandLogTheme {
+	ThemePreview {
 		Column(modifier = Modifier.padding(16.dp)) {
 			HandyTextField(
 				value = "",
@@ -109,10 +114,10 @@ private fun HandyTextFieldEmptyPreview() {
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun HandyTextFieldFilledPreview() {
-	HandLogTheme {
+	ThemePreview {
 		Column(modifier = Modifier.padding(16.dp)) {
 			HandyTextField(
 				value = "200000",

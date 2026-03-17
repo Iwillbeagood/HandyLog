@@ -15,32 +15,32 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.etc.BooleanProvider
 import com.hand.log.designsystem.etc.MultipleEventsCutter
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.etc.get
-import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.btn_complete
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
 
 @Composable
 fun RegularButton(
 	onClick: () -> Unit,
 	modifier: Modifier = Modifier,
 	text: String = stringResource(Res.string.btn_complete),
-	textStyle: TextStyle = HandyTheme.typography.bold14,
+	textStyle: TextStyle = HandyTheme.typography.bold18,
 	containerColor: Color = HandyTheme.colorScheme.primary,
 	contentColor: Color = HandyTheme.colorScheme.onPrimary,
 	enabled: Boolean = true,
 	isPreventMultipleClicks: Boolean = true,
 	borderStroke: Dp = 8.dp,
 	horizontalPadding: Dp = 4.dp,
-	verticalPadding: Dp = 10.dp,
+	verticalPadding: Dp = 12.dp,
 ) {
 	val multipleEventsCutter = remember { MultipleEventsCutter.get() }
 	val colors = HandyTheme.colorScheme
@@ -78,12 +78,12 @@ fun RegularButton(
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun RegularButtonPreview(
 	@PreviewParameter(BooleanProvider::class) enable: Boolean,
 ) {
-	HandLogTheme {
+	ThemePreview {
 		RegularButton(
 			onClick = {},
 			enabled = enable,
