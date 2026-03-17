@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,18 +22,33 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.Suit
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.clover_card
+import handylog.core.res.generated.resources.diamond_card
+import handylog.core.res.generated.resources.heart_card
+import handylog.core.res.generated.resources.spade_card
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
 
-enum class CardSize(val width: Dp, val height: Dp, val fontSize: TextUnit, val suitSize: TextUnit) {
-	XS(24.dp, 32.dp, 10.sp, 8.sp),
-	SM(32.dp, 44.dp, 12.sp, 10.sp),
-	MD(40.dp, 56.dp, 14.sp, 12.sp),
-	LG(56.dp, 80.dp, 18.sp, 16.sp),
+enum class CardSize(val width: Dp, val height: Dp, val fontSize: TextUnit, val suitIconSize: Dp, val spacing: Dp = 2.dp) {
+	XXS(16.dp, 22.dp, 7.sp, 7.dp, 0.dp),
+	XS(24.dp, 32.dp, 9.sp, 10.dp, 0.dp),
+	SM(32.dp, 44.dp, 12.sp, 10.dp),
+	MD(40.dp, 56.dp, 14.sp, 12.dp),
+	LG(56.dp, 80.dp, 18.sp, 16.dp),
+}
+
+fun Suit.iconRes(): DrawableResource = when (this) {
+	Suit.SPADES -> Res.drawable.spade_card
+	Suit.HEARTS -> Res.drawable.heart_card
+	Suit.DIAMONDS -> Res.drawable.diamond_card
+	Suit.CLUBS -> Res.drawable.clover_card
 }
 
 @Composable
@@ -51,6 +67,7 @@ fun PlayingCard(
 		modifier = modifier
 			.size(size.width, size.height)
 			.clip(shape)
+			.background(colors.card)
 			.then(
 				if (selected) {
 					Modifier.border(2.dp, colors.primary, shape)
@@ -76,7 +93,7 @@ private fun CardFace(card: Card, size: CardSize) {
 	val colors = HandyTheme.colorScheme
 	val suitColor = when (card.suit) {
 		Suit.HEARTS, Suit.DIAMONDS -> colors.suitRed
-		Suit.CLUBS, Suit.SPADES -> colors.textPrimary
+		Suit.CLUBS, Suit.SPADES -> colors.suitBlack
 	}
 
 	Column(
@@ -84,7 +101,7 @@ private fun CardFace(card: Card, size: CardSize) {
 			.size(size.width, size.height)
 			.background(colors.card),
 		horizontalAlignment = Alignment.CenterHorizontally,
-		verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
+		verticalArrangement = Arrangement.spacedBy(size.spacing, Alignment.CenterVertically),
 	) {
 		Text(
 			text = card.rank.symbol,
@@ -93,11 +110,11 @@ private fun CardFace(card: Card, size: CardSize) {
 			fontWeight = FontWeight.Bold,
 			lineHeight = size.fontSize,
 		)
-		Text(
-			text = card.suit.symbol,
-			color = suitColor,
-			fontSize = size.suitSize,
-			lineHeight = size.suitSize,
+		Icon(
+			painter = painterResource(card.suit.iconRes()),
+			contentDescription = card.suit.symbol,
+			tint = suitColor,
+			modifier = Modifier.size(size.suitIconSize),
 		)
 	}
 }
@@ -142,10 +159,10 @@ private fun CardEmpty(size: CardSize) {
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun PlayingCardFaceUpPreview() {
-	HandLogTheme {
+	ThemePreview {
 		Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
 			PlayingCard(card = Card(Rank.ACE, Suit.SPADES), size = CardSize.LG)
 			PlayingCard(card = Card(Rank.KING, Suit.HEARTS), size = CardSize.LG)
@@ -155,10 +172,10 @@ private fun PlayingCardFaceUpPreview() {
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun PlayingCardSizesPreview() {
-	HandLogTheme {
+	ThemePreview {
 		Row(
 			horizontalArrangement = Arrangement.spacedBy(8.dp),
 			verticalAlignment = Alignment.Bottom,
@@ -171,10 +188,10 @@ private fun PlayingCardSizesPreview() {
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun PlayingCardStatesPreview() {
-	HandLogTheme {
+	ThemePreview {
 		Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
 			PlayingCard(card = Card(Rank.TEN, Suit.HEARTS), size = CardSize.LG)
 			PlayingCard(card = Card(Rank.TEN, Suit.HEARTS), size = CardSize.LG, selected = true)

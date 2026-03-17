@@ -44,20 +44,7 @@ fun ActionButtons(
 			modifier = Modifier.fillMaxWidth(),
 		) {
 			availableActions.forEach { action ->
-				val buttonColor = when (action) {
-					ActionType.FOLD -> colors.muted
-					ActionType.CHECK -> colors.secondary
-					ActionType.CALL -> colors.primary
-					ActionType.BET -> colors.gold
-					ActionType.RAISE -> colors.accent
-					ActionType.ALL_IN -> colors.error
-				}
-				val contentColor = when (action) {
-					ActionType.FOLD -> colors.textSecondary
-					ActionType.CHECK -> colors.onSecondary
-					ActionType.BET, ActionType.RAISE -> colors.card
-					else -> colors.onPrimary
-				}
+				val actionColors = action.actionColor()
 
 				Button(
 					onClick = {
@@ -70,8 +57,8 @@ fun ActionButtons(
 						}
 					},
 					colors = ButtonDefaults.buttonColors(
-						containerColor = buttonColor,
-						contentColor = contentColor,
+						containerColor = actionColors.background,
+						contentColor = actionColors.content,
 					),
 					shape = RoundedCornerShape(8.dp),
 				) {
