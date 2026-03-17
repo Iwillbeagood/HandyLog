@@ -22,29 +22,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
 import com.hand.log.designsystem.component.HandyTopAppbar
-import com.hand.log.designsystem.theme.HandLogTheme
+import com.hand.log.designsystem.component.IconButton
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.Card
+import com.hand.log.domain.model.FlopStreet
 import com.hand.log.domain.model.GameType
 import com.hand.log.domain.model.HandRecord
+import com.hand.log.domain.model.HandStreets
+import com.hand.log.domain.model.HeroHand
 import com.hand.log.domain.model.Player
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.model.Rank
-import com.hand.log.domain.model.Street
-import com.hand.log.domain.model.StreetData
 import com.hand.log.domain.model.Suit
 import com.hand.log.table.component.HandRecordCard
 import com.hand.log.table.component.PokerTableView
 import com.hand.log.table.contract.TableDetailState
-import com.hand.log.designsystem.component.IconButton
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.map_pin
 import handylog.core.res.generated.resources.plus
 import handylog.core.res.generated.resources.settings
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 internal fun TableDetailScreen(
@@ -192,10 +193,10 @@ internal fun TableDetailScreen(
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun TableDetailScreenPreview() {
-	HandLogTheme {
+	ThemePreview {
 		TableDetailScreen(
 			state = TableDetailState.TableData(
 				table = PokerTable(
@@ -220,19 +221,14 @@ private fun TableDetailScreenPreview() {
 						tableId = "1",
 						createdAt = 1710000000000L,
 						blinds = Blinds(sb = 500.0, bb = 1000.0),
-						heroCards = listOf(
-							Card(Rank.ACE, Suit.SPADES),
-							Card(Rank.KING, Suit.SPADES),
-						),
+						heroHand = HeroHand(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 						heroStack = 62000.0,
 						buttonSeat = 1,
-						streets = mapOf(
-							Street.FLOP to StreetData(
-								cards = listOf(
-									Card(Rank.ACE, Suit.HEARTS),
-									Card(Rank.KING, Suit.DIAMONDS),
-									Card(Rank.QUEEN, Suit.CLUBS),
-								),
+						streets = HandStreets(
+							flop = FlopStreet(
+								card1 = Card(Rank.ACE, Suit.HEARTS),
+								card2 = Card(Rank.KING, Suit.DIAMONDS),
+								card3 = Card(Rank.QUEEN, Suit.CLUBS),
 							),
 						),
 						result = 15000.0,
@@ -243,10 +239,7 @@ private fun TableDetailScreenPreview() {
 						tableId = "1",
 						createdAt = 1709900000000L,
 						blinds = Blinds(sb = 500.0, bb = 1000.0),
-						heroCards = listOf(
-							Card(Rank.JACK, Suit.HEARTS),
-							Card(Rank.TEN, Suit.HEARTS),
-						),
+						heroHand = HeroHand(Card(Rank.JACK, Suit.HEARTS), Card(Rank.TEN, Suit.HEARTS)),
 						heroStack = 50000.0,
 						buttonSeat = 3,
 						result = -8500.0,
@@ -262,10 +255,10 @@ private fun TableDetailScreenPreview() {
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun TableDetailScreenEmptyPreview() {
-	HandLogTheme {
+	ThemePreview {
 		TableDetailScreen(
 			state = TableDetailState.TableData(
 				table = PokerTable(

@@ -11,12 +11,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.spade
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
 
 @Composable
 internal fun EmptyState(modifier: Modifier = Modifier) {
@@ -52,10 +52,10 @@ internal fun EmptyState(modifier: Modifier = Modifier) {
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun EmptyStatePreview() {
-	HandLogTheme {
+	ThemePreview {
 		EmptyState(modifier = Modifier.size(300.dp, 400.dp))
 	}
 }

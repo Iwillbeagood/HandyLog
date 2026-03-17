@@ -26,7 +26,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.GameType
@@ -38,7 +37,8 @@ import handylog.core.res.generated.resources.crown
 import handylog.core.res.generated.resources.user_round
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
 import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
@@ -272,10 +272,10 @@ private fun formatDecimal(value: Double): String {
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun PokerTableViewPreview() {
-	HandLogTheme {
+	ThemePreview {
 		PokerTableView(
 			table = PokerTable(
 				id = "1",
@@ -303,10 +303,10 @@ private fun PokerTableViewPreview() {
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun PokerTableView6MaxPreview() {
-	HandLogTheme {
+	ThemePreview {
 		PokerTableView(
 			table = PokerTable(
 				id = "2",

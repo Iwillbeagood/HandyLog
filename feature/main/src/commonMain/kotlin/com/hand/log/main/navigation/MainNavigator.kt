@@ -80,6 +80,9 @@ internal class MainNavigator {
 			MainTabRoute.Home -> {
 				navigate(MainTabRoute.Home, LaunchMode.CLEAR_ALL)
 			}
+			MainTabRoute.Players -> {
+				navigate(MainTabRoute.Players, LaunchMode.CLEAR_ALL)
+			}
 		}
 	}
 }

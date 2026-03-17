@@ -10,10 +10,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.designsystem.component.HmFadeAnimatedVisibility
-import com.hand.log.home.component.TableSetupSheet
 import com.hand.log.home.contract.HomeModalEffect
 import com.hand.log.home.contract.HomeState
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
+import com.hand.log.ui.table.TableFormSheet
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,14 +41,14 @@ internal fun HomeRoute(
 	)
 
 	if (showSetupSheet) {
-		TableSetupSheet(
+		TableFormSheet(
 			sheetState = sheetState,
 			onDismissRequest = {
 				scope.launch { sheetState.hide() }.invokeOnCompletion {
 					showSetupSheet = false
 				}
 			},
-			onCreateTable = { date, location, gameType, startingStack, blinds, playerCount, heroSeat ->
+			onSubmit = { date, location, gameType, startingStack, blinds, playerCount, heroSeat ->
 				viewModel.saveTable(
 					date = date,
 					location = location,

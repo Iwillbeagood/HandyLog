@@ -31,12 +31,12 @@ import com.hand.log.designsystem.component.HandySectionLabel
 import com.hand.log.designsystem.component.HandyTextField
 import com.hand.log.designsystem.component.RegularButton
 import com.hand.log.designsystem.component.VerticalSpacer
-import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Player
 import com.hand.log.domain.model.PlayerTendency
 import com.hand.log.ui.poker.SheetDragBlocker
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -302,10 +302,10 @@ private fun HandyToggleChip(
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun PlayerSetupContentPreview() {
-	HandLogTheme {
+	ThemePreview {
 		PlayerSetupContent(
 			seatNumber = 3,
 			playerName = "Hero",
@@ -322,10 +322,10 @@ private fun PlayerSetupContentPreview() {
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun PlayerSetupContentEmptyPreview() {
-	HandLogTheme {
+	ThemePreview {
 		PlayerSetupContent(
 			seatNumber = 1,
 			playerName = "",

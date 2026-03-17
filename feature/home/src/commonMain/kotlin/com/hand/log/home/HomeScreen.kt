@@ -8,13 +8,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
 import com.hand.log.designsystem.component.HandyHorizontalDivider
 import com.hand.log.designsystem.component.HandyTopAppbar
 import com.hand.log.designsystem.component.IconButton
 import com.hand.log.designsystem.component.TopAppbarType
-import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.GameType
 import com.hand.log.domain.model.PokerTable
@@ -25,7 +26,6 @@ import com.hand.log.home.contract.TableListItem
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.plus
 import kotlinx.datetime.LocalDate
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 internal fun HomeScreen(
@@ -72,10 +72,10 @@ internal fun HomeScreen(
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun HomeScreenEmptyPreview() {
-	HandLogTheme {
+	ThemePreview {
 		HomeScreen(
 			homeState = HomeState.HomeData(tables = emptyList()),
 			onNavigateToTableDetail = {},
@@ -84,10 +84,10 @@ private fun HomeScreenEmptyPreview() {
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun HomeScreenWithDataPreview() {
-	HandLogTheme {
+	ThemePreview {
 		HomeScreen(
 			homeState = HomeState.HomeData(
 				tables = listOf(

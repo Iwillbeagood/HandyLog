@@ -20,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.GameType
@@ -35,7 +34,8 @@ import handylog.core.res.generated.resources.map_pin
 import handylog.core.res.generated.resources.trophy
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
 
 @Composable
 internal fun TableCard(
@@ -196,10 +196,10 @@ private fun formatChip(value: Double): String {
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun TableCardCashPreview() {
-	HandLogTheme {
+	ThemePreview {
 		TableCard(
 			item = TableListItem(
 				table = PokerTable(
@@ -220,10 +220,10 @@ private fun TableCardCashPreview() {
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun TableCardTournamentPreview() {
-	HandLogTheme {
+	ThemePreview {
 		TableCard(
 			item = TableListItem(
 				table = PokerTable(

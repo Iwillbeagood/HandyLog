@@ -1,5 +1,7 @@
 package com.hand.log.table
 
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -8,10 +10,11 @@ import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.GameType
 import com.hand.log.table.component.PlayerSetupSheet
-import com.hand.log.table.component.TableEditSheet
 import com.hand.log.table.contract.TableDetailModalEffect
 import com.hand.log.table.contract.TableDetailState
+import com.hand.log.ui.table.TableFormSheet
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun TableDetailRoute(
 	viewModel: TableDetailViewModel,
@@ -43,6 +46,7 @@ internal fun TableDetailRoute(
 	)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TableDetailModalContent(
 	state: TableDetailState,
@@ -71,13 +75,16 @@ private fun TableDetailModalContent(
 		}
 		TableDetailModalEffect.ShowTableEdit -> {
 			if (state is TableDetailState.TableData) {
-				TableEditSheet(
+				val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+				TableFormSheet(
+					sheetState = sheetState,
 					table = state.table,
-					onUpdate = { date, location, gameType, stack, blinds, playerCount, heroSeat ->
+					onDismissRequest = onDismiss,
+					onSubmit = { date, location, gameType, stack, blinds, playerCount, heroSeat ->
 						onUpdateTable(date, location, gameType, stack, blinds, playerCount, heroSeat)
 						onDismiss()
 					},
-					onDismiss = onDismiss,
 				)
 			}
 		}

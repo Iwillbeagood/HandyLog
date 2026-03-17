@@ -17,18 +17,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.HandRecord
 import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.Street
-import com.hand.log.domain.model.StreetData
+import com.hand.log.domain.model.FlopStreet
+import com.hand.log.domain.model.HandStreets
+import com.hand.log.domain.model.HeroHand
+import com.hand.log.domain.model.RiverStreet
+import com.hand.log.domain.model.TurnStreet
 import com.hand.log.domain.model.Suit
 import com.hand.log.ui.poker.CardSize
 import com.hand.log.ui.poker.PlayingCard
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
 
 @Composable
 internal fun HandRecordCard(
@@ -117,7 +121,7 @@ internal fun HandRecordCard(
 
 				// Board cards inline
 				val boardStreets = listOf(Street.FLOP, Street.TURN, Street.RIVER)
-				val hasBoard = boardStreets.any { hand.streets[it]?.cards?.isNotEmpty() == true }
+				val hasBoard = boardStreets.any { hand.streets.getCards(it).isNotEmpty() }
 
 				if (hasBoard) {
 					Spacer(modifier = Modifier.height(4.dp))
@@ -125,10 +129,10 @@ internal fun HandRecordCard(
 						horizontalArrangement = Arrangement.spacedBy(2.dp),
 					) {
 						boardStreets.forEach { street ->
-							hand.streets[street]?.cards?.forEach { card ->
+							hand.streets.getCards(street).forEach { card ->
 								PlayingCard(card = card, size = CardSize.XS)
 							}
-							if (street != Street.RIVER && hand.streets[street]?.cards?.isNotEmpty() == true) {
+							if (street != Street.RIVER && hand.streets.getCards(street).isNotEmpty()) {
 								Spacer(modifier = Modifier.width(2.dp))
 							}
 						}
@@ -191,35 +195,30 @@ private fun formatTimestamp(timestamp: Long): String {
 	return "$h:$m"
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun HandRecordCardPreview() {
-	HandLogTheme {
+	ThemePreview {
 		HandRecordCard(
 			hand = HandRecord(
 				id = "h1",
 				tableId = "1",
 				createdAt = 1710000000000L,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
-				heroCards = listOf(
-					Card(Rank.ACE, Suit.SPADES),
-					Card(Rank.KING, Suit.SPADES),
-				),
+				heroHand = HeroHand(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 				heroStack = 62000.0,
 				buttonSeat = 1,
-				streets = mapOf(
-					Street.FLOP to StreetData(
-						cards = listOf(
-							Card(Rank.ACE, Suit.HEARTS),
-							Card(Rank.KING, Suit.DIAMONDS),
-							Card(Rank.QUEEN, Suit.CLUBS),
-						),
+				streets = HandStreets(
+					flop = FlopStreet(
+						card1 = Card(Rank.ACE, Suit.HEARTS),
+						card2 = Card(Rank.KING, Suit.DIAMONDS),
+						card3 = Card(Rank.QUEEN, Suit.CLUBS),
 					),
-					Street.TURN to StreetData(
-						cards = listOf(Card(Rank.TEN, Suit.SPADES)),
+					turn = TurnStreet(
+						card = Card(Rank.TEN, Suit.SPADES),
 					),
-					Street.RIVER to StreetData(
-						cards = listOf(Card(Rank.TWO, Suit.HEARTS)),
+					river = RiverStreet(
+						card = Card(Rank.TWO, Suit.HEARTS),
 					),
 				),
 				result = 15000.0,
@@ -230,20 +229,17 @@ private fun HandRecordCardPreview() {
 	}
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun HandRecordCardNegativePreview() {
-	HandLogTheme {
+	ThemePreview {
 		HandRecordCard(
 			hand = HandRecord(
 				id = "h2",
 				tableId = "1",
 				createdAt = 1709900000000L,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
-				heroCards = listOf(
-					Card(Rank.JACK, Suit.HEARTS),
-					Card(Rank.TEN, Suit.HEARTS),
-				),
+				heroHand = HeroHand(Card(Rank.JACK, Suit.HEARTS), Card(Rank.TEN, Suit.HEARTS)),
 				heroStack = 50000.0,
 				buttonSeat = 3,
 				result = -8500.0,
