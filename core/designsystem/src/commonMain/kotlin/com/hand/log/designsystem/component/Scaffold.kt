@@ -1,6 +1,7 @@
 package com.hand.log.designsystem.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,6 +16,8 @@ import com.hand.log.designsystem.theme.HandyTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 
 /**
@@ -33,6 +36,8 @@ fun BaseScaffold(
 	contentColor: Color = contentColorFor(containerColor),
 	content: @Composable ColumnScope.() -> Unit,
 ) {
+	val focusManager = LocalFocusManager.current
+
 	Scaffold(
 		topBar = {
 			Column(
@@ -56,7 +61,10 @@ fun BaseScaffold(
 			modifier = Modifier
 				.fillMaxSize()
 				.padding(it)
-				.padding(contentPadding),
+				.padding(contentPadding)
+				.pointerInput(Unit) {
+					detectTapGestures { focusManager.clearFocus() }
+				},
 		) {
 			content()
 		}

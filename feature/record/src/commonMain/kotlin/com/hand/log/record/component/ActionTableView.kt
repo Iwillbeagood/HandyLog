@@ -326,6 +326,7 @@ internal fun ActionTableView(
 								color = Color.White,
 								modifier = Modifier
 									.clip(RoundedCornerShape(4.dp))
+									.padding(top = 3.dp)
 									.background(Color(0xFFE84040).copy(alpha = 0.8f))
 									.padding(horizontal = 3.dp, vertical = 1.dp),
 							)
