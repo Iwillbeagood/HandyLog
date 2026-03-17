@@ -12,6 +12,9 @@ sealed interface MainTabRoute : Route {
 
 	@Serializable
 	data object Home : MainTabRoute
+
+	@Serializable
+	data object Players : MainTabRoute
 }
 
 @Serializable

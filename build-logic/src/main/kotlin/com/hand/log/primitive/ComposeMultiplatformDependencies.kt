@@ -1,31 +1,29 @@
 package com.hand.log.primitive
 
+import com.hand.log.library
+import com.hand.log.libs
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.getByType
-import org.jetbrains.compose.ComposeExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 internal fun Project.composeMultiplatformDependencies() {
-    val composeDependencies = extensions.getByType<ComposeExtension>().dependencies
     extensions.configure<KotlinMultiplatformExtension> {
         sourceSets.apply {
             commonMain {
                 dependencies {
-                    implementation(composeDependencies.runtime)
-                    implementation(composeDependencies.foundation)
-                    implementation(composeDependencies.material3)
-                    implementation(composeDependencies.ui)
-                    implementation(composeDependencies.components.resources)
-                    implementation(composeDependencies.components.uiToolingPreview)
+                    implementation(libs.library("compose-runtime"))
+                    implementation(libs.library("compose-foundation"))
+                    implementation(libs.library("compose-material3"))
+                    implementation(libs.library("compose-ui"))
+                    implementation(libs.library("compose-resources"))
+                    implementation(libs.library("compose-ui-tooling-preview"))
                 }
             }
         }
     }
 
     dependencies {
-        "debugImplementation"(composeDependencies.uiTooling)
-        "debugImplementation"(composeDependencies.preview)
+        "debugImplementation"(libs.library("compose-ui-tooling"))
     }
 }

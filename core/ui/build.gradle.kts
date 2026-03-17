@@ -9,10 +9,10 @@ android.namespace = "com.hand.log.core.ui"
 kotlin {
 	sourceSets {
 		commonMain.dependencies {
-			implementation(compose.foundation)
-			implementation(compose.ui)
-			implementation(compose.material3)
+			implementation(libs.androidx.lifecycle.viewmodel)
+			implementation(libs.kotlinx.datetime)
 			implementation(projects.core.designsystem)
+			implementation(projects.core.res)
 			implementation(projects.domain.model)
 		}
 	}

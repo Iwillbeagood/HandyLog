@@ -8,6 +8,7 @@ kotlin {
 	sourceSets {
 		commonMain.dependencies {
 			implementation(projects.feature.home)
+			implementation(projects.feature.players)
 			implementation(projects.feature.table)
 			implementation(projects.feature.record)
 			implementation(libs.kotlinx.immutable)

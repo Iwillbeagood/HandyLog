@@ -4,3 +4,10 @@ plugins {
 }
 
 android.namespace = "com.hand.log.core.common"
+
+kotlin {
+	sourceSets {
+		commonMain.dependencies {
+		}
+	}
+}

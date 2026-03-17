@@ -65,6 +65,7 @@ include(
 include(
     ":feature:main",
     ":feature:home",
+    ":feature:players",
     ":feature:record",
     ":feature:table",
 )
