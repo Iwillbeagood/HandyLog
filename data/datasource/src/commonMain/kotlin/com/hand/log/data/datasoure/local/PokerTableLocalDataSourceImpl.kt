@@ -39,6 +39,7 @@ internal class PokerTableLocalDataSourceImpl(
 			blindsSb = table.blinds?.sb,
 			blindsBb = table.blinds?.bb,
 			blindsStraddle = table.blinds?.straddle,
+			isBigBlindAnte = table.blinds?.isBigBlindAnte ?: false,
 			playerCount = table.playerCount,
 			heroSeat = table.heroSeat,
 			createdAt = table.createdAt,
@@ -77,7 +78,12 @@ internal class PokerTableLocalDataSourceImpl(
 		val sb = entity.blindsSb
 		val bb = entity.blindsBb
 		val blinds = if (sb != null && bb != null) {
-			Blinds(sb = sb, bb = bb, straddle = entity.blindsStraddle)
+			Blinds(
+				sb = sb,
+				bb = bb,
+				straddle = entity.blindsStraddle,
+				isBigBlindAnte = entity.isBigBlindAnte,
+			)
 		} else {
 			null
 		}

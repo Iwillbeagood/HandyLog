@@ -3,6 +3,9 @@ package com.hand.log.database.entity
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.hand.log.domain.model.Blinds
+import com.hand.log.domain.model.HandStreets
+import com.hand.log.domain.model.HeroHand
 
 @Entity(
 	tableName = "hand_records",
@@ -19,14 +22,11 @@ data class HandRecordEntity(
 	@PrimaryKey val id: String,
 	val tableId: String,
 	val createdAt: Long,
-	val blindsSb: Double? = null,
-	val blindsBb: Double? = null,
-	val heroCard1Rank: String? = null,
-	val heroCard1Suit: String? = null,
-	val heroCard2Rank: String? = null,
-	val heroCard2Suit: String? = null,
+	val blinds: Blinds? = null,
+	val heroHand: HeroHand? = null,
 	val heroStack: Double = 0.0,
 	val buttonSeat: Int = 1,
+	val streets: HandStreets = HandStreets(),
 	val result: Double? = null,
 	val memo: String? = null,
 )

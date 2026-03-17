@@ -1,12 +1,12 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 2,
-    "identityHash": "87f5fbb31281f022fdbc7d9e9caee4ee",
+    "version": 1,
+    "identityHash": "e2e79396eac8c8f2a9057947fa1bbcde",
     "entities": [
       {
         "tableName": "poker_tables",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `date` TEXT NOT NULL, `location` TEXT, `gameType` TEXT NOT NULL, `startingStack` REAL NOT NULL, `blindsSb` REAL, `blindsBb` REAL, `blindsStraddle` REAL, `playerCount` INTEGER NOT NULL, `heroSeat` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `date` TEXT NOT NULL, `location` TEXT, `gameType` TEXT NOT NULL, `startingStack` REAL NOT NULL, `blindsSb` REAL, `blindsBb` REAL, `blindsStraddle` REAL, `isBigBlindAnte` INTEGER NOT NULL, `playerCount` INTEGER NOT NULL, `heroSeat` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -51,6 +51,12 @@
             "fieldPath": "blindsStraddle",
             "columnName": "blindsStraddle",
             "affinity": "REAL"
+          },
+          {
+            "fieldPath": "isBigBlindAnte",
+            "columnName": "isBigBlindAnte",
+            "affinity": "INTEGER",
+            "notNull": true
           },
           {
             "fieldPath": "playerCount",
@@ -144,7 +150,7 @@
       },
       {
         "tableName": "hand_records",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `tableId` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `blindsSb` REAL, `blindsBb` REAL, `heroCard1Rank` TEXT, `heroCard1Suit` TEXT, `heroCard2Rank` TEXT, `heroCard2Suit` TEXT, `heroStack` REAL NOT NULL, `buttonSeat` INTEGER NOT NULL, `result` REAL, `memo` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`tableId`) REFERENCES `poker_tables`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `tableId` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `blinds` TEXT, `heroHand` TEXT, `heroStack` REAL NOT NULL, `buttonSeat` INTEGER NOT NULL, `streets` TEXT NOT NULL, `result` REAL, `memo` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`tableId`) REFERENCES `poker_tables`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -165,33 +171,13 @@
             "notNull": true
           },
           {
-            "fieldPath": "blindsSb",
-            "columnName": "blindsSb",
-            "affinity": "REAL"
-          },
-          {
-            "fieldPath": "blindsBb",
-            "columnName": "blindsBb",
-            "affinity": "REAL"
-          },
-          {
-            "fieldPath": "heroCard1Rank",
-            "columnName": "heroCard1Rank",
+            "fieldPath": "blinds",
+            "columnName": "blinds",
             "affinity": "TEXT"
           },
           {
-            "fieldPath": "heroCard1Suit",
-            "columnName": "heroCard1Suit",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "heroCard2Rank",
-            "columnName": "heroCard2Rank",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "heroCard2Suit",
-            "columnName": "heroCard2Suit",
+            "fieldPath": "heroHand",
+            "columnName": "heroHand",
             "affinity": "TEXT"
           },
           {
@@ -204,6 +190,12 @@
             "fieldPath": "buttonSeat",
             "columnName": "buttonSeat",
             "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "streets",
+            "columnName": "streets",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -236,138 +228,11 @@
             ]
           }
         ]
-      },
-      {
-        "tableName": "hand_street_cards",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `handId` TEXT NOT NULL, `street` TEXT NOT NULL, `cardIndex` INTEGER NOT NULL, `rank` TEXT NOT NULL, `suit` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`handId`) REFERENCES `hand_records`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "handId",
-            "columnName": "handId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "street",
-            "columnName": "street",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "cardIndex",
-            "columnName": "cardIndex",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "rank",
-            "columnName": "rank",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "suit",
-            "columnName": "suit",
-            "affinity": "TEXT",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "id"
-          ]
-        },
-        "foreignKeys": [
-          {
-            "table": "hand_records",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "handId"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          }
-        ]
-      },
-      {
-        "tableName": "hand_street_actions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `handId` TEXT NOT NULL, `street` TEXT NOT NULL, `playerSeat` INTEGER NOT NULL, `actionType` TEXT NOT NULL, `amount` REAL, `actionOrder` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`handId`) REFERENCES `hand_records`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "handId",
-            "columnName": "handId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "street",
-            "columnName": "street",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "playerSeat",
-            "columnName": "playerSeat",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "actionType",
-            "columnName": "actionType",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "amount",
-            "columnName": "amount",
-            "affinity": "REAL"
-          },
-          {
-            "fieldPath": "actionOrder",
-            "columnName": "actionOrder",
-            "affinity": "INTEGER",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "id"
-          ]
-        },
-        "foreignKeys": [
-          {
-            "table": "hand_records",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "handId"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          }
-        ]
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '87f5fbb31281f022fdbc7d9e9caee4ee')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e2e79396eac8c8f2a9057947fa1bbcde')"
     ]
   }
 }

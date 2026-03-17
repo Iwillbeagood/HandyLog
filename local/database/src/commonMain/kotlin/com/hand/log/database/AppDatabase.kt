@@ -9,8 +9,6 @@ import com.hand.log.database.converter.Converters
 import com.hand.log.database.dao.HandRecordDao
 import com.hand.log.database.dao.PokerTableDao
 import com.hand.log.database.entity.HandRecordEntity
-import com.hand.log.database.entity.HandStreetActionEntity
-import com.hand.log.database.entity.HandStreetCardEntity
 import com.hand.log.database.entity.PokerTableEntity
 import com.hand.log.database.entity.TablePlayerEntity
 
@@ -19,8 +17,6 @@ import com.hand.log.database.entity.TablePlayerEntity
 		PokerTableEntity::class,
 		TablePlayerEntity::class,
 		HandRecordEntity::class,
-		HandStreetCardEntity::class,
-		HandStreetActionEntity::class,
 	],
 	version = 1,
 )

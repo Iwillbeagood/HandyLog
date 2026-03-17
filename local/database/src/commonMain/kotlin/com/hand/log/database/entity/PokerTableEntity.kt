@@ -14,6 +14,7 @@ data class PokerTableEntity(
 	val blindsSb: Double? = null,
 	val blindsBb: Double? = null,
 	val blindsStraddle: Double? = null,
+	val isBigBlindAnte: Boolean = false,
 	val playerCount: Int,
 	val heroSeat: Int,
 	val createdAt: Long,

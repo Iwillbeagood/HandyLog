@@ -2,10 +2,16 @@ package com.hand.log.database.converter
 
 import androidx.room.TypeConverter
 import com.hand.log.domain.model.ActionType
+import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.GameType
+import com.hand.log.domain.model.HandStreets
+import com.hand.log.domain.model.HeroHand
 import com.hand.log.domain.model.PlayerTendency
 import com.hand.log.domain.model.Street
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.json.Json
+
+private val json = Json { ignoreUnknownKeys = true }
 
 class Converters {
 	@TypeConverter
@@ -37,4 +43,22 @@ class Converters {
 
 	@TypeConverter
 	fun toLocalDate(value: String): LocalDate = LocalDate.parse(value)
+
+	@TypeConverter
+	fun fromBlinds(value: Blinds?): String? = value?.let { json.encodeToString(Blinds.serializer(), it) }
+
+	@TypeConverter
+	fun toBlinds(value: String?): Blinds? = value?.let { json.decodeFromString(Blinds.serializer(), it) }
+
+	@TypeConverter
+	fun fromHeroHand(value: HeroHand?): String? = value?.let { json.encodeToString(HeroHand.serializer(), it) }
+
+	@TypeConverter
+	fun toHeroHand(value: String?): HeroHand? = value?.let { json.decodeFromString(HeroHand.serializer(), it) }
+
+	@TypeConverter
+	fun fromHandStreets(value: HandStreets): String = json.encodeToString(HandStreets.serializer(), value)
+
+	@TypeConverter
+	fun toHandStreets(value: String): HandStreets = json.decodeFromString(HandStreets.serializer(), value)
 }
