@@ -68,4 +68,5 @@ include(
     ":feature:players",
     ":feature:record",
     ":feature:table",
+    ":feature:hand-detail",
 )

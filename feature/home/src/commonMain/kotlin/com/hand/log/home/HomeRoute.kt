@@ -3,12 +3,14 @@ package com.hand.log.home
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hand.log.home.contract.HomeEffect
 import com.hand.log.designsystem.component.HmFadeAnimatedVisibility
 import com.hand.log.home.contract.HomeModalEffect
 import com.hand.log.home.contract.HomeState
@@ -28,6 +30,17 @@ internal fun HomeRoute(
 	var showSetupSheet by remember { mutableStateOf(false) }
 	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 	val scope = rememberCoroutineScope()
+
+	LaunchedEffect(Unit) {
+		viewModel.homeEffect.collect { effect ->
+			when (effect) {
+				is HomeEffect.NavigateToTable -> {
+					navAction.navigateToTableDetail(effect.tableId)
+				}
+				is HomeEffect.ShowSnackBar -> { /* TODO */ }
+			}
+		}
+	}
 
 	HomeContent(
 		homeState = homeState,

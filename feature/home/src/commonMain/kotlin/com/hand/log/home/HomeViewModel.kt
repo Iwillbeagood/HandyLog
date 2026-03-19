@@ -88,7 +88,7 @@ internal class HomeViewModel(
 			)
 			pokerTableRepository.saveTable(table) {
 				viewModelScope.launch {
-					_homeEffect.emit(HomeEffect.ShowSnackBar("테이블이 생성되었습니다"))
+					_homeEffect.emit(HomeEffect.NavigateToTable(table.id))
 				}
 			}
 		}

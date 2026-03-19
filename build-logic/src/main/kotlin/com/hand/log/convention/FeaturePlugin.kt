@@ -37,11 +37,13 @@ class FeaturePlugin : Plugin<Project> {
                         implementation(project(":core:ui"))
                         implementation(project(":core:navigation"))
                         implementation(project(":core:res"))
+                        implementation(project(":core:utils"))
                         implementation(project(":domain:model"))
                         implementation(project(":domain:usecase"))
                         implementation(project(":domain:repository"))
                         implementation(libs.library("androidx.lifecycle.runtime.compose"))
                         implementation(libs.library("koin.compose.viewmodel.navigation"))
+                        implementation(libs.library("compose.navigationevent"))
                     }
                 }
 

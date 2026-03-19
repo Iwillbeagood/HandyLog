@@ -22,3 +22,6 @@ data class TableDetail(val tableId: String) : Route
 
 @Serializable
 data class RecordHand(val tableId: String) : Route
+
+@Serializable
+data class HandDetail(val handId: String) : Route

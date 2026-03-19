@@ -11,6 +11,7 @@ kotlin {
 			implementation(projects.feature.players)
 			implementation(projects.feature.table)
 			implementation(projects.feature.record)
+			implementation(projects.feature.handDetail)
 			implementation(libs.kotlinx.immutable)
 			implementation(libs.jetbrains.lifecycle.viewmodel.navigation3)
 		}

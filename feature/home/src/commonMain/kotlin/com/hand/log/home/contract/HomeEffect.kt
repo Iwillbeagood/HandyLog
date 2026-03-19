@@ -15,4 +15,7 @@ internal sealed interface HomeEffect {
 
 	@Immutable
 	data class ShowSnackBar(val message: String) : HomeEffect
+
+	@Immutable
+	data class NavigateToTable(val tableId: String) : HomeEffect
 }

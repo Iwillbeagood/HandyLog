@@ -30,6 +30,7 @@ internal fun TableDetailRoute(
 				state = tableData,
 				onBack = navAction::popBackStack,
 				onNavigateToRecordHand = { navAction.navigateToRecordHand(tableData.table.id) },
+				onNavigateToHandDetail = { handId -> navAction.navigateToHandDetail(handId) },
 				onDeleteHand = viewModel::deleteHand,
 				onSeatClick = viewModel::showPlayerSetup,
 				onShowTableEdit = viewModel::showTableEdit,

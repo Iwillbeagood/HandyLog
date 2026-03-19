@@ -30,6 +30,8 @@ kotlin {
 			implementation(projects.feature.home)
 			implementation(projects.feature.table)
 			implementation(projects.feature.record)
+			implementation(projects.feature.handDetail)
+			implementation(projects.feature.players)
 			implementation(projects.domain.model)
 			implementation(projects.domain.repository)
 			implementation(projects.data.datasource)

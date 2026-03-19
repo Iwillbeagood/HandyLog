@@ -14,6 +14,8 @@ import com.hand.log.home.di.featureHomeModule
 import com.hand.log.main.MainScreen
 import com.hand.log.navigation.interop.LocalMainActionInterop
 import com.hand.log.navigation.interop.MainActionInterop
+import com.hand.log.handdetail.di.featureHandDetailModule
+import com.hand.log.players.di.featurePlayersModule
 import com.hand.log.record.di.featureRecordModule
 import com.hand.log.table.di.featureTableModule
 import com.hand.log.utils.toast.ToastManager
@@ -52,6 +54,8 @@ internal val appModule = module {
 		featureHomeModule,
 		featureTableModule,
 		featureRecordModule,
+		featureHandDetailModule,
+		featurePlayersModule,
 	)
 }
 

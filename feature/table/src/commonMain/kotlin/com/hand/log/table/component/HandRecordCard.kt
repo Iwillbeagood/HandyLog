@@ -1,6 +1,7 @@
 package com.hand.log.table.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,6 +39,7 @@ import com.hand.log.designsystem.etc.ThemePreviews
 internal fun HandRecordCard(
 	hand: HandRecord,
 	index: Int = 0,
+	onClick: () -> Unit,
 	onDelete: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
@@ -49,6 +51,7 @@ internal fun HandRecordCard(
 			.clip(RoundedCornerShape(12.dp))
 			.background(colors.card)
 			.border(1.dp, colors.border, RoundedCornerShape(12.dp))
+			.clickable(onClick = onClick)
 			.padding(12.dp),
 	) {
 		// Hand number + Result
@@ -224,6 +227,7 @@ private fun HandRecordCardPreview() {
 				result = 15000.0,
 				memo = "탑투페어로 올인 콜",
 			),
+			onClick = {},
 			onDelete = {},
 		)
 	}
@@ -244,6 +248,7 @@ private fun HandRecordCardNegativePreview() {
 				buttonSeat = 3,
 				result = -8500.0,
 			),
+			onClick = {},
 			onDelete = {},
 		)
 	}

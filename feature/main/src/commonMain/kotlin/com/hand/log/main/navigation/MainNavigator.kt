@@ -3,6 +3,7 @@ package com.hand.log.main.navigation
 import com.hand.log.navigation.interop.NavigateActionInterop
 import com.hand.log.navigation.navigation.LaunchMode
 import com.hand.log.navigation.navigation.MainTabRoute
+import com.hand.log.navigation.navigation.HandDetail
 import com.hand.log.navigation.navigation.RecordHand
 import com.hand.log.navigation.navigation.Route
 import com.hand.log.navigation.navigation.RouteStack
@@ -32,6 +33,10 @@ internal class MainNavigator {
 
 		override fun navigateToRecordHand(tableId: String) {
 			navigate(RecordHand(tableId))
+		}
+
+		override fun navigateToHandDetail(handId: String) {
+			navigate(HandDetail(handId))
 		}
 	}
 

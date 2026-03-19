@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import com.hand.log.navigation.navigation.MainTabRoute
 import com.hand.log.navigation.navigation.Route
 import handylog.core.res.generated.resources.Res
-import handylog.core.res.generated.resources.dollar_sign
+import handylog.core.res.generated.resources.house
 import handylog.core.res.generated.resources.user_round
 import org.jetbrains.compose.resources.DrawableResource
 
@@ -13,7 +13,7 @@ enum class MainBottomNavItem(
 	val route: MainTabRoute,
 ) {
 	Home(
-		icon = Res.drawable.dollar_sign,
+		icon = Res.drawable.house,
 		route = MainTabRoute.Home,
 	),
 	Players(

@@ -10,17 +10,18 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.theme.HandyTheme
@@ -39,7 +40,6 @@ internal fun MainBottomBar(
 	onItemClick: (MainTabRoute) -> Unit = {},
 ) {
 	val colors = HandyTheme.colorScheme
-	val shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
 
 	AnimatedVisibility(
 		visible = visible,
@@ -49,15 +49,13 @@ internal fun MainBottomBar(
 		Box(
 			modifier = Modifier
 				.fillMaxWidth()
-				.clip(shape)
-				.background(colors.card, shape)
-				.border(1.dp, colors.border, shape)
+				.background(colors.card)
+				.border(1.dp, colors.border)
 				.navigationBarsPadding(),
 		) {
 			Row(
 				modifier = Modifier
-					.fillMaxWidth()
-					.height(56.dp),
+					.fillMaxWidth(),
 				horizontalArrangement = Arrangement.SpaceEvenly,
 				verticalAlignment = Alignment.CenterVertically,
 			) {
@@ -66,15 +64,29 @@ internal fun MainBottomBar(
 					Box(
 						modifier = Modifier
 							.weight(1f)
-							.clickable { onItemClick(item.route) },
+							.clickable { onItemClick(item.route) }
+							.padding(vertical = 10.dp),
 						contentAlignment = Alignment.Center,
 					) {
-						Icon(
-							painter = painterResource(item.icon),
-							contentDescription = null,
-							modifier = Modifier.size(22.dp),
-							tint = if (isSelected) colors.primary else colors.textSecondary,
-						)
+						Column(
+							horizontalAlignment = Alignment.CenterHorizontally,
+							verticalArrangement = Arrangement.spacedBy(2.dp),
+						) {
+							Icon(
+								painter = painterResource(item.icon),
+								contentDescription = null,
+								modifier = Modifier.size(22.dp),
+								tint = if (isSelected) colors.primary else colors.textSecondary,
+							)
+							Text(
+								text = when (item) {
+									MainBottomNavItem.Home -> "홈"
+									MainBottomNavItem.Players -> "마킹"
+								},
+								style = HandyTheme.typography.medium12,
+								color = if (isSelected) colors.primary else colors.textSecondary,
+							)
+						}
 					}
 				}
 			}

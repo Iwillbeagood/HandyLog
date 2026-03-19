@@ -52,6 +52,7 @@ internal fun TableDetailScreen(
 	state: TableDetailState.TableData,
 	onBack: () -> Unit,
 	onNavigateToRecordHand: () -> Unit,
+	onNavigateToHandDetail: (String) -> Unit,
 	onDeleteHand: (String) -> Unit,
 	onSeatClick: (Int) -> Unit,
 	onShowTableEdit: () -> Unit,
@@ -180,6 +181,7 @@ internal fun TableDetailScreen(
 					HandRecordCard(
 						hand = hand,
 						index = handIndex,
+						onClick = { onNavigateToHandDetail(hand.id) },
 						onDelete = { onDeleteHand(hand.id) },
 					)
 				}
@@ -248,6 +250,7 @@ private fun TableDetailScreenPreview() {
 			),
 			onBack = {},
 			onNavigateToRecordHand = {},
+			onNavigateToHandDetail = {},
 			onDeleteHand = {},
 			onSeatClick = {},
 			onShowTableEdit = {},
@@ -276,6 +279,7 @@ private fun TableDetailScreenEmptyPreview() {
 			),
 			onBack = {},
 			onNavigateToRecordHand = {},
+			onNavigateToHandDetail = {},
 			onDeleteHand = {},
 			onSeatClick = {},
 			onShowTableEdit = {},

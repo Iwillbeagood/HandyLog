@@ -13,6 +13,7 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.hand.log.handdetail.navigation.handDetailNavGraph
 import com.hand.log.home.navigation.homeNavGraph
 import com.hand.log.players.navigation.playersNavGraph
 import com.hand.log.record.navigation.recordHandNavGraph
@@ -28,6 +29,7 @@ internal fun MainNavHost(
 		playersNavGraph()
 		tableNavGraph()
 		recordHandNavGraph()
+		handDetailNavGraph()
 	}
 
 	NavDisplay(
