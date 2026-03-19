@@ -28,6 +28,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import com.hand.log.designsystem.component.modal.SheetDragBlocker
 import com.hand.log.designsystem.theme.HandyTheme
 import org.jetbrains.compose.resources.painterResource
 import com.hand.log.domain.model.Card

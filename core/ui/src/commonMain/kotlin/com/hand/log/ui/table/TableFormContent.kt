@@ -12,9 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,7 +28,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.HandySelector
@@ -38,11 +35,9 @@ import com.hand.log.designsystem.component.HandySectionLabel
 import com.hand.log.designsystem.component.HandySwitch
 import com.hand.log.designsystem.component.HandyTextField
 import com.hand.log.designsystem.component.HandyToggleGroup
-import com.hand.log.designsystem.component.RegularButton
 import com.hand.log.designsystem.component.VerticalSpacer
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.GameType
-import com.hand.log.ui.poker.SheetDragBlocker
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.calendar
 import handylog.core.res.generated.resources.map_pin
@@ -52,9 +47,7 @@ import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
-fun TableFormContent(
-	title: String,
-	buttonText: String,
+fun TableFormFields(
 	date: String,
 	onDateChange: (String) -> Unit,
 	location: String,
@@ -77,153 +70,128 @@ fun TableFormContent(
 	onPlayerCountChange: (Int) -> Unit,
 	heroSeat: Int,
 	onHeroSeatChange: (Int) -> Unit,
-	onSubmit: () -> Unit,
-	isSubmitEnabled: Boolean,
 ) {
 	val colors = HandyTheme.colorScheme
 	val typography = HandyTheme.typography
 
-	Column(
+	var showDatePicker by remember { mutableStateOf(false) }
+	val datePickerState = rememberDatePickerState()
+
+	// Date selector
+	HandySectionLabel("날짜")
+	Box(
 		modifier = Modifier
 			.fillMaxWidth()
-			.nestedScroll(SheetDragBlocker)
-			.verticalScroll(rememberScrollState())
-			.padding(horizontal = 20.dp)
-			.padding(bottom = 32.dp),
+			.clip(RoundedCornerShape(8.dp))
+			.background(colors.muted, RoundedCornerShape(8.dp))
+			.border(1.dp, colors.inputBorder, RoundedCornerShape(8.dp))
+			.clickable { showDatePicker = true }
+			.padding(horizontal = 12.dp, vertical = 10.dp),
 	) {
-		var showDatePicker by remember { mutableStateOf(false) }
-		val datePickerState = rememberDatePickerState()
+		Row(verticalAlignment = Alignment.CenterVertically) {
+			Icon(
+				painter = painterResource(Res.drawable.calendar),
+				contentDescription = null,
+				modifier = Modifier.size(12.dp),
+				tint = colors.textSecondary,
+			)
+			Spacer(modifier = Modifier.width(8.dp))
+			Text(
+				text = date.ifEmpty { "날짜를 선택하세요" },
+				style = typography.regular14,
+				color = if (date.isEmpty()) colors.textSecondary.copy(alpha = 0.5f) else colors.textPrimary,
+			)
+		}
+	}
 
-		Text(
-			text = title,
-			style = typography.bold20,
-			color = colors.textPrimary,
-		)
-		VerticalSpacer(16.dp)
-
-		// Date selector
-		HandySectionLabel("날짜")
-		Box(
-			modifier = Modifier
-				.fillMaxWidth()
-				.clip(RoundedCornerShape(8.dp))
-				.background(colors.muted, RoundedCornerShape(8.dp))
-				.border(1.dp, colors.inputBorder, RoundedCornerShape(8.dp))
-				.clickable { showDatePicker = true }
-				.padding(horizontal = 12.dp, vertical = 10.dp),
+	if (showDatePicker) {
+		DatePickerDialog(
+			onDismissRequest = { showDatePicker = false },
+			confirmButton = {
+				TextButton(onClick = {
+					datePickerState.selectedDateMillis?.let { millis ->
+						val instant = kotlin.time.Instant.fromEpochMilliseconds(millis)
+						val localDate = LocalDate.fromEpochDays(
+							(instant.epochSeconds / 86400).toInt(),
+						)
+						onDateChange(localDate.toString())
+					}
+					showDatePicker = false
+				}) {
+					Text("확인")
+				}
+			},
+			dismissButton = {
+				TextButton(onClick = { showDatePicker = false }) {
+					Text("취소")
+				}
+			},
 		) {
-			Row(verticalAlignment = Alignment.CenterVertically) {
-				Icon(
-					painter = painterResource(Res.drawable.calendar),
-					contentDescription = null,
-					modifier = Modifier.size(12.dp),
-					tint = colors.textSecondary,
-				)
-				Spacer(modifier = Modifier.width(8.dp))
-				Text(
-					text = date.ifEmpty { "날짜를 선택하세요" },
-					style = typography.regular14,
-					color = if (date.isEmpty()) colors.textSecondary.copy(alpha = 0.5f) else colors.textPrimary,
-				)
-			}
+			DatePicker(state = datePickerState)
 		}
+	}
 
-		if (showDatePicker) {
-			DatePickerDialog(
-				onDismissRequest = { showDatePicker = false },
-				confirmButton = {
-					TextButton(onClick = {
-						datePickerState.selectedDateMillis?.let { millis ->
-							val instant = kotlin.time.Instant.fromEpochMilliseconds(millis)
-							val localDate = LocalDate.fromEpochDays(
-								(instant.epochSeconds / 86400).toInt(),
-							)
-							onDateChange(localDate.toString())
-						}
-						showDatePicker = false
-					}) {
-						Text("확인")
-					}
-				},
-				dismissButton = {
-					TextButton(onClick = { showDatePicker = false }) {
-						Text("취소")
-					}
-				},
-			) {
-				DatePicker(state = datePickerState)
-			}
-		}
+	VerticalSpacer(16.dp)
+	HandyTextField(
+		value = location,
+		onValueChange = onLocationChange,
+		label = "장소 (선택)",
+		leadingIcon = Res.drawable.map_pin,
+	)
 
-		VerticalSpacer(16.dp)
-		HandyTextField(
-			value = location,
-			onValueChange = onLocationChange,
-			label = "장소 (선택)",
-			leadingIcon = Res.drawable.map_pin,
+	VerticalSpacer(16.dp)
+	HandySectionLabel("게임 유형")
+	HandyToggleGroup(
+		options = GameType.entries.toList(),
+		selected = gameType,
+		onSelect = onGameTypeChange,
+		label = { it.label },
+	)
+
+	VerticalSpacer(16.dp)
+	HandyTextField(
+		value = startingStack,
+		onValueChange = onStartingStackChange,
+		label = "시작 스택",
+		keyboardType = KeyboardType.Number,
+	)
+
+	VerticalSpacer(16.dp)
+	if (gameType == GameType.CASH) {
+		CashBlindsSection(
+			sbText = sbText,
+			onSbChange = onSbChange,
+			bbText = bbText,
+			onBbChange = onBbChange,
+			straddleEnabled = straddleEnabled,
+			onStraddleEnabledChange = onStraddleEnabledChange,
+			straddleText = straddleText,
+			onStraddleChange = onStraddleChange,
 		)
-
-		VerticalSpacer(16.dp)
-		HandySectionLabel("게임 유형")
-		HandyToggleGroup(
-			options = GameType.entries.toList(),
-			selected = gameType,
-			onSelect = onGameTypeChange,
-			label = { it.label },
-		)
-
-		VerticalSpacer(16.dp)
-		HandyTextField(
-			value = startingStack,
-			onValueChange = onStartingStackChange,
-			label = "시작 스택",
-			keyboardType = KeyboardType.Number,
-		)
-
-		VerticalSpacer(16.dp)
-		if (gameType == GameType.CASH) {
-			CashBlindsSection(
-				sbText = sbText,
-				onSbChange = onSbChange,
-				bbText = bbText,
-				onBbChange = onBbChange,
-				straddleEnabled = straddleEnabled,
-				onStraddleEnabledChange = onStraddleEnabledChange,
-				straddleText = straddleText,
-				onStraddleChange = onStraddleChange,
-			)
-		} else {
-			TournamentBlindsSection(
-				bigBlindAnteEnabled = bigBlindAnteEnabled,
-				onBigBlindAnteChange = onBigBlindAnteChange,
-			)
-		}
-
-		VerticalSpacer(16.dp)
-		HandySectionLabel("플레이어 수")
-		HandySelector(
-			range = 2..10,
-			selected = playerCount,
-			onSelect = onPlayerCountChange,
-		)
-
-		VerticalSpacer(16.dp)
-		HandySectionLabel("내 좌석 번호")
-		HandySelector(
-			range = 1..playerCount,
-			selected = heroSeat,
-			onSelect = onHeroSeatChange,
-			selectedColor = colors.gold,
-			selectedContentColor = colors.card,
-		)
-
-		VerticalSpacer(16.dp)
-		RegularButton(
-			text = buttonText,
-			onClick = onSubmit,
-			enabled = isSubmitEnabled,
+	} else {
+		TournamentBlindsSection(
+			bigBlindAnteEnabled = bigBlindAnteEnabled,
+			onBigBlindAnteChange = onBigBlindAnteChange,
 		)
 	}
+
+	VerticalSpacer(16.dp)
+	HandySectionLabel("플레이어 수")
+	HandySelector(
+		range = 2..10,
+		selected = playerCount,
+		onSelect = onPlayerCountChange,
+	)
+
+	VerticalSpacer(16.dp)
+	HandySectionLabel("내 좌석 번호")
+	HandySelector(
+		range = 1..playerCount,
+		selected = heroSeat,
+		onSelect = onHeroSeatChange,
+		selectedColor = colors.gold,
+		selectedContentColor = colors.card,
+	)
 }
 
 @Composable

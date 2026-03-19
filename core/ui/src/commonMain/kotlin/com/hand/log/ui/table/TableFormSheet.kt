@@ -1,20 +1,15 @@
 package com.hand.log.ui.table
 
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import com.hand.log.designsystem.theme.HandyTheme
+import com.hand.log.designsystem.component.modal.HandyBottomSheet
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.GameType
 import com.hand.log.domain.model.PokerTable
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TableFormSheet(
-	sheetState: SheetState,
 	onDismissRequest: () -> Unit,
 	onSubmit: (
 		date: String,
@@ -29,17 +24,27 @@ fun TableFormSheet(
 ) {
 	val presenter = rememberTableFormPresenter(table)
 	val state by presenter.state.collectAsState()
-	val colors = HandyTheme.colorScheme
 
-	ModalBottomSheet(
+	HandyBottomSheet(
 		onDismissRequest = onDismissRequest,
-		sheetState = sheetState,
-		containerColor = colors.card,
-		contentColor = colors.textPrimary,
+		title = state.title,
+		confirmText = state.buttonText,
+		onConfirm = {
+			val loc = state.location.takeIf { l -> l.isNotBlank() }
+			onSubmit(
+				state.date,
+				loc,
+				state.gameType,
+				state.startingStack.toDoubleOrNull() ?: 0.0,
+				presenter.buildBlinds(),
+				state.playerCount,
+				state.heroSeat,
+			)
+			onDismissRequest()
+		},
+		confirmEnabled = state.isSubmitEnabled,
 	) {
-		TableFormContent(
-			title = state.title,
-			buttonText = state.buttonText,
+		TableFormFields(
 			date = state.date,
 			onDateChange = presenter::updateDate,
 			location = state.location,
@@ -62,19 +67,6 @@ fun TableFormSheet(
 			onPlayerCountChange = presenter::updatePlayerCount,
 			heroSeat = state.heroSeat,
 			onHeroSeatChange = presenter::updateHeroSeat,
-			onSubmit = {
-				val loc = state.location.takeIf { l -> l.isNotBlank() }
-				onSubmit(
-					state.date,
-					loc,
-					state.gameType,
-					state.startingStack.toDoubleOrNull() ?: 0.0,
-					presenter.buildBlinds(),
-					state.playerCount,
-					state.heroSeat,
-				)
-			},
-			isSubmitEnabled = state.isSubmitEnabled,
 		)
 	}
 }

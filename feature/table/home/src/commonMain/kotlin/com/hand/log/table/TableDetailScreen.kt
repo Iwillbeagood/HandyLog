@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
+import com.hand.log.designsystem.component.HandyFab
 import com.hand.log.designsystem.component.HandyTopAppbar
 import com.hand.log.designsystem.component.IconButton
 import com.hand.log.designsystem.etc.ThemePreview
@@ -102,17 +101,10 @@ internal fun TableDetailScreen(
 			)
 		},
 		floatingActionButton = {
-			FloatingActionButton(
+			HandyFab(
 				onClick = onNavigateToRecordHand,
-				containerColor = colors.primary,
-				contentColor = colors.onPrimary,
-				shape = CircleShape,
-			) {
-				Icon(
-					painter = painterResource(Res.drawable.plus),
-					contentDescription = "새 핸드 기록",
-				)
-			}
+				contentDescription = "새 핸드 기록",
+			)
 		},
 	) {
 		LazyColumn(

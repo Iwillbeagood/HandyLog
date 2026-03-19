@@ -80,11 +80,20 @@ internal class TableDetailViewModel(
 	}
 
 	fun showPlayerSetup(seat: Int) {
-		_modalEffect.update { TableDetailModalEffect.ShowPlayerSetup(initialSeat = seat) }
+		val current = _state.value as? TableDetailState.TableData ?: return
+		_modalEffect.update {
+			TableDetailModalEffect.ShowPlayerSetup(
+				initialSeat = seat,
+				isHero = seat == current.table.heroSeat,
+				startingStack = current.table.startingStack,
+				players = current.table.players,
+			)
+		}
 	}
 
 	fun showTableEdit() {
-		_modalEffect.update { TableDetailModalEffect.ShowTableEdit }
+		val current = _state.value as? TableDetailState.TableData ?: return
+		_modalEffect.update { TableDetailModalEffect.ShowTableEdit(table = current.table) }
 	}
 
 	fun updateTable(

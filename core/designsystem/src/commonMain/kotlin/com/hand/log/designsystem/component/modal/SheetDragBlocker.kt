@@ -1,4 +1,4 @@
-package com.hand.log.ui.poker
+package com.hand.log.designsystem.component.modal
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
