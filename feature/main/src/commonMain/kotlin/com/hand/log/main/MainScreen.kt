@@ -1,7 +1,10 @@
 package com.hand.log.main
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -48,11 +51,13 @@ private fun MainScreenContent(
 				onItemClick = onTabSelected,
 			)
 		},
-		content = {
-			MainNavHost(
-				backStack = routeStack.backStack,
-				onBack = onBack,
-			)
+		content = { paddingValues ->
+			Box(modifier = Modifier.padding(paddingValues)) {
+				MainNavHost(
+					backStack = routeStack.backStack,
+					onBack = onBack,
+				)
+			}
 		},
 	)
 }
