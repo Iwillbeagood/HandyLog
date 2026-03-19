@@ -8,8 +8,10 @@ import androidx.room.TypeConverters
 import com.hand.log.database.converter.Converters
 import com.hand.log.database.dao.HandRecordDao
 import com.hand.log.database.dao.PokerTableDao
+import com.hand.log.database.dao.SavedPlayerDao
 import com.hand.log.database.entity.HandRecordEntity
 import com.hand.log.database.entity.PokerTableEntity
+import com.hand.log.database.entity.SavedPlayerEntity
 import com.hand.log.database.entity.TablePlayerEntity
 
 @Database(
@@ -17,6 +19,7 @@ import com.hand.log.database.entity.TablePlayerEntity
 		PokerTableEntity::class,
 		TablePlayerEntity::class,
 		HandRecordEntity::class,
+		SavedPlayerEntity::class,
 	],
 	version = 1,
 )
@@ -25,6 +28,7 @@ import com.hand.log.database.entity.TablePlayerEntity
 abstract class AppDatabase : RoomDatabase() {
 	abstract fun pokerTableDao(): PokerTableDao
 	abstract fun handRecordDao(): HandRecordDao
+	abstract fun savedPlayerDao(): SavedPlayerDao
 }
 
 expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {

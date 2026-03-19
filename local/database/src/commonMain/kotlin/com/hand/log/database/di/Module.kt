@@ -16,4 +16,5 @@ val databaseModule = module {
 	}
 	single { get<AppDatabase>().pokerTableDao() }
 	single { get<AppDatabase>().handRecordDao() }
+	single { get<AppDatabase>().savedPlayerDao() }
 }
