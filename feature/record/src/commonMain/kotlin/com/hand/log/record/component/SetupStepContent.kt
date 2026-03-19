@@ -2,16 +2,21 @@ package com.hand.log.record.component
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -41,10 +46,44 @@ internal fun SetupStepContent(
 	onUpdateHeroStack: (String) -> Unit,
 	onUpdateButtonSeat: (Int) -> Unit,
 	onUpdateBlinds: (String, String) -> Unit,
+	onShowTableEdit: () -> Unit = {},
 ) {
 	val colors = HandyTheme.colorScheme
 
 	Column {
+		// 테이블 설정 버튼
+		Row(
+			modifier = Modifier
+				.fillMaxWidth()
+				.clip(RoundedCornerShape(8.dp))
+				.background(colors.muted)
+				.clickable(onClick = onShowTableEdit)
+				.padding(horizontal = 12.dp, vertical = 10.dp),
+			verticalAlignment = Alignment.CenterVertically,
+			horizontalArrangement = Arrangement.SpaceBetween,
+		) {
+			Column {
+				Text(
+					text = state.table?.location ?: "테이블",
+					style = HandyTheme.typography.bold14,
+					color = colors.textPrimary,
+				)
+				state.table?.let {
+					Text(
+						text = "${it.gameType.label} · ${it.playerCount}인 · 스택 ${it.startingStack.toLong()}",
+						style = HandyTheme.typography.regular12,
+						color = colors.textSecondary,
+					)
+				}
+			}
+			Text(
+				text = "수정",
+				style = HandyTheme.typography.bold12,
+				color = colors.primary,
+			)
+		}
+
+		VerticalSpacer(16.dp)
 		HandySectionLabel("히어로 카드")
 		Row(
 			horizontalArrangement = Arrangement.spacedBy(8.dp),

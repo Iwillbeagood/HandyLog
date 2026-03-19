@@ -2,7 +2,6 @@ package com.hand.log.record.component
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -26,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -37,6 +35,7 @@ import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.designsystem.theme.nonScaledSp
 import com.hand.log.domain.model.Action
 import com.hand.log.domain.model.Card
+import com.hand.log.ui.poker.AllInMarker
 import com.hand.log.ui.poker.CardSize
 import com.hand.log.ui.poker.PlayingCard
 import com.hand.log.ui.poker.indicatorColor
@@ -82,25 +81,7 @@ internal fun ActionTableView(
 		seatActions[action.playerSeat] = action
 	}
 
-	val allInSeats = state.allInSeats
-
-	// 각 좌석 액션의 벳 레벨 라벨 계산
-	val actionLabels = mutableMapOf<Int, String>()
-	var betLevel = if (state.currentStreet == Street.PREFLOP) 1 else 0 // 프리플랍: BB=1벳
-	actions.forEach { action ->
-		if (action.type == ActionType.BET || action.type == ActionType.RAISE ||
-			(action.type == ActionType.ALL_IN && (action.amount ?: 0.0) > 0)
-		) {
-			betLevel++
-			val label = when {
-				action.type == ActionType.ALL_IN -> "올인"
-				state.currentStreet != Street.PREFLOP && betLevel == 1 -> "벳"
-				betLevel == 2 -> "레이즈"
-				else -> "${betLevel}벳"
-			}
-			actionLabels[action.playerSeat] = label
-		}
-	}
+	val allInSeats = state.players.allInSeats
 
 	Box(
 		modifier = modifier
@@ -140,7 +121,7 @@ internal fun ActionTableView(
 						)
 					}
 					Text(
-						text = "POT: ${state.currentPot.toLong()}",
+						text = "POT: ${state.formatAmount(state.currentPot)}",
 						style = HandyTheme.typography.bold14.nonScaledSp,
 						color = colors.gold.copy(alpha = 0.8f),
 					)
@@ -183,13 +164,12 @@ internal fun ActionTableView(
 				val isHero = seat == state.table.heroSeat
 				val isCurrent = seat == state.currentActionSeat
 				val posName = state.positionName(seat)
-				val isFolded = seat in state.foldedSeats && action == null
+				val isFolded = seat in state.players.foldedSeats && action == null
 
 				ActionSeatView(
 					seatNumber = seat,
 					positionName = posName,
 					action = action,
-					actionLabel = actionLabels[seat],
 					isHero = isHero,
 					isCurrent = isCurrent,
 					isFolded = isFolded,
@@ -206,8 +186,9 @@ internal fun ActionTableView(
 				// Dealer / Blind chips (inner, on the table)
 				val isBtn = seat == btnSeat
 				val isPreflop = state.currentStreet == Street.PREFLOP
-				val actionAmount = action?.amount ?: 0.0
-				val hasBetAction = actionAmount > 0 && action?.type != ActionType.FOLD
+				// 해당 좌석의 이번 스트릿 총 투입 금액
+				val totalBet = action?.amount ?: 0.0
+				val hasBetAction = totalBet > 0 && action?.type != ActionType.FOLD
 				val chipLabel = when {
 					isBtn -> "D"
 					isPreflop && !hasBetAction && seat == sbSeat -> "SB"
@@ -220,8 +201,8 @@ internal fun ActionTableView(
 					else -> null
 				}
 				val blindAmt = when {
-					isPreflop && !hasBetAction && seat == sbSeat -> state.blinds?.sb?.toLong()
-					isPreflop && !hasBetAction && seat == bbSeat -> state.blinds?.bb?.toLong()
+					isPreflop && !hasBetAction && seat == sbSeat -> state.blinds?.sb
+					isPreflop && !hasBetAction && seat == bbSeat -> state.blinds?.bb
 					else -> null
 				}
 
@@ -267,7 +248,7 @@ internal fun ActionTableView(
 							}
 							if (blindAmt != null) {
 								Text(
-									text = "$blindAmt",
+									text = state.formatAmount(blindAmt),
 									style = HandyTheme.typography.bold8.nonScaledSp,
 									color = colors.gold,
 									modifier = Modifier.padding(top = 1.dp),
@@ -294,44 +275,11 @@ internal fun ActionTableView(
 								?.amount
 						}
 
-					Column(
-						modifier = Modifier
-							.offset { IntOffset(ax.roundToInt(), ay.roundToInt()) },
-						horizontalAlignment = Alignment.CenterHorizontally,
-					) {
-						Box(
-							modifier = Modifier.size(dealerSizeDp),
-							contentAlignment = Alignment.Center,
-						) {
-							Canvas(modifier = Modifier.size(dealerSizeDp)) {
-								val path = Path().apply {
-									moveTo(size.width / 2f, 0f)
-									lineTo(size.width, size.height)
-									lineTo(0f, size.height)
-									close()
-								}
-								drawPath(path, color = Color(0xFFE84040))
-							}
-							Text(
-								text = "A",
-								style = HandyTheme.typography.bold8.nonScaledSp,
-								color = Color.White,
-								textAlign = TextAlign.Center,
-							)
-						}
-						if (allInAmount != null) {
-							Text(
-								text = "${allInAmount.toLong()}",
-								style = HandyTheme.typography.bold8.nonScaledSp,
-								color = Color.White,
-								modifier = Modifier
-									.clip(RoundedCornerShape(4.dp))
-									.padding(top = 3.dp)
-									.background(Color(0xFFE84040).copy(alpha = 0.8f))
-									.padding(horizontal = 3.dp, vertical = 1.dp),
-							)
-						}
-					}
+					AllInMarker(
+						modifier = Modifier.offset { IntOffset(ax.roundToInt(), ay.roundToInt()) },
+						size = dealerSizeDp,
+						amount = allInAmount?.let { state.formatAmount(it) },
+					)
 				}
 
 				// Bet chips on the table (블라인드 칩과만 양립 불가)
@@ -367,7 +315,7 @@ internal fun ActionTableView(
 							)
 						}
 						Text(
-							text = "${actionAmount.toLong()}",
+							text = state.formatAmount(totalBet),
 							style = HandyTheme.typography.bold8.nonScaledSp,
 							color = Color.White,
 							modifier = Modifier
@@ -387,7 +335,6 @@ private fun ActionSeatView(
 	seatNumber: Int,
 	positionName: String,
 	action: Action?,
-	actionLabel: String? = null,
 	isHero: Boolean,
 	isCurrent: Boolean,
 	isFolded: Boolean = false,
@@ -476,7 +423,7 @@ private fun ActionSeatView(
 		// Action label
 		if (action != null) {
 			Text(
-				text = actionLabel ?: action.type.label,
+				text = action.label,
 				style = HandyTheme.typography.bold8.nonScaledSp,
 				color = (actionColor ?: colors.textSecondary).copy(alpha = textAlpha),
 				maxLines = 1,
@@ -531,7 +478,6 @@ private fun ActionTableViewAllElementsPreview() {
 					player9 = RecordPlayer(seat = 9, stack = 50000.0),
 				),
 				currentStep = RecordStep.PREFLOP,
-				currentStreet = Street.PREFLOP,
 				buttonSeat = 1,
 				blinds = Blinds(sb = 500.0, bb = 1000.0, isBigBlindAnte = true),
 				currentActionSeat = 9, // 현재 MP 액션 중
@@ -582,7 +528,6 @@ private fun ActionTableView6MaxFlopPreview() {
 					player6 = RecordPlayer(seat = 6, stack = 50000.0, status = PlayerStatus.FOLDED),
 				),
 				currentStep = RecordStep.FLOP,
-				currentStreet = Street.FLOP,
 				buttonSeat = 4,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
 				currentActionSeat = 1,

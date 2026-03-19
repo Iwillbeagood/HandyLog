@@ -1,5 +1,6 @@
 package com.hand.log.record.component
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -41,6 +42,8 @@ internal fun ActionSelector(
 	bbAmount: Double = 0.0,
 	currentPot: Double = 0.0,
 	minRaiseAmount: Double = 0.0,
+	maxAmount: Double = 0.0,
+	showAmountWarning: Boolean = false,
 	raiseLabel: String = "레이즈",
 	modifier: Modifier = Modifier,
 ) {
@@ -85,6 +88,14 @@ internal fun ActionSelector(
 				label = "금액 (최소 ${minRaiseAmount.toLong()})",
 				keyboardType = KeyboardType.Number,
 			)
+			AnimatedVisibility(visible = showAmountWarning) {
+				Text(
+					text = "스택(${maxAmount.toLong()})을 초과하면 올인으로 처리됩니다",
+					style = HandyTheme.typography.regular10,
+					color = colors.error,
+					modifier = Modifier.padding(top = 4.dp),
+				)
+			}
 
 			VerticalSpacer(8.dp)
 			Row(

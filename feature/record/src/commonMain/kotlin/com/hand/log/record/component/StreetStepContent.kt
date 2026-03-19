@@ -64,8 +64,6 @@ internal fun StreetStepContent(
 	onUpdatePlayerStack: (Int, String) -> Unit,
 	onConfirmAction: () -> Unit,
 	onRemoveLastAction: () -> Unit,
-	onUpdateResult: (String) -> Unit,
-	onUpdateMemo: (String) -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
 	val currentStreet = state.currentStreet
@@ -166,119 +164,118 @@ internal fun StreetStepContent(
 		val boardCardsReady = state.streets.isBoardReady(currentStreet)
 
 		AnimatedVisibility(visible = boardCardsReady) {
-			Column {
-				if (state.currentActionSeat != null) {
-					val posName = state.positionName(state.currentActionSeat)
-					val isHero = state.currentActionSeat == state.table?.heroSeat
-
-					val currentStack = state.getPlayerStack(state.currentActionSeat)
-
-					Row(
-						modifier = Modifier.fillMaxWidth(),
-						verticalAlignment = Alignment.CenterVertically,
-						horizontalArrangement = Arrangement.spacedBy(8.dp),
-					) {
-						Box(
-							modifier = Modifier
-								.size(36.dp)
-								.clip(CircleShape)
-								.background(
-									if (isHero) colors.gold.copy(alpha = 0.15f) else colors.primary.copy(alpha = 0.15f),
-								),
-							contentAlignment = Alignment.Center,
-						) {
-							Text(
-								text = "${state.currentActionSeat}",
-								style = HandyTheme.typography.bold14,
-								color = if (isHero) colors.gold else colors.primary,
-							)
-						}
-						Column(modifier = Modifier.weight(1f)) {
-							Text(
-								text = posName,
-								style = HandyTheme.typography.bold16,
-								color = if (isHero) colors.gold else colors.textPrimary,
-							)
-							if (isHero) {
-								Text(
-									text = "Hero",
-									style = HandyTheme.typography.regular12,
-									color = colors.gold,
-								)
-							}
-						}
-						if (state.currentStreet == Street.PREFLOP) {
-							// 프리플랍: 스택 입력
-							HandyTextField(
-								value = if (currentStack == 0.0) "" else currentStack.toLong().toString(),
-								onValueChange = { onUpdatePlayerStack(state.currentActionSeat, it) },
-								label = "스택",
-								modifier = Modifier.weight(1f),
-								keyboardType = KeyboardType.Number,
-							)
-						} else {
-							// 포스트플랍: 남은 스택 표시
-							Text(
-								text = "${currentStack.toLong()}",
-								style = HandyTheme.typography.bold14,
-								color = colors.textSecondary,
-							)
-						}
-					}
-
-					VerticalSpacer(12.dp)
-					ActionSelector(
-						availableActions = state.availableActions,
-						selectedAction = state.currentActionType,
-						onSelectAction = onSelectActionType,
-						currentStreet = state.currentStreet,
-						currentAmount = state.currentActionAmount,
-						onUpdateAmount = onUpdateActionAmount,
-						onConfirmAction = onConfirmAction,
-						bbAmount = state.blinds?.bb ?: 0.0,
-						currentPot = state.currentPot,
-						minRaiseAmount = state.minRaiseAmount,
-						raiseLabel = state.nextRaiseLabel,
-					)
-				} else {
-					Box(
-						modifier = Modifier
-							.fillMaxWidth()
-							.clip(RoundedCornerShape(8.dp))
-							.background(colors.muted)
-							.padding(16.dp),
-						contentAlignment = Alignment.Center,
-					) {
-						Text(
-							text = "모든 플레이어 액션 완료",
-							style = HandyTheme.typography.medium14,
-							color = colors.textSecondary,
-						)
-					}
-				}
-
-				// Result & Memo
-				if (state.currentStep == RecordStep.RIVER) {
-					VerticalSpacer(16.dp)
-					HandyTextField(
-						value = state.result,
-						onValueChange = onUpdateResult,
-						label = "결과 (수익/손실)",
-						keyboardType = KeyboardType.Number,
-					)
-
-					VerticalSpacer(12.dp)
-					HandyTextField(
-						value = state.memo,
-						onValueChange = onUpdateMemo,
-						label = "메모",
-					)
-				}
-
-			} // Column
+			PlayerActionArea(
+				state = state,
+				onSelectActionType = onSelectActionType,
+				onUpdateActionAmount = onUpdateActionAmount,
+				onUpdatePlayerStack = onUpdatePlayerStack,
+				onConfirmAction = onConfirmAction,
+			)
 		} // AnimatedVisibility
 
 		VerticalSpacer(16.dp)
+	}
+}
+
+@Composable
+private fun PlayerActionArea(
+	state: RecordHandState.Recording,
+	onSelectActionType: (ActionType) -> Unit,
+	onUpdateActionAmount: (String) -> Unit,
+	onUpdatePlayerStack: (Int, String) -> Unit,
+	onConfirmAction: () -> Unit,
+) {
+	val colors = HandyTheme.colorScheme
+
+	Column {
+		if (state.currentActionSeat != null) {
+			val posName = state.positionName(state.currentActionSeat)
+			val isHero = state.currentActionSeat == state.table?.heroSeat
+			val currentStack = state.getPlayerStack(state.currentActionSeat)
+
+			Row(
+				modifier = Modifier.fillMaxWidth(),
+				verticalAlignment = Alignment.CenterVertically,
+				horizontalArrangement = Arrangement.spacedBy(8.dp),
+			) {
+				Box(
+					modifier = Modifier
+						.size(36.dp)
+						.clip(CircleShape)
+						.background(
+							if (isHero) colors.gold.copy(alpha = 0.15f) else colors.primary.copy(alpha = 0.15f),
+						),
+					contentAlignment = Alignment.Center,
+				) {
+					Text(
+						text = "${state.currentActionSeat}",
+						style = HandyTheme.typography.bold14,
+						color = if (isHero) colors.gold else colors.primary,
+					)
+				}
+				Column(modifier = Modifier.weight(1f)) {
+					Text(
+						text = posName,
+						style = HandyTheme.typography.bold16,
+						color = if (isHero) colors.gold else colors.textPrimary,
+					)
+					if (isHero) {
+						Text(
+							text = "Hero",
+							style = HandyTheme.typography.regular12,
+							color = colors.gold,
+						)
+					}
+				}
+				if (state.currentStreet == Street.PREFLOP) {
+					HandyTextField(
+						value = if (currentStack == 0.0) "" else currentStack.toLong().toString(),
+						onValueChange = { onUpdatePlayerStack(state.currentActionSeat, it) },
+						label = "스택",
+						modifier = Modifier.weight(1f),
+						keyboardType = KeyboardType.Number,
+					)
+				} else {
+					Text(
+						text = state.formatAmount(currentStack),
+						style = HandyTheme.typography.bold14,
+						color = colors.textSecondary,
+					)
+				}
+			}
+
+			VerticalSpacer(12.dp)
+			ActionSelector(
+				availableActions = state.availableActions,
+				selectedAction = state.currentActionType,
+				onSelectAction = onSelectActionType,
+				currentStreet = state.currentStreet,
+				currentAmount = state.currentActionAmount,
+				onUpdateAmount = onUpdateActionAmount,
+				onConfirmAction = onConfirmAction,
+				bbAmount = state.blinds?.bb ?: 0.0,
+				currentPot = state.currentPot,
+				minRaiseAmount = state.minRaiseAmount,
+				maxAmount = currentStack + (state.players[state.currentActionSeat]?.currentBet ?: 0.0),
+				showAmountWarning = state.showAmountWarning,
+				raiseLabel = state.nextRaiseLabel,
+			)
+		} else {
+			Box(
+				modifier = Modifier
+					.fillMaxWidth()
+					.clip(RoundedCornerShape(8.dp))
+					.background(colors.muted)
+					.padding(16.dp),
+				contentAlignment = Alignment.Center,
+			) {
+				Text(
+					text = "모든 플레이어 액션 완료",
+					style = HandyTheme.typography.medium14,
+					color = colors.textSecondary,
+				)
+			}
+		}
 	}
 }
 
@@ -328,7 +325,6 @@ private fun StreetStepContentPreflopPreview() {
 					createdAt = 0L,
 				),
 				currentStep = RecordStep.PREFLOP,
-				currentStreet = Street.PREFLOP,
 				buttonSeat = 1,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
 				heroHand = HeroHand(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
@@ -349,8 +345,6 @@ private fun StreetStepContentPreflopPreview() {
 			onUpdatePlayerStack = { _, _ -> },
 			onConfirmAction = {},
 			onRemoveLastAction = {},
-			onUpdateResult = {},
-			onUpdateMemo = {},
 		)
 	}
 }
@@ -373,7 +367,6 @@ private fun StreetStepContentFlopPreview() {
 					createdAt = 0L,
 				),
 				currentStep = RecordStep.FLOP,
-				currentStreet = Street.FLOP,
 				buttonSeat = 1,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
 				heroHand = HeroHand(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
@@ -394,8 +387,6 @@ private fun StreetStepContentFlopPreview() {
 			onUpdatePlayerStack = { _, _ -> },
 			onConfirmAction = {},
 			onRemoveLastAction = {},
-			onUpdateResult = {},
-			onUpdateMemo = {},
 		)
 	}
 }
@@ -418,7 +409,6 @@ private fun StreetStepContentCompletePreview() {
 					createdAt = 0L,
 				),
 				currentStep = RecordStep.PREFLOP,
-				currentStreet = Street.PREFLOP,
 				buttonSeat = 1,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
 				currentActionSeat = null, // 모든 액션 완료
@@ -442,8 +432,6 @@ private fun StreetStepContentCompletePreview() {
 			onUpdatePlayerStack = { _, _ -> },
 			onConfirmAction = {},
 			onRemoveLastAction = {},
-			onUpdateResult = {},
-			onUpdateMemo = {},
 		)
 	}
 }

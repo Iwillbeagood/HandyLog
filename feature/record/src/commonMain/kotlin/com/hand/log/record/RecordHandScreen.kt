@@ -1,10 +1,13 @@
 package com.hand.log.record
 
 import androidx.compose.foundation.background
+import androidx.compose.material3.Text
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,17 +15,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
+import com.hand.log.designsystem.component.HandySwitch
 import com.hand.log.designsystem.component.HandyTopAppbar
 import com.hand.log.designsystem.component.RegularButton
 import com.hand.log.designsystem.theme.HandyTheme
@@ -36,6 +37,7 @@ import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.Street
 import com.hand.log.domain.model.Suit
 import com.hand.log.record.component.SetupStepContent
+import com.hand.log.record.component.ShowdownStepContent
 import com.hand.log.record.component.StreetStepContent
 import com.hand.log.record.contract.RecordHandState
 import com.hand.log.record.contract.RecordStep
@@ -49,6 +51,7 @@ internal fun RecordHandScreen(
 	onBack: () -> Unit,
 	onSelectHeroCard: () -> Unit,
 	onSelectBoardCard: (Street) -> Unit,
+	onSelectSingleBoardCard: (Street, Int) -> Unit,
 	onUpdateHeroStack: (String) -> Unit,
 	onUpdateButtonSeat: (Int) -> Unit,
 	onUpdateBlinds: (String, String) -> Unit,
@@ -60,8 +63,11 @@ internal fun RecordHandScreen(
 	onRemoveLastAction: () -> Unit,
 	onNextStep: () -> Unit,
 	onPreviousStep: () -> Unit,
+	onSelectShowdownCard: (Int) -> Unit,
 	onUpdateResult: (String) -> Unit,
 	onUpdateMemo: (String) -> Unit,
+	onShowTableEdit: () -> Unit,
+	onToggleBbUnit: () -> Unit,
 	onSave: () -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
@@ -69,25 +75,43 @@ internal fun RecordHandScreen(
 	BaseScaffold(
 		containerColor = colors.background,
 		topBar = {
-			HandyTopAppbar(
-				title = "핸드 기록",
-				onBackEvent = {
-					if (state.currentStep == RecordStep.SETUP) {
-						onBack()
-					} else {
-						onPreviousStep()
-					}
-				},
-			)
+			Row(
+				modifier = Modifier
+					.fillMaxWidth()
+					.padding(horizontal = 4.dp),
+				verticalAlignment = Alignment.CenterVertically,
+			) {
+				HandyTopAppbar(
+					title = "핸드 기록",
+					onBackEvent = {
+						if (state.currentStep == RecordStep.SETUP) {
+							onBack()
+						} else {
+							onPreviousStep()
+						}
+					},
+					endContent = {
+						HandySwitch(
+							checked = state.useBbUnit,
+							text = "BB",
+							onCheckedChange = { onToggleBbUnit() },
+						)
+					},
+				)
+			}
 		},
 		bottomBar = {
-			BottomNavigationBar(
-				currentStep = state.currentStep,
-				canProceed = state.currentStep != RecordStep.SETUP || state.canProceedFromSetup,
-				onPrevious = onPreviousStep,
-				onNext = onNextStep,
-				onSave = onSave,
-			)
+			val isSetup = state.currentStep == RecordStep.SETUP
+			val isShowdown = state.currentStep == RecordStep.SHOWDOWN
+			val isStreetCompleted = !isSetup && !isShowdown && state.currentActionSeat == null
+			if (isSetup || isShowdown || isStreetCompleted) {
+				BottomNavigationBar(
+					currentStep = state.currentStep,
+					canProceed = if (isSetup) state.canProceedFromSetup else true,
+					onNext = onNextStep,
+					onSave = onSave,
+				)
+			}
 		},
 	) {
 		Column(
@@ -95,46 +119,53 @@ internal fun RecordHandScreen(
 		) {
 			StepIndicator(
 				currentStep = state.currentStep,
+				activeSteps = state.activeSteps,
 				modifier = Modifier
 					.fillMaxWidth()
 					.padding(horizontal = 16.dp, vertical = 8.dp),
 			)
 
-			LazyColumn(
+			Column(
 				modifier = Modifier
 					.fillMaxSize()
-					.weight(1f),
-				contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+					.weight(1f)
+					.verticalScroll(rememberScrollState())
+					.padding(horizontal = 16.dp, vertical = 8.dp),
 				verticalArrangement = Arrangement.spacedBy(16.dp),
 			) {
 				when (state.currentStep) {
 					RecordStep.SETUP -> {
-						item {
-							SetupStepContent(
-								state = state,
-								onSelectHeroCard = onSelectHeroCard,
-								onUpdateHeroStack = onUpdateHeroStack,
-								onUpdateButtonSeat = onUpdateButtonSeat,
-								onUpdateBlinds = onUpdateBlinds,
-							)
-						}
+						SetupStepContent(
+							state = state,
+							onSelectHeroCard = onSelectHeroCard,
+							onUpdateHeroStack = onUpdateHeroStack,
+							onUpdateButtonSeat = onUpdateButtonSeat,
+							onUpdateBlinds = onUpdateBlinds,
+							onShowTableEdit = onShowTableEdit,
+						)
 					}
 
 					RecordStep.PREFLOP, RecordStep.FLOP, RecordStep.TURN, RecordStep.RIVER -> {
-						item {
-							StreetStepContent(
-								state = state,
-								onSelectBoardCard = onSelectBoardCard,
-								onSelectActionSeat = onSelectActionSeat,
-								onSelectActionType = onSelectActionType,
-								onUpdateActionAmount = onUpdateActionAmount,
-								onUpdatePlayerStack = onUpdatePlayerStack,
-								onConfirmAction = onConfirmAction,
-								onRemoveLastAction = onRemoveLastAction,
-								onUpdateResult = onUpdateResult,
-								onUpdateMemo = onUpdateMemo,
-							)
-						}
+						StreetStepContent(
+							state = state,
+							onSelectBoardCard = onSelectBoardCard,
+							onSelectActionSeat = onSelectActionSeat,
+							onSelectActionType = onSelectActionType,
+							onUpdateActionAmount = onUpdateActionAmount,
+							onUpdatePlayerStack = onUpdatePlayerStack,
+							onConfirmAction = onConfirmAction,
+							onRemoveLastAction = onRemoveLastAction,
+						)
+					}
+
+					RecordStep.SHOWDOWN -> {
+						ShowdownStepContent(
+							state = state,
+							onSelectSingleBoardCard = onSelectSingleBoardCard,
+							onSelectShowdownCard = onSelectShowdownCard,
+							onUpdateResult = onUpdateResult,
+							onUpdateMemo = onUpdateMemo,
+						)
 					}
 				}
 			}
@@ -145,17 +176,17 @@ internal fun RecordHandScreen(
 @Composable
 private fun StepIndicator(
 	currentStep: RecordStep,
+	activeSteps: List<RecordStep> = RecordStep.entries,
 	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme
-	val steps = RecordStep.entries
 
 	Row(
 		modifier = modifier,
 		horizontalArrangement = Arrangement.SpaceEvenly,
 		verticalAlignment = Alignment.CenterVertically,
 	) {
-		steps.forEachIndexed { index, step ->
+		activeSteps.forEachIndexed { index, step ->
 			val isCurrent = step == currentStep
 			val isPassed = step.ordinal < currentStep.ordinal
 
@@ -194,42 +225,39 @@ private fun StepIndicator(
 	}
 }
 
-// SetupStepContent is in com.hand.log.record.component package
-
 @Composable
 private fun BottomNavigationBar(
 	currentStep: RecordStep,
 	canProceed: Boolean,
-	onPrevious: () -> Unit,
 	onNext: () -> Unit,
 	onSave: () -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
-	val isFirstStep = currentStep == RecordStep.SETUP
-	val isLastStep = currentStep == RecordStep.RIVER
-	val isStreetStep = currentStep != RecordStep.SETUP
 
 	Row(
 		modifier = Modifier
 			.fillMaxWidth()
 			.background(colors.background)
-			.padding(horizontal = 16.dp, vertical = 20.dp),
+			.padding(horizontal = 16.dp, vertical = 16.dp),
 		horizontalArrangement = Arrangement.spacedBy(10.dp),
 	) {
-		if (isLastStep) {
-			RegularButton(
-				text = "저장",
-				onClick = onSave,
-				enabled = canProceed,
-				modifier = Modifier.weight(1f),
-			)
-		} else if (!isStreetStep) {
-			RegularButton(
-				text = "다음",
-				onClick = onNext,
-				enabled = canProceed,
-				modifier = Modifier.weight(1f),
-			)
+		when (currentStep) {
+			RecordStep.SHOWDOWN -> {
+				RegularButton(
+					text = "저장",
+					onClick = onSave,
+					enabled = canProceed,
+					modifier = Modifier.weight(1f),
+				)
+			}
+			else -> {
+				RegularButton(
+					text = "다음",
+					onClick = onNext,
+					enabled = canProceed,
+					modifier = Modifier.weight(1f),
+				)
+			}
 		}
 	}
 }
@@ -243,6 +271,7 @@ private fun RecordHandScreenPreview() {
 			onBack = {},
 			onSelectHeroCard = {},
 			onSelectBoardCard = {},
+			onSelectSingleBoardCard = { _, _ -> },
 			onUpdateHeroStack = {},
 			onUpdateButtonSeat = {},
 			onUpdateBlinds = { _, _ -> },
@@ -255,7 +284,10 @@ private fun RecordHandScreenPreview() {
 			onNextStep = {},
 			onPreviousStep = {},
 			onUpdateResult = {},
+			onSelectShowdownCard = {},
 			onUpdateMemo = {},
+			onShowTableEdit = {},
+			onToggleBbUnit = {},
 			onSave = {},
 		)
 	}
@@ -292,6 +324,7 @@ private fun RecordHandScreenTournamentPreview() {
 			onBack = {},
 			onSelectHeroCard = {},
 			onSelectBoardCard = {},
+			onSelectSingleBoardCard = { _, _ -> },
 			onUpdateHeroStack = {},
 			onUpdateButtonSeat = {},
 			onUpdateBlinds = { _, _ -> },
@@ -304,7 +337,10 @@ private fun RecordHandScreenTournamentPreview() {
 			onNextStep = {},
 			onPreviousStep = {},
 			onUpdateResult = {},
+			onSelectShowdownCard = {},
 			onUpdateMemo = {},
+			onShowTableEdit = {},
+			onToggleBbUnit = {},
 			onSave = {},
 		)
 	}
