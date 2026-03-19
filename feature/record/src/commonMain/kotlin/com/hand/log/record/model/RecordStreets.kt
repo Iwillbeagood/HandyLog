@@ -17,6 +17,15 @@ data class RecordStreets(
 	val turn: TurnStreet? = null,
 	val river: RiverStreet? = null,
 ) {
+	val boardCards: List<Card>
+		get() = listOfNotNull(
+			flop?.card1,
+			flop?.card2,
+			flop?.card3,
+			turn?.card,
+			river?.card,
+		)
+
 	fun getActions(street: Street): List<Action> = when (street) {
 		Street.PREFLOP -> preflop.actions
 		Street.FLOP -> flop?.actions ?: emptyList()
@@ -76,11 +85,33 @@ data class RecordStreets(
 		Street.RIVER -> copy(river = (river ?: RiverStreet()).copy(card = cards.firstOrNull()))
 	}
 
+	/** 모든 스트릿에서 각 플레이어가 투입한 총 금액 합산 */
 	fun totalActionAmount(): Double {
-		return preflop.actions.sumOf { it.amount ?: 0.0 } +
-			(flop?.actions?.sumOf { it.amount ?: 0.0 } ?: 0.0) +
-			(turn?.actions?.sumOf { it.amount ?: 0.0 } ?: 0.0) +
-			(river?.actions?.sumOf { it.amount ?: 0.0 } ?: 0.0)
+		fun streetTotal(actions: List<Action>): Double {
+			return actions
+				.groupBy { it.playerSeat }
+				.values
+				.sumOf { seatActions -> seatActions.last().amount ?: 0.0 }
+		}
+		return streetTotal(preflop.actions) +
+			(flop?.actions?.let { streetTotal(it) } ?: 0.0) +
+			(turn?.actions?.let { streetTotal(it) } ?: 0.0) +
+			(river?.actions?.let { streetTotal(it) } ?: 0.0)
+	}
+
+	/** 각 좌석의 전체 핸드 총 투입 금액 (모든 스트릿 합산) */
+	fun totalInvestedPerSeat(): Map<Int, Double> {
+		val result = mutableMapOf<Int, Double>()
+		fun addStreet(actions: List<Action>) {
+			actions.groupBy { it.playerSeat }.forEach { (seat, seatActions) ->
+				result[seat] = (result[seat] ?: 0.0) + (seatActions.last().amount ?: 0.0)
+			}
+		}
+		addStreet(preflop.actions)
+		flop?.actions?.let { addStreet(it) }
+		turn?.actions?.let { addStreet(it) }
+		river?.actions?.let { addStreet(it) }
+		return result
 	}
 
 	fun toHandStreets(): HandStreets = HandStreets(

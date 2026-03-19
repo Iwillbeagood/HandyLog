@@ -10,6 +10,7 @@ internal sealed interface RecordHandModalEffect {
 		val target: CardSelectorTarget,
 		val selectedCards: Set<Card>,
 	) : RecordHandModalEffect
+	data object ShowTableEdit : RecordHandModalEffect
 }
 
 @Immutable

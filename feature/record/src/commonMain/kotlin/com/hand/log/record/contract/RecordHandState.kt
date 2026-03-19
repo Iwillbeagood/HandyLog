@@ -9,9 +9,13 @@ import com.hand.log.domain.model.GameType
 import com.hand.log.domain.model.HeroHand
 import com.hand.log.domain.model.Position
 import com.hand.log.domain.model.PokerTable
+import com.hand.log.domain.model.ShowdownEntry
+import com.hand.log.domain.model.ShowdownResult
 import com.hand.log.domain.model.Street
 import com.hand.log.record.model.RecordPlayers
+import com.hand.log.record.model.RecordShowdown
 import com.hand.log.record.model.RecordStreets
+import com.hand.log.utils.poker.HandEvaluator
 
 @Stable
 internal sealed interface RecordHandState {
@@ -31,30 +35,98 @@ internal sealed interface RecordHandState {
 		val players: RecordPlayers = RecordPlayers(),
 		// Streets
 		val streets: RecordStreets = RecordStreets(),
-		val currentStreet: Street = Street.PREFLOP,
 		// Current action being built
 		val currentActionSeat: Int? = null,
 		val currentActionType: ActionType? = null,
 		val currentActionAmount: String = "",
 		val lastAggressorSeat: Int? = null,
+		// Showdown
+		val showdown: RecordShowdown = RecordShowdown(),
 		// Result
 		val result: String = "",
 		val memo: String = "",
 		// UI state
 		val currentStep: RecordStep = RecordStep.SETUP,
-		val selectedCards: Set<Card> = emptySet(),
+		val useBbUnit: Boolean = false,
+		val showAmountWarning: Boolean = false,
 	) : RecordHandState {
 
-		// --- Player 상태 조회 ---
+		/** 현재 사용 중인 모든 카드 (히어로 + 보드 + 쇼다운) */
+		val selectedCards: Set<Card>
+			get() = buildSet {
+				heroHand?.let { addAll(it.cards) }
+				addAll(streets.boardCards)
+				addAll(showdown.allCards)
+			}
 
+		/** 표시할 스텝 목록: 쇼다운 진입 전에는 전체, 쇼다운 이후에는 실제 진행된 스텝만 */
+		val activeSteps: List<RecordStep>
+			get() {
+				if (currentStep != RecordStep.SHOWDOWN) {
+					return RecordStep.entries
+				}
+				return buildList {
+					add(RecordStep.SETUP)
+					add(RecordStep.PREFLOP)
+					if (streets.flop != null) add(RecordStep.FLOP)
+					if (streets.turn != null) add(RecordStep.TURN)
+					if (streets.river != null) add(RecordStep.RIVER)
+					add(RecordStep.SHOWDOWN)
+				}
+			}
+
+		// --- Current Street (currentStep에서 파생) ---
+		val currentStreet: Street
+			get() = when (currentStep) {
+				RecordStep.SETUP, RecordStep.PREFLOP -> Street.PREFLOP
+				RecordStep.FLOP -> Street.FLOP
+				RecordStep.TURN -> Street.TURN
+				RecordStep.RIVER, RecordStep.SHOWDOWN -> Street.RIVER
+			}
+
+		// --- Player 상태 조회 ---
 		val heroStack: Double
 			get() = players.getStack(table?.heroSeat ?: 0)
 
 		fun getPlayerStack(seat: Int): Double = players.getStack(seat)
 
-		val foldedSeats: Set<Int> get() = players.foldedSeats
-		val allInSeats: Set<Int> get() = players.allInSeats
-		val inactiveSeats: Set<Int> get() = players.inactiveSeats
+		/** 팟에 참여 중인(폴드 안 한) 좌석 목록 */
+		val remainingSeats: List<Int>
+			get() {
+				val count = table?.playerCount ?: return emptyList()
+				return (1..count).filter { it !in players.foldedSeats }
+			}
+
+		// --- Showdown Results ---
+		/** 쇼다운 엔트리 (카드가 공개된 플레이어) */
+		val showdownEntries: List<ShowdownEntry>
+			get() = buildList {
+				remainingSeats.forEach { seat ->
+					val hand = if (seat == table?.heroSeat) heroHand else showdown[seat]
+					if (hand != null) {
+						add(ShowdownEntry(seat = seat, card1 = hand.card1, card2 = hand.card2))
+					}
+				}
+			}
+
+		/** 모든 남은 플레이어의 카드가 선택 또는 미공개 처리되었는지 */
+		val isShowdownComplete: Boolean
+			get() = remainingSeats.all { seat ->
+				if (seat == table?.heroSeat) {
+					heroHand != null
+				} else {
+					showdown.isResolved(seat)
+				}
+			}
+
+		/** 쇼다운 결과 (미공개 플레이어는 제외하고 계산) */
+		val showdownResults: List<ShowdownResult>
+			get() {
+				if (!isShowdownComplete || streets.boardCards.size != 5) return emptyList()
+				val knownEntries = showdownEntries.filter { !showdown.isUnknown(it.seat) }
+				if (knownEntries.size < 2) return emptyList()
+				return HandEvaluator.calculateShowdown(streets.boardCards, knownEntries)
+			}
 
 		// --- Blinds ---
 
@@ -65,6 +137,22 @@ internal sealed interface RecordHandState {
 			get() = blinds?.sb?.let { if (it == 0.0) "" else it.toLong().toString() } ?: ""
 
 		val heroCards: List<Card> get() = heroHand?.cards ?: emptyList()
+
+		/** 금액을 BB 단위 또는 칩 단위 문자열로 변환 */
+		fun formatAmount(amount: Double): String {
+			val bb = blinds?.bb ?: 0.0
+			return if (useBbUnit && bb > 0) {
+				val bbCount = amount / bb
+				val rounded = (bbCount * 10).toLong() / 10.0
+				if (rounded == rounded.toLong().toDouble()) {
+					"${rounded.toLong()}BB"
+				} else {
+					"${rounded}BB"
+				}
+			} else {
+				"${amount.toLong()}"
+			}
+		}
 
 		val canProceedFromSetup: Boolean
 			get() {
@@ -78,12 +166,25 @@ internal sealed interface RecordHandState {
 
 		// --- Pot ---
 
+		/** 팟 = 각 스트릿에서 투입된 총 금액 + 블라인드 + 앤티 */
 		val currentPot: Double
 			get() {
-				val blindsPot = (blinds?.sb ?: 0.0) + (blinds?.bb ?: 0.0)
-				val antePot = if (blinds?.isBigBlindAnte == true) blinds.bb else 0.0
+				val count = table?.playerCount ?: 0
+				// 각 스트릿에서 각 좌석의 최종 투입 금액 합산
 				val actionsPot = streets.totalActionAmount()
-				return blindsPot + antePot + actionsPot
+				// 블라인드: 프리플랍 액션에 아직 SB/BB가 포함 안 될 수 있음
+				val sb = blinds?.sb ?: 0.0
+				val bb = blinds?.bb ?: 0.0
+				val btn = buttonSeat
+				val sbSeat = if (count > 0) (btn % count) + 1 else 0
+				val bbSeat = if (count > 0) ((btn + 1) % count) + 1 else 0
+				// 프리플랍에서 SB/BB의 현재 베팅이 블라인드보다 크면 이미 액션에 포함됨
+				val preflopActions = streets.getActions(Street.PREFLOP)
+				val sbInPot = preflopActions.filter { it.playerSeat == sbSeat }.lastOrNull()?.amount ?: 0.0
+				val bbInPot = preflopActions.filter { it.playerSeat == bbSeat }.lastOrNull()?.amount ?: 0.0
+				val blindsPot = (if (sbInPot >= sb) 0.0 else sb) + (if (bbInPot >= bb) 0.0 else bb)
+				val antePot = if (blinds?.isBigBlindAnte == true) bb else 0.0
+				return actionsPot + blindsPot + antePot
 			}
 
 		// --- Action Order ---
@@ -109,7 +210,7 @@ internal sealed interface RecordHandState {
 		val actionOrder: List<Int>
 			get() {
 				val base = if (currentStreet == Street.PREFLOP) preflopActionOrder else postflopActionOrder
-				return base.filter { it !in inactiveSeats }
+				return base.filter { it !in players.inactiveSeats }
 			}
 
 		// --- Min Raise ---
@@ -158,9 +259,18 @@ internal sealed interface RecordHandState {
 		val currentBetLevel: Int
 			get() {
 				val streetActions = streets.getActions(currentStreet)
-				val raiseCount = streetActions.count {
-					it.type == ActionType.BET || it.type == ActionType.RAISE ||
-						(it.type == ActionType.ALL_IN && (it.amount ?: 0.0) > 0)
+				// 올인이 이전 최대 베팅보다 클 때만 레이즈로 카운트
+				var maxBet = if (currentStreet == Street.PREFLOP) (blinds?.bb ?: 0.0) else 0.0
+				var raiseCount = 0
+				streetActions.forEach { action ->
+					val amt = action.amount ?: 0.0
+					val isRaise = action.type == ActionType.BET ||
+						action.type == ActionType.RAISE ||
+						(action.type == ActionType.ALL_IN && amt > maxBet)
+					if (isRaise) {
+						raiseCount++
+						maxBet = amt
+					}
 				}
 				return if (currentStreet == Street.PREFLOP) {
 					raiseCount + 1 // BB가 1벳
@@ -300,6 +410,7 @@ enum class RecordStep {
 	FLOP,
 	TURN,
 	RIVER,
+	SHOWDOWN,
 	;
 
 	val label: String
@@ -309,6 +420,7 @@ enum class RecordStep {
 			FLOP -> "플랍"
 			TURN -> "턴"
 			RIVER -> "리버"
+			SHOWDOWN -> "쇼다운"
 		}
 }
 
@@ -317,4 +429,8 @@ internal sealed interface CardSelectorTarget {
 	val maxCards: Int
 	data class HeroCard(override val maxCards: Int = 2) : CardSelectorTarget
 	data class BoardCard(val street: Street, override val maxCards: Int) : CardSelectorTarget
+
+	/** 보드 카드 1장 교체 (street + index로 특정 카드 지정) */
+	data class SingleBoardCard(val street: Street, val cardIndex: Int, override val maxCards: Int = 1) : CardSelectorTarget
+	data class ShowdownCard(val seat: Int, override val maxCards: Int = 2) : CardSelectorTarget
 }

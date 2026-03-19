@@ -12,6 +12,7 @@ enum class PlayerStatus {
 data class RecordPlayer(
 	val seat: Int,
 	val stack: Double,
+	val initialStack: Double = 0.0,
 	val status: PlayerStatus = PlayerStatus.ACTIVE,
 	val currentBet: Double = 0.0,
 )
@@ -94,8 +95,9 @@ data class RecordPlayers(
 	companion object {
 		fun create(playerCount: Int, defaultStack: Double, stacks: Map<Int, Double> = emptyMap()): RecordPlayers {
 			fun player(seat: Int): RecordPlayer? {
+				val s = stacks[seat] ?: defaultStack
 				return if (seat <= playerCount) {
-					RecordPlayer(seat = seat, stack = stacks[seat] ?: defaultStack)
+					RecordPlayer(seat = seat, stack = s, initialStack = s)
 				} else {
 					null
 				}
