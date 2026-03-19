@@ -16,14 +16,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalClipboard
 import com.hand.log.designsystem.component.HandySwitch
-import com.hand.log.designsystem.component.RegularButton
+import com.hand.log.utils.clipboard.toClipEntry
+import kotlinx.coroutines.launch
 import com.hand.log.handdetail.model.HandHistoryFormatter
 import com.hand.log.handdetail.model.formatWithComma
 import androidx.compose.ui.Alignment
@@ -31,6 +28,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
+import com.hand.log.designsystem.component.TopAppbarIcon
+import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.pencil
+import handylog.core.res.generated.resources.share_2
 import com.hand.log.designsystem.component.HandyTopAppbar
 import com.hand.log.designsystem.component.VerticalSpacer
 import com.hand.log.designsystem.etc.ThemePreview
@@ -49,6 +50,7 @@ import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.RiverStreet
 import com.hand.log.domain.model.Suit
 import com.hand.log.domain.model.TurnStreet
+import com.hand.log.handdetail.contract.HandDetailState
 import com.hand.log.handdetail.model.ActionRowUiModel
 import com.hand.log.handdetail.model.HandDetailUiModel
 import com.hand.log.handdetail.model.StreetSectionUiModel
@@ -58,12 +60,15 @@ import com.hand.log.ui.poker.indicatorColor
 
 @Composable
 internal fun HandDetailScreen(
-	hand: HandRecord,
+	state: HandDetailState.Success,
+	onToggleBbUnit: () -> Unit,
 	onBack: () -> Unit,
 ) {
-	var useBbUnit by remember { mutableStateOf(false) }
-	val uiModel = remember(hand, useBbUnit) { HandDetailUiModel.from(hand, useBbUnit) }
+	val hand = state.hand
+	val uiModel = state.uiModel
 	val colors = HandyTheme.colorScheme
+	val clipboard = LocalClipboard.current
+	val scope = rememberCoroutineScope()
 
 	BaseScaffold(
 		containerColor = colors.background,
@@ -72,14 +77,33 @@ internal fun HandDetailScreen(
 				title = "핸드 상세",
 				onBackEvent = onBack,
 				subContent = {
-					HandySwitch(
-						checked = useBbUnit,
-						text = "BB",
-						onCheckedChange = { useBbUnit = it },
-					)
+					Row(
+						verticalAlignment = Alignment.CenterVertically,
+						horizontalArrangement = Arrangement.End,
+					) {
+						HandySwitch(
+							checked = state.useBbUnit,
+							text = "BB",
+							onCheckedChange = { onToggleBbUnit() },
+						)
+					}
 				},
 				endContent = {
-
+					Row {
+						TopAppbarIcon(
+							tint = colors.textPrimary,
+							icon = Res.drawable.pencil,
+							onClick = { /* TODO: 수정 */ },
+						)
+						TopAppbarIcon(
+							tint = colors.textPrimary,
+							icon = Res.drawable.share_2,
+							onClick = {
+								val text = HandHistoryFormatter.format(hand)
+								scope.launch { clipboard.setClipEntry(text.toClipEntry()) }
+							},
+						)
+					}
 				},
 			)
 		},
@@ -101,15 +125,6 @@ internal fun HandDetailScreen(
 
 			item {
 				ResultSection(hand)
-				VerticalSpacer(16.dp)
-				val clipboardManager = LocalClipboardManager.current
-				RegularButton(
-					text = "텍스트로 공유",
-					onClick = {
-						val text = HandHistoryFormatter.format(hand)
-						clipboardManager.setText(AnnotatedString(text))
-					},
-				)
 				VerticalSpacer(32.dp)
 			}
 		}
@@ -232,7 +247,6 @@ private fun ActionRowView(row: ActionRowUiModel) {
 		verticalAlignment = Alignment.CenterVertically,
 		horizontalArrangement = Arrangement.spacedBy(8.dp),
 	) {
-		// 포지션 인디케이터: 히어로만 gold 배경
 		Box(
 			modifier = Modifier
 				.size(36.dp)
@@ -254,7 +268,6 @@ private fun ActionRowView(row: ActionRowUiModel) {
 			)
 		}
 
-		// 액션 라벨: 항상 액션 타입의 고유 색상 사용
 		Column {
 			Text(
 				text = row.actionLabel,
@@ -305,9 +318,7 @@ private fun ResultSection(hand: HandRecord) {
 				val isPositive = result >= 0
 				Text(
 					text = if (isPositive) {
-						"+${formatWithComma(
-							result.toLong(),
-						)}"
+						"+${formatWithComma(result.toLong())}"
 					} else {
 						formatWithComma(result.toLong())
 					},
@@ -331,56 +342,61 @@ private fun ResultSection(hand: HandRecord) {
 @ThemePreviews
 @Composable
 private fun HandDetailScreenPreview() {
+	val hand = HandRecord(
+		id = "h1",
+		tableId = "t1",
+		createdAt = 1710000000000L,
+		blinds = Blinds(sb = 500.0, bb = 1000.0),
+		heroHand = HeroHand(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+		heroSeat = 3,
+		heroStack = 50000.0,
+		buttonSeat = 1,
+		streets = HandStreets(
+			preflop = PreflopStreet(
+				actions = listOf(
+					Action(playerSeat = 4, type = ActionType.RAISE, amount = 2500.0, stackBefore = 50000.0),
+					Action(playerSeat = 5, type = ActionType.FOLD, stackBefore = 50000.0),
+					Action(playerSeat = 6, type = ActionType.CALL, amount = 2500.0, stackBefore = 50000.0),
+					Action(playerSeat = 1, type = ActionType.FOLD, stackBefore = 50000.0),
+					Action(playerSeat = 2, type = ActionType.FOLD, stackBefore = 49500.0),
+					Action(playerSeat = 3, type = ActionType.CALL, amount = 2500.0, stackBefore = 49000.0),
+				),
+			),
+			flop = FlopStreet(
+				card1 = Card(Rank.ACE, Suit.HEARTS),
+				card2 = Card(Rank.TEN, Suit.DIAMONDS),
+				card3 = Card(Rank.SEVEN, Suit.CLUBS),
+				actions = listOf(
+					Action(playerSeat = 3, type = ActionType.CHECK, stackBefore = 46500.0),
+					Action(playerSeat = 4, type = ActionType.BET, amount = 5000.0, stackBefore = 47500.0),
+					Action(playerSeat = 6, type = ActionType.FOLD, stackBefore = 47500.0),
+					Action(playerSeat = 3, type = ActionType.CALL, amount = 5000.0, stackBefore = 46500.0),
+				),
+			),
+			turn = TurnStreet(
+				card = Card(Rank.KING, Suit.HEARTS),
+				actions = listOf(
+					Action(playerSeat = 3, type = ActionType.CHECK, stackBefore = 41500.0),
+					Action(playerSeat = 4, type = ActionType.BET, amount = 12000.0, stackBefore = 42500.0),
+					Action(playerSeat = 3, type = ActionType.RAISE, amount = 30000.0, stackBefore = 41500.0),
+					Action(playerSeat = 4, type = ActionType.ALL_IN, amount = 30500.0, stackBefore = 30500.0),
+					Action(playerSeat = 3, type = ActionType.CALL, amount = 30500.0, stackBefore = 11500.0),
+				),
+			),
+			river = RiverStreet(
+				card = Card(Rank.TWO, Suit.CLUBS),
+			),
+		),
+		result = 49000.0,
+		memo = "탑투페어로 체크레이즈 → 올인 콜, 상대 ATo",
+	)
 	ThemePreview {
 		HandDetailScreen(
-			hand = HandRecord(
-				id = "h1",
-				tableId = "t1",
-				createdAt = 1710000000000L,
-				blinds = Blinds(sb = 500.0, bb = 1000.0),
-				heroHand = HeroHand(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
-				heroSeat = 3,
-				heroStack = 50000.0,
-				buttonSeat = 1,
-				streets = HandStreets(
-					preflop = PreflopStreet(
-						actions = listOf(
-							Action(playerSeat = 4, type = ActionType.RAISE, amount = 2500.0, stackBefore = 50000.0),
-							Action(playerSeat = 5, type = ActionType.FOLD, stackBefore = 50000.0),
-							Action(playerSeat = 6, type = ActionType.CALL, amount = 2500.0, stackBefore = 50000.0),
-							Action(playerSeat = 1, type = ActionType.FOLD, stackBefore = 50000.0),
-							Action(playerSeat = 2, type = ActionType.FOLD, stackBefore = 49500.0),
-							Action(playerSeat = 3, type = ActionType.CALL, amount = 2500.0, stackBefore = 49000.0),
-						),
-					),
-					flop = FlopStreet(
-						card1 = Card(Rank.ACE, Suit.HEARTS),
-						card2 = Card(Rank.TEN, Suit.DIAMONDS),
-						card3 = Card(Rank.SEVEN, Suit.CLUBS),
-						actions = listOf(
-							Action(playerSeat = 3, type = ActionType.CHECK, stackBefore = 46500.0),
-							Action(playerSeat = 4, type = ActionType.BET, amount = 5000.0, stackBefore = 47500.0),
-							Action(playerSeat = 6, type = ActionType.FOLD, stackBefore = 47500.0),
-							Action(playerSeat = 3, type = ActionType.CALL, amount = 5000.0, stackBefore = 46500.0),
-						),
-					),
-					turn = TurnStreet(
-						card = Card(Rank.KING, Suit.HEARTS),
-						actions = listOf(
-							Action(playerSeat = 3, type = ActionType.CHECK, stackBefore = 41500.0),
-							Action(playerSeat = 4, type = ActionType.BET, amount = 12000.0, stackBefore = 42500.0),
-							Action(playerSeat = 3, type = ActionType.RAISE, amount = 30000.0, stackBefore = 41500.0),
-							Action(playerSeat = 4, type = ActionType.ALL_IN, amount = 30500.0, stackBefore = 30500.0),
-							Action(playerSeat = 3, type = ActionType.CALL, amount = 30500.0, stackBefore = 11500.0),
-						),
-					),
-					river = RiverStreet(
-						card = Card(Rank.TWO, Suit.CLUBS),
-					),
-				),
-				result = 49000.0,
-				memo = "탑투페어로 체크레이즈 → 올인 콜, 상대 ATo",
+			state = HandDetailState.Success(
+				hand = hand,
+				uiModel = HandDetailUiModel.from(hand),
 			),
+			onToggleBbUnit = {},
 			onBack = {},
 		)
 	}

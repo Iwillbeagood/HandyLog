@@ -1,8 +1,8 @@
 package com.hand.log.handdetail
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.handdetail.contract.HandDetailState
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 
@@ -10,7 +10,7 @@ import com.hand.log.navigation.interop.LocalNavigateActionInterop
 internal fun HandDetailRoute(
 	viewModel: HandDetailViewModel,
 ) {
-	val state by viewModel.state.collectAsState()
+	val state by viewModel.state.collectAsStateWithLifecycle()
 	val navAction = LocalNavigateActionInterop.current
 
 	when (val current = state) {
@@ -18,7 +18,8 @@ internal fun HandDetailRoute(
 		HandDetailState.Error -> {}
 		is HandDetailState.Success -> {
 			HandDetailScreen(
-				hand = current.hand,
+				state = current,
+				onToggleBbUnit = viewModel::toggleBbUnit,
 				onBack = navAction::popBackStack,
 			)
 		}
