@@ -15,6 +15,9 @@ sealed interface MainTabRoute : Route {
 
 	@Serializable
 	data object Players : MainTabRoute
+
+	@Serializable
+	data object Settings : MainTabRoute
 }
 
 @Serializable
@@ -25,3 +28,6 @@ data class RecordHand(val tableId: String) : Route
 
 @Serializable
 data class HandDetail(val handId: String) : Route
+
+@Serializable
+data object BetSizeSettings : Route

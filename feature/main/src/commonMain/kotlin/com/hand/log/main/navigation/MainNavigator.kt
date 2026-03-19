@@ -3,6 +3,7 @@ package com.hand.log.main.navigation
 import com.hand.log.navigation.interop.NavigateActionInterop
 import com.hand.log.navigation.navigation.LaunchMode
 import com.hand.log.navigation.navigation.MainTabRoute
+import com.hand.log.navigation.navigation.BetSizeSettings
 import com.hand.log.navigation.navigation.HandDetail
 import com.hand.log.navigation.navigation.RecordHand
 import com.hand.log.navigation.navigation.Route
@@ -37,6 +38,10 @@ internal class MainNavigator {
 
 		override fun navigateToHandDetail(handId: String) {
 			navigate(HandDetail(handId))
+		}
+
+		override fun navigateToBetSizeSettings() {
+			navigate(BetSizeSettings)
 		}
 	}
 
@@ -87,6 +92,9 @@ internal class MainNavigator {
 			}
 			MainTabRoute.Players -> {
 				navigate(MainTabRoute.Players, LaunchMode.CLEAR_ALL)
+			}
+			MainTabRoute.Settings -> {
+				navigate(MainTabRoute.Settings, LaunchMode.CLEAR_ALL)
 			}
 		}
 	}

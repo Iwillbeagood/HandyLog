@@ -6,7 +6,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideIn
 import androidx.compose.animation.slideOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.hand.log.designsystem.component.HandyHorizontalDivider
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.navigation.navigation.MainTabRoute
 import kotlinx.collections.immutable.PersistentList
@@ -50,42 +50,48 @@ internal fun MainBottomBar(
 			modifier = Modifier
 				.fillMaxWidth()
 				.background(colors.card)
-				.border(1.dp, colors.border)
 				.navigationBarsPadding(),
 		) {
-			Row(
+			Column(
 				modifier = Modifier
 					.fillMaxWidth(),
-				horizontalArrangement = Arrangement.SpaceEvenly,
-				verticalAlignment = Alignment.CenterVertically,
 			) {
-				bottomItems.forEach { item ->
-					val isSelected = item == currentItem
-					Box(
-						modifier = Modifier
-							.weight(1f)
-							.clickable { onItemClick(item.route) }
-							.padding(vertical = 10.dp),
-						contentAlignment = Alignment.Center,
-					) {
-						Column(
-							horizontalAlignment = Alignment.CenterHorizontally,
-							verticalArrangement = Arrangement.spacedBy(2.dp),
+				HandyHorizontalDivider()
+				Row(
+					modifier = Modifier
+						.fillMaxWidth(),
+					horizontalArrangement = Arrangement.SpaceEvenly,
+					verticalAlignment = Alignment.CenterVertically,
+				) {
+					bottomItems.forEach { item ->
+						val isSelected = item == currentItem
+						Box(
+							modifier = Modifier
+								.weight(1f)
+								.clickable { onItemClick(item.route) }
+								.padding(vertical = 10.dp),
+							contentAlignment = Alignment.Center,
 						) {
-							Icon(
-								painter = painterResource(item.icon),
-								contentDescription = null,
-								modifier = Modifier.size(22.dp),
-								tint = if (isSelected) colors.primary else colors.textSecondary,
-							)
-							Text(
-								text = when (item) {
-									MainBottomNavItem.Home -> "홈"
-									MainBottomNavItem.Players -> "마킹"
-								},
-								style = HandyTheme.typography.medium12,
-								color = if (isSelected) colors.primary else colors.textSecondary,
-							)
+							Column(
+								horizontalAlignment = Alignment.CenterHorizontally,
+								verticalArrangement = Arrangement.spacedBy(2.dp),
+							) {
+								Icon(
+									painter = painterResource(item.icon),
+									contentDescription = null,
+									modifier = Modifier.size(22.dp),
+									tint = if (isSelected) colors.primary else colors.textSecondary,
+								)
+								Text(
+									text = when (item) {
+										MainBottomNavItem.Home -> "홈"
+										MainBottomNavItem.Players -> "마킹"
+										MainBottomNavItem.Settings -> "설정"
+									},
+									style = HandyTheme.typography.medium12,
+									color = if (isSelected) colors.primary else colors.textSecondary,
+								)
+							}
 						}
 					}
 				}

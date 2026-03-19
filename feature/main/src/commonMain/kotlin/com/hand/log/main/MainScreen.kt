@@ -12,7 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.main.navigation.MainBottomBar
 import com.hand.log.main.navigation.MainBottomNavItem
-import com.hand.log.main.navigation.MainNavHost
+import com.hand.log.main.navigation.MainNavDisplay
 import com.hand.log.main.navigation.MainNavigator
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.navigation.navigation.MainTabRoute
@@ -53,7 +53,7 @@ private fun MainScreenContent(
 		},
 		content = { paddingValues ->
 			Box(modifier = Modifier.padding(paddingValues)) {
-				MainNavHost(
+				MainNavDisplay(
 					backStack = routeStack.backStack,
 					onBack = onBack,
 				)

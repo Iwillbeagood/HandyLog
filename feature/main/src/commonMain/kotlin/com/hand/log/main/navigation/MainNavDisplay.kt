@@ -17,10 +17,14 @@ import com.hand.log.handdetail.navigation.handDetailNavGraph
 import com.hand.log.home.navigation.homeNavGraph
 import com.hand.log.players.navigation.playersNavGraph
 import com.hand.log.record.navigation.recordHandNavGraph
+import com.hand.log.settings.betsize.navigation.betSizeNavGraph
+import com.hand.log.settings.main.navigation.settingsMainNavGraph
 import com.hand.log.table.navigation.tableNavGraph
 
+private const val SLIDE_DURATION = 450
+
 @Composable
-internal fun MainNavHost(
+internal fun MainNavDisplay(
 	backStack: List<NavKey>,
 	onBack: () -> Unit,
 ) {
@@ -30,6 +34,8 @@ internal fun MainNavHost(
 		tableNavGraph()
 		recordHandNavGraph()
 		handDetailNavGraph()
+		settingsMainNavGraph()
+		betSizeNavGraph()
 	}
 
 	NavDisplay(
@@ -43,18 +49,18 @@ internal fun MainNavHost(
 		transitionSpec = {
 			slideInHorizontally(
 				initialOffsetX = { it },
-				animationSpec = tween(350, easing = FastOutSlowInEasing),
+				animationSpec = tween(SLIDE_DURATION, easing = FastOutSlowInEasing),
 			) togetherWith
 				slideOutHorizontally(
 					targetOffsetX = { (-it * 0.15f).toInt() },
-					animationSpec = tween(350, easing = FastOutSlowInEasing),
-				) + fadeOut(animationSpec = tween(350, easing = FastOutSlowInEasing))
+					animationSpec = tween(SLIDE_DURATION, easing = FastOutSlowInEasing),
+				) + fadeOut(animationSpec = tween(SLIDE_DURATION, easing = FastOutSlowInEasing))
 		},
 		popTransitionSpec = {
 			EnterTransition.None togetherWith
 				slideOutHorizontally(
 					targetOffsetX = { it },
-					animationSpec = tween(350, easing = FastOutSlowInEasing),
+					animationSpec = tween(SLIDE_DURATION, easing = FastOutSlowInEasing),
 				)
 		},
 	)

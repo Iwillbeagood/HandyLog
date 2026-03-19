@@ -5,7 +5,8 @@ import com.hand.log.navigation.navigation.MainTabRoute
 import com.hand.log.navigation.navigation.Route
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.house
-import handylog.core.res.generated.resources.user_round
+import handylog.core.res.generated.resources.settings
+import handylog.core.res.generated.resources.users
 import org.jetbrains.compose.resources.DrawableResource
 
 enum class MainBottomNavItem(
@@ -17,8 +18,12 @@ enum class MainBottomNavItem(
 		route = MainTabRoute.Home,
 	),
 	Players(
-		icon = Res.drawable.user_round,
+		icon = Res.drawable.users,
 		route = MainTabRoute.Players,
+	),
+	Settings(
+		icon = Res.drawable.settings,
+		route = MainTabRoute.Settings,
 	),
 	;
 
