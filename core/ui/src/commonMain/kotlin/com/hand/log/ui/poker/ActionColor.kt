@@ -36,7 +36,7 @@ fun ActionType.indicatorColor(): Color {
 	val colors = HandyTheme.colorScheme
 	return when (this) {
 		ActionType.FOLD -> colors.textSecondary.copy(alpha = 0.4f)
-		ActionType.CHECK -> colors.secondary
+		ActionType.CHECK -> colors.textPrimary
 		ActionType.CALL -> colors.primary
 		ActionType.BET -> colors.gold
 		ActionType.RAISE -> colors.accent

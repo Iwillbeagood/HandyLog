@@ -40,6 +40,7 @@ fun HandyTopAppbar(
 	navigationType: TopAppbarType = TopAppbarType.Default,
 	onBackEvent: () -> Unit = {},
 	iconButton: IconButton? = null,
+	endContent: @Composable (() -> Unit)? = null,
 	subContent: @Composable (() -> Unit)? = null,
 ) {
 	Column(
@@ -85,7 +86,18 @@ fun HandyTopAppbar(
 						.align(Alignment.CenterEnd)
 						.padding(end = 10.dp),
 				)
+			} else {
+				if (endContent != null) {
+					Box(
+						modifier = Modifier
+							.align(Alignment.CenterEnd)
+							.padding(end = 10.dp),
+					) {
+						endContent()
+					}
+				}
 			}
+
 		}
 
 		if (subContent != null) {

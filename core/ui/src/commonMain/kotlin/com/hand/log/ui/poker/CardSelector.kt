@@ -1,12 +1,16 @@
 package com.hand.log.ui.poker
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -21,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.theme.HandyTheme
@@ -37,11 +42,12 @@ fun CardSelectorSheet(
 	selectedCards: Set<Card>,
 	onCardsSelected: (List<Card>) -> Unit,
 	onDismiss: () -> Unit,
+	onUnknownSelected: (() -> Unit)? = null,
 	modifier: Modifier = Modifier,
 ) {
 	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 	val colors = HandyTheme.colorScheme
-	val pickedCards = remember { mutableStateListOf<Card>() }
+	val pickedCards = remember(title, maxCards) { mutableStateListOf<Card>() }
 	val allUsedCards = selectedCards + pickedCards
 
 	ModalBottomSheet(
@@ -87,6 +93,29 @@ fun CardSelectorSheet(
 							size = CardSize.MD,
 						)
 					}
+				}
+			}
+
+			// 카드 미공개 옵션
+			if (onUnknownSelected != null) {
+				Box(
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(bottom = 12.dp)
+						.clip(RoundedCornerShape(8.dp))
+						.background(colors.muted)
+						.clickable {
+							onUnknownSelected()
+							onDismiss()
+						}
+						.padding(12.dp),
+					contentAlignment = Alignment.Center,
+				) {
+					Text(
+						text = "? 카드 미공개",
+						style = HandyTheme.typography.bold14,
+						color = colors.textSecondary,
+					)
 				}
 			}
 
