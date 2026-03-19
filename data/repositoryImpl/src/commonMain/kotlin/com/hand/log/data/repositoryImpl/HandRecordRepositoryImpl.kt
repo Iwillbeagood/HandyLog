@@ -14,6 +14,10 @@ internal class HandRecordRepositoryImpl(
 		return localDataSource.observeHandsByTableId(tableId)
 	}
 
+	override fun observeHandById(handId: String): Flow<HandRecord?> {
+		return localDataSource.observeHandById(handId)
+	}
+
 	override suspend fun getHandById(handId: String): HandRecord? {
 		return localDataSource.getHandById(handId)
 	}

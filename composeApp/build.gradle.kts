@@ -22,16 +22,19 @@ kotlin {
 
 	sourceSets {
 		androidMain.dependencies {
-			implementation(compose.preview)
 			implementation(libs.androidx.activity.compose)
+			implementation(projects.local.datastore)
 		}
 		commonMain.dependencies {
 			implementation(projects.feature.main)
 			implementation(projects.feature.home)
-			implementation(projects.feature.table)
+			implementation(projects.feature.table.home)
+			implementation(projects.feature.table.playerSetup)
 			implementation(projects.feature.record)
 			implementation(projects.feature.handDetail)
 			implementation(projects.feature.players)
+			implementation(projects.feature.settings.home)
+			implementation(projects.feature.settings.betsize)
 			implementation(projects.domain.model)
 			implementation(projects.domain.repository)
 			implementation(projects.data.datasource)
@@ -46,10 +49,6 @@ kotlin {
 			implementation(libs.koin.compose.viewmodel.navigation)
 		}
 	}
-}
-
-composeCompiler {
-	featureFlags.add(ComposeFeatureFlag.OptimizeNonSkippingGroups)
 }
 
 android {

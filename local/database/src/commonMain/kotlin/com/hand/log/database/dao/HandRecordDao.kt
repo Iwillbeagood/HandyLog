@@ -18,6 +18,9 @@ interface HandRecordDao {
 	fun observeHandsByTableId(tableId: String): Flow<List<HandRecordEntity>>
 
 	@Query("SELECT * FROM hand_records WHERE id = :handId")
+	fun observeHandById(handId: String): Flow<HandRecordEntity?>
+
+	@Query("SELECT * FROM hand_records WHERE id = :handId")
 	suspend fun getHandById(handId: String): HandRecordEntity?
 
 	@Query("SELECT COUNT(*) FROM hand_records WHERE tableId = :tableId")

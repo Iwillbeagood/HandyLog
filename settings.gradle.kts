@@ -67,6 +67,9 @@ include(
     ":feature:home",
     ":feature:players",
     ":feature:record",
-    ":feature:table",
+    ":feature:table:home",
+    ":feature:table:player-setup",
     ":feature:hand-detail",
+    ":feature:settings:home",
+    ":feature:settings:betsize",
 )

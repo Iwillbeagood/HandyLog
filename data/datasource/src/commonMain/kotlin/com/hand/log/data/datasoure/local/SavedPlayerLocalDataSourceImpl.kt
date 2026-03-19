@@ -6,6 +6,10 @@ import com.hand.log.domain.model.PlayerTendency
 import com.hand.log.domain.model.SavedPlayer
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 internal class SavedPlayerLocalDataSourceImpl(
 	private val savedPlayerDao: SavedPlayerDao,
@@ -25,8 +29,17 @@ internal class SavedPlayerLocalDataSourceImpl(
 		return savedPlayerDao.getPlayerByName(name)?.toDomain()
 	}
 
+	@OptIn(ExperimentalUuidApi::class, ExperimentalTime::class)
 	override suspend fun savePlayer(player: SavedPlayer) {
-		savedPlayerDao.insertPlayer(player.toEntity())
+		val toSave = if (player.id.isBlank()) {
+			player.copy(
+				id = Uuid.random().toString(),
+				createdAt = Clock.System.now().toEpochMilliseconds(),
+			)
+		} else {
+			player
+		}
+		savedPlayerDao.insertPlayer(toSave.toEntity())
 	}
 
 	override suspend fun deletePlayer(id: String) {

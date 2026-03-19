@@ -58,7 +58,7 @@ fun HandyTopAppbar(
 			) {
 				when (navigationType) {
 					TopAppbarType.Main -> {
-						HomeLogo()
+						HomeLogo(title = title)
 					}
 					else -> {
 						TopAppbarIcon(
@@ -70,14 +70,16 @@ fun HandyTopAppbar(
 				}
 			}
 
-			Text(
-				text = title,
-				color = contentColor,
-				style = titleStyle,
-				maxLines = 1,
-				overflow = TextOverflow.Ellipsis,
-				modifier = Modifier.align(Alignment.Center),
-			)
+			if (navigationType != TopAppbarType.Main) {
+				Text(
+					text = title,
+					color = contentColor,
+					style = titleStyle,
+					maxLines = 1,
+					overflow = TextOverflow.Ellipsis,
+					modifier = Modifier.align(Alignment.Center),
+				)
+			}
 
 			if (iconButton != null) {
 				TopAppbarIconButton(
@@ -166,7 +168,7 @@ fun TopAppbarIconButton(
 }
 
 @Composable
-private fun HomeLogo() {
+private fun HomeLogo(title: String = "") {
 	val colors = HandyTheme.colorScheme
 
 	Row(
@@ -188,16 +190,24 @@ private fun HomeLogo() {
 			)
 		}
 		HorizontalSpacer(8.dp)
-		Text(
-			text = "Handy",
-			style = HandyTheme.typography.bold16,
-			color = colors.primary,
-		)
-		Text(
-			text = "Log",
-			style = HandyTheme.typography.bold16,
-			color = colors.textPrimary,
-		)
+		if (title.isNotBlank()) {
+			Text(
+				text = title,
+				style = HandyTheme.typography.medium16,
+				color = colors.textPrimary,
+			)
+		} else {
+			Text(
+				text = "Handy",
+				style = HandyTheme.typography.bold16,
+				color = colors.primary,
+			)
+			Text(
+				text = "Log",
+				style = HandyTheme.typography.bold16,
+				color = colors.textPrimary,
+			)
+		}
 	}
 }
 
@@ -228,6 +238,17 @@ private fun DefaultTopAppbarPreview() {
 private fun MainTopAppbarPreview() {
 	ThemePreview {
 		HandyTopAppbar(
+			navigationType = TopAppbarType.Main,
+		)
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun MainTopAppbarWithTitlePreview() {
+	ThemePreview {
+		HandyTopAppbar(
+			title = "플레이어",
 			navigationType = TopAppbarType.Main,
 		)
 	}

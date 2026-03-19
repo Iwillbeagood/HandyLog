@@ -16,6 +16,10 @@ internal class HandRecordLocalDataSourceImpl(
 		}
 	}
 
+	override fun observeHandById(handId: String): Flow<HandRecord?> {
+		return handRecordDao.observeHandById(handId).map { it?.toDomain() }
+	}
+
 	override suspend fun getHandById(handId: String): HandRecord? {
 		return handRecordDao.getHandById(handId)?.toDomain()
 	}

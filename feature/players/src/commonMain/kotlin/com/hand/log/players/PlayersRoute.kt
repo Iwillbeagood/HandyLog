@@ -17,6 +17,8 @@ internal fun PlayersRoute() {
 	PlayersScreen(
 		state = state,
 		onPlayerClick = viewModel::showPlayerEdit,
+		onEditPlayer = viewModel::showPlayerEdit,
+		onDeletePlayer = viewModel::deletePlayer,
 		onAddPlayer = viewModel::showAddPlayer,
 	)
 

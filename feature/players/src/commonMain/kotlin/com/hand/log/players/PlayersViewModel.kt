@@ -11,9 +11,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
 internal class PlayersViewModel(
 	private val savedPlayerRepository: SavedPlayerRepository,
@@ -39,29 +38,26 @@ internal class PlayersViewModel(
 	}
 
 	fun showPlayerEdit(player: SavedPlayer) {
-		_modalEffect.value = PlayersModalEffect.ShowPlayerEdit(player)
+		_modalEffect.update {
+			PlayersModalEffect.ShowPlayerEdit(player)
+		}
 	}
 
 	fun showAddPlayer() {
-		_modalEffect.value = PlayersModalEffect.ShowAddPlayer
+		_modalEffect.update {
+			PlayersModalEffect.ShowAddPlayer
+		}
 	}
 
 	fun dismissModal() {
-		_modalEffect.value = PlayersModalEffect.Idle
+		_modalEffect.update {
+			PlayersModalEffect.Idle
+		}
 	}
 
-	@OptIn(ExperimentalTime::class)
 	fun savePlayer(player: SavedPlayer) {
 		viewModelScope.launch {
-			val toSave = if (player.id.isBlank()) {
-				player.copy(
-					id = generateId(),
-					createdAt = Clock.System.now().toEpochMilliseconds(),
-				)
-			} else {
-				player
-			}
-			savedPlayerRepository.savePlayer(toSave)
+			savedPlayerRepository.savePlayer(player)
 		}
 		dismissModal()
 	}
@@ -73,8 +69,4 @@ internal class PlayersViewModel(
 		dismissModal()
 	}
 
-	private fun generateId(): String {
-		val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-		return (1..20).map { chars.random() }.joinToString("")
-	}
 }

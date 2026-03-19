@@ -1,13 +1,11 @@
 package com.hand.log.home
 
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.home.contract.HomeEffect
@@ -16,7 +14,6 @@ import com.hand.log.home.contract.HomeModalEffect
 import com.hand.log.home.contract.HomeState
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.ui.table.TableFormSheet
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,8 +25,6 @@ internal fun HomeRoute(
 	val navAction = LocalNavigateActionInterop.current
 
 	var showSetupSheet by remember { mutableStateOf(false) }
-	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-	val scope = rememberCoroutineScope()
 
 	LaunchedEffect(Unit) {
 		viewModel.homeEffect.collect { effect ->
@@ -55,11 +50,8 @@ internal fun HomeRoute(
 
 	if (showSetupSheet) {
 		TableFormSheet(
-			sheetState = sheetState,
 			onDismissRequest = {
-				scope.launch { sheetState.hide() }.invokeOnCompletion {
-					showSetupSheet = false
-				}
+				showSetupSheet = false
 			},
 			onSubmit = { date, location, gameType, startingStack, blinds, playerCount, heroSeat ->
 				viewModel.saveTable(
@@ -71,9 +63,6 @@ internal fun HomeRoute(
 					playerCount = playerCount,
 					heroSeat = heroSeat,
 				)
-				scope.launch { sheetState.hide() }.invokeOnCompletion {
-					showSetupSheet = false
-				}
 			},
 		)
 	}
