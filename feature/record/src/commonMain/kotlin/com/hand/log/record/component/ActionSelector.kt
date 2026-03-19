@@ -41,6 +41,8 @@ internal fun ActionSelector(
 	onConfirmAction: () -> Unit = {},
 	bbAmount: Double = 0.0,
 	currentPot: Double = 0.0,
+	preflopPresets: List<Double> = listOf(2.0, 2.5, 3.0, 4.0, 5.0),
+	postflopPresets: List<Int> = listOf(33, 50, 75, 100),
 	minRaiseAmount: Double = 0.0,
 	maxAmount: Double = 0.0,
 	showAmountWarning: Boolean = false,
@@ -104,7 +106,7 @@ internal fun ActionSelector(
 			) {
 				if (currentStreet == Street.PREFLOP) {
 					if (bbAmount > 0) {
-						listOf(2.0, 2.5, 3.0, 4.0, 5.0).forEach { multiplier ->
+						preflopPresets.forEach { multiplier ->
 							val amount = (bbAmount * multiplier).toLong().toString()
 							val label = if (multiplier % 1.0 == 0.0) {
 								"${multiplier.toInt()}BB"
@@ -125,7 +127,7 @@ internal fun ActionSelector(
 					}
 				} else {
 					if (currentPot > 0) {
-						listOf(33, 50, 75, 100).forEach { percent ->
+						postflopPresets.forEach { percent ->
 							val amount = (currentPot * percent / 100).toLong().toString()
 							RegularButton(
 								text = "$percent%",

@@ -155,6 +155,8 @@ internal fun RecordHandScreen(
 							onUpdatePlayerStack = onUpdatePlayerStack,
 							onConfirmAction = onConfirmAction,
 							onRemoveLastAction = onRemoveLastAction,
+							preflopPresets = state.preflopPresets,
+							postflopPresets = state.postflopPresets,
 						)
 					}
 

@@ -1,15 +1,14 @@
 package com.hand.log.record
 
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.navigationevent.NavigationEventInfo
-import androidx.navigationevent.compose.NavigationBackHandler
-import androidx.navigationevent.compose.rememberNavigationEventState
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.GameType
@@ -63,7 +62,6 @@ internal fun RecordHandRoute(
 	)
 
 	RecordHandModalContent(
-		state = state,
 		modalEffect = modalEffect,
 		onCardsSelected = viewModel::onCardsSelected,
 		onSetShowdownUnknown = viewModel::setShowdownUnknown,
@@ -118,7 +116,6 @@ private fun RecordHandContent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun RecordHandModalContent(
-	state: RecordHandState,
 	modalEffect: RecordHandModalEffect,
 	onCardsSelected: (List<Card>) -> Unit,
 	onSetShowdownUnknown: (Int) -> Unit,
@@ -129,49 +126,27 @@ private fun RecordHandModalContent(
 		RecordHandModalEffect.Idle -> {}
 
 		is RecordHandModalEffect.ShowCardSelector -> {
-			val title = when (modalEffect.target) {
-				is CardSelectorTarget.HeroCard -> "히어로 카드 선택"
-				is CardSelectorTarget.BoardCard -> "${modalEffect.target.street.label} 카드 선택"
-				is CardSelectorTarget.SingleBoardCard -> "${modalEffect.target.street.label} 카드 변경"
-				is CardSelectorTarget.ShowdownCard -> {
-					val posName = (state as? RecordHandState.Recording)?.positionName(modalEffect.target.seat)
-						?: "${modalEffect.target.seat}"
-					"$posName 카드 선택"
-				}
-			}
 			val isShowdown = modalEffect.target is CardSelectorTarget.ShowdownCard
 			CardSelectorSheet(
-				title = title,
+				title = modalEffect.title,
 				maxCards = modalEffect.target.maxCards,
 				selectedCards = modalEffect.selectedCards,
 				onCardsSelected = onCardsSelected,
 				onDismiss = onDismiss,
 				onUnknownSelected = if (isShowdown) {
-					{
-						val seat = (modalEffect.target as CardSelectorTarget.ShowdownCard).seat
-						onSetShowdownUnknown(seat)
-					}
+					{ onSetShowdownUnknown(modalEffect.target.seat) }
 				} else {
 					null
 				},
 			)
 		}
 
-		RecordHandModalEffect.ShowTableEdit -> {
-			val recording = state as? RecordHandState.Recording
-			val table = recording?.table
-			if (table != null) {
-				val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-				TableFormSheet(
-					sheetState = sheetState,
-					table = table,
-					onDismissRequest = onDismiss,
-					onSubmit = { date, location, gameType, stack, blinds, playerCount, heroSeat ->
-						onUpdateTable(date, location, gameType, stack, blinds, playerCount, heroSeat)
-						onDismiss()
-					},
-				)
-			}
+		is RecordHandModalEffect.ShowTableEdit -> {
+			TableFormSheet(
+				table = modalEffect.table,
+				onDismissRequest = onDismiss,
+				onSubmit = onUpdateTable,
+			)
 		}
 	}
 }

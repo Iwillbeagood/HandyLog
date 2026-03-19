@@ -48,6 +48,8 @@ internal sealed interface RecordHandState {
 		// UI state
 		val currentStep: RecordStep = RecordStep.SETUP,
 		val useBbUnit: Boolean = false,
+		val preflopPresets: List<Double> = listOf(2.0, 2.5, 3.0, 4.0, 5.0),
+		val postflopPresets: List<Int> = listOf(33, 50, 75, 100),
 		val showAmountWarning: Boolean = false,
 	) : RecordHandState {
 

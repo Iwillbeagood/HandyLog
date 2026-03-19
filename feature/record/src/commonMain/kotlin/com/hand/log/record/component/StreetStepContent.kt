@@ -64,6 +64,8 @@ internal fun StreetStepContent(
 	onUpdatePlayerStack: (Int, String) -> Unit,
 	onConfirmAction: () -> Unit,
 	onRemoveLastAction: () -> Unit,
+	preflopPresets: List<Double> = listOf(2.0, 2.5, 3.0, 4.0, 5.0),
+	postflopPresets: List<Int> = listOf(33, 50, 75, 100),
 ) {
 	val colors = HandyTheme.colorScheme
 	val currentStreet = state.currentStreet
@@ -170,6 +172,8 @@ internal fun StreetStepContent(
 				onUpdateActionAmount = onUpdateActionAmount,
 				onUpdatePlayerStack = onUpdatePlayerStack,
 				onConfirmAction = onConfirmAction,
+				preflopPresets = preflopPresets,
+				postflopPresets = postflopPresets,
 			)
 		} // AnimatedVisibility
 
@@ -184,6 +188,8 @@ private fun PlayerActionArea(
 	onUpdateActionAmount: (String) -> Unit,
 	onUpdatePlayerStack: (Int, String) -> Unit,
 	onConfirmAction: () -> Unit,
+	preflopPresets: List<Double>,
+	postflopPresets: List<Int>,
 ) {
 	val colors = HandyTheme.colorScheme
 
@@ -255,6 +261,8 @@ private fun PlayerActionArea(
 				onConfirmAction = onConfirmAction,
 				bbAmount = state.blinds?.bb ?: 0.0,
 				currentPot = state.currentPot,
+				preflopPresets = preflopPresets,
+				postflopPresets = postflopPresets,
 				minRaiseAmount = state.minRaiseAmount,
 				maxAmount = currentStack + (state.players[state.currentActionSeat]?.currentBet ?: 0.0),
 				showAmountWarning = state.showAmountWarning,
