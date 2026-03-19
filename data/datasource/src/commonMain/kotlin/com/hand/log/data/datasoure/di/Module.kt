@@ -4,6 +4,8 @@ import com.hand.log.data.datasoure.local.HandRecordLocalDataSource
 import com.hand.log.data.datasoure.local.HandRecordLocalDataSourceImpl
 import com.hand.log.data.datasoure.local.PokerTableLocalDataSource
 import com.hand.log.data.datasoure.local.PokerTableLocalDataSourceImpl
+import com.hand.log.data.datasoure.local.AppSettingsLocalDataSource
+import com.hand.log.data.datasoure.local.AppSettingsLocalDataSourceImpl
 import com.hand.log.data.datasoure.local.SavedPlayerLocalDataSource
 import com.hand.log.data.datasoure.local.SavedPlayerLocalDataSourceImpl
 import org.koin.core.module.dsl.singleOf
@@ -14,4 +16,5 @@ val dataSourceModule = module {
 	singleOf(::PokerTableLocalDataSourceImpl) bind PokerTableLocalDataSource::class
 	singleOf(::HandRecordLocalDataSourceImpl) bind HandRecordLocalDataSource::class
 	singleOf(::SavedPlayerLocalDataSourceImpl) bind SavedPlayerLocalDataSource::class
+	singleOf(::AppSettingsLocalDataSourceImpl) bind AppSettingsLocalDataSource::class
 }
