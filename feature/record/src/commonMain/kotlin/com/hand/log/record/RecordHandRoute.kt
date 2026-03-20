@@ -9,17 +9,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
-import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.Card
-import com.hand.log.domain.model.GameType
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.record.contract.CardSelectorTarget
 import com.hand.log.record.contract.RecordHandEffect
 import com.hand.log.record.contract.RecordHandModalEffect
 import com.hand.log.record.contract.RecordHandState
 import com.hand.log.record.contract.RecordStep
+import com.hand.log.tableedit.TableEditSheet
 import com.hand.log.ui.poker.CardSelectorSheet
-import com.hand.log.ui.table.TableFormSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,7 +63,7 @@ internal fun RecordHandRoute(
 		modalEffect = modalEffect,
 		onCardsSelected = viewModel::onCardsSelected,
 		onSetShowdownUnknown = viewModel::setShowdownUnknown,
-		onUpdateTable = viewModel::updateTable,
+		onTableSaved = viewModel::onTableSaved,
 		onDismiss = viewModel::dismissModal,
 	)
 
@@ -104,7 +102,6 @@ private fun RecordHandContent(
 			onNextStep = viewModel::nextStep,
 			onPreviousStep = viewModel::previousStep,
 			onSelectShowdownCard = viewModel::selectShowdownCard,
-			onUpdateResult = viewModel::updateResult,
 			onUpdateMemo = viewModel::updateMemo,
 			onShowTableEdit = viewModel::showTableEdit,
 			onToggleBbUnit = viewModel::toggleBbUnit,
@@ -113,13 +110,12 @@ private fun RecordHandContent(
 	}
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun RecordHandModalContent(
 	modalEffect: RecordHandModalEffect,
 	onCardsSelected: (List<Card>) -> Unit,
 	onSetShowdownUnknown: (Int) -> Unit,
-	onUpdateTable: (String, String?, GameType, Double, Blinds?, Int, Int) -> Unit,
+	onTableSaved: (com.hand.log.domain.model.PokerTable) -> Unit,
 	onDismiss: () -> Unit,
 ) {
 	when (modalEffect) {
@@ -142,10 +138,10 @@ private fun RecordHandModalContent(
 		}
 
 		is RecordHandModalEffect.ShowTableEdit -> {
-			TableFormSheet(
+			TableEditSheet(
 				table = modalEffect.table,
-				onDismissRequest = onDismiss,
-				onSubmit = onUpdateTable,
+				onSaved = onTableSaved,
+				onDismiss = onDismiss,
 			)
 		}
 	}

@@ -14,7 +14,7 @@ import com.hand.log.domain.model.ShowdownResult
 import com.hand.log.domain.model.Street
 import com.hand.log.record.model.RecordPlayers
 import com.hand.log.record.model.RecordShowdown
-import com.hand.log.record.model.RecordStreets
+import com.hand.log.domain.model.HandStreets
 import com.hand.log.utils.poker.HandEvaluator
 
 @Stable
@@ -34,7 +34,7 @@ internal sealed interface RecordHandState {
 		// Players
 		val players: RecordPlayers = RecordPlayers(),
 		// Streets
-		val streets: RecordStreets = RecordStreets(),
+		val streets: HandStreets = HandStreets(),
 		// Current action being built
 		val currentActionSeat: Int? = null,
 		val currentActionType: ActionType? = null,
@@ -43,7 +43,6 @@ internal sealed interface RecordHandState {
 		// Showdown
 		val showdown: RecordShowdown = RecordShowdown(),
 		// Result
-		val result: String = "",
 		val memo: String = "",
 		// UI state
 		val currentStep: RecordStep = RecordStep.SETUP,
@@ -89,6 +88,14 @@ internal sealed interface RecordHandState {
 		// --- Player 상태 조회 ---
 		val heroStack: Double
 			get() = players.getStack(table?.heroSeat ?: 0)
+
+		/** 히어로의 수익/손실 (현재 스택 - 초기 스택) */
+		val heroResult: Double
+			get() {
+				val heroSeat = table?.heroSeat ?: return 0.0
+				val player = players[heroSeat] ?: return 0.0
+				return player.stack - player.initialStack
+			}
 
 		fun getPlayerStack(seat: Int): Double = players.getStack(seat)
 

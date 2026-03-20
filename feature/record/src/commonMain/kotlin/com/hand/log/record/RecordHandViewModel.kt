@@ -6,9 +6,9 @@ import com.hand.log.domain.model.Action
 import com.hand.log.domain.model.ActionType
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.Card
-import com.hand.log.domain.model.GameType
 import com.hand.log.domain.model.HandRecord
 import com.hand.log.domain.model.HeroHand
+import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.model.Street
 import com.hand.log.domain.repository.AppSettingsRepository
 import com.hand.log.domain.repository.HandRecordRepository
@@ -21,7 +21,6 @@ import com.hand.log.record.contract.RecordStep
 import com.hand.log.record.model.PlayerStatus
 import com.hand.log.record.model.RecordPlayers
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.datetime.LocalDate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -209,36 +208,17 @@ internal class RecordHandViewModel(
 		updatePlayerStack(heroSeat, amount)
 	}
 
-	fun updateTable(
-		date: String,
-		location: String?,
-		gameType: GameType,
-		startingStack: Double,
-		blinds: Blinds?,
-		playerCount: Int,
-		heroSeat: Int,
-	) {
+	fun onTableSaved(table: PokerTable) {
 		val current = recording ?: return
-		val updatedTable = current.table?.copy(
-			date = LocalDate.parse(date),
-			location = location,
-			gameType = gameType,
-			startingStack = startingStack,
-			blinds = blinds,
-			playerCount = playerCount,
-			heroSeat = heroSeat,
-		)
-		val updatedPlayers = if (playerCount != current.table?.playerCount) {
-			RecordPlayers.create(playerCount = playerCount, defaultStack = startingStack)
+		val updatedPlayers = if (table.playerCount != current.table?.playerCount) {
+			RecordPlayers.create(playerCount = table.playerCount, defaultStack = table.startingStack)
 		} else {
 			current.players
 		}
 		updateRecording {
-			copy(table = updatedTable, blinds = blinds, players = updatedPlayers)
+			copy(table = table, blinds = table.blinds, players = updatedPlayers)
 		}
-		updatedTable?.let { table ->
-			viewModelScope.launch { pokerTableRepository.saveTable(table) }
-		}
+		dismissModal()
 	}
 
 	fun updateButtonSeat(seat: Int) {
@@ -270,7 +250,39 @@ internal class RecordHandViewModel(
 	// ──────────────────────────────────────────────
 
 	fun selectActionSeat(seat: Int) {
-		updateRecording { copy(currentActionSeat = seat) }
+		val current = recording ?: return
+		val isOpenerSelection = current.currentStreet == Street.PREFLOP &&
+			current.streets.getActions(Street.PREFLOP).isEmpty() &&
+			current.currentActionSeat == null
+
+		if (isOpenerSelection) {
+			// 오프너 선택: 선택한 좌석 이전의 모든 플레이어를 자동 폴드
+			val actionOrder = current.preflopActionOrder
+			val precedingSeats = actionOrder.takeWhile { it != seat }
+
+			updateRecording {
+				var updated = this
+				precedingSeats.forEach { foldSeat ->
+					val player = updated.players[foldSeat] ?: return@forEach
+					val effectiveStack = player.stack + player.currentBet
+					val action = Action(
+						playerSeat = foldSeat,
+						type = ActionType.FOLD,
+						stackBefore = effectiveStack,
+						stackAfter = player.stack,
+					)
+					updated = updated.copy(
+						streets = updated.streets.addAction(Street.PREFLOP, action),
+						players = updated.players.update(foldSeat) {
+							copy(status = PlayerStatus.FOLDED)
+						},
+					)
+				}
+				updated.copy(currentActionSeat = seat)
+			}
+		} else {
+			updateRecording { copy(currentActionSeat = seat) }
+		}
 	}
 
 	fun selectActionType(type: ActionType) {
@@ -475,7 +487,13 @@ internal class RecordHandViewModel(
 				currentActionAmount = "",
 				lastAggressorSeat = null,
 			)
-			updated.copy(currentActionSeat = updated.actionOrder.firstOrNull())
+			// 프리플랍 진입 시에는 오프너 선택을 위해 currentActionSeat을 null로
+			val firstSeat = if (stepped.currentStreet == Street.PREFLOP) {
+				null
+			} else {
+				updated.actionOrder.firstOrNull()
+			}
+			updated.copy(currentActionSeat = firstSeat)
 		}
 
 		// 포스트플랍 진입 시 보드 카드 선택 시트 자동 표시
@@ -535,10 +553,6 @@ internal class RecordHandViewModel(
 	// Result & Save
 	// ──────────────────────────────────────────────
 
-	fun updateResult(amount: String) {
-		updateRecording { copy(result = amount) }
-	}
-
 	fun updateMemo(text: String) {
 		updateRecording { copy(memo = text) }
 	}
@@ -558,9 +572,9 @@ internal class RecordHandViewModel(
 					heroSeat = current.table?.heroSeat ?: 0,
 					heroStack = current.heroStack,
 					buttonSeat = current.buttonSeat,
-					streets = current.streets.toHandStreets(),
+					streets = current.streets,
 					showdown = current.showdown.toShowdownEntries(),
-					result = current.result.toDoubleOrNull(),
+					result = current.heroResult,
 					memo = current.memo.ifBlank { null },
 				)
 
