@@ -27,6 +27,7 @@ import com.hand.log.record.di.featureRecordModule
 import com.hand.log.settings.betsize.di.featureSettingsBetSizeModule
 import com.hand.log.settings.main.di.featureSettingsMainModule
 import com.hand.log.table.di.featureTableModule
+import com.hand.log.tableedit.di.featureTableEditModule
 import com.hand.log.utils.StatusBarEffect
 import com.hand.log.utils.toast.ToastManager
 import org.koin.compose.koinInject
@@ -79,6 +80,7 @@ internal val appModule = module {
 	includes(
 		featureHomeModule,
 		featureTableModule,
+		featureTableEditModule,
 		featureRecordModule,
 		featureHandDetailModule,
 		featurePlayersModule,
