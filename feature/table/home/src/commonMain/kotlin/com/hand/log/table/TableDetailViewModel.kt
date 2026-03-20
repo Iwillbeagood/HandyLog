@@ -96,32 +96,11 @@ internal class TableDetailViewModel(
 		_modalEffect.update { TableDetailModalEffect.ShowTableEdit(table = current.table) }
 	}
 
-	fun updateTable(
-		date: String,
-		location: String?,
-		gameType: com.hand.log.domain.model.GameType,
-		startingStack: Double,
-		blinds: com.hand.log.domain.model.Blinds?,
-		playerCount: Int,
-		heroSeat: Int,
-	) {
-		val current = _state.value as? TableDetailState.TableData ?: return
+	fun onTableSaved(table: com.hand.log.domain.model.PokerTable) {
 		viewModelScope.launch {
-			val updatedTable = current.table.copy(
-				date = kotlinx.datetime.LocalDate.parse(date),
-				location = location,
-				gameType = gameType,
-				startingStack = startingStack,
-				blinds = blinds,
-				playerCount = playerCount,
-				heroSeat = heroSeat,
-			)
-			tableRepository.saveTable(updatedTable) {
-				viewModelScope.launch {
-					_effect.emit(TableDetailEffect.ShowSnackBar("테이블이 수정되었습니다"))
-				}
-			}
+			_effect.emit(TableDetailEffect.ShowSnackBar("테이블이 수정되었습니다"))
 		}
+		dismissModal()
 	}
 
 	fun dismissModal() {

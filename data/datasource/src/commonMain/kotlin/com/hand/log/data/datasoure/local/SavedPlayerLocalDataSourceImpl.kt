@@ -42,6 +42,15 @@ internal class SavedPlayerLocalDataSourceImpl(
 		savedPlayerDao.insertPlayer(toSave.toEntity())
 	}
 
+	override suspend fun updatePlayer(player: SavedPlayer) {
+		savedPlayerDao.updatePlayerInfo(
+			id = player.id,
+			name = player.name,
+			tendency = player.tendency?.name,
+			memo = player.memo,
+		)
+	}
+
 	override suspend fun deletePlayer(id: String) {
 		savedPlayerDao.deletePlayer(id)
 	}

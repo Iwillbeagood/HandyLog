@@ -105,6 +105,27 @@ object HandEvaluator {
 		return best!!
 	}
 
+	/** 5~7장에서 최고의 5장 핸드와 해당 카드를 함께 반환 */
+	fun evaluateBestWithCards(cards: List<Card>): Pair<EvaluatedHand, List<Card>> {
+		require(cards.size in 5..7)
+		if (cards.size == 5) return evaluate5(cards) to cards.sortedBy { it.rank.ordinal }
+
+		var best: EvaluatedHand? = null
+		var bestCards: List<Card> = emptyList()
+		val indices = cards.indices.toList()
+
+		combinations(indices, 5).forEach { combo ->
+			val hand = combo.map { cards[it] }
+			val evaluated = evaluate5(hand)
+			if (best == null || evaluated < best!!) {
+				best = evaluated
+				bestCards = hand
+			}
+		}
+
+		return best!! to bestCards.sortedBy { it.rank.ordinal }
+	}
+
 	/** 쇼다운 결과 계산. 보드 카드 + 각 플레이어 홀카드로 승자 결정 */
 	fun calculateShowdown(
 		boardCards: List<Card>,
@@ -114,16 +135,21 @@ object HandEvaluator {
 
 		val evaluated = playerHands.map { entry ->
 			val allCards = boardCards + listOf(entry.card1, entry.card2)
-			val best = if (allCards.size >= 5) evaluateBest(allCards) else null
-			entry.seat to best
+			if (allCards.size >= 5) {
+				val (hand, cards) = evaluateBestWithCards(allCards)
+				Triple(entry.seat, hand, cards)
+			} else {
+				Triple(entry.seat, null, emptyList<Card>())
+			}
 		}
 
 		val bestHand = evaluated.mapNotNull { it.second }.minOrNull()
 
-		return evaluated.map { (seat, hand) ->
+		return evaluated.map { (seat, hand, cards) ->
 			ShowdownResult(
 				seat = seat,
 				ranking = hand?.ranking ?: HandRanking.HIGH_CARD,
+				bestCards = cards,
 				isWinner = hand != null && hand == bestHand,
 			)
 		}

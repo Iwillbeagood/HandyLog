@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "df60b703f2589e326762a21ebda34807",
+    "identityHash": "eea791dd119fc8edb4326fdf76b4de2a",
     "entities": [
       {
         "tableName": "poker_tables",
@@ -134,6 +134,17 @@
             "id"
           ]
         },
+        "indices": [
+          {
+            "name": "index_table_players_tableId",
+            "unique": false,
+            "columnNames": [
+              "tableId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_table_players_tableId` ON `${TABLE_NAME}` (`tableId`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "poker_tables",
@@ -227,6 +238,17 @@
             "id"
           ]
         },
+        "indices": [
+          {
+            "name": "index_hand_records_tableId",
+            "unique": false,
+            "columnNames": [
+              "tableId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_hand_records_tableId` ON `${TABLE_NAME}` (`tableId`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "poker_tables",
@@ -284,7 +306,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'df60b703f2589e326762a21ebda34807')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'eea791dd119fc8edb4326fdf76b4de2a')"
     ]
   }
 }

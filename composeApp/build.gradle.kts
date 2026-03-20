@@ -29,6 +29,7 @@ kotlin {
 			implementation(projects.feature.main)
 			implementation(projects.feature.home)
 			implementation(projects.feature.table.home)
+			implementation(projects.feature.table.tableEdit)
 			implementation(projects.feature.table.playerSetup)
 			implementation(projects.feature.record)
 			implementation(projects.feature.handDetail)

@@ -17,7 +17,7 @@ import com.hand.log.record.contract.RecordStep
 import com.hand.log.record.model.PlayerStatus
 import com.hand.log.record.model.RecordPlayer
 import com.hand.log.record.model.RecordPlayers
-import com.hand.log.record.model.RecordStreets
+import com.hand.log.domain.model.HandStreets
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -37,7 +37,7 @@ class RecordHandStateTest {
 		currentStreet: Street = Street.PREFLOP,
 		currentStep: RecordStep = RecordStep.PREFLOP,
 		currentActionSeat: Int? = null,
-		streets: RecordStreets = RecordStreets(),
+		streets: HandStreets = HandStreets(),
 		players: RecordPlayers? = null,
 	): RecordHandState.Recording {
 		val table = PokerTable(
@@ -83,7 +83,7 @@ class RecordHandStateTest {
 		val state = makeState(
 			bb = 1000.0,
 			sb = 500.0,
-			streets = RecordStreets(
+			streets = HandStreets(
 				preflop = PreflopStreet(
 					actions = listOf(
 						Action(playerSeat = 4, type = ActionType.RAISE, amount = 2500.0),
@@ -102,7 +102,7 @@ class RecordHandStateTest {
 			sb = 5000.0,
 			isBigBlindAnte = true,
 			startingStack = 50000.0,
-			streets = RecordStreets(
+			streets = HandStreets(
 				preflop = PreflopStreet(
 					actions = listOf(
 						Action(playerSeat = 4, type = ActionType.ALL_IN, amount = 50000.0),
@@ -144,7 +144,7 @@ class RecordHandStateTest {
 		val state = makeState(
 			buttonSeat = 1,
 			currentActionSeat = 3,
-			streets = RecordStreets(
+			streets = HandStreets(
 				preflop = PreflopStreet(
 					actions = listOf(
 						Action(playerSeat = 4, type = ActionType.RAISE, amount = 2500.0),
@@ -179,7 +179,7 @@ class RecordHandStateTest {
 			currentStreet = Street.FLOP,
 			currentStep = RecordStep.FLOP,
 			currentActionSeat = 3,
-			streets = RecordStreets(
+			streets = HandStreets(
 				preflop = PreflopStreet(),
 				flop = FlopStreet(
 					card1 = Card(Rank.ACE, Suit.HEARTS),
@@ -214,7 +214,7 @@ class RecordHandStateTest {
 				player8 = RecordPlayer(seat = 8, stack = 50000.0),
 				player9 = RecordPlayer(seat = 9, stack = 50000.0),
 			),
-			streets = RecordStreets(
+			streets = HandStreets(
 				preflop = PreflopStreet(
 					actions = listOf(
 						Action(playerSeat = 4, type = ActionType.RAISE, amount = 2500.0),
@@ -245,7 +245,7 @@ class RecordHandStateTest {
 				player8 = RecordPlayer(seat = 8, stack = 50000.0),
 				player9 = RecordPlayer(seat = 9, stack = 50000.0),
 			),
-			streets = RecordStreets(
+			streets = HandStreets(
 				preflop = PreflopStreet(
 					actions = listOf(
 						Action(playerSeat = 4, type = ActionType.ALL_IN, amount = 50000.0),
@@ -271,7 +271,7 @@ class RecordHandStateTest {
 	fun `2500 레이즈 후 민3벳은 4000`() {
 		val state = makeState(
 			bb = 1000.0,
-			streets = RecordStreets(
+			streets = HandStreets(
 				preflop = PreflopStreet(
 					actions = listOf(
 						Action(playerSeat = 4, type = ActionType.RAISE, amount = 2500.0),
@@ -286,7 +286,7 @@ class RecordHandStateTest {
 	fun `3벳 8000 후 민4벳은 13500`() {
 		val state = makeState(
 			bb = 1000.0,
-			streets = RecordStreets(
+			streets = HandStreets(
 				preflop = PreflopStreet(
 					actions = listOf(
 						Action(playerSeat = 4, type = ActionType.RAISE, amount = 2500.0),
@@ -302,7 +302,7 @@ class RecordHandStateTest {
 	fun `올인 레이즈 후 민리레이즈 계산`() {
 		val state = makeState(
 			bb = 1000.0,
-			streets = RecordStreets(
+			streets = HandStreets(
 				preflop = PreflopStreet(
 					actions = listOf(
 						Action(playerSeat = 4, type = ActionType.RAISE, amount = 2500.0),
@@ -409,7 +409,7 @@ class RecordHandStateTest {
 	@Test
 	fun `프리플랍 오픈레이즈 후 벳 레벨은 2`() {
 		val state = makeState(
-			streets = RecordStreets(
+			streets = HandStreets(
 				preflop = PreflopStreet(
 					actions = listOf(
 						Action(playerSeat = 4, type = ActionType.RAISE, amount = 2500.0),
@@ -433,7 +433,7 @@ class RecordHandStateTest {
 		val state = makeState(
 			currentStreet = Street.FLOP,
 			currentStep = RecordStep.FLOP,
-			streets = RecordStreets(
+			streets = HandStreets(
 				preflop = PreflopStreet(),
 				flop = FlopStreet(
 					actions = listOf(
@@ -458,7 +458,7 @@ class RecordHandStateTest {
 	fun `플랍 카드 없으면 보드 준비 안됨`() {
 		val state = makeState(
 			currentStreet = Street.FLOP,
-			streets = RecordStreets(preflop = PreflopStreet(), flop = FlopStreet()),
+			streets = HandStreets(preflop = PreflopStreet(), flop = FlopStreet()),
 		)
 		assertFalse(state.streets.isBoardReady(Street.FLOP))
 	}
@@ -467,7 +467,7 @@ class RecordHandStateTest {
 	fun `플랍 카드 3장이면 보드 준비 완료`() {
 		val state = makeState(
 			currentStreet = Street.FLOP,
-			streets = RecordStreets(
+			streets = HandStreets(
 				preflop = PreflopStreet(),
 				flop = FlopStreet(
 					card1 = Card(Rank.ACE, Suit.HEARTS),

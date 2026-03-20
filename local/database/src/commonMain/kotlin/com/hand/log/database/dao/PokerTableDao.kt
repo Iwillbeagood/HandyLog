@@ -9,12 +9,35 @@ import androidx.room.Transaction
 import com.hand.log.database.entity.PokerTableEntity
 import com.hand.log.database.entity.TablePlayerEntity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.datetime.LocalDate
 
 @Dao
 interface PokerTableDao {
 
 	@Insert(onConflict = OnConflictStrategy.REPLACE)
 	suspend fun insertTable(table: PokerTableEntity)
+
+	@Query(
+		"""UPDATE poker_tables SET
+		date = :date, location = :location, gameType = :gameType,
+		startingStack = :startingStack, blindsSb = :blindsSb, blindsBb = :blindsBb,
+		blindsStraddle = :blindsStraddle, isBigBlindAnte = :isBigBlindAnte,
+		playerCount = :playerCount, heroSeat = :heroSeat
+		WHERE id = :id""",
+	)
+	suspend fun updateTableInfo(
+		id: String,
+		date: LocalDate,
+		location: String?,
+		gameType: String,
+		startingStack: Double,
+		blindsSb: Double?,
+		blindsBb: Double?,
+		blindsStraddle: Double?,
+		isBigBlindAnte: Boolean,
+		playerCount: Int,
+		heroSeat: Int,
+	)
 
 	@Delete
 	suspend fun deleteTable(table: PokerTableEntity)

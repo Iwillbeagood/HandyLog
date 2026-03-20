@@ -22,6 +22,11 @@ interface SavedPlayerDao {
 	@Insert(onConflict = OnConflictStrategy.REPLACE)
 	suspend fun insertPlayer(player: SavedPlayerEntity)
 
+	@Query(
+		"UPDATE saved_players SET name = :name, tendency = :tendency, memo = :memo WHERE id = :id",
+	)
+	suspend fun updatePlayerInfo(id: String, name: String, tendency: String?, memo: String?)
+
 	@Query("DELETE FROM saved_players WHERE id = :id")
 	suspend fun deletePlayer(id: String)
 }

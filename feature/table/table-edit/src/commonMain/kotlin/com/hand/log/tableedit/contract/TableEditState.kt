@@ -1,10 +1,11 @@
-package com.hand.log.ui.table
+package com.hand.log.tableedit.contract
 
 import androidx.compose.runtime.Immutable
+import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.GameType
 
 @Immutable
-data class TableFormState(
+internal data class TableEditState(
 	val date: String = "",
 	val location: String = "",
 	val gameType: GameType = GameType.TOURNAMENT,
@@ -26,4 +27,17 @@ data class TableFormState(
 
 	val buttonText: String
 		get() = if (isEditMode) "수정 완료" else "테이블 생성"
+
+	fun buildBlinds(): Blinds = when (gameType) {
+		GameType.CASH -> Blinds(
+			sb = sbText.toDoubleOrNull() ?: 0.0,
+			bb = bbText.toDoubleOrNull() ?: 0.0,
+			straddle = if (straddleEnabled) straddleText.toDoubleOrNull() else null,
+		)
+		GameType.TOURNAMENT -> Blinds(
+			sb = 0.0,
+			bb = 0.0,
+			isBigBlindAnte = bigBlindAnteEnabled,
+		)
+	}
 }

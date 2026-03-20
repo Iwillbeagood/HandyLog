@@ -57,7 +57,11 @@ internal class PlayersViewModel(
 
 	fun savePlayer(player: SavedPlayer) {
 		viewModelScope.launch {
-			savedPlayerRepository.savePlayer(player)
+			if (player.id.isBlank()) {
+				savedPlayerRepository.savePlayer(player)
+			} else {
+				savedPlayerRepository.updatePlayer(player)
+			}
 		}
 		dismissModal()
 	}

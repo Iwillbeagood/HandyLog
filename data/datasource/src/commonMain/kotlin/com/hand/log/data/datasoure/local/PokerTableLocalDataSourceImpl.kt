@@ -60,6 +60,22 @@ internal class PokerTableLocalDataSourceImpl(
 		pokerTableDao.updateCompleteTable(entity, playerEntities)
 	}
 
+	override suspend fun updateTableInfo(table: PokerTable) {
+		pokerTableDao.updateTableInfo(
+			id = table.id,
+			date = table.date,
+			location = table.location,
+			gameType = table.gameType.name,
+			startingStack = table.startingStack,
+			blindsSb = table.blinds?.sb,
+			blindsBb = table.blinds?.bb,
+			blindsStraddle = table.blinds?.straddle,
+			isBigBlindAnte = table.blinds?.isBigBlindAnte ?: false,
+			playerCount = table.playerCount,
+			heroSeat = table.heroSeat,
+		)
+	}
+
 	override suspend fun deleteTable(tableId: String) {
 		pokerTableDao.deleteCompleteTable(tableId)
 	}

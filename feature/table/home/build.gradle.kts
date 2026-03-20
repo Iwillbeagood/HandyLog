@@ -11,6 +11,7 @@ kotlin {
 		commonMain.dependencies {
 			implementation(libs.kotlinx.datetime)
 			implementation(projects.feature.table.playerSetup)
+			implementation(projects.feature.table.tableEdit)
 		}
 	}
 }

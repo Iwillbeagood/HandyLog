@@ -27,6 +27,15 @@ internal class PokerTableRepositoryImpl(
 		}
 	}
 
+	override suspend fun updateTableInfo(table: PokerTable, onSuccess: () -> Unit) {
+		try {
+			localDataSource.updateTableInfo(table)
+			onSuccess()
+		} catch (e: Exception) {
+			Logger.e("updateTableInfo error: $e")
+		}
+	}
+
 	override suspend fun deleteTable(tableId: String, onSuccess: () -> Unit) {
 		try {
 			localDataSource.deleteTable(tableId)

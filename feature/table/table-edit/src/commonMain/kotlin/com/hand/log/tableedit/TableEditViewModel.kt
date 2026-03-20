@@ -1,25 +1,39 @@
-package com.hand.log.ui.table
+package com.hand.log.tableedit
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.remember
-import com.hand.log.domain.model.Blinds
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.hand.log.domain.model.GameType
 import com.hand.log.domain.model.PokerTable
+import com.hand.log.domain.repository.PokerTableRepository
+import com.hand.log.tableedit.contract.TableEditEffect
+import com.hand.log.tableedit.contract.TableEditState
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-@Stable
-class TableFormPresenter(
-	table: PokerTable? = null,
-) {
-	private val _state = MutableStateFlow(
+internal class TableEditViewModel(
+	private val pokerTableRepository: PokerTableRepository,
+) : ViewModel() {
+
+	private val _state = MutableStateFlow(TableEditState())
+	val state: StateFlow<TableEditState> get() = _state
+
+	private val _effect = MutableSharedFlow<TableEditEffect>()
+	val effect: SharedFlow<TableEditEffect> get() = _effect.asSharedFlow()
+
+	private var editingTableId: String? = null
+
+	fun initialize(table: PokerTable?) {
 		if (table != null) {
-			TableFormState(
+			editingTableId = table.id
+			_state.value = TableEditState(
 				date = table.date.toString(),
 				location = table.location ?: "",
 				gameType = table.gameType,
@@ -34,10 +48,10 @@ class TableFormPresenter(
 				isEditMode = true,
 			)
 		} else {
-			TableFormState(date = todayString())
-		},
-	)
-	val state: StateFlow<TableFormState> = _state
+			editingTableId = null
+			_state.value = TableEditState(date = todayString())
+		}
+	}
 
 	fun updateDate(date: String) = _state.update { it.copy(date = date) }
 	fun updateLocation(location: String) = _state.update { it.copy(location = location) }
@@ -49,23 +63,34 @@ class TableFormPresenter(
 	fun updateStraddle(straddle: String) = _state.update { it.copy(straddleText = straddle) }
 	fun updateBigBlindAnte(enabled: Boolean) = _state.update { it.copy(bigBlindAnteEnabled = enabled) }
 	fun updatePlayerCount(count: Int) = _state.update {
-		it.copy(playerCount = count, heroSeat = if (it.heroSeat > count) 1 else it.heroSeat)
+		val maxSeat = maxOf(count, 9)
+		it.copy(playerCount = count, heroSeat = if (it.heroSeat > maxSeat) 1 else it.heroSeat)
 	}
 	fun updateHeroSeat(seat: Int) = _state.update { it.copy(heroSeat = seat) }
 
-	fun buildBlinds(): Blinds {
+	@OptIn(ExperimentalTime::class)
+	fun submit() {
 		val s = _state.value
-		return when (s.gameType) {
-			GameType.CASH -> Blinds(
-				sb = s.sbText.toDoubleOrNull() ?: 0.0,
-				bb = s.bbText.toDoubleOrNull() ?: 0.0,
-				straddle = if (s.straddleEnabled) s.straddleText.toDoubleOrNull() else null,
+		if (!s.isSubmitEnabled) return
+
+		viewModelScope.launch {
+			val table = PokerTable(
+				id = editingTableId ?: generateId(),
+				date = LocalDate.parse(s.date),
+				location = s.location.takeIf { it.isNotBlank() },
+				gameType = s.gameType,
+				startingStack = s.startingStack.toDoubleOrNull() ?: 0.0,
+				blinds = s.buildBlinds(),
+				playerCount = s.playerCount,
+				heroSeat = s.heroSeat,
+				createdAt = Clock.System.now().toEpochMilliseconds(),
 			)
-			GameType.TOURNAMENT -> Blinds(
-				sb = 0.0,
-				bb = 0.0,
-				isBigBlindAnte = s.bigBlindAnteEnabled,
-			)
+			if (s.isEditMode) {
+				pokerTableRepository.updateTableInfo(table)
+			} else {
+				pokerTableRepository.saveTable(table)
+			}
+			_effect.emit(TableEditEffect.SaveComplete(table))
 		}
 	}
 
@@ -75,10 +100,10 @@ class TableFormPresenter(
 			val epochMs = Clock.System.now().toEpochMilliseconds()
 			return LocalDate.fromEpochDays((epochMs / 86400000).toInt()).toString()
 		}
-	}
-}
 
-@Composable
-fun rememberTableFormPresenter(table: PokerTable? = null): TableFormPresenter {
-	return remember(table?.id) { TableFormPresenter(table) }
+		private fun generateId(): String {
+			val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+			return (1..20).map { chars.random() }.joinToString("")
+		}
+	}
 }

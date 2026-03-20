@@ -1,21 +1,17 @@
 package com.hand.log.table
 
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
-import com.hand.log.domain.model.Blinds
-import com.hand.log.domain.model.GameType
 import com.hand.log.domain.model.Player
 import com.hand.log.playersetup.PlayerSetupSheet
 import com.hand.log.playersetup.PlayerSetupViewModel
 import com.hand.log.table.contract.TableDetailModalEffect
 import com.hand.log.table.contract.TableDetailState
-import com.hand.log.ui.table.TableFormSheet
+import com.hand.log.tableedit.TableEditSheet
 import org.koin.compose.viewmodel.koinViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun TableDetailRoute(
 	viewModel: TableDetailViewModel,
@@ -44,18 +40,17 @@ internal fun TableDetailRoute(
 		playerSetupViewModel = playerSetupViewModel,
 		onDismiss = viewModel::dismissModal,
 		onUpdatePlayers = viewModel::updatePlayers,
-		onUpdateTable = viewModel::updateTable,
+		onTableSaved = { viewModel.onTableSaved(it) },
 	)
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TableDetailModalContent(
 	modalEffect: TableDetailModalEffect,
 	playerSetupViewModel: PlayerSetupViewModel,
 	onDismiss: () -> Unit,
 	onUpdatePlayers: (List<Player>) -> Unit,
-	onUpdateTable: (String, String?, GameType, Double, Blinds?, Int, Int) -> Unit,
+	onTableSaved: (com.hand.log.domain.model.PokerTable) -> Unit,
 ) {
 	when (modalEffect) {
 		TableDetailModalEffect.Idle -> {}
@@ -73,10 +68,10 @@ private fun TableDetailModalContent(
 		}
 
 		is TableDetailModalEffect.ShowTableEdit -> {
-			TableFormSheet(
+			TableEditSheet(
 				table = modalEffect.table,
-				onDismissRequest = onDismiss,
-				onSubmit = onUpdateTable,
+				onSaved = onTableSaved,
+				onDismiss = onDismiss,
 			)
 		}
 	}

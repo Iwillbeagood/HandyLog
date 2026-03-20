@@ -2,10 +2,12 @@ package com.hand.log.database.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
 	tableName = "table_players",
+	indices = [Index("tableId")],
 	foreignKeys = [
 		ForeignKey(
 			entity = PokerTableEntity::class,

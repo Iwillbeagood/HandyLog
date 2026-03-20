@@ -68,6 +68,7 @@ include(
     ":feature:players",
     ":feature:record",
     ":feature:table:home",
+    ":feature:table:table-edit",
     ":feature:table:player-setup",
     ":feature:hand-detail",
     ":feature:settings:home",

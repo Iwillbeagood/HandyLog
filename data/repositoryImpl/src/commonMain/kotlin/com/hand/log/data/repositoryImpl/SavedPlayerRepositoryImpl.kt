@@ -25,6 +25,10 @@ internal class SavedPlayerRepositoryImpl(
 		localDataSource.savePlayer(player)
 	}
 
+	override suspend fun updatePlayer(player: SavedPlayer) {
+		localDataSource.updatePlayer(player)
+	}
+
 	override suspend fun deletePlayer(id: String) {
 		localDataSource.deletePlayer(id)
 	}

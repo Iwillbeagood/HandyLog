@@ -40,5 +40,6 @@ data class EvaluatedHand(
 data class ShowdownResult(
 	val seat: Int,
 	val ranking: HandRanking,
+	val bestCards: List<Card> = emptyList(),
 	val isWinner: Boolean,
 )

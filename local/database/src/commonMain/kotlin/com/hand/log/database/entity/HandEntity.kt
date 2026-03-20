@@ -2,6 +2,7 @@ package com.hand.log.database.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.HandStreets
@@ -10,6 +11,7 @@ import com.hand.log.domain.model.ShowdownEntry
 
 @Entity(
 	tableName = "hand_records",
+	indices = [Index("tableId")],
 	foreignKeys = [
 		ForeignKey(
 			entity = PokerTableEntity::class,

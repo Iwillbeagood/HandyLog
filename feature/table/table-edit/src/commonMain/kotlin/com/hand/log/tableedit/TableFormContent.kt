@@ -1,4 +1,4 @@
-package com.hand.log.ui.table
+package com.hand.log.tableedit
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -186,7 +186,7 @@ fun TableFormFields(
 	VerticalSpacer(16.dp)
 	HandySectionLabel("내 좌석 번호")
 	HandySelector(
-		range = 1..playerCount,
+		range = 1..maxOf(playerCount, 9),
 		selected = heroSeat,
 		onSelect = onHeroSeatChange,
 		selectedColor = colors.gold,
