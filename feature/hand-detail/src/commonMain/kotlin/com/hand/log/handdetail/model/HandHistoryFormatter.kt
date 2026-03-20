@@ -16,17 +16,29 @@ object HandHistoryFormatter {
 			.map { it.playerSeat }.distinct().size.coerceAtLeast(2)
 		val buttonSeat = hand.buttonSeat
 
-		// --- Stacks ---
+		// 프리플랍에서 폴드한 좌석
+		val preflopFoldedSeats = hand.streets.preflop.actions
+			.filter { it.type == ActionType.FOLD }
+			.map { it.playerSeat }
+			.toSet()
+
+		// --- Stacks (프리플랍 폴드 제외) ---
 		appendLine("[Stacks]")
 		val allSeats = hand.streets.preflop.actions.map { it.playerSeat }.distinct().sorted()
 		allSeats.forEach { seat ->
+			if (seat in preflopFoldedSeats) return@forEach
 			val posName = getPositionName(seat, buttonSeat, playerCount)
 			val isHero = seat == heroSeat
 			val stack = hand.streets.preflop.actions.firstOrNull { it.playerSeat == seat }?.stackBefore
 			if (stack != null) {
 				val bbStack = formatBb(stack, bb)
+				val heroCards = if (isHero) {
+					hand.heroHand?.let { " ${formatCard(it.card1)}${formatCard(it.card2)}" } ?: ""
+				} else {
+					""
+				}
 				if (isHero) {
-					appendLine("Hero ($posName) - $bbStack")
+					appendLine("Hero ($posName) - $bbStack$heroCards")
 				} else {
 					appendLine("$posName - $bbStack")
 				}
@@ -37,42 +49,30 @@ object HandHistoryFormatter {
 		// --- Preflop ---
 		appendLine("[Preflop]")
 		val preflopActions = hand.streets.preflop.actions
-		var foldCount = 0
 		val foldPositions = mutableListOf<String>()
 
 		preflopActions.forEach { action ->
 			val posName = getPositionName(action.playerSeat, buttonSeat, playerCount)
 			val isHero = action.playerSeat == heroSeat
-			val heroCards = if (isHero) {
-				hand.heroHand?.let {
-					" with ${formatCard(it.card1)}${formatCard(it.card2)}"
-				} ?: ""
-			} else {
-				""
-			}
 			val prefix = if (isHero) "Hero ($posName)" else posName
 
 			when (action.type) {
-				ActionType.FOLD -> {
-					foldCount++
-					foldPositions.add(posName)
-				}
+				ActionType.FOLD -> foldPositions.add(posName)
 				ActionType.CALL -> appendLine("$prefix calls${formatAmountBb(action.amount, bb)}")
-				ActionType.RAISE -> appendLine(
-					"$prefix opens to ${formatBb(action.amount ?: 0.0, bb)}$heroCards",
-				)
-				ActionType.BET -> appendLine("$prefix bets ${formatBb(action.amount ?: 0.0, bb)}$heroCards")
-				ActionType.ALL_IN -> appendLine(
-					"$prefix goes all-in ${formatBb(action.amount ?: 0.0, bb)}$heroCards",
-				)
+				ActionType.RAISE -> {
+					val label = formatRaiseLabel(action.betLevel)
+					appendLine("$prefix $label ${formatBb(action.amount ?: 0.0, bb)}")
+				}
+				ActionType.BET -> appendLine("$prefix bets ${formatBb(action.amount ?: 0.0, bb)}")
+				ActionType.ALL_IN -> appendLine("$prefix goes all-in ${formatBb(action.amount ?: 0.0, bb)}")
 				ActionType.CHECK -> appendLine("$prefix checks")
 			}
 		}
-		if (foldCount > 0) {
-			appendLine("${foldPositions.joinToString(", ")} fold${if (foldCount > 1) "" else "s"}")
+		if (foldPositions.isNotEmpty()) {
+			appendLine("${foldPositions.joinToString(", ")} fold${if (foldPositions.size > 1) "" else "s"}")
 		}
 
-		val activePlayers = preflopActions.map { it.playerSeat }.distinct().count() - foldCount
+		val activePlayers = preflopActions.map { it.playerSeat }.distinct().count() - foldPositions.size
 		val preflopPot = calculatePot(hand, Street.PREFLOP, bb)
 		appendLine()
 		appendLine(
@@ -106,11 +106,13 @@ object HandHistoryFormatter {
 
 		// --- River ---
 		hand.streets.river?.let { river ->
+			appendLine("[River] ${river.cards.joinToString(" ") { formatCard(it) }}")
 			if (river.actions.isNotEmpty()) {
-				appendLine("[River] ${river.cards.joinToString(" ") { formatCard(it) }}")
 				formatStreetActions(river.actions, heroSeat, buttonSeat, playerCount, bb, this)
-				appendLine()
 			}
+			val riverPot = calculatePot(hand, Street.RIVER, bb)
+			appendLine("→ Pot: ${formatBb(riverPot, bb)}")
+			appendLine()
 		}
 
 		// --- Result ---
@@ -141,9 +143,12 @@ object HandHistoryFormatter {
 			when (action.type) {
 				ActionType.FOLD -> foldPositions.add(prefix)
 				ActionType.CHECK -> sb.appendLine("$prefix checks")
-				ActionType.CALL -> sb.appendLine("$prefix calls")
+				ActionType.CALL -> sb.appendLine("$prefix calls${formatAmountBb(action.amount, bb)}")
 				ActionType.BET -> sb.appendLine("$prefix bets ${formatBb(action.amount ?: 0.0, bb)}")
-				ActionType.RAISE -> sb.appendLine("$prefix raises to ${formatBb(action.amount ?: 0.0, bb)}")
+				ActionType.RAISE -> {
+					val label = formatRaiseLabel(action.betLevel)
+					sb.appendLine("$prefix $label ${formatBb(action.amount ?: 0.0, bb)}")
+				}
 				ActionType.ALL_IN -> sb.appendLine(
 					"$prefix goes all-in (${formatBb(action.amount ?: 0.0, bb)})",
 				)
@@ -154,6 +159,19 @@ object HandHistoryFormatter {
 				"${foldPositions.joinToString(", ")} fold${if (foldPositions.size > 1) "" else "s"}",
 			)
 		}
+	}
+
+	/**
+	 * betLevel 기반 레이즈 라벨:
+	 * 프리플랍: betLevel 2 = opens, 3 = 3-bets, 4 = 4-bets ...
+	 * 포스트플랍: betLevel 2 = raises to, 3 = 3-bets ...
+	 */
+	private fun formatRaiseLabel(betLevel: Int): String = when (betLevel) {
+		2 -> "opens to"
+		3 -> "3-bets to"
+		4 -> "4-bets to"
+		5 -> "5-bets to"
+		else -> "raises to"
 	}
 
 	private fun formatBb(amount: Double, bb: Double): String {

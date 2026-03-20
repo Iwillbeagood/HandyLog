@@ -133,6 +133,7 @@ data class StreetSectionUiModel(
 			val actionRows = displayActions.map { action ->
 				ActionRowUiModel.from(
 					action = action,
+					street = street,
 					heroSeat = heroSeat,
 					buttonSeat = hand.buttonSeat,
 					playerCount = playerCount,
@@ -189,16 +190,24 @@ data class ActionRowUiModel(
 	companion object {
 		fun from(
 			action: Action,
+			street: Street,
 			heroSeat: Int,
 			buttonSeat: Int,
 			playerCount: Int,
 			useBbUnit: Boolean = false,
 			bb: Double = 0.0,
 		): ActionRowUiModel {
+			val label = if (street == Street.PREFLOP && action.betLevel == 2 &&
+				(action.type == ActionType.RAISE || action.type == ActionType.ALL_IN)
+			) {
+				"오픈"
+			} else {
+				action.label
+			}
 			return ActionRowUiModel(
 				positionName = getPositionName(action.playerSeat, buttonSeat, playerCount),
 				actionType = action.type,
-				actionLabel = action.label,
+				actionLabel = label,
 				amount = action.amount?.let { formatAmount(it, useBbUnit, bb) },
 				stackBefore = action.stackBefore?.let { formatAmount(it, useBbUnit, bb) },
 				isHero = action.playerSeat == heroSeat,

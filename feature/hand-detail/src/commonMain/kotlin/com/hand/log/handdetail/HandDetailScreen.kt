@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
+import com.hand.log.handdetail.component.ResultSection
 import com.hand.log.designsystem.component.TopAppbarIcon
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.pencil
@@ -63,6 +64,7 @@ internal fun HandDetailScreen(
 	state: HandDetailState.Success,
 	onToggleBbUnit: () -> Unit,
 	onBack: () -> Unit,
+	onShowToast: (String) -> Unit = {},
 ) {
 	val hand = state.hand
 	val uiModel = state.uiModel
@@ -78,6 +80,9 @@ internal fun HandDetailScreen(
 				onBackEvent = onBack,
 				subContent = {
 					Row(
+						modifier = Modifier
+							.fillMaxWidth()
+							.padding(horizontal = 16.dp, vertical = 4.dp),
 						verticalAlignment = Alignment.CenterVertically,
 						horizontalArrangement = Arrangement.End,
 					) {
@@ -100,7 +105,10 @@ internal fun HandDetailScreen(
 							icon = Res.drawable.share_2,
 							onClick = {
 								val text = HandHistoryFormatter.format(hand)
-								scope.launch { clipboard.setClipEntry(text.toClipEntry()) }
+								scope.launch {
+									clipboard.setClipEntry(text.toClipEntry())
+									onShowToast("클립보드에 복사되었습니다")
+								}
 							},
 						)
 					}
@@ -124,7 +132,7 @@ internal fun HandDetailScreen(
 			}
 
 			item {
-				ResultSection(hand)
+				ResultSection(hand = hand)
 				VerticalSpacer(32.dp)
 			}
 		}
@@ -287,54 +295,9 @@ private fun ActionRowView(row: ActionRowUiModel) {
 
 		row.amount?.let { amount ->
 			Text(
-				text = "$amount",
-				style = HandyTheme.typography.bold14,
-				color = colors.gold,
+				text = amount,
+				style = HandyTheme.typography.medium14,
 			)
-		}
-	}
-}
-
-@Composable
-private fun ResultSection(hand: HandRecord) {
-	val colors = HandyTheme.colorScheme
-
-	if (hand.result != null || hand.memo != null) {
-		Column(
-			modifier = Modifier
-				.fillMaxWidth()
-				.clip(RoundedCornerShape(12.dp))
-				.background(colors.card)
-				.padding(16.dp),
-		) {
-			Text(
-				text = "결과",
-				style = HandyTheme.typography.bold16,
-				color = colors.textPrimary,
-			)
-
-			hand.result?.let { result ->
-				VerticalSpacer(8.dp)
-				val isPositive = result >= 0
-				Text(
-					text = if (isPositive) {
-						"+${formatWithComma(result.toLong())}"
-					} else {
-						formatWithComma(result.toLong())
-					},
-					style = HandyTheme.typography.bold20,
-					color = if (isPositive) colors.primary else colors.error,
-				)
-			}
-
-			hand.memo?.let { memo ->
-				VerticalSpacer(8.dp)
-				Text(
-					text = memo,
-					style = HandyTheme.typography.regular14,
-					color = colors.textSecondary,
-				)
-			}
 		}
 	}
 }
