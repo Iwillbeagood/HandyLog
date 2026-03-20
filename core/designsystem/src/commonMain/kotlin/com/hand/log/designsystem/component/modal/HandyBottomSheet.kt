@@ -1,9 +1,12 @@
 package com.hand.log.designsystem.component.modal
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -13,9 +16,11 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.RegularButton
 import com.hand.log.designsystem.component.VerticalSpacer
@@ -56,12 +61,14 @@ fun HandyBottomSheet(
 ) {
 	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 	val colors = HandyTheme.colorScheme
+	val focusManager = LocalFocusManager.current
 
 	ModalBottomSheet(
 		onDismissRequest = onDismissRequest,
 		sheetState = sheetState,
 		containerColor = colors.card,
 		contentColor = colors.textPrimary,
+		contentWindowInsets = { WindowInsets(0) },
 		modifier = modifier,
 	) {
 		Column(
@@ -69,6 +76,11 @@ fun HandyBottomSheet(
 				.fillMaxWidth()
 				.nestedScroll(SheetDragBlocker)
 				.verticalScroll(rememberScrollState())
+				.clickable(
+					interactionSource = remember { MutableInteractionSource() },
+					indication = null,
+					onClick = { focusManager.clearFocus() },
+				)
 				.padding(horizontal = 20.dp)
 				.padding(bottom = 32.dp),
 		) {
