@@ -22,7 +22,7 @@ import com.hand.log.domain.model.PokerTable
 import com.hand.log.home.component.EmptyState
 import com.hand.log.home.component.TableCard
 import com.hand.log.home.contract.HomeState
-import com.hand.log.home.contract.TableListItem
+import com.hand.log.domain.model.TableListItem
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.plus
 import kotlinx.datetime.LocalDate

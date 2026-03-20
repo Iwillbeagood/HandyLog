@@ -2,7 +2,7 @@ package com.hand.log.home.contract
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import com.hand.log.domain.model.PokerTable
+import com.hand.log.domain.model.TableListItem
 
 @Stable
 internal sealed interface HomeState {
@@ -15,9 +15,3 @@ internal sealed interface HomeState {
 		val tables: List<TableListItem> = emptyList(),
 	) : HomeState
 }
-
-@Immutable
-data class TableListItem(
-	val table: PokerTable,
-	val handCount: Int,
-)

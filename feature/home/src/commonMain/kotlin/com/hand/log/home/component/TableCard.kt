@@ -24,7 +24,7 @@ import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.GameType
 import com.hand.log.domain.model.PokerTable
-import com.hand.log.home.contract.TableListItem
+import com.hand.log.domain.model.TableListItem
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.calendar
 import handylog.core.res.generated.resources.chevron_right

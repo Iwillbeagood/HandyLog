@@ -9,6 +9,7 @@ kotlin {
 	sourceSets {
 		commonMain.dependencies {
 			implementation(projects.domain.repository)
+			implementation(libs.kotlinx.coroutines.core)
 		}
 	}
 }

@@ -13,7 +13,7 @@ import com.hand.log.designsystem.component.HmFadeAnimatedVisibility
 import com.hand.log.home.contract.HomeModalEffect
 import com.hand.log.home.contract.HomeState
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
-import com.hand.log.ui.table.TableFormSheet
+import com.hand.log.tableedit.TableEditSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,21 +49,11 @@ internal fun HomeRoute(
 	)
 
 	if (showSetupSheet) {
-		TableFormSheet(
-			onDismissRequest = {
-				showSetupSheet = false
+		TableEditSheet(
+			onSaved = {
+				navAction.navigateToTableDetail(it.id)
 			},
-			onSubmit = { date, location, gameType, startingStack, blinds, playerCount, heroSeat ->
-				viewModel.saveTable(
-					date = date,
-					location = location,
-					gameType = gameType,
-					startingStack = startingStack,
-					blinds = blinds,
-					playerCount = playerCount,
-					heroSeat = heroSeat,
-				)
-			},
+			onDismiss = { showSetupSheet = false },
 		)
 	}
 }
