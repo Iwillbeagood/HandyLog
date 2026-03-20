@@ -1,7 +1,5 @@
 package com.hand.log.record.component
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
@@ -31,6 +29,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Icon
+import com.hand.log.designsystem.component.ScaleInAnimation
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.designsystem.theme.nonScaledSp
 import com.hand.log.domain.model.Action
@@ -55,7 +54,7 @@ import com.hand.log.domain.model.HeroHand
 import com.hand.log.record.model.PlayerStatus
 import com.hand.log.record.model.RecordPlayer
 import com.hand.log.record.model.RecordPlayers
-import com.hand.log.record.model.RecordStreets
+import com.hand.log.domain.model.HandStreets
 import com.hand.log.domain.model.Suit
 import com.hand.log.record.contract.RecordHandState
 import com.hand.log.record.contract.RecordStep
@@ -70,12 +69,12 @@ import kotlin.math.sin
 internal fun ActionTableView(
 	state: RecordHandState.Recording,
 	modifier: Modifier = Modifier,
+	onSeatClick: ((Int) -> Unit)? = null,
 ) {
 	val colors = HandyTheme.colorScheme
 	val playerCount = state.table?.playerCount ?: return
 	val actions = state.streets.getActions(state.currentStreet)
 
-	// 각 좌석의 마지막 액션
 	val seatActions = mutableMapOf<Int, Action>()
 	actions.forEach { action ->
 		seatActions[action.playerSeat] = action
@@ -83,24 +82,18 @@ internal fun ActionTableView(
 
 	val allInSeats = state.players.allInSeats
 
-	Box(
+	BoxWithConstraints(
 		modifier = modifier
-			.background(colors.card, RoundedCornerShape(12.dp))
-			.padding(horizontal = 8.dp),
-	) {
-		BoxWithConstraints(
-			modifier = Modifier
-				.fillMaxWidth()
-				.aspectRatio(1.1f),
+			.padding(horizontal = 8.dp)
+			.aspectRatio(0.85f),
 		) {
 			val density = LocalDensity.current
 			val containerWidthPx = with(density) { maxWidth.toPx() }
 			val containerHeightPx = with(density) { maxHeight.toPx() }
 
-			// Oval table
 			Box(
 				modifier = Modifier
-					.fillMaxWidth(0.80f)
+					.fillMaxWidth(0.75f)
 					.aspectRatio(1.8f)
 					.align(Alignment.Center)
 					.clip(RoundedCornerShape(40))
@@ -109,7 +102,6 @@ internal fun ActionTableView(
 				contentAlignment = Alignment.Center,
 			) {
 				Column(
-
 					horizontalAlignment = Alignment.CenterHorizontally,
 					verticalArrangement = Arrangement.spacedBy(1.dp),
 				) {
@@ -135,36 +127,53 @@ internal fun ActionTableView(
 				}
 			}
 
-			// Seats
-			val seatRadiusX = containerWidthPx * 0.42f
-			val seatRadiusY = containerHeightPx * 0.32f
-			val chipRadiusX = containerWidthPx * 0.28f
-			val chipRadiusY = containerHeightPx * 0.18f
-			val betChipRadiusX = containerWidthPx * 0.28f
-			val betChipRadiusY = containerHeightPx * 0.18f
 			val centerX = containerWidthPx / 2f
 			val centerY = containerHeightPx / 2f
+			val tableWidth = containerWidthPx * 0.75f
+			val tableHeight = tableWidth / 1.8f
+			val tableRadiusX = tableWidth / 2f
+			val tableRadiusY = tableHeight / 2f
+
 			val seatSizeDp = 48.dp
 			val seatSizePx = with(density) { seatSizeDp.toPx() }
+			val seatCircleRadius = with(density) { 16.dp.toPx() }
 			val chipSizeDp = 16.dp
 			val dealerSizeDp = 16.dp
 			val chipSizePx = with(density) { chipSizeDp.toPx() }
+			val chipHalf = chipSizePx / 2f
+			val gapPx = with(density) { 1.dp.toPx() }
+			val seatHalf = seatSizePx / 2f
+			val chipGapPx = with(density) { 6.dp.toPx() }
+
 			val btnSeat = state.buttonSeat
 			val sbSeat = (btnSeat % playerCount) + 1
 			val bbSeat = ((btnSeat + 1) % playerCount) + 1
 
 			for (seat in 1..playerCount) {
 				val angle = (2 * kotlin.math.PI * (seat - 1) / playerCount) - (kotlin.math.PI / 2)
+				val cosA = cos(angle).toFloat()
+				val sinA = sin(angle).toFloat()
 
-				// Seat (outer)
-				val sx = centerX + seatRadiusX * cos(angle).toFloat() - seatSizePx / 2f
-				val sy = centerY + seatRadiusY * sin(angle).toFloat() - seatSizePx / 2f
+				val seatCenterX = centerX + (tableRadiusX + gapPx + seatHalf) * cosA
+				val seatCenterY = centerY + (tableRadiusY + gapPx + seatHalf) * sinA
+				val sx = seatCenterX - seatSizePx / 2f
+				val sy = seatCenterY - seatSizePx / 2f
 
 				val action = seatActions[seat]
 				val isHero = seat == state.table.heroSeat
 				val isCurrent = seat == state.currentActionSeat
 				val posName = state.positionName(seat)
 				val isFolded = seat in state.players.foldedSeats && action == null
+
+				val seatModifier = if (isHero && state.heroCards.isNotEmpty()) {
+					Modifier.offset { IntOffset(sx.roundToInt(), sy.roundToInt()) }
+				} else {
+					Modifier
+						.size(seatSizeDp)
+						.offset { IntOffset(sx.roundToInt(), sy.roundToInt()) }
+				}.let { mod ->
+					if (onSeatClick != null) mod.clickable { onSeatClick(seat) } else mod
+				}
 
 				ActionSeatView(
 					seatNumber = seat,
@@ -174,19 +183,11 @@ internal fun ActionTableView(
 					isCurrent = isCurrent,
 					isFolded = isFolded,
 					heroCards = if (isHero) state.heroCards else emptyList(),
-					modifier = if (isHero && state.heroCards.isNotEmpty()) {
-						Modifier.offset { IntOffset(sx.roundToInt(), sy.roundToInt()) }
-					} else {
-						Modifier
-							.size(seatSizeDp)
-							.offset { IntOffset(sx.roundToInt(), sy.roundToInt()) }
-					},
+					modifier = seatModifier,
 				)
 
-				// Dealer / Blind chips (inner, on the table)
 				val isBtn = seat == btnSeat
 				val isPreflop = state.currentStreet == Street.PREFLOP
-				// 해당 좌석의 이번 스트릿 총 투입 금액
 				val totalBet = action?.amount ?: 0.0
 				val hasBetAction = totalBet > 0 && action?.type != ActionType.FOLD
 				val chipLabel = when {
@@ -206,33 +207,14 @@ internal fun ActionTableView(
 					else -> null
 				}
 
-				if (chipLabel != null && chipColor != null) {
-					val dealerOffsetPx = with(density) { 18.dp.toPx() }
-					val cx = centerX + chipRadiusX * cos(angle).toFloat() - chipSizePx / 2f
-					val cy = centerY + chipRadiusY * sin(angle).toFloat() - chipSizePx / 2f
+				if (chipLabel != null && chipColor != null && !isBtn) {
+					val cx = centerX + (tableRadiusX - chipHalf - chipGapPx) * cosA - chipHalf
+					val cy = centerY + (tableRadiusY - chipHalf - chipGapPx) * sinA - chipHalf
 
-					if (isBtn) {
-						// Dealer: 좌석 왼쪽에 배치
-						val dx = cx - dealerOffsetPx
-						Box(
-							modifier = Modifier
-								.offset { IntOffset(dx.roundToInt(), cy.roundToInt()) }
-								.size(dealerSizeDp)
-								.clip(CircleShape)
-								.background(chipColor),
-							contentAlignment = Alignment.Center,
-						) {
-							Text(
-								text = "D",
-								style = HandyTheme.typography.bold8.nonScaledSp,
-								color = colors.card,
-								textAlign = TextAlign.Center,
-							)
-						}
-					} else {
-						// Blind: poker_chip 아이콘
+					ScaleInAnimation(
+						modifier = Modifier.offset { IntOffset(cx.roundToInt(), cy.roundToInt()) },
+					) {
 						Column(
-							modifier = Modifier.offset { IntOffset(cx.roundToInt(), cy.roundToInt()) },
 							horizontalAlignment = Alignment.CenterHorizontally,
 						) {
 							Box(
@@ -258,15 +240,11 @@ internal fun ActionTableView(
 					}
 				}
 
-				// All-in marker (딜러보다 안쪽)
 				val isAllIn = seat in allInSeats
 				if (isAllIn) {
-					val allInRadiusX = containerWidthPx * 0.22f
-					val allInRadiusY = containerHeightPx * 0.22f
-					val ax = centerX + allInRadiusX * cos(angle).toFloat() - chipSizePx / 2f
-					val ay = centerY + allInRadiusY * sin(angle).toFloat() - chipSizePx / 2f
+					val ax = centerX + (tableRadiusX - chipHalf - chipGapPx) * cosA - chipHalf
+					val ay = centerY + (tableRadiusY - chipHalf - chipGapPx) * sinA - chipHalf
 
-					// 올인 금액 찾기 (현재 스트릿 또는 이전 스트릿)
 					val allInAmount = action?.takeIf { it.type == ActionType.ALL_IN }?.amount
 						?: state.streets.let { streets ->
 							listOf(Street.PREFLOP, Street.FLOP, Street.TURN, Street.RIVER)
@@ -275,58 +253,87 @@ internal fun ActionTableView(
 								?.amount
 						}
 
-					AllInMarker(
+					ScaleInAnimation(
 						modifier = Modifier.offset { IntOffset(ax.roundToInt(), ay.roundToInt()) },
-						size = dealerSizeDp,
-						amount = allInAmount?.let { state.formatAmount(it) },
-					)
-				}
-
-				// Bet chips on the table (블라인드 칩과만 양립 불가)
-				val isBlindChipShown = chipLabel == "SB" || chipLabel == "BB"
-				if (hasBetAction && !isAllIn && !isBlindChipShown) {
-					val bx = centerX + betChipRadiusX * cos(angle).toFloat() - chipSizePx / 2f
-					val by = centerY + betChipRadiusY * sin(angle).toFloat() - chipSizePx / 2f
-
-					val animatedScale by animateFloatAsState(
-						targetValue = 1f,
-						animationSpec = tween(durationMillis = 300),
-						label = "betChip_$seat",
-					)
-
-					Column(
-						modifier = Modifier
-							.offset { IntOffset(bx.roundToInt(), by.roundToInt()) }
-							.graphicsLayer {
-								scaleX = animatedScale
-								scaleY = animatedScale
-							},
-						horizontalAlignment = Alignment.CenterHorizontally,
 					) {
-						Box(
-							modifier = Modifier.size(chipSizeDp),
-							contentAlignment = Alignment.Center,
-						) {
-							Icon(
-								painter = painterResource(Res.drawable.poker_chip),
-								contentDescription = null,
-								modifier = Modifier.size(chipSizeDp),
-								tint = action?.type?.indicatorColor() ?: colors.primary,
-							)
-						}
-						Text(
-							text = state.formatAmount(totalBet),
-							style = HandyTheme.typography.bold8.nonScaledSp,
-							color = Color.White,
-							modifier = Modifier
-								.clip(RoundedCornerShape(4.dp))
-								.background(Color.Black.copy(alpha = 0.6f))
-								.padding(horizontal = 3.dp, vertical = 1.dp),
+						AllInMarker(
+							size = dealerSizeDp,
+							amount = allInAmount?.let { state.formatAmount(it) },
 						)
 					}
 				}
+
+				val isBlindChipShown = chipLabel == "SB" || chipLabel == "BB"
+				if (hasBetAction && !isAllIn && !isBlindChipShown) {
+					val bx = centerX + (tableRadiusX - chipHalf - chipGapPx) * cosA - chipHalf
+					val by = centerY + (tableRadiusY - chipHalf - chipGapPx) * sinA - chipHalf
+
+					ScaleInAnimation(
+						modifier = Modifier.offset { IntOffset(bx.roundToInt(), by.roundToInt()) },
+					) {
+						Column(
+							horizontalAlignment = Alignment.CenterHorizontally,
+						) {
+							Box(
+								modifier = Modifier.size(chipSizeDp),
+								contentAlignment = Alignment.Center,
+							) {
+								Icon(
+									painter = painterResource(Res.drawable.poker_chip),
+									contentDescription = null,
+									modifier = Modifier.size(chipSizeDp),
+									tint = action?.type?.indicatorColor() ?: colors.primary,
+								)
+							}
+							Text(
+								text = state.formatAmount(totalBet),
+								style = HandyTheme.typography.bold8.nonScaledSp,
+								color = Color.White,
+								modifier = Modifier
+									.clip(RoundedCornerShape(4.dp))
+									.background(Color.Black.copy(alpha = 0.6f))
+									.padding(horizontal = 3.dp, vertical = 1.dp),
+							)
+						}
+					}
+				}
 			}
-		}
+
+			val btnAngle = (2 * kotlin.math.PI * (btnSeat - 1) / playerCount) - (kotlin.math.PI / 2)
+			val sbAngle = (2 * kotlin.math.PI * (sbSeat - 1) / playerCount) - (kotlin.math.PI / 2)
+			val midAngle = if (sbAngle > btnAngle) {
+				(btnAngle + sbAngle) / 2.0
+			} else {
+				val adjusted = sbAngle + 2 * kotlin.math.PI
+				((btnAngle + adjusted) / 2.0) % (2 * kotlin.math.PI)
+			}
+			val dealerSizePx = with(density) { dealerSizeDp.toPx() }
+			val dealerCosA = cos(midAngle).toFloat()
+			val dealerSinA = sin(midAngle).toFloat()
+			val dealerMargin = dealerSizePx / 2f + with(density) { 2.dp.toPx() }
+			val dealerCenterX = centerX + (tableRadiusX - dealerMargin) * dealerCosA
+			val dealerCenterY = centerY + (tableRadiusY - dealerMargin) * dealerSinA
+			val dealerX = dealerCenterX - dealerSizePx / 2f
+			val dealerY = dealerCenterY - dealerSizePx / 2f
+
+			ScaleInAnimation(
+				modifier = Modifier.offset { IntOffset(dealerX.roundToInt(), dealerY.roundToInt()) },
+			) {
+				Box(
+					modifier = Modifier
+						.size(dealerSizeDp)
+						.clip(CircleShape)
+						.background(Color(0xFF3A3A3A)),
+					contentAlignment = Alignment.Center,
+				) {
+					Text(
+						text = "D",
+						style = HandyTheme.typography.bold8.nonScaledSp,
+						color = Color.White,
+						textAlign = TextAlign.Center,
+					)
+				}
+			}
 	}
 }
 
@@ -405,6 +412,30 @@ private fun ActionSeatView(
 						maxLines = 1,
 					)
 				}
+
+
+				if (action != null) {
+					Text(
+						text = action.label,
+						style = HandyTheme.typography.bold8.nonScaledSp,
+						color = (actionColor ?: colors.textSecondary).copy(alpha = textAlpha),
+						maxLines = 1,
+						overflow = TextOverflow.Ellipsis,
+					)
+				} else if (isCurrent) {
+					Text(
+						text = "▶",
+						style = HandyTheme.typography.bold8.nonScaledSp,
+						color = colors.primary,
+					)
+				} else if (isFolded) {
+					Text(
+						text = "폴드",
+						style = HandyTheme.typography.bold8.nonScaledSp,
+						color = colors.textSecondary.copy(alpha = 0.4f),
+						maxLines = 1,
+					)
+				}
 			}
 
 			if (heroCards.isNotEmpty()) {
@@ -419,30 +450,6 @@ private fun ActionSeatView(
 				}
 			}
 		}
-
-		// Action label
-		if (action != null) {
-			Text(
-				text = action.label,
-				style = HandyTheme.typography.bold8.nonScaledSp,
-				color = (actionColor ?: colors.textSecondary).copy(alpha = textAlpha),
-				maxLines = 1,
-				overflow = TextOverflow.Ellipsis,
-			)
-		} else if (isCurrent) {
-			Text(
-				text = "▶",
-				style = HandyTheme.typography.bold8.nonScaledSp,
-				color = colors.primary,
-			)
-		} else if (isFolded) {
-			Text(
-				text = "폴드",
-				style = HandyTheme.typography.bold8.nonScaledSp,
-				color = colors.textSecondary.copy(alpha = 0.4f),
-				maxLines = 1,
-			)
-		}
 	}
 }
 
@@ -450,8 +457,6 @@ private fun ActionSeatView(
 @Composable
 private fun ActionTableViewAllElementsPreview() {
 	ThemePreview {
-		// 9인 프리플랍: 딜러(1), SB(2), BB(3), UTG 레이즈, UTG+1 폴드,
-		// LJ 3벳, HJ 콜, CO 올인, 현재 BTN 액션 중, 히어로=3(BB) 카드 표시
 		ActionTableView(
 			state = RecordHandState.Recording(
 				tableId = "test",
@@ -478,17 +483,17 @@ private fun ActionTableViewAllElementsPreview() {
 					player9 = RecordPlayer(seat = 9, stack = 50000.0),
 				),
 				currentStep = RecordStep.PREFLOP,
-				buttonSeat = 1,
+				buttonSeat = 4,
 				blinds = Blinds(sb = 500.0, bb = 1000.0, isBigBlindAnte = true),
-				currentActionSeat = 9, // 현재 MP 액션 중
-				streets = RecordStreets(
+				currentActionSeat = 9,
+				streets = HandStreets(
 					preflop = PreflopStreet(
 						actions = listOf(
-							Action(playerSeat = 4, type = ActionType.RAISE, amount = 2500.0), // UTG 레이즈
-							Action(playerSeat = 5, type = ActionType.FOLD), // UTG+1 폴드
-							Action(playerSeat = 6, type = ActionType.RAISE, amount = 8000.0), // LJ 3벳
-							Action(playerSeat = 7, type = ActionType.CALL, amount = 8000.0), // HJ 콜
-							Action(playerSeat = 8, type = ActionType.ALL_IN, amount = 50000.0), // CO 올인
+							Action(playerSeat = 4, type = ActionType.RAISE, amount = 2500.0),
+							Action(playerSeat = 5, type = ActionType.FOLD),
+							Action(playerSeat = 6, type = ActionType.RAISE, amount = 8000.0),
+							Action(playerSeat = 7, type = ActionType.CALL, amount = 8000.0),
+							Action(playerSeat = 8, type = ActionType.ALL_IN, amount = 50000.0),
 						),
 					),
 				),
@@ -502,9 +507,8 @@ private fun ActionTableViewAllElementsPreview() {
 
 @ThemePreviews
 @Composable
-private fun ActionTableView6MaxFlopPreview() {
+private fun ActionTableView9MaxFlopPreview() {
 	ThemePreview {
-		// 6인 플랍: 딜러(4), 폴드(5,6), 히어로=3 베팅, 현재 seat1 액션 중
 		ActionTableView(
 			state = RecordHandState.Recording(
 				tableId = "test",
@@ -514,7 +518,7 @@ private fun ActionTableView6MaxFlopPreview() {
 					gameType = GameType.CASH,
 					startingStack = 50000.0,
 					blinds = Blinds(sb = 500.0, bb = 1000.0),
-					playerCount = 6,
+					playerCount = 9,
 					heroSeat = 3,
 					createdAt = 0L,
 				),
@@ -526,22 +530,26 @@ private fun ActionTableView6MaxFlopPreview() {
 					player4 = RecordPlayer(seat = 4, stack = 47000.0),
 					player5 = RecordPlayer(seat = 5, stack = 50000.0, status = PlayerStatus.FOLDED),
 					player6 = RecordPlayer(seat = 6, stack = 50000.0, status = PlayerStatus.FOLDED),
+					player7 = RecordPlayer(seat = 7, stack = 50000.0, status = PlayerStatus.FOLDED),
+					player8 = RecordPlayer(seat = 8, stack = 50000.0, status = PlayerStatus.FOLDED),
+					player9 = RecordPlayer(seat = 9, stack = 50000.0, status = PlayerStatus.FOLDED),
 				),
 				currentStep = RecordStep.FLOP,
-				buttonSeat = 4,
+				buttonSeat = 1,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
-				currentActionSeat = 1,
-				streets = RecordStreets(
+				currentActionSeat = 4,
+				streets = HandStreets(
 					preflop = PreflopStreet(
 						actions = listOf(
-							Action(playerSeat = 1, type = ActionType.CALL, amount = 1000.0),
-							Action(playerSeat = 2, type = ActionType.CALL, amount = 1000.0),
-							Action(playerSeat = 3, type = ActionType.RAISE, amount = 3000.0),
-							Action(playerSeat = 4, type = ActionType.CALL, amount = 3000.0),
+							Action(playerSeat = 4, type = ActionType.RAISE, amount = 2500.0),
 							Action(playerSeat = 5, type = ActionType.FOLD),
 							Action(playerSeat = 6, type = ActionType.FOLD),
-							Action(playerSeat = 1, type = ActionType.CALL, amount = 3000.0),
-							Action(playerSeat = 2, type = ActionType.CALL, amount = 3000.0),
+							Action(playerSeat = 7, type = ActionType.FOLD),
+							Action(playerSeat = 8, type = ActionType.FOLD),
+							Action(playerSeat = 9, type = ActionType.FOLD),
+							Action(playerSeat = 1, type = ActionType.FOLD),
+							Action(playerSeat = 2, type = ActionType.FOLD),
+							Action(playerSeat = 3, type = ActionType.CALL, amount = 2500.0),
 						),
 					),
 					flop = FlopStreet(

@@ -46,7 +46,6 @@ internal fun ActionSelector(
 	minRaiseAmount: Double = 0.0,
 	maxAmount: Double = 0.0,
 	showAmountWarning: Boolean = false,
-	raiseLabel: String = "레이즈",
 	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme
@@ -67,9 +66,8 @@ internal fun ActionSelector(
 						.clickable { onSelectAction(actionType) }
 						.padding(horizontal = 16.dp, vertical = 10.dp),
 				) {
-					val displayLabel = actionType.label
 					Text(
-						text = displayLabel,
+						text = actionType.label,
 						style = HandyTheme.typography.bold14,
 						color = if (isSelected) actionColors.content else colors.textSecondary,
 					)
@@ -77,7 +75,6 @@ internal fun ActionSelector(
 			}
 		}
 
-		// 금액 입력 (벳/레이즈/올인)
 		val needsAmount = selectedAction == ActionType.BET ||
 			selectedAction == ActionType.RAISE ||
 			selectedAction == ActionType.ALL_IN
@@ -89,6 +86,11 @@ internal fun ActionSelector(
 				onValueChange = onUpdateAmount,
 				label = "금액 (최소 ${minRaiseAmount.toLong()})",
 				keyboardType = KeyboardType.Number,
+				onDone = if (selectedAction == ActionType.BET || selectedAction == ActionType.RAISE) {
+					onConfirmAction
+				} else {
+					null
+				},
 			)
 			AnimatedVisibility(visible = showAmountWarning) {
 				Text(
@@ -144,7 +146,6 @@ internal fun ActionSelector(
 				}
 			}
 
-			// 확인 버튼 (벳/레이즈만)
 			if (selectedAction == ActionType.BET || selectedAction == ActionType.RAISE) {
 				VerticalSpacer(12.dp)
 				RegularButton(

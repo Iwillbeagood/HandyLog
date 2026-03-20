@@ -10,13 +10,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,7 +68,6 @@ internal fun RecordHandScreen(
 	onNextStep: () -> Unit,
 	onPreviousStep: () -> Unit,
 	onSelectShowdownCard: (Int) -> Unit,
-	onUpdateResult: (String) -> Unit,
 	onUpdateMemo: (String) -> Unit,
 	onShowTableEdit: () -> Unit,
 	onToggleBbUnit: () -> Unit,
@@ -103,13 +106,18 @@ internal fun RecordHandScreen(
 		bottomBar = {
 			val isSetup = state.currentStep == RecordStep.SETUP
 			val isShowdown = state.currentStep == RecordStep.SHOWDOWN
-			val isStreetCompleted = !isSetup && !isShowdown && state.currentActionSeat == null
+			val isOpenerSelection = state.currentStep == RecordStep.PREFLOP &&
+				state.streets.getActions(Street.PREFLOP).isEmpty() &&
+				state.currentActionSeat == null
+			val isStreetCompleted = !isSetup && !isShowdown && !isOpenerSelection &&
+				state.currentActionSeat == null
 			if (isSetup || isShowdown || isStreetCompleted) {
 				BottomNavigationBar(
 					currentStep = state.currentStep,
 					canProceed = if (isSetup) state.canProceedFromSetup else true,
 					onNext = onNextStep,
 					onSave = onSave,
+					modifier = Modifier.windowInsetsPadding(WindowInsets.ime),
 				)
 			}
 		},
@@ -125,11 +133,22 @@ internal fun RecordHandScreen(
 					.padding(horizontal = 16.dp, vertical = 8.dp),
 			)
 
+			val scrollState = rememberScrollState()
+			val needsAmount = state.currentActionType == ActionType.BET ||
+				state.currentActionType == ActionType.RAISE
+
+			// 키보드가 올라올 때 (레이즈/벳 입력 시) 자동으로 하단 스크롤
+			LaunchedEffect(needsAmount) {
+				if (needsAmount) {
+					scrollState.animateScrollTo(scrollState.maxValue)
+				}
+			}
+
 			Column(
 				modifier = Modifier
 					.fillMaxSize()
-					.weight(1f)
-					.verticalScroll(rememberScrollState())
+					.verticalScroll(scrollState)
+					.windowInsetsPadding(WindowInsets.ime)
 					.padding(horizontal = 16.dp, vertical = 8.dp),
 				verticalArrangement = Arrangement.spacedBy(16.dp),
 			) {
@@ -165,7 +184,6 @@ internal fun RecordHandScreen(
 							state = state,
 							onSelectSingleBoardCard = onSelectSingleBoardCard,
 							onSelectShowdownCard = onSelectShowdownCard,
-							onUpdateResult = onUpdateResult,
 							onUpdateMemo = onUpdateMemo,
 						)
 					}
@@ -233,11 +251,12 @@ private fun BottomNavigationBar(
 	canProceed: Boolean,
 	onNext: () -> Unit,
 	onSave: () -> Unit,
+	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme
 
 	Row(
-		modifier = Modifier
+		modifier = modifier
 			.fillMaxWidth()
 			.background(colors.background)
 			.padding(horizontal = 16.dp, vertical = 16.dp),
@@ -285,7 +304,6 @@ private fun RecordHandScreenPreview() {
 			onRemoveLastAction = {},
 			onNextStep = {},
 			onPreviousStep = {},
-			onUpdateResult = {},
 			onSelectShowdownCard = {},
 			onUpdateMemo = {},
 			onShowTableEdit = {},
@@ -338,7 +356,6 @@ private fun RecordHandScreenTournamentPreview() {
 			onRemoveLastAction = {},
 			onNextStep = {},
 			onPreviousStep = {},
-			onUpdateResult = {},
 			onSelectShowdownCard = {},
 			onUpdateMemo = {},
 			onShowTableEdit = {},

@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.HandySectionLabel
 import com.hand.log.designsystem.component.HandyTextField
@@ -38,7 +39,7 @@ import com.hand.log.domain.model.Street
 import com.hand.log.domain.model.PreflopStreet
 import com.hand.log.domain.model.FlopStreet
 import com.hand.log.domain.model.HeroHand
-import com.hand.log.record.model.RecordStreets
+import com.hand.log.domain.model.HandStreets
 import com.hand.log.domain.model.Suit
 import com.hand.log.domain.model.Action
 import com.hand.log.domain.model.GameType
@@ -122,11 +123,28 @@ internal fun StreetStepContent(
 			VerticalSpacer(16.dp)
 		}
 
+		// 프리플랍 오프너 선택 모드: 액션 없고 currentActionSeat이 null
+		val isOpenerSelection = currentStreet == Street.PREFLOP &&
+			streetActions.isEmpty() &&
+			state.currentActionSeat == null
+
 		// Action Table View + Pot
 		ActionTableView(
 			state = state,
 			modifier = Modifier.fillMaxWidth(),
+			onSeatClick = if (isOpenerSelection) onSelectActionSeat else null,
 		)
+
+		if (isOpenerSelection) {
+			VerticalSpacer(8.dp)
+			Text(
+				text = "오프너를 선택하세요",
+				style = HandyTheme.typography.medium14,
+				color = colors.textSecondary,
+				modifier = Modifier.fillMaxWidth(),
+				textAlign = TextAlign.Center,
+			)
+		}
 
 		// Undo button
 		val actions = streetActions
@@ -160,22 +178,24 @@ internal fun StreetStepContent(
 			}
 		}
 
-		// Action Input Area
-		VerticalSpacer(16.dp)
+		// Action Input Area (오프너 선택 모드에서는 숨김)
+		if (!isOpenerSelection) {
+			VerticalSpacer(16.dp)
 
-		val boardCardsReady = state.streets.isBoardReady(currentStreet)
+			val boardCardsReady = state.streets.isBoardReady(currentStreet)
 
-		AnimatedVisibility(visible = boardCardsReady) {
-			PlayerActionArea(
-				state = state,
-				onSelectActionType = onSelectActionType,
-				onUpdateActionAmount = onUpdateActionAmount,
-				onUpdatePlayerStack = onUpdatePlayerStack,
-				onConfirmAction = onConfirmAction,
-				preflopPresets = preflopPresets,
-				postflopPresets = postflopPresets,
-			)
-		} // AnimatedVisibility
+			AnimatedVisibility(visible = boardCardsReady) {
+				PlayerActionArea(
+					state = state,
+					onSelectActionType = onSelectActionType,
+					onUpdateActionAmount = onUpdateActionAmount,
+					onUpdatePlayerStack = onUpdatePlayerStack,
+					onConfirmAction = onConfirmAction,
+					preflopPresets = preflopPresets,
+					postflopPresets = postflopPresets,
+				)
+			}
+		}
 
 		VerticalSpacer(16.dp)
 	}
@@ -266,7 +286,6 @@ private fun PlayerActionArea(
 				minRaiseAmount = state.minRaiseAmount,
 				maxAmount = currentStack + (state.players[state.currentActionSeat]?.currentBet ?: 0.0),
 				showAmountWarning = state.showAmountWarning,
-				raiseLabel = state.nextRaiseLabel,
 			)
 		} else {
 			Box(
@@ -337,7 +356,7 @@ private fun StreetStepContentPreflopPreview() {
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
 				heroHand = HeroHand(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 				currentActionSeat = 4, // UTG
-				streets = RecordStreets(
+				streets = HandStreets(
 					preflop = PreflopStreet(
 						actions = listOf(
 							Action(playerSeat = 4, type = ActionType.RAISE, amount = 2500.0),
@@ -379,7 +398,7 @@ private fun StreetStepContentFlopPreview() {
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
 				heroHand = HeroHand(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 				currentActionSeat = 2, // SB
-				streets = RecordStreets(
+				streets = HandStreets(
 					preflop = PreflopStreet(),
 					flop = FlopStreet(
 						card1 = Card(Rank.ACE, Suit.HEARTS),
@@ -420,7 +439,7 @@ private fun StreetStepContentCompletePreview() {
 				buttonSeat = 1,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
 				currentActionSeat = null, // 모든 액션 완료
-				streets = RecordStreets(
+				streets = HandStreets(
 					preflop = PreflopStreet(
 						actions = listOf(
 							Action(playerSeat = 4, type = ActionType.RAISE, amount = 2500.0),
@@ -431,6 +450,43 @@ private fun StreetStepContentCompletePreview() {
 							Action(playerSeat = 3, type = ActionType.CALL, amount = 2500.0),
 						),
 					),
+				),
+			),
+			onSelectBoardCard = {},
+			onSelectActionSeat = {},
+			onSelectActionType = {},
+			onUpdateActionAmount = {},
+			onUpdatePlayerStack = { _, _ -> },
+			onConfirmAction = {},
+			onRemoveLastAction = {},
+		)
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun StreetStepContentOpenerSelectionPreview() {
+	ThemePreview {
+		StreetStepContent(
+			state = RecordHandState.Recording(
+				tableId = "test",
+				table = PokerTable(
+					id = "test",
+					date = LocalDate(2026, 3, 14),
+					gameType = GameType.CASH,
+					startingStack = 50000.0,
+					blinds = Blinds(sb = 500.0, bb = 1000.0),
+					playerCount = 9,
+					heroSeat = 3,
+					createdAt = 0L,
+				),
+				currentStep = RecordStep.PREFLOP,
+				buttonSeat = 1,
+				blinds = Blinds(sb = 500.0, bb = 1000.0),
+				heroHand = HeroHand(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+				currentActionSeat = null,
+				streets = HandStreets(
+					preflop = PreflopStreet(),
 				),
 			),
 			onSelectBoardCard = {},
