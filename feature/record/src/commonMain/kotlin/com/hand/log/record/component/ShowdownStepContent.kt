@@ -28,7 +28,7 @@ import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.GameType
-import com.hand.log.domain.model.HeroHand
+import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.Street
@@ -39,6 +39,7 @@ import com.hand.log.domain.model.FlopStreet
 import com.hand.log.domain.model.PreflopStreet
 import com.hand.log.domain.model.RiverStreet
 import com.hand.log.domain.model.ShowdownResult
+import com.hand.log.ui.localizedLabel
 import com.hand.log.domain.model.TurnStreet
 import com.hand.log.record.model.RecordPlayer
 import com.hand.log.record.model.RecordPlayers
@@ -48,6 +49,9 @@ import com.hand.log.record.model.PlayerStatus
 import com.hand.log.ui.poker.CardSize
 import com.hand.log.ui.poker.PlayingCard
 import kotlinx.datetime.LocalDate
+import org.jetbrains.compose.resources.stringResource
+import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.*
 
 @Composable
 internal fun ShowdownStepContent(
@@ -62,7 +66,7 @@ internal fun ShowdownStepContent(
 
 	Column {
 		if (boardCards.isNotEmpty()) {
-			HandySectionLabel("보드 (탭하여 수정)")
+			HandySectionLabel(stringResource(Res.string.showdown_board_edit))
 			VerticalSpacer(4.dp)
 			Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
 				// 플랍
@@ -93,7 +97,7 @@ internal fun ShowdownStepContent(
 			VerticalSpacer(16.dp)
 		}
 
-		HandySectionLabel("플레이어 핸드")
+		HandySectionLabel(stringResource(Res.string.showdown_player_hand))
 		VerticalSpacer(8.dp)
 
 		// 히어로가 폴드했더라도 쇼다운에 표시
@@ -130,7 +134,7 @@ internal fun ShowdownStepContent(
 			val colors = HandyTheme.colorScheme
 
 			VerticalSpacer(8.dp)
-			HandySectionLabel("결과")
+			HandySectionLabel(stringResource(Res.string.showdown_result))
 			Text(
 				text = resultText,
 				style = HandyTheme.typography.bold20,
@@ -142,7 +146,7 @@ internal fun ShowdownStepContent(
 		HandyTextField(
 			value = state.memo,
 			onValueChange = onUpdateMemo,
-			label = "메모",
+			label = stringResource(Res.string.showdown_memo),
 		)
 
 		VerticalSpacer(16.dp)
@@ -255,7 +259,7 @@ private fun ShowdownPlayerCard(
 
 				if (result != null) {
 					Text(
-						text = result.ranking.label,
+						text = result.ranking.localizedLabel(),
 						style = HandyTheme.typography.regular12,
 						color = if (isWinner) colors.gold else colors.textSecondary,
 					)
@@ -341,11 +345,11 @@ private fun ShowdownStepContentPreview() {
 					heroSeat = 3,
 					createdAt = 0L,
 				),
-				heroHand = HeroHand(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 				players = RecordPlayers.create(playerCount = 6, defaultStack = 50000.0),
 				currentStep = RecordStep.SHOWDOWN,
 				showdown = RecordShowdown(
-					seat1 = HeroHand(Card(Rank.QUEEN, Suit.HEARTS), Card(Rank.JACK, Suit.HEARTS)),
+					seat1 = PocketCards(Card(Rank.QUEEN, Suit.HEARTS), Card(Rank.JACK, Suit.HEARTS)),
 				),
 			),
 			onSelectSingleBoardCard = { _, _ -> },
@@ -376,7 +380,7 @@ private fun ShowdownStepContentResultPreview() {
 					heroSeat = 3,
 					createdAt = 0L,
 				),
-				heroHand = HeroHand(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 				players = RecordPlayers(
 					player1 = RecordPlayer(
 						seat = 1,
@@ -430,7 +434,7 @@ private fun ShowdownStepContentResultPreview() {
 					river = RiverStreet(card = Card(Rank.TWO, Suit.CLUBS)),
 				),
 				showdown = RecordShowdown(
-					seat1 = HeroHand(Card(Rank.QUEEN, Suit.HEARTS), Card(Rank.JACK, Suit.HEARTS)),
+					seat1 = PocketCards(Card(Rank.QUEEN, Suit.HEARTS), Card(Rank.JACK, Suit.HEARTS)),
 				),
 				memo = "탑투페어로 올인 콜",
 			),

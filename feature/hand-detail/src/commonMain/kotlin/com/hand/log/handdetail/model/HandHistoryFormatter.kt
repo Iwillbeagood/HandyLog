@@ -1,30 +1,44 @@
 package com.hand.log.handdetail.model
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
+import com.hand.log.designsystem.theme.HandyTheme
+import com.hand.log.domain.model.Action
 import com.hand.log.domain.model.ActionType
+import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.Card
+import com.hand.log.domain.model.FlopStreet
 import com.hand.log.domain.model.HandRecord
+import com.hand.log.domain.model.HandStreets
+import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.Position
+import com.hand.log.domain.model.PreflopStreet
+import com.hand.log.domain.model.Rank
+import com.hand.log.domain.model.RiverStreet
 import com.hand.log.domain.model.Street
 import com.hand.log.domain.model.Suit
+import com.hand.log.domain.model.TurnStreet
 
 object HandHistoryFormatter {
 
 	fun format(hand: HandRecord): String = buildString {
 		val bb = hand.blinds?.bb ?: 1.0
 		val heroSeat = hand.heroSeat
-		val playerCount = hand.streets.preflop.actions
-			.map { it.playerSeat }.distinct().size.coerceAtLeast(2)
+		val playerCount = hand.playerCount
 		val buttonSeat = hand.buttonSeat
-
-		// 프리플랍에서 폴드한 좌석
-		val preflopFoldedSeats = hand.streets.preflop.actions
-			.filter { it.type == ActionType.FOLD }
-			.map { it.playerSeat }
-			.toSet()
+		val preflopFoldedSeats = hand.preflopFoldedSeats
 
 		// --- Stacks (프리플랍 폴드 제외) ---
 		appendLine("[Stacks]")
-		val allSeats = hand.streets.preflop.actions.map { it.playerSeat }.distinct().sorted()
+		val allSeats = hand.allSeats
 		allSeats.forEach { seat ->
 			if (seat in preflopFoldedSeats) return@forEach
 			val posName = getPositionName(seat, buttonSeat, playerCount)
@@ -49,16 +63,19 @@ object HandHistoryFormatter {
 		// --- Preflop ---
 		appendLine("[Preflop]")
 		val preflopActions = hand.streets.preflop.actions
-		val foldPositions = mutableListOf<String>()
+		var foldCount = 0
 
 		preflopActions.forEach { action ->
+			if (action.type == ActionType.FOLD) {
+				foldCount++
+				return@forEach
+			}
 			val posName = getPositionName(action.playerSeat, buttonSeat, playerCount)
 			val isHero = action.playerSeat == heroSeat
 			val prefix = if (isHero) "Hero ($posName)" else posName
 
 			when (action.type) {
-				ActionType.FOLD -> foldPositions.add(posName)
-				ActionType.CALL -> appendLine("$prefix calls${formatAmountBb(action.amount, bb)}")
+				ActionType.CALL -> appendLine("$prefix calls ${formatBb(action.amount ?: 0.0, bb)}")
 				ActionType.RAISE -> {
 					val label = formatRaiseLabel(action.betLevel)
 					appendLine("$prefix $label ${formatBb(action.amount ?: 0.0, bb)}")
@@ -66,14 +83,12 @@ object HandHistoryFormatter {
 				ActionType.BET -> appendLine("$prefix bets ${formatBb(action.amount ?: 0.0, bb)}")
 				ActionType.ALL_IN -> appendLine("$prefix goes all-in ${formatBb(action.amount ?: 0.0, bb)}")
 				ActionType.CHECK -> appendLine("$prefix checks")
+				else -> {}
 			}
 		}
-		if (foldPositions.isNotEmpty()) {
-			appendLine("${foldPositions.joinToString(", ")} fold${if (foldPositions.size > 1) "" else "s"}")
-		}
 
-		val activePlayers = preflopActions.map { it.playerSeat }.distinct().count() - foldPositions.size
-		val preflopPot = calculatePot(hand, Street.PREFLOP, bb)
+		val activePlayers = preflopActions.map { it.playerSeat }.distinct().count() - foldCount
+		val preflopPot = calculatePot(hand, Street.PREFLOP)
 		appendLine()
 		appendLine(
 			"→ Pot: ${formatBb(
@@ -87,7 +102,7 @@ object HandHistoryFormatter {
 		hand.streets.flop?.let { flop ->
 			appendLine("[Flop] ${flop.cards.joinToString(" ") { formatCard(it) }}")
 			formatStreetActions(flop.actions, heroSeat, buttonSeat, playerCount, bb, this)
-			val flopPot = calculatePot(hand, Street.FLOP, bb)
+			val flopPot = calculatePot(hand, Street.FLOP)
 			val flopActive = countActive(hand, Street.FLOP)
 			appendLine(
 				"→ Pot: ${formatBb(flopPot, bb)} (${if (flopActive > 2) "$flopActive-way" else "Heads-up"})",
@@ -99,7 +114,7 @@ object HandHistoryFormatter {
 		hand.streets.turn?.let { turn ->
 			appendLine("[Turn] ${turn.cards.joinToString(" ") { formatCard(it) }}")
 			formatStreetActions(turn.actions, heroSeat, buttonSeat, playerCount, bb, this)
-			val turnPot = calculatePot(hand, Street.TURN, bb)
+			val turnPot = calculatePot(hand, Street.TURN)
 			appendLine("→ Pot: ${formatBb(turnPot, bb)}")
 			appendLine()
 		}
@@ -110,7 +125,7 @@ object HandHistoryFormatter {
 			if (river.actions.isNotEmpty()) {
 				formatStreetActions(river.actions, heroSeat, buttonSeat, playerCount, bb, this)
 			}
-			val riverPot = calculatePot(hand, Street.RIVER, bb)
+			val riverPot = calculatePot(hand, Street.RIVER)
 			appendLine("→ Pot: ${formatBb(riverPot, bb)}")
 			appendLine()
 		}
@@ -126,7 +141,7 @@ object HandHistoryFormatter {
 	}
 
 	private fun formatStreetActions(
-		actions: List<com.hand.log.domain.model.Action>,
+		actions: List<Action>,
 		heroSeat: Int,
 		buttonSeat: Int,
 		playerCount: Int,
@@ -138,12 +153,12 @@ object HandHistoryFormatter {
 		actions.forEach { action ->
 			val posName = getPositionName(action.playerSeat, buttonSeat, playerCount)
 			val isHero = action.playerSeat == heroSeat
-			val prefix = if (isHero) "Hero" else posName
+			val prefix = if (isHero) "Hero ($posName)" else posName
 
 			when (action.type) {
 				ActionType.FOLD -> foldPositions.add(prefix)
 				ActionType.CHECK -> sb.appendLine("$prefix checks")
-				ActionType.CALL -> sb.appendLine("$prefix calls${formatAmountBb(action.amount, bb)}")
+				ActionType.CALL -> sb.appendLine("$prefix calls ${formatBb(action.amount ?: 0.0, bb)}")
 				ActionType.BET -> sb.appendLine("$prefix bets ${formatBb(action.amount ?: 0.0, bb)}")
 				ActionType.RAISE -> {
 					val label = formatRaiseLabel(action.betLevel)
@@ -184,11 +199,6 @@ object HandHistoryFormatter {
 		}
 	}
 
-	private fun formatAmountBb(amount: Double?, bb: Double): String {
-		if (amount == null) return ""
-		return " ${formatBb(amount, bb)}"
-	}
-
 	private fun formatCard(card: Card): String {
 		val suit = when (card.suit) {
 			Suit.SPADES -> "♠"
@@ -199,7 +209,7 @@ object HandHistoryFormatter {
 		return "${card.rank.symbol}$suit"
 	}
 
-	private fun calculatePot(hand: HandRecord, upToStreet: Street, bb: Double): Double {
+	private fun calculatePot(hand: HandRecord, upToStreet: Street): Double {
 		val blinds = hand.blinds
 		val blindsPot = (blinds?.sb ?: 0.0) + (blinds?.bb ?: 0.0)
 		val antePot = if (blinds?.isBigBlindAnte == true) blinds.bb else 0.0
@@ -214,15 +224,15 @@ object HandHistoryFormatter {
 	}
 
 	private fun countActive(hand: HandRecord, upToStreet: Street): Int {
-		val allSeats = hand.streets.preflop.actions.map { it.playerSeat }.distinct().toMutableSet()
+		val seats = hand.allSeats.toMutableSet()
 		val streets = listOf(Street.PREFLOP, Street.FLOP, Street.TURN, Street.RIVER)
 		for (s in streets) {
 			hand.streets.getActions(s).forEach { action ->
-				if (action.type == ActionType.FOLD) allSeats.remove(action.playerSeat)
+				if (action.type == ActionType.FOLD) seats.remove(action.playerSeat)
 			}
 			if (s == upToStreet) break
 		}
-		return allSeats.size
+		return seats.size
 	}
 
 	private fun getPositionName(seat: Int, buttonSeat: Int, count: Int): String {
@@ -247,5 +257,102 @@ object HandHistoryFormatter {
 			idx == 1 -> Position.UTG1.label
 			else -> Position.MP.label
 		}
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun HandHistoryFormatterPreview() {
+	val hand = HandRecord(
+		id = "h1",
+		tableId = "t1",
+		createdAt = 0L,
+		blinds = Blinds(sb = 500.0, bb = 1000.0),
+		heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+		heroSeat = 3,
+		heroStack = 50000.0,
+		buttonSeat = 1,
+		streets = HandStreets(
+			preflop = PreflopStreet(
+				actions = listOf(
+					Action(playerSeat = 4, type = ActionType.FOLD, stackBefore = 50000.0),
+					Action(playerSeat = 5, type = ActionType.FOLD, stackBefore = 50000.0),
+					Action(
+						playerSeat = 6,
+						type = ActionType.RAISE,
+						amount = 2500.0,
+						stackBefore = 50000.0,
+						betLevel = 2,
+					),
+					Action(playerSeat = 7, type = ActionType.FOLD, stackBefore = 50000.0),
+					Action(playerSeat = 8, type = ActionType.FOLD, stackBefore = 50000.0),
+					Action(playerSeat = 9, type = ActionType.FOLD, stackBefore = 50000.0),
+					Action(playerSeat = 1, type = ActionType.FOLD, stackBefore = 50000.0),
+					Action(playerSeat = 2, type = ActionType.FOLD, stackBefore = 49500.0),
+					Action(
+						playerSeat = 3,
+						type = ActionType.RAISE,
+						amount = 8000.0,
+						stackBefore = 49000.0,
+						betLevel = 3,
+					),
+					Action(playerSeat = 6, type = ActionType.CALL, amount = 8000.0, stackBefore = 47500.0),
+				),
+			),
+			flop = FlopStreet(
+				card1 = Card(Rank.ACE, Suit.HEARTS),
+				card2 = Card(Rank.TEN, Suit.DIAMONDS),
+				card3 = Card(Rank.SEVEN, Suit.CLUBS),
+				actions = listOf(
+					Action(
+						playerSeat = 3,
+						type = ActionType.BET,
+						amount = 5000.0,
+						stackBefore = 41000.0,
+						betLevel = 1,
+					),
+					Action(playerSeat = 6, type = ActionType.CALL, amount = 5000.0, stackBefore = 39500.0),
+				),
+			),
+			turn = TurnStreet(
+				card = Card(Rank.KING, Suit.HEARTS),
+				actions = listOf(
+					Action(playerSeat = 3, type = ActionType.CHECK, stackBefore = 36000.0),
+					Action(
+						playerSeat = 6,
+						type = ActionType.BET,
+						amount = 12000.0,
+						stackBefore = 34500.0,
+						betLevel = 1,
+					),
+					Action(
+						playerSeat = 3,
+						type = ActionType.RAISE,
+						amount = 30000.0,
+						stackBefore = 36000.0,
+						betLevel = 2,
+					),
+					Action(playerSeat = 6, type = ActionType.ALL_IN, amount = 34500.0, stackBefore = 22500.0),
+					Action(playerSeat = 3, type = ActionType.CALL, amount = 34500.0, stackBefore = 6000.0),
+				),
+			),
+			river = RiverStreet(
+				card = Card(Rank.TWO, Suit.CLUBS),
+			),
+		),
+		result = 49000.0,
+		memo = "탑투페어로 체크레이즈 → 올인 콜, 상대 ATo",
+	)
+
+	ThemePreview {
+		Text(
+			text = HandHistoryFormatter.format(hand),
+			style = HandyTheme.typography.regular12,
+			color = HandyTheme.colorScheme.textPrimary,
+			modifier = Modifier
+				.background(HandyTheme.colorScheme.background)
+				.verticalScroll(rememberScrollState())
+				.padding(16.dp),
+		)
 	}
 }

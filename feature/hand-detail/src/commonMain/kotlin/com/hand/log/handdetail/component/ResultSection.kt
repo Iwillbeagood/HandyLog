@@ -13,12 +13,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.ui.localizedLabel
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Blinds
@@ -27,30 +27,25 @@ import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.FlopStreet
 import com.hand.log.domain.model.HandRecord
 import com.hand.log.domain.model.HandStreets
-import com.hand.log.domain.model.HeroHand
 import com.hand.log.domain.model.PreflopStreet
 import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.RiverStreet
+import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.ShowdownEntry
 import com.hand.log.domain.model.ShowdownResult
 import com.hand.log.domain.model.Suit
 import com.hand.log.domain.model.TurnStreet
 import com.hand.log.handdetail.model.formatWithComma
+import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.showdown_result
+import org.jetbrains.compose.resources.stringResource
 import com.hand.log.ui.poker.CardSize
 import com.hand.log.ui.poker.PlayingCard
-import com.hand.log.utils.poker.HandEvaluator
 
 @Composable
 internal fun ResultSection(hand: HandRecord) {
 	val colors = HandyTheme.colorScheme
-	val boardCards = hand.streets.boardCards
-	val showdownResults = remember(hand) {
-		if (boardCards.size == 5 && hand.showdown.size >= 2) {
-			HandEvaluator.calculateShowdown(boardCards, hand.showdown)
-		} else {
-			emptyList()
-		}
-	}
+	val showdownResults = hand.showdownResults
 
 	Column(
 		modifier = Modifier
@@ -61,7 +56,7 @@ internal fun ResultSection(hand: HandRecord) {
 		verticalArrangement = Arrangement.spacedBy(12.dp),
 	) {
 		Text(
-			text = "결과",
+			text = stringResource(Res.string.showdown_result),
 			style = HandyTheme.typography.bold16,
 			color = colors.textPrimary,
 		)
@@ -181,7 +176,7 @@ private fun ShowdownPlayerRow(
 				}
 			}
 			Text(
-				text = result.ranking.label,
+				text = result.ranking.localizedLabel(),
 				style = HandyTheme.typography.regular12,
 				color = if (isWinner) colors.gold else colors.textSecondary,
 			)
@@ -216,7 +211,7 @@ private fun ResultSectionWinPreview() {
 				tableId = "t1",
 				createdAt = 0L,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
-				heroHand = HeroHand(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 				heroSeat = 3,
 				heroStack = 50000.0,
 				buttonSeat = 1,
@@ -233,13 +228,11 @@ private fun ResultSectionWinPreview() {
 				showdown = listOf(
 					ShowdownEntry(
 						seat = 3,
-						card1 = Card(Rank.ACE, Suit.SPADES),
-						card2 = Card(Rank.KING, Suit.SPADES),
+						cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 					),
 					ShowdownEntry(
 						seat = 1,
-						card1 = Card(Rank.QUEEN, Suit.HEARTS),
-						card2 = Card(Rank.JACK, Suit.HEARTS),
+						cards = PocketCards(Card(Rank.QUEEN, Suit.HEARTS), Card(Rank.JACK, Suit.HEARTS)),
 					),
 				),
 				result = 49000.0,

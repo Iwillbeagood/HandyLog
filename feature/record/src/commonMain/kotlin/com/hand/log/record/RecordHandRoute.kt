@@ -105,6 +105,7 @@ private fun RecordHandContent(
 			onUpdateMemo = viewModel::updateMemo,
 			onShowTableEdit = viewModel::showTableEdit,
 			onToggleBbUnit = viewModel::toggleBbUnit,
+			onGoToStep = viewModel::goToStep,
 			onSave = viewModel::saveHand,
 		)
 	}

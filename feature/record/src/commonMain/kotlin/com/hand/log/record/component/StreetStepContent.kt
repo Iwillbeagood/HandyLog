@@ -38,7 +38,7 @@ import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.Street
 import com.hand.log.domain.model.PreflopStreet
 import com.hand.log.domain.model.FlopStreet
-import com.hand.log.domain.model.HeroHand
+import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.HandStreets
 import com.hand.log.domain.model.Suit
 import com.hand.log.domain.model.Action
@@ -53,6 +53,8 @@ import com.hand.log.ui.poker.PlayingCard
 import kotlinx.datetime.LocalDate
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
+import org.jetbrains.compose.resources.stringResource
+import handylog.core.res.generated.resources.*
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -76,7 +78,7 @@ internal fun StreetStepContent(
 	Column {
 		// Board Cards (not for PREFLOP)
 		if (currentStreet != Street.PREFLOP) {
-			HandySectionLabel("보드 카드")
+			HandySectionLabel(stringResource(Res.string.board_cards))
 			val cardCount = when (currentStreet) {
 				Street.FLOP -> 3
 				Street.TURN -> 1
@@ -128,17 +130,20 @@ internal fun StreetStepContent(
 			streetActions.isEmpty() &&
 			state.currentActionSeat == null
 
+		// 프리플랍에서는 좌석 클릭으로 해당 플레이어까지 건너뛰기 가능
+		val isPreflopSeatClickable = currentStreet == Street.PREFLOP
+
 		// Action Table View + Pot
 		ActionTableView(
 			state = state,
 			modifier = Modifier.fillMaxWidth(),
-			onSeatClick = if (isOpenerSelection) onSelectActionSeat else null,
+			onSeatClick = if (isPreflopSeatClickable) onSelectActionSeat else null,
 		)
 
 		if (isOpenerSelection) {
 			VerticalSpacer(8.dp)
 			Text(
-				text = "오프너를 선택하세요",
+				text = stringResource(Res.string.record_select_opener),
 				style = HandyTheme.typography.medium14,
 				color = colors.textSecondary,
 				modifier = Modifier.fillMaxWidth(),
@@ -170,7 +175,7 @@ internal fun StreetStepContent(
 						tint = colors.textSecondary,
 					)
 					Text(
-						text = "되돌리기",
+						text = stringResource(Res.string.btn_undo),
 						style = HandyTheme.typography.medium12,
 						color = colors.textSecondary,
 					)
@@ -257,7 +262,7 @@ private fun PlayerActionArea(
 					HandyTextField(
 						value = if (currentStack == 0.0) "" else currentStack.toLong().toString(),
 						onValueChange = { onUpdatePlayerStack(state.currentActionSeat, it) },
-						label = "스택",
+						label = stringResource(Res.string.player_stack),
 						modifier = Modifier.weight(1f),
 						keyboardType = KeyboardType.Number,
 					)
@@ -297,7 +302,7 @@ private fun PlayerActionArea(
 				contentAlignment = Alignment.Center,
 			) {
 				Text(
-					text = "모든 플레이어 액션 완료",
+					text = stringResource(Res.string.record_all_actions_complete),
 					style = HandyTheme.typography.medium14,
 					color = colors.textSecondary,
 				)
@@ -354,7 +359,7 @@ private fun StreetStepContentPreflopPreview() {
 				currentStep = RecordStep.PREFLOP,
 				buttonSeat = 1,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
-				heroHand = HeroHand(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 				currentActionSeat = 4, // UTG
 				streets = HandStreets(
 					preflop = PreflopStreet(
@@ -396,7 +401,7 @@ private fun StreetStepContentFlopPreview() {
 				currentStep = RecordStep.FLOP,
 				buttonSeat = 1,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
-				heroHand = HeroHand(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 				currentActionSeat = 2, // SB
 				streets = HandStreets(
 					preflop = PreflopStreet(),
@@ -483,7 +488,7 @@ private fun StreetStepContentOpenerSelectionPreview() {
 				currentStep = RecordStep.PREFLOP,
 				buttonSeat = 1,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
-				heroHand = HeroHand(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 				currentActionSeat = null,
 				streets = HandStreets(
 					preflop = PreflopStreet(),

@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Icon
 import com.hand.log.designsystem.component.ScaleInAnimation
+import com.hand.log.ui.localizedLabel
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.designsystem.theme.nonScaledSp
 import com.hand.log.domain.model.Action
@@ -38,9 +39,7 @@ import com.hand.log.ui.poker.AllInMarker
 import com.hand.log.ui.poker.CardSize
 import com.hand.log.ui.poker.PlayingCard
 import com.hand.log.ui.poker.indicatorColor
-import handylog.core.res.generated.resources.Res
-import handylog.core.res.generated.resources.crown
-import handylog.core.res.generated.resources.poker_chip
+import handylog.core.res.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
 import com.hand.log.domain.model.ActionType
 import com.hand.log.domain.model.Blinds
@@ -50,7 +49,7 @@ import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.Street
 import com.hand.log.domain.model.FlopStreet
 import com.hand.log.domain.model.PreflopStreet
-import com.hand.log.domain.model.HeroHand
+import com.hand.log.domain.model.PocketCards
 import com.hand.log.record.model.PlayerStatus
 import com.hand.log.record.model.RecordPlayer
 import com.hand.log.record.model.RecordPlayers
@@ -61,6 +60,8 @@ import com.hand.log.record.contract.RecordStep
 import kotlinx.datetime.LocalDate
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
+import org.jetbrains.compose.resources.stringResource
+import handylog.core.res.generated.resources.Res
 import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
@@ -85,7 +86,7 @@ internal fun ActionTableView(
 	BoxWithConstraints(
 		modifier = modifier
 			.padding(horizontal = 8.dp)
-			.aspectRatio(0.85f),
+			.aspectRatio(1.3f),
 		) {
 			val density = LocalDensity.current
 			val containerWidthPx = with(density) { maxWidth.toPx() }
@@ -143,7 +144,7 @@ internal fun ActionTableView(
 			val chipHalf = chipSizePx / 2f
 			val gapPx = with(density) { 1.dp.toPx() }
 			val seatHalf = seatSizePx / 2f
-			val chipGapPx = with(density) { 6.dp.toPx() }
+			val chipGapPx = with(density) { 12.dp.toPx() }
 
 			val btnSeat = state.buttonSeat
 			val sbSeat = (btnSeat % playerCount) + 1
@@ -165,7 +166,7 @@ internal fun ActionTableView(
 				val posName = state.positionName(seat)
 				val isFolded = seat in state.players.foldedSeats && action == null
 
-				val seatModifier = if (isHero && state.heroCards.isNotEmpty()) {
+				val seatModifier = if (isHero && state.heroHand != null) {
 					Modifier.offset { IntOffset(sx.roundToInt(), sy.roundToInt()) }
 				} else {
 					Modifier
@@ -182,7 +183,7 @@ internal fun ActionTableView(
 					isHero = isHero,
 					isCurrent = isCurrent,
 					isFolded = isFolded,
-					heroCards = if (isHero) state.heroCards else emptyList(),
+					heroHand = if (isHero) state.heroHand else null,
 					modifier = seatModifier,
 				)
 
@@ -345,7 +346,7 @@ private fun ActionSeatView(
 	isHero: Boolean,
 	isCurrent: Boolean,
 	isFolded: Boolean = false,
-	heroCards: List<Card> = emptyList(),
+	heroHand: PocketCards? = null,
 	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme
@@ -416,7 +417,7 @@ private fun ActionSeatView(
 
 				if (action != null) {
 					Text(
-						text = action.label,
+						text = action.localizedLabel(),
 						style = HandyTheme.typography.bold8.nonScaledSp,
 						color = (actionColor ?: colors.textSecondary).copy(alpha = textAlpha),
 						maxLines = 1,
@@ -430,7 +431,7 @@ private fun ActionSeatView(
 					)
 				} else if (isFolded) {
 					Text(
-						text = "폴드",
+						text = stringResource(Res.string.action_fold),
 						style = HandyTheme.typography.bold8.nonScaledSp,
 						color = colors.textSecondary.copy(alpha = 0.4f),
 						maxLines = 1,
@@ -438,9 +439,9 @@ private fun ActionSeatView(
 				}
 			}
 
-			if (heroCards.isNotEmpty()) {
+			heroHand?.let { pocket ->
 				Row(horizontalArrangement = Arrangement.spacedBy((-4).dp)) {
-					heroCards.forEach { card ->
+					listOf(pocket.card1, pocket.card2).forEach { card ->
 						PlayingCard(
 							card = card,
 							size = CardSize.XXS,
@@ -470,7 +471,7 @@ private fun ActionTableViewAllElementsPreview() {
 					heroSeat = 3,
 					createdAt = 0L,
 				),
-				heroHand = HeroHand(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.HEARTS)),
+				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.HEARTS)),
 				players = RecordPlayers(
 					player1 = RecordPlayer(seat = 1, stack = 50000.0),
 					player2 = RecordPlayer(seat = 2, stack = 49500.0),
@@ -522,7 +523,7 @@ private fun ActionTableView9MaxFlopPreview() {
 					heroSeat = 3,
 					createdAt = 0L,
 				),
-				heroHand = HeroHand(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.HEARTS)),
+				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.HEARTS)),
 				players = RecordPlayers(
 					player1 = RecordPlayer(seat = 1, stack = 47000.0),
 					player2 = RecordPlayer(seat = 2, stack = 47000.0),

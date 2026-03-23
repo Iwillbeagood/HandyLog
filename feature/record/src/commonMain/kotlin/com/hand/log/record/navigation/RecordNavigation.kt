@@ -10,7 +10,7 @@ import org.koin.core.parameter.parametersOf
 
 fun EntryProviderScope<NavKey>.recordHandNavGraph() {
 	entry<RecordHand> { key ->
-		val viewModel: RecordHandViewModel = koinViewModel { parametersOf(key.tableId) }
+		val viewModel: RecordHandViewModel = koinViewModel { parametersOf(key.tableId, key.handId) }
 
 		RecordHandRoute(
 			viewModel = viewModel,

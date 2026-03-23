@@ -1,6 +1,8 @@
 package com.hand.log.record
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
@@ -48,6 +50,9 @@ import com.hand.log.record.contract.RecordStep
 import kotlinx.datetime.LocalDate
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
+import org.jetbrains.compose.resources.stringResource
+import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.*
 
 @Composable
 internal fun RecordHandScreen(
@@ -71,6 +76,7 @@ internal fun RecordHandScreen(
 	onUpdateMemo: (String) -> Unit,
 	onShowTableEdit: () -> Unit,
 	onToggleBbUnit: () -> Unit,
+	onGoToStep: (RecordStep) -> Unit,
 	onSave: () -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
@@ -85,7 +91,7 @@ internal fun RecordHandScreen(
 				verticalAlignment = Alignment.CenterVertically,
 			) {
 				HandyTopAppbar(
-					title = "핸드 기록",
+					title = stringResource(Res.string.record_title),
 					onBackEvent = {
 						if (state.currentStep == RecordStep.SETUP) {
 							onBack()
@@ -128,6 +134,7 @@ internal fun RecordHandScreen(
 			StepIndicator(
 				currentStep = state.currentStep,
 				activeSteps = state.activeSteps,
+				onStepClick = if (state.isEditMode) onGoToStep else null,
 				modifier = Modifier
 					.fillMaxWidth()
 					.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -197,6 +204,7 @@ internal fun RecordHandScreen(
 private fun StepIndicator(
 	currentStep: RecordStep,
 	activeSteps: List<RecordStep> = RecordStep.entries,
+	onStepClick: ((RecordStep) -> Unit)? = null,
 	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme
@@ -209,10 +217,21 @@ private fun StepIndicator(
 		activeSteps.forEachIndexed { index, step ->
 			val isCurrent = step == currentStep
 			val isPassed = step.ordinal < currentStep.ordinal
+			val isClickable = onStepClick != null && isPassed && !isCurrent
 
 			Column(
 				horizontalAlignment = Alignment.CenterHorizontally,
-				modifier = Modifier.weight(1f),
+				modifier = Modifier
+					.weight(1f)
+					.then(
+						if (isClickable) {
+							Modifier
+								.clip(RoundedCornerShape(8.dp))
+								.clickable { onStepClick?.invoke(step) }
+						} else {
+							Modifier
+						},
+					),
 			) {
 				Box(
 					modifier = Modifier
@@ -265,7 +284,7 @@ private fun BottomNavigationBar(
 		when (currentStep) {
 			RecordStep.SHOWDOWN -> {
 				RegularButton(
-					text = "저장",
+					text = stringResource(Res.string.btn_save),
 					onClick = onSave,
 					enabled = canProceed,
 					modifier = Modifier.weight(1f),
@@ -273,7 +292,7 @@ private fun BottomNavigationBar(
 			}
 			else -> {
 				RegularButton(
-					text = "다음",
+					text = stringResource(Res.string.btn_next),
 					onClick = onNext,
 					enabled = canProceed,
 					modifier = Modifier.weight(1f),
@@ -308,6 +327,7 @@ private fun RecordHandScreenPreview() {
 			onUpdateMemo = {},
 			onShowTableEdit = {},
 			onToggleBbUnit = {},
+			onGoToStep = {},
 			onSave = {},
 		)
 	}
@@ -336,7 +356,7 @@ private fun RecordHandScreenTournamentPreview() {
 					defaultStack = 10000.0,
 				),
 				blinds = Blinds(sb = 50.0, bb = 100.0),
-				heroHand = com.hand.log.domain.model.HeroHand(
+				heroHand = com.hand.log.domain.model.PocketCards(
 					Card(Rank.ACE, Suit.SPADES),
 					Card(Rank.KING, Suit.SPADES),
 				),
@@ -360,6 +380,7 @@ private fun RecordHandScreenTournamentPreview() {
 			onUpdateMemo = {},
 			onShowTableEdit = {},
 			onToggleBbUnit = {},
+			onGoToStep = {},
 			onSave = {},
 		)
 	}

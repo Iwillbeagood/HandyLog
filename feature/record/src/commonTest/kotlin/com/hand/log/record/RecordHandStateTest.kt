@@ -6,7 +6,7 @@ import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.FlopStreet
 import com.hand.log.domain.model.GameType
-import com.hand.log.domain.model.HeroHand
+import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.model.PreflopStreet
 import com.hand.log.domain.model.Rank
@@ -53,7 +53,7 @@ class RecordHandStateTest {
 		return RecordHandState.Recording(
 			tableId = "test",
 			table = table,
-			heroHand = HeroHand(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+			heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 			buttonSeat = buttonSeat,
 			blinds = Blinds(sb = sb, bb = bb, isBigBlindAnte = isBigBlindAnte),
 			players = players ?: RecordPlayers.create(playerCount, startingStack),

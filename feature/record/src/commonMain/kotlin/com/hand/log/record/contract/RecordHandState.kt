@@ -6,7 +6,7 @@ import com.hand.log.domain.model.ActionType
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.GameType
-import com.hand.log.domain.model.HeroHand
+import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.Position
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.model.ShowdownEntry
@@ -28,7 +28,7 @@ internal sealed interface RecordHandState {
 		val tableId: String,
 		val table: PokerTable? = null,
 		// Setup
-		val heroHand: HeroHand? = null,
+		val heroHand: PocketCards? = null,
 		val buttonSeat: Int = 1,
 		val blinds: Blinds? = null,
 		// Players
@@ -50,12 +50,14 @@ internal sealed interface RecordHandState {
 		val preflopPresets: List<Double> = listOf(2.0, 2.5, 3.0, 4.0, 5.0),
 		val postflopPresets: List<Int> = listOf(33, 50, 75, 100),
 		val showAmountWarning: Boolean = false,
+		val isEditMode: Boolean = false,
+		val editHandId: String? = null,
 	) : RecordHandState {
 
 		/** 현재 사용 중인 모든 카드 (히어로 + 보드 + 쇼다운) */
 		val selectedCards: Set<Card>
 			get() = buildSet {
-				heroHand?.let { addAll(it.cards) }
+				heroHand?.let { add(it.card1); add(it.card2) }
 				addAll(streets.boardCards)
 				addAll(showdown.allCards)
 			}
@@ -113,7 +115,7 @@ internal sealed interface RecordHandState {
 				remainingSeats.forEach { seat ->
 					val hand = if (seat == table?.heroSeat) heroHand else showdown[seat]
 					if (hand != null) {
-						add(ShowdownEntry(seat = seat, card1 = hand.card1, card2 = hand.card2))
+						add(ShowdownEntry(seat = seat, cards = hand))
 					}
 				}
 			}
@@ -144,8 +146,6 @@ internal sealed interface RecordHandState {
 
 		val sbText: String
 			get() = blinds?.sb?.let { if (it == 0.0) "" else it.toLong().toString() } ?: ""
-
-		val heroCards: List<Card> get() = heroHand?.cards ?: emptyList()
 
 		/** 금액을 BB 단위 또는 칩 단위 문자열로 변환 */
 		fun formatAmount(amount: Double): String {

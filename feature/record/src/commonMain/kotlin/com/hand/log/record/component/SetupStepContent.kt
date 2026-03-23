@@ -28,7 +28,8 @@ import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.GameType
-import com.hand.log.domain.model.HeroHand
+import com.hand.log.ui.localizedLabel
+import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.Suit
@@ -39,6 +40,9 @@ import com.hand.log.ui.poker.PlayingCard
 import kotlinx.datetime.LocalDate
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
+import org.jetbrains.compose.resources.stringResource
+import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.*
 @Composable
 internal fun SetupStepContent(
 	state: RecordHandState.Recording,
@@ -70,32 +74,32 @@ internal fun SetupStepContent(
 				)
 				state.table?.let {
 					Text(
-						text = "${it.gameType.label} · ${it.playerCount}인 · 스택 ${it.startingStack.toLong()}",
+						text = "${it.gameType.localizedLabel()} · ${it.playerCount}인 · 스택 ${it.startingStack.toLong()}",
 						style = HandyTheme.typography.regular12,
 						color = colors.textSecondary,
 					)
 				}
 			}
 			Text(
-				text = "수정",
+				text = stringResource(Res.string.btn_edit),
 				style = HandyTheme.typography.bold12,
 				color = colors.primary,
 			)
 		}
 
 		VerticalSpacer(16.dp)
-		HandySectionLabel("히어로 카드")
+		HandySectionLabel(stringResource(Res.string.record_hero_card))
 		Row(
 			horizontalArrangement = Arrangement.spacedBy(8.dp),
 			verticalAlignment = Alignment.CenterVertically,
 			modifier = Modifier.clickable { onSelectHeroCard() },
 		) {
 			HeroCardAnimated(
-				card = state.heroCards.getOrNull(0),
+				card = state.heroHand?.card1,
 				index = 0,
 			)
 			HeroCardAnimated(
-				card = state.heroCards.getOrNull(1),
+				card = state.heroHand?.card2,
 				index = 1,
 			)
 		}
@@ -104,12 +108,12 @@ internal fun SetupStepContent(
 		HandyTextField(
 			value = if (state.heroStack == 0.0) "" else state.heroStack.toLong().toString(),
 			onValueChange = onUpdateHeroStack,
-			label = "히어로 스택",
+			label = stringResource(Res.string.record_hero_stack),
 			keyboardType = KeyboardType.Number,
 		)
 
 		VerticalSpacer(16.dp)
-		HandySectionLabel("내 포지션")
+		HandySectionLabel(stringResource(Res.string.record_hero_position))
 		HandySelector(
 			options = state.allPositionNames,
 			selected = state.heroPositionName,
@@ -121,7 +125,7 @@ internal fun SetupStepContent(
 		)
 
 		VerticalSpacer(16.dp)
-		HandySectionLabel("버튼 좌석")
+		HandySectionLabel(stringResource(Res.string.record_button_seat))
 		HandySelector(
 			range = 1..(state.table?.playerCount ?: 9),
 			selected = state.buttonSeat,
@@ -130,7 +134,7 @@ internal fun SetupStepContent(
 
 		if (state.table?.gameType == GameType.TOURNAMENT) {
 			VerticalSpacer(16.dp)
-			HandySectionLabel("블라인드")
+			HandySectionLabel(stringResource(Res.string.table_form_blinds))
 			Row(
 				modifier = Modifier.fillMaxWidth(),
 				horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -232,7 +236,7 @@ private fun SetupStepContentFilledPreview() {
 					heroSeat = 3,
 					createdAt = 0L,
 				),
-				heroHand = HeroHand(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.HEARTS)),
+				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.HEARTS)),
 				players = RecordPlayers.create(playerCount = 9, defaultStack = 50000.0),
 				buttonSeat = 3,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
@@ -262,7 +266,7 @@ private fun SetupStepContentTournamentPreview() {
 					heroSeat = 5,
 					createdAt = 0L,
 				),
-				heroHand = HeroHand(Card(Rank.QUEEN, Suit.HEARTS), Card(Rank.JACK, Suit.HEARTS)),
+				heroHand = PocketCards(Card(Rank.QUEEN, Suit.HEARTS), Card(Rank.JACK, Suit.HEARTS)),
 				players = RecordPlayers.create(playerCount = 9, defaultStack = 10000.0),
 				buttonSeat = 1,
 				blinds = Blinds(sb = 50.0, bb = 100.0, isBigBlindAnte = true),

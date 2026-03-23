@@ -2,21 +2,21 @@ package com.hand.log.record.model
 
 import androidx.compose.runtime.Immutable
 import com.hand.log.domain.model.Card
-import com.hand.log.domain.model.HeroHand
+import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.ShowdownEntry
 
 @Immutable
 data class RecordShowdown(
-	val seat1: HeroHand? = null,
-	val seat2: HeroHand? = null,
-	val seat3: HeroHand? = null,
-	val seat4: HeroHand? = null,
-	val seat5: HeroHand? = null,
-	val seat6: HeroHand? = null,
-	val seat7: HeroHand? = null,
-	val seat8: HeroHand? = null,
-	val seat9: HeroHand? = null,
-	val seat10: HeroHand? = null,
+	val seat1: PocketCards? = null,
+	val seat2: PocketCards? = null,
+	val seat3: PocketCards? = null,
+	val seat4: PocketCards? = null,
+	val seat5: PocketCards? = null,
+	val seat6: PocketCards? = null,
+	val seat7: PocketCards? = null,
+	val seat8: PocketCards? = null,
+	val seat9: PocketCards? = null,
+	val seat10: PocketCards? = null,
 	val unknownSeats: Set<Int> = emptySet(),
 ) {
 	/** 해당 좌석이 미공개(?) 상태인지 */
@@ -30,7 +30,7 @@ data class RecordShowdown(
 
 	fun clearUnknown(seat: Int): RecordShowdown =
 		copy(unknownSeats = unknownSeats - seat)
-	operator fun get(seat: Int): HeroHand? = when (seat) {
+	operator fun get(seat: Int): PocketCards? = when (seat) {
 		1 -> seat1
 		2 -> seat2
 		3 -> seat3
@@ -44,7 +44,7 @@ data class RecordShowdown(
 		else -> null
 	}
 
-	fun set(seat: Int, hand: HeroHand?): RecordShowdown = when (seat) {
+	fun set(seat: Int, hand: PocketCards?): RecordShowdown = when (seat) {
 		1 -> copy(seat1 = hand)
 		2 -> copy(seat2 = hand)
 		3 -> copy(seat3 = hand)
@@ -60,7 +60,7 @@ data class RecordShowdown(
 
 	val allCards: Set<Card>
 		get() = listOfNotNull(seat1, seat2, seat3, seat4, seat5, seat6, seat7, seat8, seat9, seat10)
-			.flatMap { it.cards }
+			.flatMap { listOf(it.card1, it.card2) }
 			.toSet()
 
 	fun toShowdownEntries(): List<ShowdownEntry> = buildList {
@@ -69,7 +69,7 @@ data class RecordShowdown(
 			6 to seat6, 7 to seat7, 8 to seat8, 9 to seat9, 10 to seat10,
 		).forEach { (seat, hand) ->
 			if (hand != null) {
-				add(ShowdownEntry(seat = seat, card1 = hand.card1, card2 = hand.card2))
+				add(ShowdownEntry(seat = seat, cards = hand))
 			}
 		}
 	}

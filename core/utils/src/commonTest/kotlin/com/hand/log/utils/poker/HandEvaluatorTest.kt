@@ -3,6 +3,7 @@ package com.hand.log.utils.poker
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.HandRanking
 import com.hand.log.domain.model.Rank
+import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.ShowdownEntry
 import com.hand.log.domain.model.Suit
 import kotlin.test.Test
@@ -172,10 +173,9 @@ class HandEvaluatorTest {
 		val players = listOf(
 			ShowdownEntry(
 				seat = 1,
-				card1 = card(Rank.TEN, Suit.HEARTS),
-				card2 = card(Rank.NINE, Suit.HEARTS),
+				cards = PocketCards(card(Rank.TEN, Suit.HEARTS), card(Rank.NINE, Suit.HEARTS)),
 			),
-			ShowdownEntry(seat = 2, card1 = card(Rank.ACE, Suit.SPADES), card2 = card(Rank.ACE, Suit.CLUBS)),
+			ShowdownEntry(seat = 2, cards = PocketCards(card(Rank.ACE, Suit.SPADES), card(Rank.ACE, Suit.CLUBS))),
 		)
 
 		val results = HandEvaluator.calculateShowdown(board, players)
@@ -201,13 +201,11 @@ class HandEvaluatorTest {
 		val players = listOf(
 			ShowdownEntry(
 				seat = 1,
-				card1 = card(Rank.ACE, Suit.SPADES),
-				card2 = card(Rank.QUEEN, Suit.HEARTS),
+				cards = PocketCards(card(Rank.ACE, Suit.SPADES), card(Rank.QUEEN, Suit.HEARTS)),
 			),
 			ShowdownEntry(
 				seat = 2,
-				card1 = card(Rank.ACE, Suit.CLUBS),
-				card2 = card(Rank.JACK, Suit.HEARTS),
+				cards = PocketCards(card(Rank.ACE, Suit.CLUBS), card(Rank.JACK, Suit.HEARTS)),
 			),
 		)
 

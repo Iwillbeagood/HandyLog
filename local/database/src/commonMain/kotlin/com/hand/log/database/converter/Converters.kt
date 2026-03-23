@@ -5,8 +5,9 @@ import com.hand.log.domain.model.ActionType
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.GameType
 import com.hand.log.domain.model.HandStreets
-import com.hand.log.domain.model.HeroHand
+import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.ShowdownEntry
+import com.hand.log.domain.model.ShowdownResult
 import com.hand.log.domain.model.PlayerTendency
 import com.hand.log.domain.model.Street
 import kotlinx.datetime.LocalDate
@@ -52,10 +53,10 @@ class Converters {
 	fun toBlinds(value: String?): Blinds? = value?.let { json.decodeFromString(Blinds.serializer(), it) }
 
 	@TypeConverter
-	fun fromHeroHand(value: HeroHand?): String? = value?.let { json.encodeToString(HeroHand.serializer(), it) }
+	fun fromPocketCards(value: PocketCards?): String? = value?.let { json.encodeToString(PocketCards.serializer(), it) }
 
 	@TypeConverter
-	fun toHeroHand(value: String?): HeroHand? = value?.let { json.decodeFromString(HeroHand.serializer(), it) }
+	fun toPocketCards(value: String?): PocketCards? = value?.let { json.decodeFromString(PocketCards.serializer(), it) }
 
 	@TypeConverter
 	fun fromHandStreets(value: HandStreets): String = json.encodeToString(HandStreets.serializer(), value)
@@ -68,4 +69,10 @@ class Converters {
 
 	@TypeConverter
 	fun toShowdown(value: String): List<ShowdownEntry> = json.decodeFromString(value)
+
+	@TypeConverter
+	fun fromShowdownResults(value: List<ShowdownResult>): String = json.encodeToString(value)
+
+	@TypeConverter
+	fun toShowdownResults(value: String): List<ShowdownResult> = json.decodeFromString(value)
 }

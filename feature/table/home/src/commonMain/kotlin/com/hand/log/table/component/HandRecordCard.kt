@@ -26,7 +26,7 @@ import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.Street
 import com.hand.log.domain.model.FlopStreet
 import com.hand.log.domain.model.HandStreets
-import com.hand.log.domain.model.HeroHand
+import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.RiverStreet
 import com.hand.log.domain.model.TurnStreet
 import com.hand.log.domain.model.Suit
@@ -87,14 +87,11 @@ internal fun HandRecordCard(
 			Row(
 				horizontalArrangement = Arrangement.spacedBy(4.dp),
 			) {
-				hand.heroCards.forEach { card ->
-					PlayingCard(
-						card = card,
-						size = CardSize.SM,
-					)
-				}
-
-				if (hand.heroCards.isEmpty()) {
+				val pocket = hand.heroHand
+				if (pocket != null) {
+					PlayingCard(card = pocket.card1, size = CardSize.SM)
+					PlayingCard(card = pocket.card2, size = CardSize.SM)
+				} else {
 					PlayingCard(card = null, size = CardSize.SM, faceDown = true)
 					PlayingCard(card = null, size = CardSize.SM, faceDown = true)
 				}
@@ -208,7 +205,7 @@ private fun HandRecordCardPreview() {
 				tableId = "1",
 				createdAt = 1710000000000L,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
-				heroHand = HeroHand(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 				heroStack = 62000.0,
 				buttonSeat = 1,
 				streets = HandStreets(
@@ -243,7 +240,7 @@ private fun HandRecordCardNegativePreview() {
 				tableId = "1",
 				createdAt = 1709900000000L,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
-				heroHand = HeroHand(Card(Rank.JACK, Suit.HEARTS), Card(Rank.TEN, Suit.HEARTS)),
+				heroHand = PocketCards(Card(Rank.JACK, Suit.HEARTS), Card(Rank.TEN, Suit.HEARTS)),
 				heroStack = 50000.0,
 				buttonSeat = 3,
 				result = -8500.0,
