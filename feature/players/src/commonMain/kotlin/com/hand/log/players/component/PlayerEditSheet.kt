@@ -25,7 +25,11 @@ import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.PlayerTendency
+import com.hand.log.ui.localizedLabel
 import com.hand.log.domain.model.SavedPlayer
+import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun PlayerEditSheet(
@@ -45,8 +49,8 @@ internal fun PlayerEditSheet(
 
 	HandyBottomSheet(
 		onDismissRequest = onDismiss,
-		title = if (isNew) "플레이어 추가" else "플레이어 수정",
-		confirmText = if (isNew) "추가" else "저장",
+		title = if (isNew) stringResource(Res.string.player_add) else stringResource(Res.string.player_edit),
+		confirmText = if (isNew) stringResource(Res.string.btn_add) else stringResource(Res.string.btn_save),
 		onConfirm = {
 			if (name.isNotBlank()) {
 				onSave(
@@ -61,7 +65,7 @@ internal fun PlayerEditSheet(
 			}
 		},
 		confirmEnabled = name.isNotBlank(),
-		subText = if (canDelete) "삭제" else null,
+		subText = if (canDelete) stringResource(Res.string.btn_delete) else null,
 		onSub = { if (canDelete) onDelete!!(player!!.id) },
 		subContainerColor = colors.error.copy(alpha = 0.15f),
 		subContentColor = colors.error,
@@ -89,10 +93,10 @@ private fun PlayerEditFields(
 ) {
 	val colors = HandyTheme.colorScheme
 
-	HandyTextField(value = name, onValueChange = onNameChange, label = "이름")
+	HandyTextField(value = name, onValueChange = onNameChange, label = stringResource(Res.string.player_name))
 
 	VerticalSpacer(12.dp)
-	HandySectionLabel("성향")
+	HandySectionLabel(stringResource(Res.string.player_tendency))
 	FlowRow(
 		horizontalArrangement = Arrangement.spacedBy(6.dp),
 		verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -108,7 +112,7 @@ private fun PlayerEditFields(
 					.padding(horizontal = 12.dp, vertical = 6.dp),
 			) {
 				Text(
-					text = option?.label ?: "없음",
+					text = option?.localizedLabel() ?: stringResource(Res.string.player_tendency_none),
 					style = HandyTheme.typography.medium12,
 					color = if (isSelected) colors.onPrimary else colors.textSecondary,
 				)
@@ -117,7 +121,7 @@ private fun PlayerEditFields(
 	}
 
 	VerticalSpacer(12.dp)
-	HandyTextField(value = memo, onValueChange = onMemoChange, label = "메모")
+	HandyTextField(value = memo, onValueChange = onMemoChange, label = stringResource(Res.string.player_memo))
 }
 
 @ThemePreviews

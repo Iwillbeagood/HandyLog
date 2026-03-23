@@ -3,14 +3,16 @@ package com.hand.log.settings.betsize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
@@ -28,7 +30,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
 import com.hand.log.settings.betsize.contract.BetSizeState
-import com.hand.log.designsystem.component.HandyHorizontalDivider
 import com.hand.log.designsystem.component.HandySectionLabel
 import com.hand.log.designsystem.component.HandyTextField
 import com.hand.log.designsystem.component.HandyTopAppbar
@@ -40,6 +41,8 @@ import com.hand.log.designsystem.theme.HandyTheme
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.x
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import handylog.core.res.generated.resources.*
 
 @Composable
 internal fun BetSizeSettingsScreen(
@@ -56,7 +59,7 @@ internal fun BetSizeSettingsScreen(
 		containerColor = colors.background,
 		topBar = {
 			HandyTopAppbar(
-				title = "베팅 사이즈 프리셋",
+				title = stringResource(Res.string.betsize_title),
 				onBackEvent = onBack,
 			)
 		},
@@ -69,12 +72,10 @@ internal fun BetSizeSettingsScreen(
 			verticalArrangement = Arrangement.spacedBy(24.dp),
 		) {
 			PresetSection(
-				title = "프리플랍 (BB)",
-				description = "프리플랍에서 BB 배수로 빠른 베팅 사이즈를 선택합니다",
+				title = stringResource(Res.string.betsize_preflop),
 				presets = state.preflopPresets.map { v ->
 					if (v % 1.0 == 0.0) "${v.toInt()}BB" else "${v}BB"
 				},
-				inputLabel = "예: 3.5",
 				keyboardType = KeyboardType.Decimal,
 				canAdd = state.canAddPreflop,
 				onAdd = { input ->
@@ -86,10 +87,8 @@ internal fun BetSizeSettingsScreen(
 			)
 
 			PresetSection(
-				title = "포스트플랍 (POT %)",
-				description = "포스트플랍에서 팟 대비 퍼센트로 빠른 베팅 사이즈를 선택합니다",
+				title = stringResource(Res.string.betsize_postflop),
 				presets = state.postflopPresets.map { "$it%" },
-				inputLabel = "예: 66",
 				keyboardType = KeyboardType.Number,
 				canAdd = state.canAddPostflop,
 				onAdd = { input ->
@@ -106,9 +105,7 @@ internal fun BetSizeSettingsScreen(
 @Composable
 private fun PresetSection(
 	title: String,
-	description: String,
 	presets: List<String>,
-	inputLabel: String,
 	keyboardType: KeyboardType,
 	canAdd: Boolean,
 	onAdd: (String) -> Unit,
@@ -120,30 +117,64 @@ private fun PresetSection(
 
 	Column {
 		HandySectionLabel(title)
-		VerticalSpacer(4.dp)
-		Text(
-			text = description,
-			style = HandyTheme.typography.regular12,
-			color = colors.textSecondary,
-		)
 
-		VerticalSpacer(12.dp)
+		if (presets.isEmpty()) {
+			Text(
+				text = stringResource(Res.string.betsize_empty),
+				style = HandyTheme.typography.regular14,
+				color = colors.textSecondary,
+			)
+		} else {
+			LazyRow(
+				horizontalArrangement = Arrangement.spacedBy(8.dp),
+			) {
+				itemsIndexed(presets) { index, label ->
+					Row(
+						modifier = Modifier
+							.clip(RoundedCornerShape(20.dp))
+							.background(colors.primary.copy(alpha = 0.12f))
+							.padding(start = 14.dp, end = 6.dp, top = 8.dp, bottom = 8.dp),
+						verticalAlignment = Alignment.CenterVertically,
+						horizontalArrangement = Arrangement.spacedBy(6.dp),
+					) {
+						Text(
+							text = label,
+							style = HandyTheme.typography.bold14,
+							color = colors.primary,
+						)
+						Icon(
+							painter = painterResource(Res.drawable.x),
+							contentDescription = stringResource(Res.string.btn_delete),
+							modifier = Modifier
+								.size(20.dp)
+								.clip(CircleShape)
+								.background(colors.primary.copy(alpha = 0.15f))
+								.clickable { onRemove(index) }
+								.padding(4.dp),
+							tint = colors.primary,
+						)
+					}
+				}
+			}
+		}
+
+		VerticalSpacer(10.dp)
 
 		Row(
 			modifier = Modifier.fillMaxWidth(),
-			horizontalArrangement = Arrangement.spacedBy(8.dp),
 			verticalAlignment = Alignment.CenterVertically,
+			horizontalArrangement = Arrangement.spacedBy(8.dp),
 		) {
 			HandyTextField(
 				value = newValue,
 				onValueChange = { newValue = it },
-				label = inputLabel,
-				modifier = Modifier.weight(1f),
 				keyboardType = keyboardType,
+				modifier = Modifier.weight(8f),
 			)
 			RegularButton(
-				text = "추가",
+				text = stringResource(Res.string.btn_add),
 				enabled = canAdd,
+				textStyle = HandyTheme.typography.bold14,
 				onClick = {
 					if (newValue.isNotBlank()) {
 						onAdd(newValue)
@@ -151,62 +182,8 @@ private fun PresetSection(
 						focusManager.clearFocus()
 					}
 				},
+				modifier = Modifier.weight(2f),
 			)
-		}
-
-		VerticalSpacer(12.dp)
-
-		if (presets.isEmpty()) {
-			Box(
-				modifier = Modifier
-					.fillMaxWidth()
-					.clip(RoundedCornerShape(12.dp))
-					.background(colors.card)
-					.padding(32.dp),
-				contentAlignment = Alignment.Center,
-			) {
-				Text(
-					text = "프리셋이 없습니다",
-					style = HandyTheme.typography.regular14,
-					color = colors.textSecondary,
-				)
-			}
-		} else {
-			Column(
-				modifier = Modifier
-					.fillMaxWidth()
-					.clip(RoundedCornerShape(12.dp))
-					.background(colors.card),
-			) {
-				presets.forEachIndexed { index, label ->
-					Row(
-						modifier = Modifier
-							.fillMaxWidth()
-							.padding(horizontal = 16.dp, vertical = 14.dp),
-						verticalAlignment = Alignment.CenterVertically,
-						horizontalArrangement = Arrangement.SpaceBetween,
-					) {
-						Text(
-							text = label,
-							style = HandyTheme.typography.bold16,
-							color = colors.textPrimary,
-						)
-						Icon(
-							painter = painterResource(Res.drawable.x),
-							contentDescription = "삭제",
-							modifier = Modifier
-								.size(28.dp)
-								.clip(RoundedCornerShape(4.dp))
-								.clickable { onRemove(index) }
-								.padding(4.dp),
-							tint = colors.textSecondary,
-						)
-					}
-					if (index < presets.lastIndex) {
-						HandyHorizontalDivider()
-					}
-				}
-			}
 		}
 	}
 }

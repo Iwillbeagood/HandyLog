@@ -31,12 +31,16 @@ import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.ThemeMode
+import com.hand.log.ui.localizedLabel
+import com.hand.log.ui.localizedDesc
 import com.hand.log.settings.main.contract.AppSettings
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.monitor
 import handylog.core.res.generated.resources.moon
 import handylog.core.res.generated.resources.sun
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import handylog.core.res.generated.resources.*
 
 @Composable
 internal fun SettingsScreen(
@@ -49,7 +53,7 @@ internal fun SettingsScreen(
 			modifier = Modifier.fillMaxSize(),
 		) {
 			HandyTopAppbar(
-				title = "설정",
+				title = stringResource(Res.string.settings_title),
 				navigationType = TopAppbarType.Main,
 			)
 			HandyHorizontalDivider()
@@ -88,7 +92,7 @@ private fun ThemeSection(
 	val colors = HandyTheme.colorScheme
 
 	Column {
-		HandySectionLabel("테마")
+		HandySectionLabel(stringResource(Res.string.settings_theme))
 		VerticalSpacer(8.dp)
 		Column(
 			modifier = Modifier
@@ -125,12 +129,12 @@ private fun ThemeSection(
 
 					Column(modifier = Modifier.weight(1f)) {
 						Text(
-							text = mode.label,
+							text = mode.localizedLabel(),
 							style = HandyTheme.typography.medium14,
 							color = if (isSelected) colors.primary else colors.textPrimary,
 						)
 						Text(
-							text = mode.desc,
+							text = mode.localizedDesc(),
 							style = HandyTheme.typography.regular12,
 							color = colors.textSecondary,
 						)
@@ -162,7 +166,7 @@ private fun BetSizeNavigationItem(
 	val colors = HandyTheme.colorScheme
 
 	Column {
-		HandySectionLabel("게임 설정")
+		HandySectionLabel(stringResource(Res.string.settings_game))
 		VerticalSpacer(8.dp)
 		Row(
 			modifier = Modifier
@@ -176,7 +180,7 @@ private fun BetSizeNavigationItem(
 		) {
 			Column {
 				Text(
-					text = "베팅 사이즈 프리셋",
+					text = stringResource(Res.string.settings_bet_size_preset),
 					style = HandyTheme.typography.medium14,
 					color = colors.textPrimary,
 				)
@@ -203,7 +207,7 @@ private fun AppInfoSection() {
 	val colors = HandyTheme.colorScheme
 
 	Column {
-		HandySectionLabel("앱 정보")
+		HandySectionLabel(stringResource(Res.string.settings_app_info))
 		VerticalSpacer(8.dp)
 		Column(
 			modifier = Modifier
@@ -218,7 +222,7 @@ private fun AppInfoSection() {
 				horizontalArrangement = Arrangement.SpaceBetween,
 			) {
 				Text(
-					text = "버전",
+					text = stringResource(Res.string.settings_version),
 					style = HandyTheme.typography.regular14,
 					color = colors.textSecondary,
 				)

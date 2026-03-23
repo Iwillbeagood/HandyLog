@@ -54,6 +54,10 @@ internal class TableEditViewModel(
 	}
 
 	fun updateDate(date: String) = _state.update { it.copy(date = date) }
+	fun updateDateMillis(millis: Long) {
+		val localDate = LocalDate.fromEpochDays((millis / 86400000).toInt())
+		_state.update { it.copy(date = localDate.toString()) }
+	}
 	fun updateLocation(location: String) = _state.update { it.copy(location = location) }
 	fun updateGameType(gameType: GameType) = _state.update { it.copy(gameType = gameType) }
 	fun updateStartingStack(stack: String) = _state.update { it.copy(startingStack = stack) }

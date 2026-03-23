@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.shape.CircleShape
 import com.hand.log.designsystem.component.HandyIconButton
+import com.hand.log.ui.localizedLabel
 import com.hand.log.designsystem.etc.clickableSingle
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
@@ -26,10 +27,9 @@ import com.hand.log.domain.model.PlayerTendency
 import com.hand.log.domain.model.SavedPlayer
 import com.hand.log.ui.color.tendencyColor
 import handylog.core.res.generated.resources.Res
-import handylog.core.res.generated.resources.delete
-import handylog.core.res.generated.resources.pencil
-import handylog.core.res.generated.resources.user_round
+import handylog.core.res.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun PlayerCard(
@@ -100,14 +100,14 @@ internal fun PlayerCard(
 			HandyIconButton(
 				icon = Res.drawable.pencil,
 				onClick = onEdit,
-				contentDescription = "수정",
+				contentDescription = stringResource(Res.string.btn_edit),
 				size = 28.dp,
 				iconSize = 16.dp,
 			)
 			HandyIconButton(
 				icon = Res.drawable.delete,
 				onClick = onDelete,
-				contentDescription = "삭제",
+				contentDescription = stringResource(Res.string.btn_delete),
 				tint = colors.textSecondary,
 				size = 28.dp,
 				iconSize = 16.dp,
@@ -121,7 +121,7 @@ private fun TendencyBadge(tendency: PlayerTendency) {
 	val color = tendency.tendencyColor()
 
 	Text(
-		text = tendency.label,
+		text = tendency.localizedLabel(),
 		style = HandyTheme.typography.bold10,
 		color = color,
 		modifier = Modifier

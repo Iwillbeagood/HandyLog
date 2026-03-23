@@ -1,12 +1,24 @@
 package com.hand.log.tableedit
 
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.tableedit.contract.TableEditEffect
 import com.hand.log.designsystem.component.modal.HandyBottomSheet
+import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -22,6 +34,7 @@ fun TableEditSheet(
 	)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TableEditSheetContent(
 	table: PokerTable? = null,
@@ -30,6 +43,8 @@ private fun TableEditSheetContent(
 	viewModel: TableEditViewModel = koinViewModel(),
 ) {
 	val state by viewModel.state.collectAsStateWithLifecycle()
+	var showDatePicker by remember { mutableStateOf(false) }
+	val datePickerState = rememberDatePickerState()
 
 	LaunchedEffect(table?.id) {
 		viewModel.initialize(table)
@@ -55,7 +70,7 @@ private fun TableEditSheetContent(
 	) {
 		TableFormFields(
 			date = state.date,
-			onDateChange = viewModel::updateDate,
+			onDateClick = { showDatePicker = true },
 			location = state.location,
 			onLocationChange = viewModel::updateLocation,
 			gameType = state.gameType,
@@ -77,5 +92,26 @@ private fun TableEditSheetContent(
 			heroSeat = state.heroSeat,
 			onHeroSeatChange = viewModel::updateHeroSeat,
 		)
+	}
+
+	if (showDatePicker) {
+		DatePickerDialog(
+			onDismissRequest = { showDatePicker = false },
+			confirmButton = {
+				TextButton(onClick = {
+					datePickerState.selectedDateMillis?.let(viewModel::updateDateMillis)
+					showDatePicker = false
+				}) {
+					Text(stringResource(Res.string.btn_confirm))
+				}
+			},
+			dismissButton = {
+				TextButton(onClick = { showDatePicker = false }) {
+					Text(stringResource(Res.string.btn_cancel))
+				}
+			},
+		) {
+			DatePicker(state = datePickerState)
+		}
 	}
 }

@@ -13,21 +13,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.HandySelector
@@ -38,18 +30,16 @@ import com.hand.log.designsystem.component.HandyToggleGroup
 import com.hand.log.designsystem.component.VerticalSpacer
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.GameType
+import com.hand.log.ui.localizedLabel
 import handylog.core.res.generated.resources.Res
-import handylog.core.res.generated.resources.calendar
-import handylog.core.res.generated.resources.map_pin
-import kotlinx.datetime.LocalDate
+import handylog.core.res.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
-import kotlin.time.ExperimentalTime
+import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun TableFormFields(
 	date: String,
-	onDateChange: (String) -> Unit,
+	onDateClick: () -> Unit,
 	location: String,
 	onLocationChange: (String) -> Unit,
 	gameType: GameType,
@@ -73,19 +63,17 @@ fun TableFormFields(
 ) {
 	val colors = HandyTheme.colorScheme
 	val typography = HandyTheme.typography
-
-	var showDatePicker by remember { mutableStateOf(false) }
-	val datePickerState = rememberDatePickerState()
+	val focusManager = LocalFocusManager.current
 
 	// Date selector
-	HandySectionLabel("날짜")
+	HandySectionLabel(stringResource(Res.string.table_form_date))
 	Box(
 		modifier = Modifier
 			.fillMaxWidth()
 			.clip(RoundedCornerShape(8.dp))
 			.background(colors.muted, RoundedCornerShape(8.dp))
 			.border(1.dp, colors.inputBorder, RoundedCornerShape(8.dp))
-			.clickable { showDatePicker = true }
+			.clickable { focusManager.clearFocus(); onDateClick() }
 			.padding(horizontal = 12.dp, vertical = 10.dp),
 	) {
 		Row(verticalAlignment = Alignment.CenterVertically) {
@@ -97,37 +85,10 @@ fun TableFormFields(
 			)
 			Spacer(modifier = Modifier.width(8.dp))
 			Text(
-				text = date.ifEmpty { "날짜를 선택하세요" },
+				text = date.ifEmpty { stringResource(Res.string.table_form_date_placeholder) },
 				style = typography.regular14,
 				color = if (date.isEmpty()) colors.textSecondary.copy(alpha = 0.5f) else colors.textPrimary,
 			)
-		}
-	}
-
-	if (showDatePicker) {
-		DatePickerDialog(
-			onDismissRequest = { showDatePicker = false },
-			confirmButton = {
-				TextButton(onClick = {
-					datePickerState.selectedDateMillis?.let { millis ->
-						val instant = kotlin.time.Instant.fromEpochMilliseconds(millis)
-						val localDate = LocalDate.fromEpochDays(
-							(instant.epochSeconds / 86400).toInt(),
-						)
-						onDateChange(localDate.toString())
-					}
-					showDatePicker = false
-				}) {
-					Text("확인")
-				}
-			},
-			dismissButton = {
-				TextButton(onClick = { showDatePicker = false }) {
-					Text("취소")
-				}
-			},
-		) {
-			DatePicker(state = datePickerState)
 		}
 	}
 
@@ -135,24 +96,24 @@ fun TableFormFields(
 	HandyTextField(
 		value = location,
 		onValueChange = onLocationChange,
-		label = "장소 (선택)",
+		label = stringResource(Res.string.table_form_location),
 		leadingIcon = Res.drawable.map_pin,
 	)
 
 	VerticalSpacer(16.dp)
-	HandySectionLabel("게임 유형")
+	HandySectionLabel(stringResource(Res.string.table_form_game_type))
 	HandyToggleGroup(
 		options = GameType.entries.toList(),
 		selected = gameType,
-		onSelect = onGameTypeChange,
-		label = { it.label },
+		onSelect = { focusManager.clearFocus(); onGameTypeChange(it) },
+		label = { it.localizedLabel() },
 	)
 
 	VerticalSpacer(16.dp)
 	HandyTextField(
 		value = startingStack,
 		onValueChange = onStartingStackChange,
-		label = "시작 스택",
+		label = stringResource(Res.string.table_form_starting_stack),
 		keyboardType = KeyboardType.Number,
 	)
 
@@ -164,31 +125,31 @@ fun TableFormFields(
 			bbText = bbText,
 			onBbChange = onBbChange,
 			straddleEnabled = straddleEnabled,
-			onStraddleEnabledChange = onStraddleEnabledChange,
+			onStraddleEnabledChange = { focusManager.clearFocus(); onStraddleEnabledChange(it) },
 			straddleText = straddleText,
 			onStraddleChange = onStraddleChange,
 		)
 	} else {
 		TournamentBlindsSection(
 			bigBlindAnteEnabled = bigBlindAnteEnabled,
-			onBigBlindAnteChange = onBigBlindAnteChange,
+			onBigBlindAnteChange = { focusManager.clearFocus(); onBigBlindAnteChange(it) },
 		)
 	}
 
 	VerticalSpacer(16.dp)
-	HandySectionLabel("플레이어 수")
+	HandySectionLabel(stringResource(Res.string.table_form_player_count))
 	HandySelector(
 		range = 2..10,
 		selected = playerCount,
-		onSelect = onPlayerCountChange,
+		onSelect = { focusManager.clearFocus(); onPlayerCountChange(it) },
 	)
 
 	VerticalSpacer(16.dp)
-	HandySectionLabel("내 좌석 번호")
+	HandySectionLabel(stringResource(Res.string.table_form_hero_seat))
 	HandySelector(
 		range = 1..maxOf(playerCount, 9),
 		selected = heroSeat,
-		onSelect = onHeroSeatChange,
+		onSelect = { focusManager.clearFocus(); onHeroSeatChange(it) },
 		selectedColor = colors.gold,
 		selectedContentColor = colors.card,
 	)
@@ -215,7 +176,7 @@ private fun CashBlindsSection(
 			.padding(12.dp),
 		verticalArrangement = Arrangement.spacedBy(12.dp),
 	) {
-		HandySectionLabel("블라인드")
+		HandySectionLabel(stringResource(Res.string.table_form_blinds))
 		Row(
 			modifier = Modifier.fillMaxWidth(),
 			horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -241,7 +202,7 @@ private fun CashBlindsSection(
 			verticalAlignment = Alignment.CenterVertically,
 		) {
 			Text(
-				text = "스트래들",
+				text = stringResource(Res.string.table_form_straddle),
 				style = typography.medium10,
 				color = colors.textSecondary,
 			)
@@ -256,7 +217,7 @@ private fun CashBlindsSection(
 			HandyTextField(
 				value = straddleText,
 				onValueChange = onStraddleChange,
-				label = "스트래들 금액",
+				label = stringResource(Res.string.table_form_straddle_amount),
 				keyboardType = KeyboardType.Number,
 			)
 		}
@@ -279,7 +240,7 @@ private fun TournamentBlindsSection(
 		verticalAlignment = Alignment.CenterVertically,
 	) {
 		Text(
-			text = "빅블라인드 엔티",
+			text = stringResource(Res.string.table_form_bb_ante),
 			style = typography.medium10,
 			color = colors.textSecondary,
 		)

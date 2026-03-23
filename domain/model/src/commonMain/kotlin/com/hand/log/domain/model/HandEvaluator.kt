@@ -1,20 +1,22 @@
 package com.hand.log.domain.model
 
+import kotlinx.serialization.Serializable
+
 /**
  * 포커 핸드 족보
  * 낮은 ordinal = 더 강한 핸드
  */
-enum class HandRanking(val label: String) {
-	ROYAL_FLUSH("로열 플러시"),
-	STRAIGHT_FLUSH("스트레이트 플러시"),
-	FOUR_OF_A_KIND("포카드"),
-	FULL_HOUSE("풀하우스"),
-	FLUSH("플러시"),
-	STRAIGHT("스트레이트"),
-	THREE_OF_A_KIND("트리플"),
-	TWO_PAIR("투페어"),
-	ONE_PAIR("원페어"),
-	HIGH_CARD("하이카드"),
+enum class HandRanking {
+	ROYAL_FLUSH,
+	STRAIGHT_FLUSH,
+	FOUR_OF_A_KIND,
+	FULL_HOUSE,
+	FLUSH,
+	STRAIGHT,
+	THREE_OF_A_KIND,
+	TWO_PAIR,
+	ONE_PAIR,
+	HIGH_CARD,
 }
 
 /**
@@ -37,6 +39,7 @@ data class EvaluatedHand(
 	}
 }
 
+@Serializable
 data class ShowdownResult(
 	val seat: Int,
 	val ranking: HandRanking,

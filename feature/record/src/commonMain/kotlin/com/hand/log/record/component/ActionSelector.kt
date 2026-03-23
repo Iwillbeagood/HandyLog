@@ -24,10 +24,14 @@ import com.hand.log.designsystem.component.RegularButton
 import com.hand.log.designsystem.component.VerticalSpacer
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.ActionType
+import com.hand.log.ui.localizedLabel
 import com.hand.log.ui.poker.actionColor
 import com.hand.log.domain.model.Street
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
+import org.jetbrains.compose.resources.stringResource
+import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.*
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -67,7 +71,7 @@ internal fun ActionSelector(
 						.padding(horizontal = 16.dp, vertical = 10.dp),
 				) {
 					Text(
-						text = actionType.label,
+						text = actionType.localizedLabel(),
 						style = HandyTheme.typography.bold14,
 						color = if (isSelected) actionColors.content else colors.textSecondary,
 					)
@@ -84,7 +88,7 @@ internal fun ActionSelector(
 			HandyTextField(
 				value = currentAmount,
 				onValueChange = onUpdateAmount,
-				label = "금액 (최소 ${minRaiseAmount.toLong()})",
+				label = stringResource(Res.string.record_amount_label, minRaiseAmount.toLong()),
 				keyboardType = KeyboardType.Number,
 				onDone = if (selectedAction == ActionType.BET || selectedAction == ActionType.RAISE) {
 					onConfirmAction
@@ -94,7 +98,7 @@ internal fun ActionSelector(
 			)
 			AnimatedVisibility(visible = showAmountWarning) {
 				Text(
-					text = "스택(${maxAmount.toLong()})을 초과하면 올인으로 처리됩니다",
+					text = stringResource(Res.string.record_stack_warning, maxAmount.toLong()),
 					style = HandyTheme.typography.regular10,
 					color = colors.error,
 					modifier = Modifier.padding(top = 4.dp),
@@ -149,7 +153,7 @@ internal fun ActionSelector(
 			if (selectedAction == ActionType.BET || selectedAction == ActionType.RAISE) {
 				VerticalSpacer(12.dp)
 				RegularButton(
-					text = "확인",
+					text = stringResource(Res.string.btn_confirm),
 					onClick = onConfirmAction,
 				)
 			}

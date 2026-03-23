@@ -23,17 +23,14 @@ import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.GameType
+import com.hand.log.ui.localizedLabel
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.model.TableListItem
 import handylog.core.res.generated.resources.Res
-import handylog.core.res.generated.resources.calendar
-import handylog.core.res.generated.resources.chevron_right
-import handylog.core.res.generated.resources.dollar_sign
-import handylog.core.res.generated.resources.dot
-import handylog.core.res.generated.resources.map_pin
-import handylog.core.res.generated.resources.trophy
+import handylog.core.res.generated.resources.*
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 
@@ -93,7 +90,7 @@ internal fun TableCard(
 						modifier = Modifier.size(12.dp),
 					)
 					Text(
-						text = table.gameType.label,
+						text = table.gameType.localizedLabel(),
 						style = HandyTheme.typography.bold12,
 						color = badgeColor,
 					)
@@ -146,7 +143,7 @@ internal fun TableCard(
 					modifier = Modifier.size(12.dp).padding(horizontal = 2.dp),
 				)
 				Text(
-					text = "${table.playerCount}명",
+					text = stringResource(Res.string.home_player_count, table.playerCount),
 					style = HandyTheme.typography.regular12,
 					color = colors.textPrimary,
 				)
@@ -172,7 +169,7 @@ internal fun TableCard(
 			// Row 4: Hand count
 			Spacer(modifier = Modifier.height(8.dp))
 			Text(
-				text = "${item.handCount}개 핸드 기록",
+				text = stringResource(Res.string.home_hand_count, item.handCount),
 				style = HandyTheme.typography.regular10,
 				color = colors.textPrimary,
 			)
