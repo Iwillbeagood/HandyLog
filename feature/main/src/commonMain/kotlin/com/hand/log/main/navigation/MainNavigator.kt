@@ -32,8 +32,8 @@ internal class MainNavigator {
 			navigate(TableDetail(tableId))
 		}
 
-		override fun navigateToRecordHand(tableId: String) {
-			navigate(RecordHand(tableId))
+		override fun navigateToRecordHand(tableId: String, handId: String?) {
+			navigate(RecordHand(tableId, handId))
 		}
 
 		override fun navigateToHandDetail(handId: String) {
