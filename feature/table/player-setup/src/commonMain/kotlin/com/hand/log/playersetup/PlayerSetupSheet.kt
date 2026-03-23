@@ -32,12 +32,14 @@ import com.hand.log.designsystem.etc.clickableSingle
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Player
 import com.hand.log.domain.model.PlayerTendency
+import com.hand.log.ui.localizedLabel
 import com.hand.log.domain.model.SavedPlayer
 import com.hand.log.playersetup.contract.PlayerSetupEffect
 import com.hand.log.playersetup.contract.PlayerSetupState
 import handylog.core.res.generated.resources.Res
-import handylog.core.res.generated.resources.user_round
+import handylog.core.res.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -74,15 +76,15 @@ fun PlayerSetupSheet(
 			onDismissRequest = onDismiss,
 			title = "Hero",
 			titleColor = colors.gold,
-			confirmText = "저장",
+			confirmText = stringResource(Res.string.btn_save),
 			onConfirm = viewModel::save,
-			subText = "초기화",
+			subText = stringResource(Res.string.btn_reset),
 			onSub = viewModel::resetAndSave,
 		) {
 			HandyTextField(
 				value = state.playerStack,
 				onValueChange = viewModel::updateStack,
-				label = "스택",
+				label = stringResource(Res.string.player_stack),
 				keyboardType = KeyboardType.Number,
 			)
 		}
@@ -123,13 +125,13 @@ fun PlayerSetupContent(
 	HandyBottomSheet(
 		onDismissRequest = onDismiss,
 		title = "Seat ${state.initialSeat}",
-		confirmText = "저장",
+		confirmText = stringResource(Res.string.btn_save),
 		onConfirm = onSaveClick,
-		subText = "초기화",
+		subText = stringResource(Res.string.btn_reset),
 		onSub = onResetClick,
 	) {
 		if (savedPlayers.isNotEmpty()) {
-			HandySectionLabel("저장된 플레이어") {
+			HandySectionLabel(stringResource(Res.string.player_saved)) {
 				FlowRow(
 					horizontalArrangement = Arrangement.spacedBy(6.dp),
 					verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -161,18 +163,18 @@ fun PlayerSetupContent(
 			VerticalSpacer(12.dp)
 		}
 
-		HandyTextField(value = state.playerName, onValueChange = onNameChange, label = "이름")
+		HandyTextField(value = state.playerName, onValueChange = onNameChange, label = stringResource(Res.string.player_name))
 
 		VerticalSpacer(12.dp)
 		HandyTextField(
 			value = state.playerStack,
 			onValueChange = onStackChange,
-			label = "스택",
+			label = stringResource(Res.string.player_stack),
 			keyboardType = KeyboardType.Number,
 		)
 
 		VerticalSpacer(12.dp)
-		HandySectionLabel("성향") {
+		HandySectionLabel(stringResource(Res.string.player_tendency)) {
 			FlowRow(
 				horizontalArrangement = Arrangement.spacedBy(6.dp),
 				verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -188,7 +190,7 @@ fun PlayerSetupContent(
 							.padding(horizontal = 12.dp, vertical = 6.dp),
 					) {
 						Text(
-							text = tendency?.label ?: "없음",
+							text = tendency?.localizedLabel() ?: stringResource(Res.string.player_tendency_none),
 							style = HandyTheme.typography.medium12,
 							color = if (isSelected) colors.onPrimary else colors.textSecondary,
 						)
@@ -201,12 +203,12 @@ fun PlayerSetupContent(
 		HandyTextField(
 			value = state.playerMemo,
 			onValueChange = onMemoChange,
-			label = "메모",
+			label = stringResource(Res.string.player_memo),
 		)
 
 		VerticalSpacer(4.dp)
 		HandyCheckBox(
-			text = "플레이어 목록에 저장",
+			text = stringResource(Res.string.player_save_to_marking),
 			checked = state.saveToMarking,
 			onCheckedChange = { onSaveToMarkingChange() },
 			modifier = Modifier

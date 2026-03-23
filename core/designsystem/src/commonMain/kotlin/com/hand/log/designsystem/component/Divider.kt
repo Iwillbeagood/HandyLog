@@ -25,7 +25,7 @@ fun HandyHorizontalDivider(
 }
 
 @Composable
-fun HmVerticalDivider(
+fun HandyVerticalDivider(
 	modifier: Modifier = Modifier,
 	lineColor: Color = HandyTheme.colorScheme.border,
 ) {

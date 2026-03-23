@@ -44,8 +44,8 @@ import com.hand.log.designsystem.etc.ThemePreviews
 fun HandyTextField(
 	value: String,
 	onValueChange: (String) -> Unit,
-	label: String,
 	modifier: Modifier = Modifier,
+	label: String = "",
 	leadingIcon: DrawableResource? = null,
 	keyboardType: KeyboardType = KeyboardType.Text,
 	onDone: (() -> Unit)? = null,

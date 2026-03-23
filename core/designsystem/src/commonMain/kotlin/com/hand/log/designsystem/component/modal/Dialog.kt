@@ -21,11 +21,11 @@ import androidx.compose.ui.window.DialogProperties
 import com.hand.log.designsystem.component.VerticalSpacer
 import com.hand.log.designsystem.theme.HandyTheme
 import handylog.core.res.generated.resources.Res
-import handylog.core.res.generated.resources.btn_no
-import handylog.core.res.generated.resources.btn_yes
 import org.jetbrains.compose.resources.stringResource
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
+import handylog.core.res.generated.resources.btn_no
+import handylog.core.res.generated.resources.btn_yes
 
 @Composable
 fun BaseDialog(

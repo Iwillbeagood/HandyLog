@@ -16,6 +16,7 @@ kotlin {
 				framework {
 					baseName = "ComposeApp"
 					isStatic = true
+					binaryOption("bundleId", "com.hand.log")
 				}
 			}
 		}

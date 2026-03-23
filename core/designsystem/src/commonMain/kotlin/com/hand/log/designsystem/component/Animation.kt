@@ -23,12 +23,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 
 @Composable
-fun HmFadeAnimatedVisibility(
+fun FadeAnimatedVisibility(
 	visible: Boolean,
 	modifier: Modifier = Modifier,
 	content:
-	@Composable()
-	AnimatedVisibilityScope.() -> Unit,
+	@Composable AnimatedVisibilityScope.() -> Unit,
 ) {
 	AnimatedVisibility(
 		modifier = modifier,
@@ -43,8 +42,7 @@ fun HmFadeAnimatedVisibility(
 fun ExpandAnimatedVisibility(
 	visible: Boolean,
 	content:
-	@Composable()
-	AnimatedVisibilityScope.() -> Unit,
+	@Composable AnimatedVisibilityScope.() -> Unit,
 ) {
 	AnimatedVisibility(
 		visible = visible,
@@ -58,8 +56,7 @@ fun ExpandAnimatedVisibility(
 fun BottomToTopAnimatedVisibility(
 	visible: Boolean,
 	content:
-	@Composable()
-	AnimatedVisibilityScope.() -> Unit,
+	@Composable AnimatedVisibilityScope.() -> Unit,
 ) {
 	AnimatedVisibility(
 		visible = visible,

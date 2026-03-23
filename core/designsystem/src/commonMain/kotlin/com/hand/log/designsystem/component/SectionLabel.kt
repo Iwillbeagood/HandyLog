@@ -15,6 +15,8 @@ fun HandySectionLabel(
 	modifier: Modifier = Modifier,
 	content: @Composable (() -> Unit)? = null,
 ) {
+	if (text.isEmpty()) return
+
 	Column(
 		modifier = modifier.fillMaxWidth(),
 	) {

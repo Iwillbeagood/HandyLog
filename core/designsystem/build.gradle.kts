@@ -11,23 +11,5 @@ kotlin {
 		commonMain.dependencies {
 			implementation(projects.core.res)
 		}
-
-		appleMain {
-			dependencies {
-				implementation(libs.ktor.client.darwin)
-			}
-		}
-		androidMain {
-			dependencies {
-				implementation(libs.ktor.client.okhttp)
-			}
-		}
-		jvmMain {
-			dependencies {
-				implementation(libs.ktor.client.okhttp)
-			}
-		}
 	}
 }
-
-android.namespace = "com.droidknights.app.core.designsystem"
