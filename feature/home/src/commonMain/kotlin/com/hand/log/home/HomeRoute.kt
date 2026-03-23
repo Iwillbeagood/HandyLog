@@ -9,7 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.home.contract.HomeEffect
-import com.hand.log.designsystem.component.HmFadeAnimatedVisibility
+import com.hand.log.designsystem.component.FadeAnimatedVisibility
 import com.hand.log.home.contract.HomeModalEffect
 import com.hand.log.home.contract.HomeState
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
@@ -64,7 +64,7 @@ private fun HomeContent(
 	onNavigateToTableDetail: (String) -> Unit,
 	onFabClick: () -> Unit,
 ) {
-	HmFadeAnimatedVisibility(homeState is HomeState.HomeData) {
+	FadeAnimatedVisibility(homeState is HomeState.HomeData) {
 		if (homeState is HomeState.HomeData) {
 			HomeScreen(
 				homeState = homeState,

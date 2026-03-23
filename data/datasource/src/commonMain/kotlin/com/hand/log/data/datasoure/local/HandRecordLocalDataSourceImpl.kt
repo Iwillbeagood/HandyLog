@@ -47,6 +47,7 @@ internal class HandRecordLocalDataSourceImpl(
 		buttonSeat = buttonSeat,
 		streets = streets,
 		showdown = showdown,
+		showdownResults = showdownResults,
 		result = result,
 		memo = memo,
 	)
@@ -62,6 +63,7 @@ internal class HandRecordLocalDataSourceImpl(
 		buttonSeat = buttonSeat,
 		streets = streets,
 		showdown = showdown,
+		showdownResults = showdownResults,
 		result = result,
 		memo = memo,
 	)

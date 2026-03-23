@@ -12,6 +12,9 @@ kotlin {
 			implementation(projects.core.res)
 			implementation(projects.domain.model)
 		}
+		androidMain.dependencies {
+			implementation(libs.androidx.core.ktx)
+		}
 		commonTest.dependencies {
 			implementation(libs.kotlin.test)
 		}

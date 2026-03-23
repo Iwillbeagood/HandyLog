@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hand.log.domain.repository.HandRecordRepository
 import com.hand.log.handdetail.contract.HandDetailState
-import com.hand.log.handdetail.model.HandDetailUiModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -26,7 +25,6 @@ internal class HandDetailViewModel(
 			HandDetailState.Success(
 				hand = hand,
 				useBbUnit = bbUnit,
-				uiModel = HandDetailUiModel.from(hand, bbUnit),
 			)
 		} else {
 			HandDetailState.Error

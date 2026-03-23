@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">HandyLog</string>
+
+	<!-- Common -->
+	<string name="btn_confirm">确认</string>
+	<string name="btn_cancel">取消</string>
+	<string name="btn_save">保存</string>
+	<string name="btn_delete">删除</string>
+	<string name="btn_edit">编辑</string>
+	<string name="btn_add">添加</string>
+	<string name="btn_reset">重置</string>
+	<string name="btn_next">下一步</string>
+	<string name="btn_close">关闭</string>
+	<string name="btn_undo">撤销</string>
+	<string name="btn_clear">清除</string>
+
+	<!-- Bottom Navigation -->
+	<string name="nav_home">首页</string>
+	<string name="nav_marking">标记</string>
+	<string name="nav_settings">设置</string>
+
+	<!-- Home -->
+	<string name="home_new_table">新建桌子</string>
+	<string name="home_empty_title">暂无记录</string>
+	<string name="home_empty_desc">创建新桌子开始记录手牌</string>
+	<string name="home_table_deleted">桌子已删除</string>
+	<string name="home_hand_count">%d手牌记录</string>
+	<string name="home_player_count">%d人</string>
+
+	<!-- Table Detail -->
+	<string name="table_detail_tournament">锦标赛</string>
+	<string name="table_detail_cash">现金</string>
+	<string name="table_detail_settings">设置</string>
+	<string name="table_detail_record_hand">记录手牌</string>
+	<string name="table_detail_hand_count">%d个</string>
+	<string name="table_detail_empty_title">暂无手牌记录</string>
+	<string name="table_detail_empty_desc">点击+按钮记录第一手牌</string>
+	<string name="table_detail_player_saved">玩家信息已保存</string>
+	<string name="table_detail_hand_deleted">手牌已删除</string>
+	<string name="table_detail_table_updated">桌子已更新</string>
+
+	<!-- Table Form -->
+	<string name="table_form_date">日期</string>
+	<string name="table_form_date_placeholder">请选择日期</string>
+	<string name="table_form_location">地点（可选）</string>
+	<string name="table_form_game_type">游戏类型</string>
+	<string name="table_form_starting_stack">起始筹码</string>
+	<string name="table_form_player_count">玩家人数</string>
+	<string name="table_form_hero_seat">我的座位号</string>
+	<string name="table_form_blinds">盲注</string>
+	<string name="table_form_straddle">Straddle</string>
+	<string name="table_form_straddle_amount">Straddle金额</string>
+	<string name="table_form_bb_ante">大盲注前注</string>
+
+	<!-- Record Hand -->
+	<string name="record_title">记录手牌</string>
+	<string name="record_save_error">保存时发生错误</string>
+	<string name="record_table_settings">桌子设置</string>
+	<string name="record_hero_card">主角手牌</string>
+	<string name="record_hero_position">我的位置</string>
+	<string name="record_button_seat">庄家位置</string>
+	<string name="record_hero_stack">主角筹码</string>
+	<string name="record_select_opener">选择开局者</string>
+	<string name="record_all_actions_complete">所有玩家行动完毕</string>
+	<string name="record_amount_label">金额（最小 %d）</string>
+	<string name="record_stack_warning">超过筹码（%d）将被视为全押</string>
+
+	<!-- Record Steps -->
+	<string name="step_setup">设置</string>
+	<string name="step_preflop">翻前</string>
+	<string name="step_flop">翻牌</string>
+	<string name="step_turn">转牌</string>
+	<string name="step_river">河牌</string>
+	<string name="step_showdown">摊牌</string>
+
+	<!-- Showdown -->
+	<string name="showdown_board_edit">公共牌（点击编辑）</string>
+	<string name="showdown_player_hand">玩家手牌</string>
+	<string name="showdown_result">结果</string>
+	<string name="showdown_stack">筹码: %d</string>
+	<string name="showdown_memo">备注</string>
+
+	<!-- Card Selector -->
+	<string name="card_selector_hero">选择主角手牌</string>
+	<string name="card_selector_board">选择%s牌</string>
+	<string name="card_selector_board_change">更换%s牌</string>
+	<string name="card_selector_showdown">选择%s手牌</string>
+
+	<!-- Hand Detail -->
+	<string name="hand_detail_title">手牌详情</string>
+	<string name="hand_detail_share_text">分享文本</string>
+	<string name="hand_detail_share_image">分享图片</string>
+	<string name="hand_detail_text_shared">文本已分享</string>
+	<string name="hand_detail_image_shared">图片已分享</string>
+
+	<!-- Action Types -->
+	<string name="action_fold">弃牌</string>
+	<string name="action_check">看牌</string>
+	<string name="action_call">跟注</string>
+	<string name="action_bet">下注</string>
+	<string name="action_raise">加注</string>
+	<string name="action_all_in">全押</string>
+	<string name="action_open">开牌</string>
+	<string name="action_n_bet">%d注</string>
+
+	<!-- Players -->
+	<string name="players_title">玩家标记</string>
+	<string name="players_empty_title">没有标记的玩家</string>
+	<string name="players_empty_desc">标记经常遇到的玩家</string>
+	<string name="player_add">添加玩家</string>
+	<string name="player_edit">编辑玩家</string>
+	<string name="player_name">姓名</string>
+	<string name="player_stack">筹码</string>
+	<string name="player_tendency">倾向</string>
+	<string name="player_tendency_none">无</string>
+	<string name="player_memo">备注</string>
+	<string name="player_save_to_marking">保存到玩家列表</string>
+	<string name="player_saved">已保存的玩家</string>
+
+	<!-- Settings -->
+	<string name="settings_title">设置</string>
+	<string name="settings_theme">主题</string>
+	<string name="settings_game">游戏设置</string>
+	<string name="settings_bet_size_preset">下注大小预设</string>
+	<string name="settings_preset_count">已设置%d个</string>
+	<string name="settings_app_info">应用信息</string>
+	<string name="settings_version">版本</string>
+
+	<!-- Bet Size Settings -->
+	<string name="betsize_title">下注大小预设</string>
+	<string name="betsize_preflop">翻前（BB）</string>
+	<string name="betsize_preflop_desc">翻前以BB倍数快速选择下注大小</string>
+	<string name="betsize_postflop">翻后（POT %）</string>
+	<string name="betsize_postflop_desc">翻后以底池百分比快速选择下注大小</string>
+	<string name="betsize_empty">没有预设</string>
+
+	<!-- Clipboard -->
+	<string name="clipboard_copied">已复制到剪贴板</string>
+
+	<!-- Board Cards -->
+	<string name="board_cards">公共牌</string>
+</resources>

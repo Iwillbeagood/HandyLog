@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">HandyLog</string>
+
+	<!-- Common -->
+	<string name="btn_confirm">OK</string>
+	<string name="btn_cancel">Cancel</string>
+	<string name="btn_save">Save</string>
+	<string name="btn_delete">Delete</string>
+	<string name="btn_edit">Edit</string>
+	<string name="btn_add">Add</string>
+	<string name="btn_reset">Reset</string>
+	<string name="btn_next">Next</string>
+	<string name="btn_close">Close</string>
+	<string name="btn_undo">Undo</string>
+	<string name="btn_clear">Clear</string>
+
+	<!-- Bottom Navigation -->
+	<string name="nav_home">Home</string>
+	<string name="nav_marking">Players</string>
+	<string name="nav_settings">Settings</string>
+
+	<!-- Home -->
+	<string name="home_new_table">New Table</string>
+	<string name="home_empty_title">No records yet</string>
+	<string name="home_empty_desc">Create a new table to start recording hands</string>
+	<string name="home_table_deleted">Table deleted</string>
+	<string name="home_hand_count">%d hands recorded</string>
+	<string name="home_player_count">%d players</string>
+
+	<!-- Table Detail -->
+	<string name="table_detail_tournament">Tournament</string>
+	<string name="table_detail_cash">Cash</string>
+	<string name="table_detail_settings">Settings</string>
+	<string name="table_detail_record_hand">Record Hand</string>
+	<string name="table_detail_hand_count">%d</string>
+	<string name="table_detail_empty_title">No hands recorded yet</string>
+	<string name="table_detail_empty_desc">Tap + to record your first hand</string>
+	<string name="table_detail_player_saved">Player info saved</string>
+	<string name="table_detail_hand_deleted">Hand deleted</string>
+	<string name="table_detail_table_updated">Table updated</string>
+
+	<!-- Table Form -->
+	<string name="table_form_date">Date</string>
+	<string name="table_form_date_placeholder">Select a date</string>
+	<string name="table_form_location">Location (optional)</string>
+	<string name="table_form_game_type">Game Type</string>
+	<string name="table_form_starting_stack">Starting Stack</string>
+	<string name="table_form_player_count">Player Count</string>
+	<string name="table_form_hero_seat">Hero Seat</string>
+	<string name="table_form_blinds">Blinds</string>
+	<string name="table_form_straddle">Straddle</string>
+	<string name="table_form_straddle_amount">Straddle Amount</string>
+	<string name="table_form_bb_ante">Big Blind Ante</string>
+
+	<!-- Record Hand -->
+	<string name="record_title">Record Hand</string>
+	<string name="record_save_error">Error saving hand</string>
+	<string name="record_table_settings">Table Settings</string>
+	<string name="record_hero_card">Hero Cards</string>
+	<string name="record_hero_position">My Position</string>
+	<string name="record_button_seat">Button Seat</string>
+	<string name="record_hero_stack">Hero Stack</string>
+	<string name="record_select_opener">Select the opener</string>
+	<string name="record_all_actions_complete">All actions complete</string>
+	<string name="record_amount_label">Amount (min %d)</string>
+	<string name="record_stack_warning">Exceeding stack (%d) will be treated as all-in</string>
+
+	<!-- Record Steps -->
+	<string name="step_setup">Setup</string>
+	<string name="step_preflop">Preflop</string>
+	<string name="step_flop">Flop</string>
+	<string name="step_turn">Turn</string>
+	<string name="step_river">River</string>
+	<string name="step_showdown">Showdown</string>
+
+	<!-- Showdown -->
+	<string name="showdown_board_edit">Board (tap to edit)</string>
+	<string name="showdown_player_hand">Player Hands</string>
+	<string name="showdown_result">Result</string>
+	<string name="showdown_stack">Stack: %d</string>
+	<string name="showdown_memo">Memo</string>
+
+	<!-- Card Selector -->
+	<string name="card_selector_hero">Select Hero Cards</string>
+	<string name="card_selector_board">Select %s Cards</string>
+	<string name="card_selector_board_change">Change %s Card</string>
+	<string name="card_selector_showdown">Select %s Cards</string>
+
+	<!-- Hand Detail -->
+	<string name="hand_detail_title">Hand Detail</string>
+	<string name="hand_detail_share_text">Share as Text</string>
+	<string name="hand_detail_share_image">Share as Image</string>
+	<string name="hand_detail_text_shared">Text shared</string>
+	<string name="hand_detail_image_shared">Image shared</string>
+
+	<!-- Action Types -->
+	<string name="action_fold">Fold</string>
+	<string name="action_check">Check</string>
+	<string name="action_call">Call</string>
+	<string name="action_bet">Bet</string>
+	<string name="action_raise">Raise</string>
+	<string name="action_all_in">All-in</string>
+	<string name="action_open">Open</string>
+	<string name="action_n_bet">%d-Bet</string>
+
+	<!-- Players -->
+	<string name="players_title">Player Marking</string>
+	<string name="players_empty_title">No marked players</string>
+	<string name="players_empty_desc">Mark players you frequently meet</string>
+	<string name="player_add">Add Player</string>
+	<string name="player_edit">Edit Player</string>
+	<string name="player_name">Name</string>
+	<string name="player_stack">Stack</string>
+	<string name="player_tendency">Tendency</string>
+	<string name="player_tendency_none">None</string>
+	<string name="player_memo">Memo</string>
+	<string name="player_save_to_marking">Save to player list</string>
+	<string name="player_saved">Saved Players</string>
+
+	<!-- Settings -->
+	<string name="settings_title">Settings</string>
+	<string name="settings_theme">Theme</string>
+	<string name="settings_game">Game Settings</string>
+	<string name="settings_bet_size_preset">Bet Size Presets</string>
+	<string name="settings_preset_count">%d presets configured</string>
+	<string name="settings_app_info">App Info</string>
+	<string name="settings_version">Version</string>
+
+	<!-- Bet Size Settings -->
+	<string name="betsize_title">Bet Size Presets</string>
+	<string name="betsize_preflop">Preflop (BB)</string>
+	<string name="betsize_preflop_desc">Select quick bet sizes as BB multiples for preflop</string>
+	<string name="betsize_postflop">Postflop (POT %)</string>
+	<string name="betsize_postflop_desc">Select quick bet sizes as pot percentages for postflop</string>
+	<string name="betsize_empty">No presets</string>
+
+	<!-- Clipboard -->
+	<string name="clipboard_copied">Copied to clipboard</string>
+
+	<!-- Board Cards -->
+	<string name="board_cards">Board Cards</string>
+</resources>

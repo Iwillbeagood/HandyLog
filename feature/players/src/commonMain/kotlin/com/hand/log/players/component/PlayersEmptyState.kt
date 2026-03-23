@@ -17,6 +17,8 @@ import com.hand.log.designsystem.theme.HandyTheme
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.users
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import handylog.core.res.generated.resources.*
 
 @Composable
 internal fun PlayersEmptyState(modifier: Modifier = Modifier) {
@@ -37,7 +39,7 @@ internal fun PlayersEmptyState(modifier: Modifier = Modifier) {
 		Spacer(modifier = Modifier.height(16.dp))
 
 		Text(
-			text = "마킹된 플레이어가 없습니다",
+			text = stringResource(Res.string.players_empty_title),
 			style = HandyTheme.typography.bold16,
 			color = colors.textPrimary,
 		)
@@ -45,7 +47,7 @@ internal fun PlayersEmptyState(modifier: Modifier = Modifier) {
 		Spacer(modifier = Modifier.height(4.dp))
 
 		Text(
-			text = "자주 만나는 플레이어를 마킹해보세요",
+			text = stringResource(Res.string.players_empty_desc),
 			style = HandyTheme.typography.regular14,
 			color = colors.textSecondary,
 		)

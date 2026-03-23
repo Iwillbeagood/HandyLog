@@ -24,8 +24,9 @@ import com.hand.log.home.component.TableCard
 import com.hand.log.home.contract.HomeState
 import com.hand.log.domain.model.TableListItem
 import handylog.core.res.generated.resources.Res
-import handylog.core.res.generated.resources.plus
+import handylog.core.res.generated.resources.*
 import kotlinx.datetime.LocalDate
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun HomeScreen(
@@ -40,7 +41,7 @@ internal fun HomeScreen(
 			HandyTopAppbar(
 				navigationType = TopAppbarType.Main,
 				iconButton = IconButton(
-					text = "새 테이블",
+					text = stringResource(Res.string.home_new_table),
 					icon = Res.drawable.plus,
 					onClick = onTableAdd,
 				),

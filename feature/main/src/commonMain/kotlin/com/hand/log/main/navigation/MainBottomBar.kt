@@ -1,6 +1,11 @@
 package com.hand.log.main.navigation
 
 import androidx.compose.animation.AnimatedVisibility
+import org.jetbrains.compose.resources.stringResource
+import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.nav_home
+import handylog.core.res.generated.resources.nav_marking
+import handylog.core.res.generated.resources.nav_settings
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideIn
@@ -84,9 +89,9 @@ internal fun MainBottomBar(
 								)
 								Text(
 									text = when (item) {
-										MainBottomNavItem.Home -> "홈"
-										MainBottomNavItem.Players -> "마킹"
-										MainBottomNavItem.Settings -> "설정"
+										MainBottomNavItem.Home -> stringResource(Res.string.nav_home)
+										MainBottomNavItem.Players -> stringResource(Res.string.nav_marking)
+										MainBottomNavItem.Settings -> stringResource(Res.string.nav_settings)
 									},
 									style = HandyTheme.typography.medium12,
 									color = if (isSelected) colors.primary else colors.textSecondary,

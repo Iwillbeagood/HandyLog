@@ -18,12 +18,5 @@ kotlin {
 			implementation(libs.jetbrains.lifecycle.viewmodel.navigation3)
 		}
 
-		appleMain {
-			dependsOn(commonMain.get())
-		}
-
-		androidMain {
-			dependsOn(commonMain.get())
-		}
 	}
 }

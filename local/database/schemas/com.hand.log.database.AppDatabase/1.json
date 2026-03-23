@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "eea791dd119fc8edb4326fdf76b4de2a",
+    "identityHash": "4faba5a020d639046244ae094b3eeda6",
     "entities": [
       {
         "tableName": "poker_tables",
@@ -161,7 +161,7 @@
       },
       {
         "tableName": "hand_records",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `tableId` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `blinds` TEXT, `heroHand` TEXT, `heroSeat` INTEGER NOT NULL, `heroStack` REAL NOT NULL, `buttonSeat` INTEGER NOT NULL, `streets` TEXT NOT NULL, `showdown` TEXT NOT NULL, `result` REAL, `memo` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`tableId`) REFERENCES `poker_tables`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `tableId` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `blinds` TEXT, `heroHand` TEXT, `heroSeat` INTEGER NOT NULL, `heroStack` REAL NOT NULL, `buttonSeat` INTEGER NOT NULL, `streets` TEXT NOT NULL, `showdown` TEXT NOT NULL, `showdownResults` TEXT NOT NULL, `result` REAL, `memo` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`tableId`) REFERENCES `poker_tables`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -218,6 +218,12 @@
           {
             "fieldPath": "showdown",
             "columnName": "showdown",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "showdownResults",
+            "columnName": "showdownResults",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -306,7 +312,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'eea791dd119fc8edb4326fdf76b4de2a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4faba5a020d639046244ae094b3eeda6')"
     ]
   }
 }

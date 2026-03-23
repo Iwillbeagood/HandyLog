@@ -23,7 +23,8 @@ import com.hand.log.players.component.PlayerCard
 import com.hand.log.players.component.PlayersEmptyState
 import com.hand.log.players.contract.PlayersState
 import handylog.core.res.generated.resources.Res
-import handylog.core.res.generated.resources.plus
+import handylog.core.res.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun PlayersScreen(
@@ -38,10 +39,10 @@ internal fun PlayersScreen(
 			modifier = Modifier.fillMaxSize(),
 		) {
 			HandyTopAppbar(
-				title = "플레이어 마킹",
+				title = stringResource(Res.string.players_title),
 				navigationType = TopAppbarType.Main,
 				iconButton = IconButton(
-					text = "추가",
+					text = stringResource(Res.string.btn_add),
 					icon = Res.drawable.plus,
 					onClick = onAddPlayer,
 				),

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">HandyLog</string>
+
+	<!-- Common -->
+	<string name="btn_confirm">確認</string>
+	<string name="btn_cancel">キャンセル</string>
+	<string name="btn_save">保存</string>
+	<string name="btn_delete">削除</string>
+	<string name="btn_edit">編集</string>
+	<string name="btn_add">追加</string>
+	<string name="btn_reset">リセット</string>
+	<string name="btn_next">次へ</string>
+	<string name="btn_close">閉じる</string>
+	<string name="btn_undo">元に戻す</string>
+	<string name="btn_clear">クリア</string>
+
+	<!-- Bottom Navigation -->
+	<string name="nav_home">ホーム</string>
+	<string name="nav_marking">マーキング</string>
+	<string name="nav_settings">設定</string>
+
+	<!-- Home -->
+	<string name="home_new_table">新しいテーブル</string>
+	<string name="home_empty_title">まだ記録がありません</string>
+	<string name="home_empty_desc">新しいテーブルを作成してハンドを記録しましょう</string>
+	<string name="home_table_deleted">テーブルが削除されました</string>
+	<string name="home_hand_count">%d件のハンド記録</string>
+	<string name="home_player_count">%d人</string>
+
+	<!-- Table Detail -->
+	<string name="table_detail_tournament">トーナメント</string>
+	<string name="table_detail_cash">キャッシュ</string>
+	<string name="table_detail_settings">設定</string>
+	<string name="table_detail_record_hand">ハンド記録</string>
+	<string name="table_detail_hand_count">%d件</string>
+	<string name="table_detail_empty_title">まだハンドが記録されていません</string>
+	<string name="table_detail_empty_desc">+ボタンを押して最初のハンドを記録しましょう</string>
+	<string name="table_detail_player_saved">プレイヤー情報が保存されました</string>
+	<string name="table_detail_hand_deleted">ハンドが削除されました</string>
+	<string name="table_detail_table_updated">テーブルが更新されました</string>
+
+	<!-- Table Form -->
+	<string name="table_form_date">日付</string>
+	<string name="table_form_date_placeholder">日付を選択してください</string>
+	<string name="table_form_location">場所（任意）</string>
+	<string name="table_form_game_type">ゲームタイプ</string>
+	<string name="table_form_starting_stack">スターティングスタック</string>
+	<string name="table_form_player_count">プレイヤー数</string>
+	<string name="table_form_hero_seat">自分の席番号</string>
+	<string name="table_form_blinds">ブラインド</string>
+	<string name="table_form_straddle">ストラドル</string>
+	<string name="table_form_straddle_amount">ストラドル金額</string>
+	<string name="table_form_bb_ante">ビッグブラインドアンティ</string>
+
+	<!-- Record Hand -->
+	<string name="record_title">ハンド記録</string>
+	<string name="record_save_error">保存中にエラーが発生しました</string>
+	<string name="record_table_settings">テーブル設定</string>
+	<string name="record_hero_card">ヒーローカード</string>
+	<string name="record_hero_position">自分のポジション</string>
+	<string name="record_button_seat">ボタン席</string>
+	<string name="record_hero_stack">ヒーロースタック</string>
+	<string name="record_select_opener">オープナーを選択してください</string>
+	<string name="record_all_actions_complete">全プレイヤーのアクション完了</string>
+	<string name="record_amount_label">金額（最小 %d）</string>
+	<string name="record_stack_warning">スタック（%d）を超えるとオールインとして処理されます</string>
+
+	<!-- Record Steps -->
+	<string name="step_setup">設定</string>
+	<string name="step_preflop">プリフロップ</string>
+	<string name="step_flop">フロップ</string>
+	<string name="step_turn">ターン</string>
+	<string name="step_river">リバー</string>
+	<string name="step_showdown">ショーダウン</string>
+
+	<!-- Showdown -->
+	<string name="showdown_board_edit">ボード（タップして編集）</string>
+	<string name="showdown_player_hand">プレイヤーハンド</string>
+	<string name="showdown_result">結果</string>
+	<string name="showdown_stack">スタック: %d</string>
+	<string name="showdown_memo">メモ</string>
+
+	<!-- Card Selector -->
+	<string name="card_selector_hero">ヒーローカード選択</string>
+	<string name="card_selector_board">%s カード選択</string>
+	<string name="card_selector_board_change">%s カード変更</string>
+	<string name="card_selector_showdown">%s カード選択</string>
+
+	<!-- Hand Detail -->
+	<string name="hand_detail_title">ハンド詳細</string>
+	<string name="hand_detail_share_text">テキストで共有</string>
+	<string name="hand_detail_share_image">画像で共有</string>
+	<string name="hand_detail_text_shared">テキストを共有しました</string>
+	<string name="hand_detail_image_shared">画像を共有しました</string>
+
+	<!-- Action Types -->
+	<string name="action_fold">フォールド</string>
+	<string name="action_check">チェック</string>
+	<string name="action_call">コール</string>
+	<string name="action_bet">ベット</string>
+	<string name="action_raise">レイズ</string>
+	<string name="action_all_in">オールイン</string>
+	<string name="action_open">オープン</string>
+	<string name="action_n_bet">%dベット</string>
+
+	<!-- Players -->
+	<string name="players_title">プレイヤーマーキング</string>
+	<string name="players_empty_title">マーキングされたプレイヤーがいません</string>
+	<string name="players_empty_desc">よく会うプレイヤーをマーキングしましょう</string>
+	<string name="player_add">プレイヤー追加</string>
+	<string name="player_edit">プレイヤー編集</string>
+	<string name="player_name">名前</string>
+	<string name="player_stack">スタック</string>
+	<string name="player_tendency">傾向</string>
+	<string name="player_tendency_none">なし</string>
+	<string name="player_memo">メモ</string>
+	<string name="player_save_to_marking">プレイヤーリストに保存</string>
+	<string name="player_saved">保存されたプレイヤー</string>
+
+	<!-- Settings -->
+	<string name="settings_title">設定</string>
+	<string name="settings_theme">テーマ</string>
+	<string name="settings_game">ゲーム設定</string>
+	<string name="settings_bet_size_preset">ベットサイズプリセット</string>
+	<string name="settings_preset_count">%d個設定済み</string>
+	<string name="settings_app_info">アプリ情報</string>
+	<string name="settings_version">バージョン</string>
+
+	<!-- Bet Size Settings -->
+	<string name="betsize_title">ベットサイズプリセット</string>
+	<string name="betsize_preflop">プリフロップ（BB）</string>
+	<string name="betsize_preflop_desc">プリフロップでBB倍数でクイックベットサイズを選択</string>
+	<string name="betsize_postflop">ポストフロップ（POT %）</string>
+	<string name="betsize_postflop_desc">ポストフロップでポット比率でクイックベットサイズを選択</string>
+	<string name="betsize_empty">プリセットがありません</string>
+
+	<!-- Clipboard -->
+	<string name="clipboard_copied">クリップボードにコピーしました</string>
+
+	<!-- Board Cards -->
+	<string name="board_cards">ボードカード</string>
+</resources>

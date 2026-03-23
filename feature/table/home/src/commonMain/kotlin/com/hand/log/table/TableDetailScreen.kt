@@ -31,7 +31,7 @@ import com.hand.log.domain.model.FlopStreet
 import com.hand.log.domain.model.GameType
 import com.hand.log.domain.model.HandRecord
 import com.hand.log.domain.model.HandStreets
-import com.hand.log.domain.model.HeroHand
+import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.Player
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.model.Rank
@@ -40,11 +40,10 @@ import com.hand.log.table.component.HandRecordCard
 import com.hand.log.table.component.PokerTableView
 import com.hand.log.table.contract.TableDetailState
 import handylog.core.res.generated.resources.Res
-import handylog.core.res.generated.resources.map_pin
-import handylog.core.res.generated.resources.plus
-import handylog.core.res.generated.resources.settings
+import handylog.core.res.generated.resources.*
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun TableDetailScreen(
@@ -62,10 +61,10 @@ internal fun TableDetailScreen(
 	BaseScaffold(
 		topBar = {
 			HandyTopAppbar(
-				title = if (state.table.gameType == GameType.TOURNAMENT) "토너먼트" else "캐시",
+				title = if (state.table.gameType == GameType.TOURNAMENT) stringResource(Res.string.table_detail_tournament) else stringResource(Res.string.table_detail_cash),
 				onBackEvent = onBack,
 				iconButton = IconButton(
-					text = "설정",
+					text = stringResource(Res.string.table_detail_settings),
 					icon = Res.drawable.settings,
 					onClick = onShowTableEdit,
 				),
@@ -133,7 +132,7 @@ internal fun TableDetailScreen(
 					verticalAlignment = Alignment.CenterVertically,
 				) {
 					Text(
-						text = "핸드 기록",
+						text = stringResource(Res.string.table_detail_record_hand),
 						style = HandyTheme.typography.bold14,
 						color = colors.textSecondary,
 					)
@@ -155,13 +154,13 @@ internal fun TableDetailScreen(
 						horizontalAlignment = Alignment.CenterHorizontally,
 					) {
 						Text(
-							text = "아직 기록된 핸드가 없습니다",
+							text = stringResource(Res.string.table_detail_empty_title),
 							style = HandyTheme.typography.medium14,
 							color = colors.textSecondary,
 						)
 						Spacer(modifier = Modifier.height(4.dp))
 						Text(
-							text = "+ 버튼을 눌러 첫 핸드를 기록하세요",
+							text = stringResource(Res.string.table_detail_empty_desc),
 							style = HandyTheme.typography.regular12,
 							color = colors.textSecondary,
 						)
@@ -215,7 +214,7 @@ private fun TableDetailScreenPreview() {
 						tableId = "1",
 						createdAt = 1710000000000L,
 						blinds = Blinds(sb = 500.0, bb = 1000.0),
-						heroHand = HeroHand(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+						heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 						heroStack = 62000.0,
 						buttonSeat = 1,
 						streets = HandStreets(
@@ -233,7 +232,7 @@ private fun TableDetailScreenPreview() {
 						tableId = "1",
 						createdAt = 1709900000000L,
 						blinds = Blinds(sb = 500.0, bb = 1000.0),
-						heroHand = HeroHand(Card(Rank.JACK, Suit.HEARTS), Card(Rank.TEN, Suit.HEARTS)),
+						heroHand = PocketCards(Card(Rank.JACK, Suit.HEARTS), Card(Rank.TEN, Suit.HEARTS)),
 						heroStack = 50000.0,
 						buttonSeat = 3,
 						result = -8500.0,

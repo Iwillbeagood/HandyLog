@@ -13,8 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.theme.HandyTheme
 import handylog.core.res.generated.resources.Res
-import handylog.core.res.generated.resources.spade
+import handylog.core.res.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 
@@ -37,7 +38,7 @@ internal fun EmptyState(modifier: Modifier = Modifier) {
 		Spacer(modifier = Modifier.height(16.dp))
 
 		Text(
-			text = "아직 기록이 없습니다",
+			text = stringResource(Res.string.home_empty_title),
 			style = HandyTheme.typography.bold16,
 			color = colors.textPrimary,
 		)
@@ -45,7 +46,7 @@ internal fun EmptyState(modifier: Modifier = Modifier) {
 		Spacer(modifier = Modifier.height(4.dp))
 
 		Text(
-			text = "새 테이블을 만들어 핸드를 기록하세요",
+			text = stringResource(Res.string.home_empty_desc),
 			style = HandyTheme.typography.regular14,
 			color = colors.textSecondary,
 		)
