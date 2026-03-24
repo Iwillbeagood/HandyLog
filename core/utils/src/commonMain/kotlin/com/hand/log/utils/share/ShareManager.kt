@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 expect class ShareManager {
 	fun shareText(text: String)
 	fun shareImage(imageBytes: ByteArray, fileName: String)
+	fun saveImage(imageBytes: ByteArray, fileName: String)
 }
 
 @Composable

@@ -53,9 +53,43 @@ data class HandRecord(
 			return seats
 		}
 
+	/** 폴드로 승리했는지 (1명만 남음) */
+	val isFoldWin: Boolean
+		get() = remainingSeats.size == 1
+
+	/** 히어로의 포지션 */
+	val heroPosition: Position
+		get() = getPosition(heroSeat)
+
+	fun getPosition(seat: Int): Position {
+		val count = playerCount
+		val btn = buttonSeat
+		val sbSeat = (btn % count) + 1
+		val bbSeat = ((btn + 1) % count) + 1
+
+		if (seat == btn) return Position.BTN
+		if (seat == sbSeat) return Position.SB
+		if (seat == bbSeat) return Position.BB
+
+		val preflopOrder = (1..count).map { offset -> ((btn + 2 + offset - 1) % count) + 1 }
+		val utgOrder = preflopOrder.filter { it != btn && it != sbSeat && it != bbSeat }
+		val idx = utgOrder.indexOf(seat)
+		return when {
+			idx == 0 -> Position.UTG
+			idx == utgOrder.lastIndex -> Position.CO
+			count <= 6 -> Position.MP
+			idx == utgOrder.lastIndex - 1 -> Position.HJ
+			idx == utgOrder.lastIndex - 2 -> Position.LJ
+			idx == 1 -> Position.UTG1
+			else -> Position.MP
+		}
+	}
+
 	/** 쇼다운 승자 좌석 */
 	val winnerSeats: Set<Int>
 		get() {
+			// 폴드 승리: 남은 1명이 승자
+			if (isFoldWin) return remainingSeats
 			val fromResults = showdownResults.filter { it.isWinner }.map { it.seat }.toSet()
 			return if (fromResults.isNotEmpty()) {
 				fromResults

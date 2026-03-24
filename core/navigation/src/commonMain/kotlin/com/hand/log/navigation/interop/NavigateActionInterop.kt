@@ -11,7 +11,7 @@ interface NavigateActionInterop {
 	fun popBackStack()
 	fun navigateBottomNav(item: MainTabRoute)
 	fun navigateToTableDetail(tableId: String)
-	fun navigateToRecordHand(tableId: String, handId: String? = null)
+	fun navigateToRecordHand(tableId: String)
 	fun navigateToHandDetail(handId: String)
 	fun navigateToBetSizeSettings()
 }
