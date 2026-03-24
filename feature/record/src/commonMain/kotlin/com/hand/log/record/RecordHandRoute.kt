@@ -4,18 +4,35 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Text
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import com.hand.log.designsystem.component.HandyCheckBox
+import com.hand.log.designsystem.component.VerticalSpacer
+import com.hand.log.designsystem.component.modal.ButtonDialog
+import com.hand.log.designsystem.theme.HandyTheme
+import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import com.hand.log.domain.model.Card
+import com.hand.log.domain.model.PokerTable
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
+import com.hand.log.navigation.interop.LocalMainActionInterop
 import com.hand.log.record.contract.CardSelectorTarget
 import com.hand.log.record.contract.RecordHandEffect
 import com.hand.log.record.contract.RecordHandModalEffect
 import com.hand.log.record.contract.RecordHandState
 import com.hand.log.record.contract.RecordStep
+import com.hand.log.ui.localizedLabel
 import com.hand.log.tableedit.TableEditSheet
 import com.hand.log.ui.poker.CardSelectorSheet
 
@@ -27,6 +44,7 @@ internal fun RecordHandRoute(
 	val state by viewModel.state.collectAsStateWithLifecycle()
 	val modalEffect by viewModel.modalEffect.collectAsStateWithLifecycle()
 	val navAction = LocalNavigateActionInterop.current
+	val mainAction = LocalMainActionInterop.current
 
 	val recording = state as? RecordHandState.Recording
 	val handleBack = remember(recording?.currentStep, recording?.streets) {
@@ -64,6 +82,7 @@ internal fun RecordHandRoute(
 		onCardsSelected = viewModel::onCardsSelected,
 		onSetShowdownUnknown = viewModel::setShowdownUnknown,
 		onTableSaved = viewModel::onTableSaved,
+		onConfirmStepBack = viewModel::confirmStepBack,
 		onDismiss = viewModel::dismissModal,
 	)
 
@@ -71,7 +90,7 @@ internal fun RecordHandRoute(
 		viewModel.effect.collect { effect ->
 			when (effect) {
 				is RecordHandEffect.SaveSuccess -> navAction.popBackStack()
-				is RecordHandEffect.SaveError -> {}
+				is RecordHandEffect.SaveError -> mainAction.onShowToast(Res.string.record_save_error)
 			}
 		}
 	}
@@ -105,7 +124,6 @@ private fun RecordHandContent(
 			onUpdateMemo = viewModel::updateMemo,
 			onShowTableEdit = viewModel::showTableEdit,
 			onToggleBbUnit = viewModel::toggleBbUnit,
-			onGoToStep = viewModel::goToStep,
 			onSave = viewModel::saveHand,
 		)
 	}
@@ -116,7 +134,8 @@ private fun RecordHandModalContent(
 	modalEffect: RecordHandModalEffect,
 	onCardsSelected: (List<Card>) -> Unit,
 	onSetShowdownUnknown: (Int) -> Unit,
-	onTableSaved: (com.hand.log.domain.model.PokerTable) -> Unit,
+	onTableSaved: (PokerTable) -> Unit,
+	onConfirmStepBack: (RecordStep, Boolean) -> Unit,
 	onDismiss: () -> Unit,
 ) {
 	when (modalEffect) {
@@ -124,8 +143,23 @@ private fun RecordHandModalContent(
 
 		is RecordHandModalEffect.ShowCardSelector -> {
 			val isShowdown = modalEffect.target is CardSelectorTarget.ShowdownCard
+			val title = when (val target = modalEffect.target) {
+				is CardSelectorTarget.HeroCard -> stringResource(Res.string.card_selector_hero)
+				is CardSelectorTarget.BoardCard -> stringResource(
+					Res.string.card_selector_board,
+					target.street.localizedLabel(),
+				)
+				is CardSelectorTarget.SingleBoardCard -> stringResource(
+					Res.string.card_selector_board_change,
+					target.street.localizedLabel(),
+				)
+				is CardSelectorTarget.ShowdownCard -> stringResource(
+					Res.string.card_selector_showdown,
+					target.positionName,
+				)
+			}
 			CardSelectorSheet(
-				title = modalEffect.title,
+				title = title,
 				maxCards = modalEffect.target.maxCards,
 				selectedCards = modalEffect.selectedCards,
 				onCardsSelected = onCardsSelected,
@@ -145,5 +179,43 @@ private fun RecordHandModalContent(
 				onDismiss = onDismiss,
 			)
 		}
+
+		is RecordHandModalEffect.ConfirmStepBack -> {
+			StepBackConfirmDialog(
+				targetStep = modalEffect.targetStep,
+				onConfirm = onConfirmStepBack,
+				onDismiss = onDismiss,
+			)
+		}
+	}
+}
+
+@Composable
+private fun StepBackConfirmDialog(
+	targetStep: RecordStep,
+	onConfirm: (RecordStep, Boolean) -> Unit,
+	onDismiss: () -> Unit,
+) {
+	var skipWarning by remember { mutableStateOf(false) }
+
+	ButtonDialog(
+		title = stringResource(Res.string.step_back_title),
+		onDismissRequest = onDismiss,
+		onConfirmClick = { onConfirm(targetStep, skipWarning) },
+		onDismissClick = onDismiss,
+	) {
+		Text(
+			text = stringResource(Res.string.step_back_description),
+			style = HandyTheme.typography.regular14,
+			textAlign = TextAlign.Center,
+			color = HandyTheme.colorScheme.textSecondary,
+			modifier = Modifier.fillMaxWidth(),
+		)
+		VerticalSpacer(16.dp)
+		HandyCheckBox(
+			text = stringResource(Res.string.step_back_skip_warning),
+			checked = skipWarning,
+			onCheckedChange = { skipWarning = it },
+		)
 	}
 }

@@ -175,7 +175,10 @@ class HandEvaluatorTest {
 				seat = 1,
 				cards = PocketCards(card(Rank.TEN, Suit.HEARTS), card(Rank.NINE, Suit.HEARTS)),
 			),
-			ShowdownEntry(seat = 2, cards = PocketCards(card(Rank.ACE, Suit.SPADES), card(Rank.ACE, Suit.CLUBS))),
+			ShowdownEntry(
+				seat = 2,
+				cards = PocketCards(card(Rank.ACE, Suit.SPADES), card(Rank.ACE, Suit.CLUBS)),
+			),
 		)
 
 		val results = HandEvaluator.calculateShowdown(board, players)

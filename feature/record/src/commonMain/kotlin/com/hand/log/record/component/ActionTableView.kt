@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Icon
 import com.hand.log.designsystem.component.ScaleInAnimation
+import com.hand.log.designsystem.component.VerticalSpacer
 import com.hand.log.ui.localizedLabel
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.designsystem.theme.nonScaledSp
@@ -87,219 +88,98 @@ internal fun ActionTableView(
 		modifier = modifier
 			.padding(horizontal = 8.dp)
 			.aspectRatio(1.3f),
+	) {
+		val density = LocalDensity.current
+		val containerWidthPx = with(density) { maxWidth.toPx() }
+		val containerHeightPx = with(density) { maxHeight.toPx() }
+
+		Box(
+			modifier = Modifier
+				.fillMaxWidth(0.75f)
+				.aspectRatio(1.8f)
+				.align(Alignment.Center)
+				.clip(RoundedCornerShape(40))
+				.background(colors.felt)
+				.border(2.dp, colors.feltLight, RoundedCornerShape(40)),
+			contentAlignment = Alignment.Center,
 		) {
-			val density = LocalDensity.current
-			val containerWidthPx = with(density) { maxWidth.toPx() }
-			val containerHeightPx = with(density) { maxHeight.toPx() }
+			val sidePots = state.sidePots
+			val mainPot = if (sidePots.isNotEmpty()) sidePots.first() else state.currentPot
 
-			Box(
-				modifier = Modifier
-					.fillMaxWidth(0.75f)
-					.aspectRatio(1.8f)
-					.align(Alignment.Center)
-					.clip(RoundedCornerShape(40))
-					.background(colors.felt)
-					.border(2.dp, colors.feltLight, RoundedCornerShape(40)),
-				contentAlignment = Alignment.Center,
+			Column(
+				horizontalAlignment = Alignment.CenterHorizontally,
+				verticalArrangement = Arrangement.spacedBy(1.dp),
 			) {
-				Column(
-					horizontalAlignment = Alignment.CenterHorizontally,
-					verticalArrangement = Arrangement.spacedBy(1.dp),
-				) {
-					if (state.blinds != null) {
-						Text(
-							text = "SB: ${state.blinds.sb.toLong()} / BB: ${state.blinds.bb.toLong()}",
-							style = HandyTheme.typography.regular8.nonScaledSp,
-							color = colors.gold.copy(alpha = 0.7f),
-						)
-					}
+				if (state.blinds != null) {
 					Text(
-						text = "POT: ${state.formatAmount(state.currentPot)}",
-						style = HandyTheme.typography.bold14.nonScaledSp,
-						color = colors.gold.copy(alpha = 0.8f),
+						text = "SB: ${state.blinds.sb.toLong()} / BB: ${state.blinds.bb.toLong()}",
+						style = HandyTheme.typography.regular8.nonScaledSp,
+						color = colors.gold.copy(alpha = 0.7f),
 					)
-					if (state.currentStreet == Street.PREFLOP && state.blinds?.isBigBlindAnte == true) {
-						Text(
-							text = "Ante: ${state.blinds.bb.toLong()}",
-							style = HandyTheme.typography.regular10.nonScaledSp,
-							color = Color.White.copy(alpha = 0.7f),
-						)
-					}
 				}
-			}
-
-			val centerX = containerWidthPx / 2f
-			val centerY = containerHeightPx / 2f
-			val tableWidth = containerWidthPx * 0.75f
-			val tableHeight = tableWidth / 1.8f
-			val tableRadiusX = tableWidth / 2f
-			val tableRadiusY = tableHeight / 2f
-
-			val seatSizeDp = 48.dp
-			val seatSizePx = with(density) { seatSizeDp.toPx() }
-			val seatCircleRadius = with(density) { 16.dp.toPx() }
-			val chipSizeDp = 16.dp
-			val dealerSizeDp = 16.dp
-			val chipSizePx = with(density) { chipSizeDp.toPx() }
-			val chipHalf = chipSizePx / 2f
-			val gapPx = with(density) { 1.dp.toPx() }
-			val seatHalf = seatSizePx / 2f
-			val chipGapPx = with(density) { 12.dp.toPx() }
-
-			val btnSeat = state.buttonSeat
-			val sbSeat = (btnSeat % playerCount) + 1
-			val bbSeat = ((btnSeat + 1) % playerCount) + 1
-
-			for (seat in 1..playerCount) {
-				val angle = (2 * kotlin.math.PI * (seat - 1) / playerCount) - (kotlin.math.PI / 2)
-				val cosA = cos(angle).toFloat()
-				val sinA = sin(angle).toFloat()
-
-				val seatCenterX = centerX + (tableRadiusX + gapPx + seatHalf) * cosA
-				val seatCenterY = centerY + (tableRadiusY + gapPx + seatHalf) * sinA
-				val sx = seatCenterX - seatSizePx / 2f
-				val sy = seatCenterY - seatSizePx / 2f
-
-				val action = seatActions[seat]
-				val isHero = seat == state.table.heroSeat
-				val isCurrent = seat == state.currentActionSeat
-				val posName = state.positionName(seat)
-				val isFolded = seat in state.players.foldedSeats && action == null
-
-				val seatModifier = if (isHero && state.heroHand != null) {
-					Modifier.offset { IntOffset(sx.roundToInt(), sy.roundToInt()) }
-				} else {
-					Modifier
-						.size(seatSizeDp)
-						.offset { IntOffset(sx.roundToInt(), sy.roundToInt()) }
-				}.let { mod ->
-					if (onSeatClick != null) mod.clickable { onSeatClick(seat) } else mod
-				}
-
-				ActionSeatView(
-					seatNumber = seat,
-					positionName = posName,
-					action = action,
-					isHero = isHero,
-					isCurrent = isCurrent,
-					isFolded = isFolded,
-					heroHand = if (isHero) state.heroHand else null,
-					modifier = seatModifier,
+				Text(
+					text = "POT: ${state.formatAmount(mainPot)}",
+					style = HandyTheme.typography.bold14.nonScaledSp,
+					color = colors.gold.copy(alpha = 0.8f),
 				)
-
-				val isBtn = seat == btnSeat
-				val isPreflop = state.currentStreet == Street.PREFLOP
-				val totalBet = action?.amount ?: 0.0
-				val hasBetAction = totalBet > 0 && action?.type != ActionType.FOLD
-				val chipLabel = when {
-					isBtn -> "D"
-					isPreflop && !hasBetAction && seat == sbSeat -> "SB"
-					isPreflop && !hasBetAction && seat == bbSeat -> "BB"
-					else -> null
-				}
-				val chipColor = when {
-					isBtn -> colors.accent
-					isPreflop && !hasBetAction && (seat == sbSeat || seat == bbSeat) -> colors.gold
-					else -> null
-				}
-				val blindAmt = when {
-					isPreflop && !hasBetAction && seat == sbSeat -> state.blinds?.sb
-					isPreflop && !hasBetAction && seat == bbSeat -> state.blinds?.bb
-					else -> null
+				if (state.currentStreet == Street.PREFLOP && state.blinds?.isBigBlindAnte == true) {
+					Text(
+						text = "Ante: ${state.blinds.bb.toLong()}",
+						style = HandyTheme.typography.regular10.nonScaledSp,
+						color = Color.White.copy(alpha = 0.7f),
+					)
 				}
 
-				if (chipLabel != null && chipColor != null && !isBtn) {
-					val cx = centerX + (tableRadiusX - chipHalf - chipGapPx) * cosA - chipHalf
-					val cy = centerY + (tableRadiusY - chipHalf - chipGapPx) * sinA - chipHalf
-
-					ScaleInAnimation(
-						modifier = Modifier.offset { IntOffset(cx.roundToInt(), cy.roundToInt()) },
+				// 사이드 팟 (메인 팟 제외)
+				if (sidePots.size > 1) {
+					VerticalSpacer(2.dp)
+					Row(
+						horizontalArrangement = Arrangement.spacedBy(4.dp),
 					) {
-						Column(
-							horizontalAlignment = Alignment.CenterHorizontally,
-						) {
+						sidePots.drop(1).forEachIndexed { index, pot ->
 							Box(
-								modifier = Modifier.size(chipSizeDp),
-								contentAlignment = Alignment.Center,
-							) {
-								Icon(
-									painter = painterResource(Res.drawable.poker_chip),
-									contentDescription = null,
-									modifier = Modifier.size(chipSizeDp),
-									tint = chipColor,
-								)
-							}
-							if (blindAmt != null) {
-								Text(
-									text = state.formatAmount(blindAmt),
-									style = HandyTheme.typography.bold8.nonScaledSp,
-									color = colors.gold,
-									modifier = Modifier.padding(top = 1.dp),
-								)
-							}
-						}
-					}
-				}
-
-				val isAllIn = seat in allInSeats
-				if (isAllIn) {
-					val ax = centerX + (tableRadiusX - chipHalf - chipGapPx) * cosA - chipHalf
-					val ay = centerY + (tableRadiusY - chipHalf - chipGapPx) * sinA - chipHalf
-
-					val allInAmount = action?.takeIf { it.type == ActionType.ALL_IN }?.amount
-						?: state.streets.let { streets ->
-							listOf(Street.PREFLOP, Street.FLOP, Street.TURN, Street.RIVER)
-								.flatMap { streets.getActions(it) }
-								.lastOrNull { it.playerSeat == seat && it.type == ActionType.ALL_IN }
-								?.amount
-						}
-
-					ScaleInAnimation(
-						modifier = Modifier.offset { IntOffset(ax.roundToInt(), ay.roundToInt()) },
-					) {
-						AllInMarker(
-							size = dealerSizeDp,
-							amount = allInAmount?.let { state.formatAmount(it) },
-						)
-					}
-				}
-
-				val isBlindChipShown = chipLabel == "SB" || chipLabel == "BB"
-				if (hasBetAction && !isAllIn && !isBlindChipShown) {
-					val bx = centerX + (tableRadiusX - chipHalf - chipGapPx) * cosA - chipHalf
-					val by = centerY + (tableRadiusY - chipHalf - chipGapPx) * sinA - chipHalf
-
-					ScaleInAnimation(
-						modifier = Modifier.offset { IntOffset(bx.roundToInt(), by.roundToInt()) },
-					) {
-						Column(
-							horizontalAlignment = Alignment.CenterHorizontally,
-						) {
-							Box(
-								modifier = Modifier.size(chipSizeDp),
-								contentAlignment = Alignment.Center,
-							) {
-								Icon(
-									painter = painterResource(Res.drawable.poker_chip),
-									contentDescription = null,
-									modifier = Modifier.size(chipSizeDp),
-									tint = action?.type?.indicatorColor() ?: colors.primary,
-								)
-							}
-							Text(
-								text = state.formatAmount(totalBet),
-								style = HandyTheme.typography.bold8.nonScaledSp,
-								color = Color.White,
 								modifier = Modifier
-									.clip(RoundedCornerShape(4.dp))
-									.background(Color.Black.copy(alpha = 0.6f))
-									.padding(horizontal = 3.dp, vertical = 1.dp),
-							)
+									.clip(RoundedCornerShape(10.dp))
+									.background(colors.primary.copy(alpha = 0.2f))
+									.padding(horizontal = 6.dp, vertical = 2.dp),
+								contentAlignment = Alignment.Center,
+							) {
+								Text(
+									text = "Side${if (sidePots.size > 2) " ${index + 1}" else ""} ${state.formatAmount(pot)}",
+									style = HandyTheme.typography.bold8.nonScaledSp,
+									color = colors.primary,
+								)
+							}
 						}
 					}
 				}
 			}
+		}
 
+		val centerX = containerWidthPx / 2f
+		val centerY = containerHeightPx / 2f
+		val tableWidth = containerWidthPx * 0.75f
+		val tableHeight = tableWidth / 1.8f
+		val tableRadiusX = tableWidth / 2f
+		val tableRadiusY = tableHeight / 2f
+
+		val seatSizeDp = 48.dp
+		val seatSizePx = with(density) { seatSizeDp.toPx() }
+		val seatCircleRadius = with(density) { 16.dp.toPx() }
+		val chipSizeDp = 16.dp
+		val dealerSizeDp = 16.dp
+		val chipSizePx = with(density) { chipSizeDp.toPx() }
+		val chipHalf = chipSizePx / 2f
+		val gapPx = with(density) { 1.dp.toPx() }
+		val seatHalf = seatSizePx / 2f
+		val chipGapPx = with(density) { 12.dp.toPx() }
+
+		val btnSeat = state.buttonSeat
+		val sbSeat = (btnSeat % playerCount) + 1
+		val bbSeat = ((btnSeat + 1) % playerCount) + 1
+
+		// 딜러 버튼: 칩/좌석보다 먼저 그려서 아래(뒤)에 위치
+		run {
 			val btnAngle = (2 * kotlin.math.PI * (btnSeat - 1) / playerCount) - (kotlin.math.PI / 2)
 			val sbAngle = (2 * kotlin.math.PI * (sbSeat - 1) / playerCount) - (kotlin.math.PI / 2)
 			val midAngle = if (sbAngle > btnAngle) {
@@ -335,6 +215,158 @@ internal fun ActionTableView(
 					)
 				}
 			}
+		}
+
+		for (seat in 1..playerCount) {
+			val angle = (2 * kotlin.math.PI * (seat - 1) / playerCount) - (kotlin.math.PI / 2)
+			val cosA = cos(angle).toFloat()
+			val sinA = sin(angle).toFloat()
+
+			val seatCenterX = centerX + (tableRadiusX + gapPx + seatHalf) * cosA
+			val seatCenterY = centerY + (tableRadiusY + gapPx + seatHalf) * sinA
+			val sx = seatCenterX - seatSizePx / 2f
+			val sy = seatCenterY - seatSizePx / 2f
+
+			val action = seatActions[seat]
+			val isHero = seat == state.table.heroSeat
+			val isCurrent = seat == state.currentActionSeat
+			val posName = state.positionName(seat)
+			val isFolded = seat in state.players.foldedSeats && action == null
+
+			val seatModifier = if (isHero && state.heroHand != null) {
+				Modifier.offset { IntOffset(sx.roundToInt(), sy.roundToInt()) }
+			} else {
+				Modifier
+					.size(seatSizeDp)
+					.offset { IntOffset(sx.roundToInt(), sy.roundToInt()) }
+			}.let { mod ->
+				if (onSeatClick != null) mod.clickable { onSeatClick(seat) } else mod
+			}
+
+			ActionSeatView(
+				seatNumber = seat,
+				positionName = posName,
+				action = action,
+				isHero = isHero,
+				isCurrent = isCurrent,
+				isFolded = isFolded,
+				heroHand = if (isHero) state.heroHand else null,
+				modifier = seatModifier,
+			)
+
+			val isBtn = seat == btnSeat
+			val isPreflop = state.currentStreet == Street.PREFLOP
+			val totalBet = action?.amount ?: 0.0
+			val hasBetAction = totalBet > 0 && action?.type != ActionType.FOLD
+			val chipLabel = when {
+				isBtn -> "D"
+				isPreflop && !hasBetAction && seat == sbSeat -> "SB"
+				isPreflop && !hasBetAction && seat == bbSeat -> "BB"
+				else -> null
+			}
+			val chipColor = when {
+				isBtn -> colors.accent
+				isPreflop && !hasBetAction && (seat == sbSeat || seat == bbSeat) -> colors.gold
+				else -> null
+			}
+			val blindAmt = when {
+				isPreflop && !hasBetAction && seat == sbSeat -> state.blinds?.sb
+				isPreflop && !hasBetAction && seat == bbSeat -> state.blinds?.bb
+				else -> null
+			}
+
+			if (chipLabel != null && chipColor != null && !isBtn) {
+				val cx = centerX + (tableRadiusX - chipHalf - chipGapPx) * cosA - chipHalf
+				val cy = centerY + (tableRadiusY - chipHalf - chipGapPx) * sinA - chipHalf
+
+				ScaleInAnimation(
+					modifier = Modifier.offset { IntOffset(cx.roundToInt(), cy.roundToInt()) },
+				) {
+					Column(
+						horizontalAlignment = Alignment.CenterHorizontally,
+					) {
+						Box(
+							modifier = Modifier.size(chipSizeDp),
+							contentAlignment = Alignment.Center,
+						) {
+							Icon(
+								painter = painterResource(Res.drawable.poker_chip),
+								contentDescription = null,
+								modifier = Modifier.size(chipSizeDp),
+								tint = chipColor,
+							)
+						}
+						if (blindAmt != null) {
+							Text(
+								text = state.formatAmount(blindAmt),
+								style = HandyTheme.typography.bold8.nonScaledSp,
+								color = colors.gold,
+								modifier = Modifier.padding(top = 1.dp),
+							)
+						}
+					}
+				}
+			}
+
+			val isAllIn = seat in allInSeats
+			if (isAllIn) {
+				val ax = centerX + (tableRadiusX - chipHalf - chipGapPx) * cosA - chipHalf
+				val ay = centerY + (tableRadiusY - chipHalf - chipGapPx) * sinA - chipHalf
+
+				val allInAmount = action?.takeIf { it.type == ActionType.ALL_IN }?.amount
+					?: state.streets.let { streets ->
+						listOf(Street.PREFLOP, Street.FLOP, Street.TURN, Street.RIVER)
+							.flatMap { streets.getActions(it) }
+							.lastOrNull { it.playerSeat == seat && it.type == ActionType.ALL_IN }
+							?.amount
+					}
+
+				ScaleInAnimation(
+					modifier = Modifier.offset { IntOffset(ax.roundToInt(), ay.roundToInt()) },
+				) {
+					AllInMarker(
+						size = dealerSizeDp,
+						amount = allInAmount?.let { state.formatAmount(it) },
+					)
+				}
+			}
+
+			val isBlindChipShown = chipLabel == "SB" || chipLabel == "BB"
+			if (hasBetAction && !isAllIn && !isBlindChipShown) {
+				val bx = centerX + (tableRadiusX - chipHalf - chipGapPx) * cosA - chipHalf
+				val by = centerY + (tableRadiusY - chipHalf - chipGapPx) * sinA - chipHalf
+
+				ScaleInAnimation(
+					modifier = Modifier.offset { IntOffset(bx.roundToInt(), by.roundToInt()) },
+				) {
+					Column(
+						horizontalAlignment = Alignment.CenterHorizontally,
+					) {
+						Box(
+							modifier = Modifier.size(chipSizeDp),
+							contentAlignment = Alignment.Center,
+						) {
+							Icon(
+								painter = painterResource(Res.drawable.poker_chip),
+								contentDescription = null,
+								modifier = Modifier.size(chipSizeDp),
+								tint = action?.type?.indicatorColor() ?: colors.primary,
+							)
+						}
+						Text(
+							text = state.formatAmount(totalBet),
+							style = HandyTheme.typography.bold8.nonScaledSp,
+							color = Color.White,
+							modifier = Modifier
+								.clip(RoundedCornerShape(4.dp))
+								.background(Color.Black.copy(alpha = 0.6f))
+								.padding(horizontal = 3.dp, vertical = 1.dp),
+						)
+					}
+				}
+			}
+		}
+
 	}
 }
 
@@ -413,7 +445,6 @@ private fun ActionSeatView(
 						maxLines = 1,
 					)
 				}
-
 
 				if (action != null) {
 					Text(

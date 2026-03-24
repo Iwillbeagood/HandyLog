@@ -11,8 +11,8 @@ import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.model.Street
 import com.hand.log.domain.repository.AppSettingsRepository
-import com.hand.log.domain.repository.HandRecordRepository
-import com.hand.log.domain.repository.PokerTableRepository
+import com.hand.log.domain.usecase.LoadRecordDataUseCase
+import com.hand.log.domain.usecase.SaveHandAndUpdateStacksUseCase
 import com.hand.log.record.contract.CardSelectorTarget
 import com.hand.log.record.contract.RecordHandEffect
 import com.hand.log.record.contract.RecordHandModalEffect
@@ -21,27 +21,34 @@ import com.hand.log.record.contract.RecordStep
 import com.hand.log.record.model.PlayerStatus
 import com.hand.log.record.model.RecordPlayers
 import com.hand.log.record.model.RecordShowdown
+import com.hand.log.utils.etc.Logger
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
 internal class RecordHandViewModel(
 	private val tableId: String,
-	private val editHandId: String?,
-	private val pokerTableRepository: PokerTableRepository,
-	private val handRecordRepository: HandRecordRepository,
 	private val appSettingsRepository: AppSettingsRepository,
+	private val loadRecordData: LoadRecordDataUseCase,
+	private val saveHandAndUpdateStacks: SaveHandAndUpdateStacksUseCase,
 ) : ViewModel() {
 
 	private val _state = MutableStateFlow<RecordHandState>(RecordHandState.Loading)
-	val state: StateFlow<RecordHandState> get() = _state
+	val state: StateFlow<RecordHandState> = _state.onStart {
+		loadTable()
+	}.stateIn(
+		scope = viewModelScope,
+		started = SharingStarted.WhileSubscribed(5_000),
+		initialValue = RecordHandState.Loading,
+	)
 
 	private val _modalEffect = MutableStateFlow<RecordHandModalEffect>(RecordHandModalEffect.Idle)
 	val modalEffect: StateFlow<RecordHandModalEffect> get() = _modalEffect
@@ -52,19 +59,10 @@ internal class RecordHandViewModel(
 	private val recording: RecordHandState.Recording?
 		get() = _state.value as? RecordHandState.Recording
 
-	init {
-		if (editHandId != null) {
-			loadHand(editHandId)
-		} else {
-			loadTable()
-		}
-	}
-
 	private fun loadTable() {
 		viewModelScope.launch {
-			val table = pokerTableRepository.getTableById(tableId)
-			val preflopPresets = appSettingsRepository.observeBetSizePresets().first()
-			val postflopPresets = appSettingsRepository.observePotPercentPresets().first()
+			val data = loadRecordData(tableId)
+			val table = data.table
 
 			_state.update {
 				RecordHandState.Recording(
@@ -77,45 +75,8 @@ internal class RecordHandViewModel(
 					),
 					buttonSeat = 1,
 					blinds = table?.blinds,
-					preflopPresets = preflopPresets,
-					postflopPresets = postflopPresets,
-				)
-			}
-		}
-	}
-
-	private fun loadHand(handId: String) {
-		viewModelScope.launch {
-			val hand = handRecordRepository.getHandById(handId) ?: return@launch
-			val table = pokerTableRepository.getTableById(hand.tableId)
-			val preflopPresets = appSettingsRepository.observeBetSizePresets().first()
-			val postflopPresets = appSettingsRepository.observePotPercentPresets().first()
-
-			// 쇼다운 엔트리 → RecordShowdown 변환
-			val showdown = hand.showdown.fold(RecordShowdown()) { acc, entry ->
-				acc.set(entry.seat, PocketCards(entry.card1, entry.card2))
-			}
-
-			_state.update {
-				RecordHandState.Recording(
-					tableId = hand.tableId,
-					table = table,
-					heroHand = hand.heroHand,
-					buttonSeat = hand.buttonSeat,
-					blinds = hand.blinds,
-					players = RecordPlayers.create(
-						playerCount = table?.playerCount ?: 0,
-						defaultStack = table?.startingStack ?: 0.0,
-						stacks = table?.players?.associate { it.seat to it.stack } ?: emptyMap(),
-					),
-					streets = hand.streets,
-					showdown = showdown,
-					memo = hand.memo ?: "",
-					currentStep = RecordStep.SHOWDOWN,
-					preflopPresets = preflopPresets,
-					postflopPresets = postflopPresets,
-					isEditMode = true,
-					editHandId = handId,
+					preflopPresets = data.preflopPresets,
+					postflopPresets = data.postflopPresets,
 				)
 			}
 		}
@@ -128,11 +89,9 @@ internal class RecordHandViewModel(
 	fun selectHeroCard() {
 		val current = recording ?: return
 		val heroCardSet = current.heroHand?.let { setOf(it.card1, it.card2) } ?: emptySet()
-		val usedCards = current.selectedCards - heroCardSet
 		showCardSelector(
-			title = "히어로 카드 선택",
 			target = CardSelectorTarget.HeroCard(maxCards = 2),
-			usedCards = usedCards,
+			usedCards = current.selectedCards - heroCardSet,
 		)
 	}
 
@@ -140,7 +99,6 @@ internal class RecordHandViewModel(
 		val current = recording ?: return
 		val existingCards = current.streets.getCards(street).toSet()
 		showCardSelector(
-			title = "${street.name} 카드 선택",
 			target = CardSelectorTarget.BoardCard(street, maxCards = if (street == Street.FLOP) 3 else 1),
 			usedCards = current.selectedCards - existingCards,
 		)
@@ -155,7 +113,6 @@ internal class RecordHandViewModel(
 			current.selectedCards
 		}
 		showCardSelector(
-			title = "${street.name} 카드 변경",
 			target = CardSelectorTarget.SingleBoardCard(street, cardIndex),
 			usedCards = usedCards,
 		)
@@ -164,17 +121,14 @@ internal class RecordHandViewModel(
 	fun selectShowdownCard(seat: Int) {
 		val current = recording ?: return
 		val existingCards = current.showdown[seat]?.let { setOf(it.card1, it.card2) } ?: emptySet()
-		val posName = current.positionName(seat)
 		showCardSelector(
-			title = "$posName 카드 선택",
-			target = CardSelectorTarget.ShowdownCard(seat),
+			target = CardSelectorTarget.ShowdownCard(seat, positionName = current.positionName(seat)),
 			usedCards = current.selectedCards - existingCards,
 		)
 	}
 
-	private fun showCardSelector(title: String, target: CardSelectorTarget, usedCards: Set<Card>) {
+	private fun showCardSelector(target: CardSelectorTarget, usedCards: Set<Card>) {
 		_modalEffect.value = RecordHandModalEffect.ShowCardSelector(
-			title = title,
 			target = target,
 			selectedCards = usedCards,
 		)
@@ -572,8 +526,9 @@ internal class RecordHandViewModel(
 					}
 				}
 				if (bb > 0) {
+					val ante = if (blinds?.isBigBlindAnte == true) bb else 0.0
 					updatedPlayers = updatedPlayers.update(bbSeat) {
-						copy(stack = stack - bb, currentBet = bb)
+						copy(stack = stack - bb - ante, currentBet = bb)
 					}
 				}
 			}
@@ -602,26 +557,47 @@ internal class RecordHandViewModel(
 	}
 
 	fun previousStep() {
-		updateRecording {
-			if (currentStep == RecordStep.SETUP) return@updateRecording this
+		val current = recording ?: return
+		if (current.currentStep == RecordStep.SETUP) return
 
-			val targetStep = findLastActiveStep()
-			val prevUpdated = copy(
-				currentStep = targetStep,
-				currentActionType = null,
-				currentActionAmount = "",
-				lastAggressorSeat = null,
-			)
-			val lastAction = prevUpdated.streets.getActions(prevUpdated.currentStreet).lastOrNull()
-			prevUpdated.copy(currentActionSeat = lastAction?.playerSeat)
+		val targetStep = current.findLastActiveStep()
+		requestStepBack(targetStep)
+	}
+
+	private fun requestStepBack(targetStep: RecordStep) {
+		viewModelScope.launch {
+			val skip = appSettingsRepository.observeSkipStepBackWarning().first()
+			if (skip) {
+				executeStepBack(targetStep)
+			} else {
+				_modalEffect.value = RecordHandModalEffect.ConfirmStepBack(targetStep)
+			}
 		}
 	}
 
-	fun goToStep(step: RecordStep) {
+	fun confirmStepBack(targetStep: RecordStep, skipWarning: Boolean) {
+		if (skipWarning) {
+			viewModelScope.launch {
+				appSettingsRepository.setSkipStepBackWarning(true)
+			}
+		}
+		executeStepBack(targetStep)
+		dismissModal()
+	}
+
+	private fun executeStepBack(targetStep: RecordStep) {
 		updateRecording {
-			if (step == currentStep) return@updateRecording this
+			val targetStreet = when (targetStep) {
+				RecordStep.SETUP, RecordStep.PREFLOP -> Street.PREFLOP
+				RecordStep.FLOP -> Street.FLOP
+				RecordStep.TURN -> Street.TURN
+				RecordStep.RIVER, RecordStep.SHOWDOWN -> Street.RIVER
+			}
+			val clearedStreets = streets.clearAfter(targetStreet)
 			val updated = copy(
-				currentStep = step,
+				currentStep = targetStep,
+				streets = clearedStreets,
+				showdown = com.hand.log.record.model.RecordShowdown(),
 				currentActionType = null,
 				currentActionAmount = "",
 				lastAggressorSeat = null,
@@ -632,13 +608,60 @@ internal class RecordHandViewModel(
 	}
 
 	private fun goToShowdown() {
-		updateRecording {
-			copy(
-				currentStep = RecordStep.SHOWDOWN,
-				currentActionSeat = null,
-				currentActionType = null,
-				currentActionAmount = "",
-			)
+		val current = recording ?: return
+
+		if (current.remainingSeats.size <= 1) {
+			// 폴드 승리: 1명만 남음 → 자동 결과 처리
+			val winnerSeat = current.remainingSeats.firstOrNull()
+
+			updateRecording {
+				var updatedShowdown = showdown
+				remainingSeats.forEach { seat ->
+					if (seat != table?.heroSeat) {
+						updatedShowdown = updatedShowdown.setUnknown(seat)
+					}
+				}
+
+				var updatedPlayers = players
+				if (winnerSeat != null) {
+					val count = table?.playerCount ?: 0
+					var totalPot = 0.0
+					for (s in 1..count) {
+						val player = updatedPlayers[s] ?: continue
+						totalPot += player.initialStack - player.stack
+					}
+					updatedPlayers = updatedPlayers.update(winnerSeat) {
+						copy(stack = stack + totalPot)
+					}
+				}
+
+				copy(
+					currentStep = RecordStep.SHOWDOWN,
+					currentActionSeat = null,
+					currentActionType = null,
+					currentActionAmount = "",
+					showdown = updatedShowdown,
+					players = updatedPlayers,
+				)
+			}
+		} else {
+			// 일반 쇼다운: 히어로 외 플레이어는 미공개로 초기화
+			updateRecording {
+				var updatedShowdown = showdown
+				remainingSeats.forEach { seat ->
+					if (seat != table?.heroSeat) {
+						updatedShowdown = updatedShowdown.setUnknown(seat)
+					}
+				}
+
+				copy(
+					currentStep = RecordStep.SHOWDOWN,
+					currentActionSeat = null,
+					currentActionType = null,
+					currentActionAmount = "",
+					showdown = updatedShowdown,
+				)
+			}
 		}
 	}
 
@@ -669,16 +692,23 @@ internal class RecordHandViewModel(
 		updateRecording { copy(memo = text) }
 	}
 
-	@OptIn(ExperimentalTime::class)
 	fun saveHand() {
 		val current = recording ?: return
 
 		viewModelScope.launch {
 			try {
+				Logger.d(
+					"saveHand: tableId=${current.tableId}, heroSeat=${current.table?.heroSeat}, heroResult=${current.heroResult}",
+				)
+				Logger.d(
+					"saveHand: showdownResults=${current.showdownResults.size}, remainingSeats=${current.remainingSeats}",
+				)
+				Logger.d("saveHand: showdownEntries=${current.showdown.toShowdownEntries().size}")
+
 				val handRecord = HandRecord(
-					id = current.editHandId ?: generateId(),
+					id = "",
 					tableId = current.tableId,
-					createdAt = Clock.System.now().toEpochMilliseconds(),
+					createdAt = 0L,
 					blinds = current.blinds,
 					heroHand = current.heroHand,
 					heroSeat = current.table?.heroSeat ?: 0,
@@ -691,13 +721,17 @@ internal class RecordHandViewModel(
 					memo = current.memo.ifBlank { null },
 				)
 
-				handRecordRepository.saveHand(handRecord) {
-					viewModelScope.launch {
-						_effect.emit(RecordHandEffect.SaveSuccess)
-					}
-				}
+				Logger.d("saveHand: result=${handRecord.result}, isFoldWin=${handRecord.isFoldWin}")
+				Logger.d(
+					"saveHand: showdownResults=${handRecord.showdownResults.map { "seat=${it.seat},winner=${it.isWinner}" }}",
+				)
+
+				saveHandAndUpdateStacks(handRecord)
+				Logger.d("saveHand: success")
+				_effect.emit(RecordHandEffect.SaveSuccess)
 			} catch (e: Exception) {
-				_effect.emit(RecordHandEffect.SaveError(e.message ?: "저장 중 오류가 발생했습니다"))
+				Logger.e("saveHand: failed - ${e.message}")
+				_effect.emit(RecordHandEffect.SaveError)
 			}
 		}
 	}
@@ -737,6 +771,10 @@ internal class RecordHandViewModel(
 				levelWinners.forEach { winner ->
 					winnings[winner.seat] = (winnings[winner.seat] ?: 0.0) + share
 				}
+			} else if (eligible.size == 1) {
+				// 이 레벨에 참여 가능한 플레이어가 1명뿐 → uncalled bet 반환
+				val sole = eligible.keys.first()
+				winnings[sole] = (winnings[sole] ?: 0.0) + potForLevel
 			}
 			previousLevel = invested
 		}
@@ -796,8 +834,4 @@ internal class RecordHandViewModel(
 		}
 	}
 
-	private fun generateId(): String {
-		val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-		return (1..20).map { chars.random() }.joinToString("")
-	}
 }

@@ -5,6 +5,7 @@ import androidx.compose.runtime.Stable
 import com.hand.log.domain.model.ActionType
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.Card
+import com.hand.log.domain.model.HandRanking
 import com.hand.log.domain.model.GameType
 import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.Position
@@ -50,14 +51,15 @@ internal sealed interface RecordHandState {
 		val preflopPresets: List<Double> = listOf(2.0, 2.5, 3.0, 4.0, 5.0),
 		val postflopPresets: List<Int> = listOf(33, 50, 75, 100),
 		val showAmountWarning: Boolean = false,
-		val isEditMode: Boolean = false,
-		val editHandId: String? = null,
 	) : RecordHandState {
 
 		/** 현재 사용 중인 모든 카드 (히어로 + 보드 + 쇼다운) */
 		val selectedCards: Set<Card>
 			get() = buildSet {
-				heroHand?.let { add(it.card1); add(it.card2) }
+				heroHand?.let {
+					add(it.card1)
+					add(it.card2)
+				}
 				addAll(streets.boardCards)
 				addAll(showdown.allCards)
 			}
@@ -130,9 +132,23 @@ internal sealed interface RecordHandState {
 				}
 			}
 
-		/** 쇼다운 결과 (미공개 플레이어는 제외하고 계산) */
+		/** 쇼다운 결과 (폴드 승리 또는 핸드 비교) */
 		val showdownResults: List<ShowdownResult>
 			get() {
+				// 1명만 남으면 폴드 승리 — 승자 + 폴드한 플레이어 모두 표시
+				if (remainingSeats.size == 1) {
+					val winnerSeat = remainingSeats.first()
+					val count = table?.playerCount ?: return emptyList()
+					return (1..count).map { seat ->
+						ShowdownResult(
+							seat = seat,
+							ranking = HandRanking.HIGH_CARD,
+							bestCards = emptyList(),
+							isWinner = seat == winnerSeat,
+						)
+					}
+				}
+
 				if (!isShowdownComplete || streets.boardCards.size != 5) return emptyList()
 				val knownEntries = showdownEntries.filter { !showdown.isUnknown(it.seat) }
 				if (knownEntries.size < 2) return emptyList()
@@ -159,7 +175,22 @@ internal sealed interface RecordHandState {
 					"${rounded}BB"
 				}
 			} else {
-				"${amount.toLong()}"
+				formatWithComma(amount.toLong())
+			}
+		}
+
+		companion object {
+			private fun formatWithComma(value: Long): String {
+				val isNegative = value < 0
+				val absValue = if (isNegative) -value else value
+				val str = absValue.toString()
+				val result = buildString {
+					str.forEachIndexed { index, c ->
+						if (index > 0 && (str.length - index) % 3 == 0) append(',')
+						append(c)
+					}
+				}
+				return if (isNegative) "-$result" else result
 			}
 		}
 
@@ -194,6 +225,37 @@ internal sealed interface RecordHandState {
 				val blindsPot = (if (sbInPot >= sb) 0.0 else sb) + (if (bbInPot >= bb) 0.0 else bb)
 				val antePot = if (blinds?.isBigBlindAnte == true) bb else 0.0
 				return actionsPot + blindsPot + antePot
+			}
+
+		/** 사이드 팟 목록 (올인 플레이어가 있을 때 발생) */
+		val sidePots: List<Double>
+			get() {
+				val count = table?.playerCount ?: return emptyList()
+				val allInSeats = players.allInSeats
+				if (allInSeats.isEmpty()) return emptyList()
+
+				val investments = mutableMapOf<Int, Double>()
+				for (seat in 1..count) {
+					val player = players[seat] ?: continue
+					val invested = player.initialStack - player.stack
+					if (invested > 0) investments[seat] = invested
+				}
+				if (investments.size < 2) return emptyList()
+
+				val sortedLevels = investments.values.distinct().sorted()
+				var previousLevel = 0.0
+				val pots = mutableListOf<Double>()
+
+				for (level in sortedLevels) {
+					val diff = level - previousLevel
+					if (diff <= 0) continue
+					val eligible = investments.count { it.value >= level }
+					val potForLevel = diff * eligible
+					pots.add(potForLevel)
+					previousLevel = level
+				}
+
+				return if (pots.size <= 1) emptyList() else pots
 			}
 
 		// --- Action Order ---
@@ -411,35 +473,4 @@ internal sealed interface RecordHandState {
 
 		fun positionName(seat: Int): String = positionOf(seat).label
 	}
-}
-
-enum class RecordStep {
-	SETUP,
-	PREFLOP,
-	FLOP,
-	TURN,
-	RIVER,
-	SHOWDOWN,
-	;
-
-	val label: String
-		get() = when (this) {
-			SETUP -> "설정"
-			PREFLOP -> "프리플랍"
-			FLOP -> "플랍"
-			TURN -> "턴"
-			RIVER -> "리버"
-			SHOWDOWN -> "쇼다운"
-		}
-}
-
-@Immutable
-internal sealed interface CardSelectorTarget {
-	val maxCards: Int
-	data class HeroCard(override val maxCards: Int = 2) : CardSelectorTarget
-	data class BoardCard(val street: Street, override val maxCards: Int) : CardSelectorTarget
-
-	/** 보드 카드 1장 교체 (street + index로 특정 카드 지정) */
-	data class SingleBoardCard(val street: Street, val cardIndex: Int, override val maxCards: Int = 1) : CardSelectorTarget
-	data class ShowdownCard(val seat: Int, override val maxCards: Int = 2) : CardSelectorTarget
 }

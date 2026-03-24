@@ -47,6 +47,7 @@ import com.hand.log.record.component.ShowdownStepContent
 import com.hand.log.record.component.StreetStepContent
 import com.hand.log.record.contract.RecordHandState
 import com.hand.log.record.contract.RecordStep
+import com.hand.log.record.contract.localizedLabel
 import kotlinx.datetime.LocalDate
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
@@ -76,7 +77,6 @@ internal fun RecordHandScreen(
 	onUpdateMemo: (String) -> Unit,
 	onShowTableEdit: () -> Unit,
 	onToggleBbUnit: () -> Unit,
-	onGoToStep: (RecordStep) -> Unit,
 	onSave: () -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
@@ -134,7 +134,6 @@ internal fun RecordHandScreen(
 			StepIndicator(
 				currentStep = state.currentStep,
 				activeSteps = state.activeSteps,
-				onStepClick = if (state.isEditMode) onGoToStep else null,
 				modifier = Modifier
 					.fillMaxWidth()
 					.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -227,7 +226,7 @@ private fun StepIndicator(
 						if (isClickable) {
 							Modifier
 								.clip(RoundedCornerShape(8.dp))
-								.clickable { onStepClick?.invoke(step) }
+								.clickable { onStepClick(step) }
 						} else {
 							Modifier
 						},
@@ -254,7 +253,7 @@ private fun StepIndicator(
 				}
 				Spacer(modifier = Modifier.height(4.dp))
 				Text(
-					text = step.label,
+					text = step.localizedLabel(),
 					style = HandyTheme.typography.regular12,
 					color = if (isCurrent) colors.textPrimary else colors.textSecondary,
 					textAlign = TextAlign.Center,
@@ -327,7 +326,6 @@ private fun RecordHandScreenPreview() {
 			onUpdateMemo = {},
 			onShowTableEdit = {},
 			onToggleBbUnit = {},
-			onGoToStep = {},
 			onSave = {},
 		)
 	}
@@ -380,7 +378,6 @@ private fun RecordHandScreenTournamentPreview() {
 			onUpdateMemo = {},
 			onShowTableEdit = {},
 			onToggleBbUnit = {},
-			onGoToStep = {},
 			onSave = {},
 		)
 	}

@@ -25,6 +25,7 @@ import com.hand.log.designsystem.component.VerticalSpacer
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
+import com.hand.log.designsystem.theme.nonScaledSp
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.GameType
@@ -130,13 +131,13 @@ internal fun ShowdownStepContent(
 		if (hasResults) {
 			val heroResult = state.heroResult
 			val isPositive = heroResult >= 0
-			val resultText = if (isPositive) "+${heroResult.toLong()}" else "${heroResult.toLong()}"
+			val prefix = if (isPositive) "+" else ""
 			val colors = HandyTheme.colorScheme
 
 			VerticalSpacer(8.dp)
 			HandySectionLabel(stringResource(Res.string.showdown_result))
 			Text(
-				text = resultText,
+				text = "$prefix${state.formatAmount(heroResult)}",
 				style = HandyTheme.typography.bold20,
 				color = if (isPositive) colors.primary else colors.error,
 			)
@@ -214,8 +215,8 @@ private fun ShowdownPlayerCard(
 				contentAlignment = Alignment.Center,
 			) {
 				Text(
-					text = "$seat",
-					style = HandyTheme.typography.bold12,
+					text = posName,
+					style = HandyTheme.typography.bold12.nonScaledSp,
 					color = if (isHero) colors.gold else colors.primary,
 				)
 			}
@@ -229,14 +230,18 @@ private fun ShowdownPlayerCard(
 					Text(
 						text = posName,
 						style = HandyTheme.typography.bold14,
-						color = if (isFolded) colors.textSecondary.copy(alpha = 0.5f)
-						else if (isHero) colors.gold
-						else colors.textPrimary,
+						color = if (isFolded) {
+							colors.textSecondary.copy(alpha = 0.5f)
+						} else if (isHero) {
+							colors.gold
+						} else {
+							colors.textPrimary
+						},
 					)
 					if (isWinner) {
 						Text(
 							text = "WIN",
-							style = HandyTheme.typography.bold10,
+							style = HandyTheme.typography.bold10.nonScaledSp,
 							color = colors.gold,
 							modifier = Modifier
 								.clip(RoundedCornerShape(4.dp))
@@ -247,7 +252,7 @@ private fun ShowdownPlayerCard(
 					if (isFolded) {
 						Text(
 							text = "FOLD",
-							style = HandyTheme.typography.bold10,
+							style = HandyTheme.typography.bold10.nonScaledSp,
 							color = colors.textSecondary,
 							modifier = Modifier
 								.clip(RoundedCornerShape(4.dp))
@@ -266,27 +271,30 @@ private fun ShowdownPlayerCard(
 				} else if (isHero) {
 					Text(
 						text = "Hero",
-						style = HandyTheme.typography.regular10,
+						style = HandyTheme.typography.regular10.nonScaledSp,
 						color = if (isFolded) colors.textSecondary.copy(alpha = 0.5f) else colors.gold,
 					)
 				}
 
-				Row(
-					horizontalArrangement = Arrangement.spacedBy(8.dp),
-					verticalAlignment = Alignment.CenterVertically,
-				) {
-					Text(
-						text = "스택: ${currentStack.toLong()}",
-						style = HandyTheme.typography.regular10,
-						color = colors.textSecondary,
-					)
-					if (hasResults && stackChange != 0.0) {
-						val isPositive = stackChange > 0
+				if (hasResults) {
+					Row(
+						horizontalArrangement = Arrangement.spacedBy(8.dp),
+						verticalAlignment = Alignment.CenterVertically,
+					) {
 						Text(
-							text = if (isPositive) "+${stackChange.toLong()}" else "${stackChange.toLong()}",
-							style = HandyTheme.typography.bold10,
-							color = if (isPositive) colors.primary else colors.error,
+							text = "스택: ${state.formatAmount(currentStack)}",
+							style = HandyTheme.typography.regular10.nonScaledSp,
+							color = colors.textSecondary,
 						)
+						if (stackChange != 0.0) {
+							val isPositive = stackChange > 0
+							val prefix = if (isPositive) "+" else ""
+							Text(
+								text = "$prefix${state.formatAmount(stackChange)}",
+								style = HandyTheme.typography.bold10.nonScaledSp,
+								color = if (isPositive) colors.primary else colors.error,
+							)
+						}
 					}
 				}
 			}
@@ -319,7 +327,7 @@ private fun ShowdownPlayerCard(
 			) {
 				Text(
 					text = "ELIMINATED",
-					style = HandyTheme.typography.bold18,
+					style = HandyTheme.typography.bold18.nonScaledSp,
 					color = colors.error.copy(alpha = 0.4f),
 					modifier = Modifier.rotate(-15f),
 				)
