@@ -19,9 +19,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
+import com.hand.log.designsystem.component.FadeAnimatedVisibility
+import com.hand.log.designsystem.component.TopAppbarIcon
 import com.hand.log.designsystem.component.HandyFab
 import com.hand.log.designsystem.component.HandyTopAppbar
-import com.hand.log.designsystem.component.IconButton
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
@@ -38,7 +39,7 @@ import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.Suit
 import com.hand.log.table.component.HandRecordCard
 import com.hand.log.table.component.PokerTableView
-import com.hand.log.table.contract.TableDetailState
+import com.hand.log.table.contract.TableState
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.*
 import kotlinx.datetime.LocalDate
@@ -46,152 +47,188 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-internal fun TableDetailScreen(
-	state: TableDetailState.TableData,
+internal fun TableScreen(
+	state: TableState,
 	onBack: () -> Unit,
 	onNavigateToRecordHand: () -> Unit,
 	onNavigateToHandDetail: (String) -> Unit,
 	onDeleteHand: (String) -> Unit,
+	onShowDeleteConfirm: () -> Unit,
 	onSeatClick: (Int) -> Unit,
 	onShowTableEdit: () -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
 	val typography = HandyTheme.typography
+	val tableData = state as? TableState.TableData
 
 	BaseScaffold(
 		topBar = {
-			HandyTopAppbar(
-				title = if (state.table.gameType == GameType.TOURNAMENT) stringResource(Res.string.table_detail_tournament) else stringResource(Res.string.table_detail_cash),
-				onBackEvent = onBack,
-				iconButton = IconButton(
-					text = stringResource(Res.string.table_detail_settings),
-					icon = Res.drawable.settings,
-					onClick = onShowTableEdit,
-				),
-				subContent = {
-					Row(
-						modifier = Modifier
-							.fillMaxWidth()
-							.padding(bottom = 8.dp),
-						horizontalArrangement = Arrangement.Center,
-					) {
-						state.table.location?.let {
-							Icon(
-								painter = painterResource(Res.drawable.map_pin),
-								contentDescription = "위치 아이콘",
-								tint = colors.textSecondary,
-								modifier = Modifier
-									.size(14.dp)
-									.padding(end = 2.dp),
+			if (tableData != null) {
+				HandyTopAppbar(
+					title = if (tableData.table.gameType == GameType.TOURNAMENT) {
+						stringResource(Res.string.table_detail_tournament)
+					} else {
+						stringResource(Res.string.table_detail_cash)
+					},
+					onBackEvent = onBack,
+					endContent = {
+						Row {
+							TopAppbarIcon(
+								icon = Res.drawable.delete,
+								onClick = onShowDeleteConfirm,
 							)
+							TopAppbarIcon(
+								icon = Res.drawable.settings,
+								onClick = onShowTableEdit,
+							)
+						}
+					},
+					subContent = {
+						Row(
+							modifier = Modifier
+								.fillMaxWidth()
+								.padding(bottom = 8.dp),
+							horizontalArrangement = Arrangement.Center,
+						) {
+							tableData.table.location?.let {
+								Icon(
+									painter = painterResource(Res.drawable.map_pin),
+									contentDescription = null,
+									tint = colors.textSecondary,
+									modifier = Modifier
+										.size(14.dp)
+										.padding(end = 2.dp),
+								)
+								Text(
+									text = "$it · ",
+									style = typography.regular12,
+									color = colors.textSecondary,
+								)
+							}
 							Text(
-								text = "$it · ",
+								text = tableData.table.date.toString(),
 								style = typography.regular12,
 								color = colors.textSecondary,
 							)
 						}
-						Text(
-							text = state.table.date.toString(),
-							style = typography.regular12,
-							color = colors.textSecondary,
-						)
-					}
-				},
-			)
+					},
+				)
+			} else {
+				HandyTopAppbar(
+					onBackEvent = onBack,
+				)
+			}
 		},
 		floatingActionButton = {
 			HandyFab(
 				onClick = onNavigateToRecordHand,
-				contentDescription = "새 핸드 기록",
+				contentDescription = stringResource(Res.string.table_detail_record_hand),
 			)
 		},
 	) {
-		LazyColumn(
-			modifier = Modifier.fillMaxSize(),
-			contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-			verticalArrangement = Arrangement.spacedBy(12.dp),
-		) {
-			// Poker Table Visualization
-			item {
-				PokerTableView(
-					table = state.table,
-					onSeatClick = onSeatClick,
-					modifier = Modifier
-						.fillMaxWidth()
-						.padding(vertical = 8.dp),
+		FadeAnimatedVisibility(tableData != null) {
+			val data = tableData ?: return@FadeAnimatedVisibility
+			TableContent(
+				state = data,
+				onSeatClick = onSeatClick,
+				onNavigateToHandDetail = onNavigateToHandDetail,
+				onDeleteHand = onDeleteHand,
+			)
+		}
+	}
+
+}
+
+@Composable
+private fun TableContent(
+	state: TableState.TableData,
+	onSeatClick: (Int) -> Unit,
+	onNavigateToHandDetail: (String) -> Unit,
+	onDeleteHand: (String) -> Unit,
+) {
+	val colors = HandyTheme.colorScheme
+
+	LazyColumn(
+		modifier = Modifier.fillMaxSize(),
+		contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+		verticalArrangement = Arrangement.spacedBy(12.dp),
+	) {
+		item {
+			PokerTableView(
+				table = state.table,
+				onSeatClick = onSeatClick,
+				modifier = Modifier
+					.fillMaxWidth()
+					.padding(vertical = 8.dp),
+			)
+		}
+
+		item {
+			Row(
+				modifier = Modifier
+					.fillMaxWidth()
+					.padding(top = 8.dp),
+				horizontalArrangement = Arrangement.SpaceBetween,
+				verticalAlignment = Alignment.CenterVertically,
+			) {
+				Text(
+					text = stringResource(Res.string.table_detail_record_hand),
+					style = HandyTheme.typography.bold14,
+					color = colors.textSecondary,
+				)
+				Text(
+					text = "${state.hands.size}개",
+					style = HandyTheme.typography.regular12,
+					color = colors.textSecondary,
 				)
 			}
+		}
 
-			// Hand History Header
+		if (state.hands.isEmpty()) {
 			item {
-				Row(
+				Column(
 					modifier = Modifier
 						.fillMaxWidth()
-						.padding(top = 8.dp),
-					horizontalArrangement = Arrangement.SpaceBetween,
-					verticalAlignment = Alignment.CenterVertically,
+						.padding(vertical = 32.dp),
+					horizontalAlignment = Alignment.CenterHorizontally,
 				) {
 					Text(
-						text = stringResource(Res.string.table_detail_record_hand),
-						style = HandyTheme.typography.bold14,
+						text = stringResource(Res.string.table_detail_empty_title),
+						style = HandyTheme.typography.medium14,
 						color = colors.textSecondary,
 					)
+					Spacer(modifier = Modifier.height(4.dp))
 					Text(
-						text = "${state.hands.size}개",
+						text = stringResource(Res.string.table_detail_empty_desc),
 						style = HandyTheme.typography.regular12,
 						color = colors.textSecondary,
 					)
 				}
 			}
-
-			// Hand History List
-			if (state.hands.isEmpty()) {
-				item {
-					Column(
-						modifier = Modifier
-							.fillMaxWidth()
-							.padding(vertical = 32.dp),
-						horizontalAlignment = Alignment.CenterHorizontally,
-					) {
-						Text(
-							text = stringResource(Res.string.table_detail_empty_title),
-							style = HandyTheme.typography.medium14,
-							color = colors.textSecondary,
-						)
-						Spacer(modifier = Modifier.height(4.dp))
-						Text(
-							text = stringResource(Res.string.table_detail_empty_desc),
-							style = HandyTheme.typography.regular12,
-							color = colors.textSecondary,
-						)
-					}
-				}
-			} else {
-				items(state.hands, key = { it.id }) { hand ->
-					val handIndex = state.hands.size - state.hands.indexOf(hand)
-					HandRecordCard(
-						hand = hand,
-						index = handIndex,
-						onClick = { onNavigateToHandDetail(hand.id) },
-						onDelete = { onDeleteHand(hand.id) },
-					)
-				}
+		} else {
+			items(state.hands, key = { it.id }) { hand ->
+				val handIndex = state.hands.size - state.hands.indexOf(hand)
+				HandRecordCard(
+					hand = hand,
+					index = handIndex,
+					onClick = { onNavigateToHandDetail(hand.id) },
+					onDelete = { onDeleteHand(hand.id) },
+				)
 			}
+		}
 
-			// Bottom spacing
-			item {
-				Spacer(modifier = Modifier.height(80.dp))
-			}
+		item {
+			Spacer(modifier = Modifier.height(80.dp))
 		}
 	}
 }
 
 @ThemePreviews
 @Composable
-private fun TableDetailScreenPreview() {
+private fun TableScreenPreview() {
 	ThemePreview {
-		TableDetailScreen(
-			state = TableDetailState.TableData(
+		TableScreen(
+			state = TableState.TableData(
 				table = PokerTable(
 					id = "1",
 					date = LocalDate(2026, 3, 12),
@@ -245,16 +282,17 @@ private fun TableDetailScreenPreview() {
 			onDeleteHand = {},
 			onSeatClick = {},
 			onShowTableEdit = {},
+			onShowDeleteConfirm = {},
 		)
 	}
 }
 
 @ThemePreviews
 @Composable
-private fun TableDetailScreenEmptyPreview() {
+private fun TableScreenEmptyPreview() {
 	ThemePreview {
-		TableDetailScreen(
-			state = TableDetailState.TableData(
+		TableScreen(
+			state = TableState.TableData(
 				table = PokerTable(
 					id = "1",
 					date = LocalDate(2026, 3, 12),
@@ -274,6 +312,7 @@ private fun TableDetailScreenEmptyPreview() {
 			onDeleteHand = {},
 			onSeatClick = {},
 			onShowTableEdit = {},
+			onShowDeleteConfirm = {},
 		)
 	}
 }

@@ -73,7 +73,10 @@ fun TableFormFields(
 			.clip(RoundedCornerShape(8.dp))
 			.background(colors.muted, RoundedCornerShape(8.dp))
 			.border(1.dp, colors.inputBorder, RoundedCornerShape(8.dp))
-			.clickable { focusManager.clearFocus(); onDateClick() }
+			.clickable {
+				focusManager.clearFocus()
+				onDateClick()
+			}
 			.padding(horizontal = 12.dp, vertical = 10.dp),
 	) {
 		Row(verticalAlignment = Alignment.CenterVertically) {
@@ -105,7 +108,10 @@ fun TableFormFields(
 	HandyToggleGroup(
 		options = GameType.entries.toList(),
 		selected = gameType,
-		onSelect = { focusManager.clearFocus(); onGameTypeChange(it) },
+		onSelect = {
+			focusManager.clearFocus()
+			onGameTypeChange(it)
+		},
 		label = { it.localizedLabel() },
 	)
 
@@ -125,14 +131,20 @@ fun TableFormFields(
 			bbText = bbText,
 			onBbChange = onBbChange,
 			straddleEnabled = straddleEnabled,
-			onStraddleEnabledChange = { focusManager.clearFocus(); onStraddleEnabledChange(it) },
+			onStraddleEnabledChange = {
+				focusManager.clearFocus()
+				onStraddleEnabledChange(it)
+			},
 			straddleText = straddleText,
 			onStraddleChange = onStraddleChange,
 		)
 	} else {
 		TournamentBlindsSection(
 			bigBlindAnteEnabled = bigBlindAnteEnabled,
-			onBigBlindAnteChange = { focusManager.clearFocus(); onBigBlindAnteChange(it) },
+			onBigBlindAnteChange = {
+				focusManager.clearFocus()
+				onBigBlindAnteChange(it)
+			},
 		)
 	}
 
@@ -141,7 +153,10 @@ fun TableFormFields(
 	HandySelector(
 		range = 2..10,
 		selected = playerCount,
-		onSelect = { focusManager.clearFocus(); onPlayerCountChange(it) },
+		onSelect = {
+			focusManager.clearFocus()
+			onPlayerCountChange(it)
+		},
 	)
 
 	VerticalSpacer(16.dp)
@@ -149,7 +164,10 @@ fun TableFormFields(
 	HandySelector(
 		range = 1..maxOf(playerCount, 9),
 		selected = heroSeat,
-		onSelect = { focusManager.clearFocus(); onHeroSeatChange(it) },
+		onSelect = {
+			focusManager.clearFocus()
+			onHeroSeatChange(it)
+		},
 		selectedColor = colors.gold,
 		selectedContentColor = colors.card,
 	)

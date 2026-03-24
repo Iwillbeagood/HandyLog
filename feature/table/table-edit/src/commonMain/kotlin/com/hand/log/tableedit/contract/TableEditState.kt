@@ -22,11 +22,7 @@ internal data class TableEditState(
 	val isSubmitEnabled: Boolean
 		get() = date.isNotBlank() && startingStack.isNotBlank()
 
-	val title: String
-		get() = if (isEditMode) "테이블 수정" else "새 테이블 생성"
-
-	val buttonText: String
-		get() = if (isEditMode) "수정 완료" else "테이블 생성"
+	// title, buttonText는 UI에서 isEditMode 기반으로 stringResource 사용
 
 	fun buildBlinds(): Blinds = when (gameType) {
 		GameType.CASH -> Blinds(

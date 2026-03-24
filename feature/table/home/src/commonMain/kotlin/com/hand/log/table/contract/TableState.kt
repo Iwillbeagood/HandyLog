@@ -6,14 +6,14 @@ import com.hand.log.domain.model.HandRecord
 import com.hand.log.domain.model.PokerTable
 
 @Stable
-internal sealed interface TableDetailState {
+internal sealed interface TableState {
 
 	@Immutable
-	data object Loading : TableDetailState
+	data object Loading : TableState
 
 	@Immutable
 	data class TableData(
 		val table: PokerTable,
 		val hands: List<HandRecord> = emptyList(),
-	) : TableDetailState
+	) : TableState
 }

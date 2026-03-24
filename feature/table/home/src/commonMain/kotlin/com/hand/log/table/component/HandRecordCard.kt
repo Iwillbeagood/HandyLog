@@ -106,9 +106,9 @@ internal fun HandRecordCard(
 					verticalAlignment = Alignment.CenterVertically,
 				) {
 					Text(
-						text = "BTN: Seat ${hand.buttonSeat}",
-						style = HandyTheme.typography.regular12,
-						color = colors.textSecondary,
+						text = hand.heroPosition.label,
+						style = HandyTheme.typography.bold12,
+						color = colors.gold,
 					)
 					hand.blinds?.let { blinds ->
 						Text(

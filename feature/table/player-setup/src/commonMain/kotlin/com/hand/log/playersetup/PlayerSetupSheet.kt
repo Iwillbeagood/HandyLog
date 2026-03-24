@@ -97,7 +97,7 @@ fun PlayerSetupSheet(
 			onTendencyChange = viewModel::updateTendency,
 			onMemoChange = viewModel::updateMemo,
 			onQuickLoadSavedPlayer = viewModel::loadSavedPlayerAndSave,
-			onSaveToMarkingChange = { viewModel.toggleSaveToMarking() },
+			onSaveToMarkingChange = viewModel::toggleSaveToMarking,
 			onResetClick = viewModel::resetAndSave,
 			onSaveClick = viewModel::save,
 			onDismiss = onDismiss,
@@ -163,7 +163,11 @@ fun PlayerSetupContent(
 			VerticalSpacer(12.dp)
 		}
 
-		HandyTextField(value = state.playerName, onValueChange = onNameChange, label = stringResource(Res.string.player_name))
+		HandyTextField(
+			value = state.playerName,
+			onValueChange = onNameChange,
+			label = stringResource(Res.string.player_name),
+		)
 
 		VerticalSpacer(12.dp)
 		HandyTextField(

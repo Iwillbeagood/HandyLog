@@ -63,8 +63,20 @@ private fun TableEditSheetContent(
 
 	HandyBottomSheet(
 		onDismissRequest = onDismiss,
-		title = state.title,
-		confirmText = state.buttonText,
+		title = if (state.isEditMode) {
+			stringResource(
+				Res.string.table_edit_title,
+			)
+		} else {
+			stringResource(Res.string.table_edit_create_title)
+		},
+		confirmText = if (state.isEditMode) {
+			stringResource(
+				Res.string.table_edit_button,
+			)
+		} else {
+			stringResource(Res.string.table_edit_create_button)
+		},
 		onConfirm = viewModel::submit,
 		confirmEnabled = state.isSubmitEnabled,
 	) {

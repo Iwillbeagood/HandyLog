@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.hand.log.domain.model.GameType
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.repository.PokerTableRepository
+import com.hand.log.domain.usecase.CreatePokerTableUseCase
 import com.hand.log.tableedit.contract.TableEditEffect
 import com.hand.log.tableedit.contract.TableEditState
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -20,6 +21,7 @@ import kotlin.time.ExperimentalTime
 
 internal class TableEditViewModel(
 	private val pokerTableRepository: PokerTableRepository,
+	private val createPokerTable: CreatePokerTableUseCase,
 ) : ViewModel() {
 
 	private val _state = MutableStateFlow(TableEditState())
@@ -72,14 +74,13 @@ internal class TableEditViewModel(
 	}
 	fun updateHeroSeat(seat: Int) = _state.update { it.copy(heroSeat = seat) }
 
-	@OptIn(ExperimentalTime::class)
 	fun submit() {
 		val s = _state.value
 		if (!s.isSubmitEnabled) return
 
 		viewModelScope.launch {
 			val table = PokerTable(
-				id = editingTableId ?: generateId(),
+				id = editingTableId ?: "",
 				date = LocalDate.parse(s.date),
 				location = s.location.takeIf { it.isNotBlank() },
 				gameType = s.gameType,
@@ -87,14 +88,15 @@ internal class TableEditViewModel(
 				blinds = s.buildBlinds(),
 				playerCount = s.playerCount,
 				heroSeat = s.heroSeat,
-				createdAt = Clock.System.now().toEpochMilliseconds(),
+				createdAt = 0L,
 			)
-			if (s.isEditMode) {
+			val savedTable = if (s.isEditMode) {
 				pokerTableRepository.updateTableInfo(table)
+				table
 			} else {
-				pokerTableRepository.saveTable(table)
+				createPokerTable(table)
 			}
-			_effect.emit(TableEditEffect.SaveComplete(table))
+			_effect.emit(TableEditEffect.SaveComplete(savedTable))
 		}
 	}
 
@@ -103,11 +105,6 @@ internal class TableEditViewModel(
 		private fun todayString(): String {
 			val epochMs = Clock.System.now().toEpochMilliseconds()
 			return LocalDate.fromEpochDays((epochMs / 86400000).toInt()).toString()
-		}
-
-		private fun generateId(): String {
-			val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-			return (1..20).map { chars.random() }.joinToString("")
 		}
 	}
 }
