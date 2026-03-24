@@ -9,4 +9,6 @@ interface AppSettingsLocalDataSource {
 	suspend fun setThemeMode(mode: String)
 	suspend fun setBetSizePresets(presets: List<Double>)
 	suspend fun setPotPercentPresets(presets: List<Int>)
+	fun observeSkipStepBackWarning(): Flow<Boolean>
+	suspend fun setSkipStepBackWarning(skip: Boolean)
 }

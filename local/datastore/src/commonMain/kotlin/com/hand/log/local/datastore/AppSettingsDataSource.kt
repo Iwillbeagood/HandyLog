@@ -2,6 +2,7 @@ package com.hand.log.local.datastore
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
@@ -14,6 +15,7 @@ class AppSettingsDataSource(
 		val THEME_MODE = stringPreferencesKey("theme_mode")
 		val BET_SIZE_PRESETS = stringPreferencesKey("bet_size_presets")
 		val POT_PERCENT_PRESETS = stringPreferencesKey("pot_percent_presets")
+		val SKIP_STEP_BACK_WARNING = booleanPreferencesKey("skip_step_back_warning")
 	}
 
 	fun observeThemeMode(): Flow<String> = dataStore.data.map { prefs ->
@@ -45,6 +47,16 @@ class AppSettingsDataSource(
 	suspend fun setPotPercentPresets(presets: List<Int>) {
 		dataStore.edit { prefs ->
 			prefs[POT_PERCENT_PRESETS] = presets.joinToString(",")
+		}
+	}
+
+	fun observeSkipStepBackWarning(): Flow<Boolean> = dataStore.data.map { prefs ->
+		prefs[SKIP_STEP_BACK_WARNING] ?: false
+	}
+
+	suspend fun setSkipStepBackWarning(skip: Boolean) {
+		dataStore.edit { prefs ->
+			prefs[SKIP_STEP_BACK_WARNING] = skip
 		}
 	}
 }

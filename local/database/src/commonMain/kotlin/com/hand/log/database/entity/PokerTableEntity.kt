@@ -3,9 +3,11 @@ package com.hand.log.database.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDate
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 @Entity(tableName = "poker_tables")
-data class PokerTableEntity(
+data class PokerTableEntity @OptIn(ExperimentalUuidApi::class) constructor(
 	@PrimaryKey val id: String,
 	val date: LocalDate,
 	val location: String? = null,

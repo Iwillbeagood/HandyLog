@@ -10,6 +10,8 @@ import com.hand.log.domain.model.PlayerTendency
 import com.hand.log.domain.model.PokerTable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -28,10 +30,12 @@ internal class PokerTableLocalDataSourceImpl(
 		return assembleTable(table)
 	}
 
-	@OptIn(ExperimentalUuidApi::class)
-	override suspend fun saveTable(table: PokerTable) {
+	@OptIn(ExperimentalUuidApi::class, ExperimentalTime::class)
+	override suspend fun saveTable(table: PokerTable): PokerTable {
+		val now = Clock.System.now().toEpochMilliseconds()
+		val generatedId = table.id.ifBlank { Uuid.random().toString() }
 		val entity = PokerTableEntity(
-			id = table.id,
+			id = generatedId,
 			date = table.date,
 			location = table.location,
 			gameType = table.gameType.name,
@@ -42,13 +46,13 @@ internal class PokerTableLocalDataSourceImpl(
 			isBigBlindAnte = table.blinds?.isBigBlindAnte ?: false,
 			playerCount = table.playerCount,
 			heroSeat = table.heroSeat,
-			createdAt = table.createdAt,
+			createdAt = if (table.createdAt == 0L) now else table.createdAt,
 		)
 
 		val playerEntities = table.players.map { player ->
 			TablePlayerEntity(
 				id = Uuid.random().toString(),
-				tableId = table.id,
+				tableId = generatedId,
 				seat = player.seat,
 				stack = player.stack,
 				tendency = player.tendency?.name,
@@ -58,6 +62,7 @@ internal class PokerTableLocalDataSourceImpl(
 		}
 
 		pokerTableDao.updateCompleteTable(entity, playerEntities)
+		return table.copy(id = generatedId, createdAt = entity.createdAt)
 	}
 
 	override suspend fun updateTableInfo(table: PokerTable) {

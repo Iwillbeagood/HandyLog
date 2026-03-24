@@ -5,6 +5,8 @@ import com.hand.log.database.entity.HandRecordEntity
 import com.hand.log.domain.model.HandRecord
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 internal class HandRecordLocalDataSourceImpl(
 	private val handRecordDao: HandRecordDao,
@@ -36,10 +38,11 @@ internal class HandRecordLocalDataSourceImpl(
 		handRecordDao.deleteHandById(handId)
 	}
 
+	@OptIn(ExperimentalTime::class)
 	private fun HandRecord.toEntity(): HandRecordEntity = HandRecordEntity(
-		id = id,
+		id = id.ifBlank { generateId() },
 		tableId = tableId,
-		createdAt = createdAt,
+		createdAt = if (createdAt == 0L) Clock.System.now().toEpochMilliseconds() else createdAt,
 		blinds = blinds,
 		heroHand = heroHand,
 		heroSeat = heroSeat,
@@ -51,6 +54,11 @@ internal class HandRecordLocalDataSourceImpl(
 		result = result,
 		memo = memo,
 	)
+
+	private fun generateId(): String {
+		val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+		return (1..20).map { chars.random() }.joinToString("")
+	}
 
 	private fun HandRecordEntity.toDomain(): HandRecord = HandRecord(
 		id = id,

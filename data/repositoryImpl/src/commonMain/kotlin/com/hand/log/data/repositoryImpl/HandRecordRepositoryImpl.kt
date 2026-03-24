@@ -10,37 +10,35 @@ internal class HandRecordRepositoryImpl(
 	private val localDataSource: HandRecordLocalDataSource,
 ) : HandRecordRepository {
 
-	override fun observeHandsByTableId(tableId: String): Flow<List<HandRecord>> {
-		return localDataSource.observeHandsByTableId(tableId)
-	}
+	override fun observeHandsByTableId(tableId: String): Flow<List<HandRecord>> =
+		localDataSource.observeHandsByTableId(tableId)
 
-	override fun observeHandById(handId: String): Flow<HandRecord?> {
-		return localDataSource.observeHandById(handId)
-	}
+	override fun observeHandById(handId: String): Flow<HandRecord?> =
+		localDataSource.observeHandById(handId)
 
-	override suspend fun getHandById(handId: String): HandRecord? {
-		return localDataSource.getHandById(handId)
-	}
+	override suspend fun getHandById(handId: String): HandRecord? =
+		localDataSource.getHandById(handId)
 
-	override suspend fun getHandCountByTableId(tableId: String): Int {
-		return localDataSource.getHandCountByTableId(tableId)
-	}
+	override suspend fun getHandCountByTableId(tableId: String): Int =
+		localDataSource.getHandCountByTableId(tableId)
 
 	override suspend fun saveHand(hand: HandRecord, onSuccess: () -> Unit) {
 		try {
 			localDataSource.saveHand(hand)
+			Logger.d("HandRecordRepo: saveHand success (tableId=${hand.tableId})")
 			onSuccess()
 		} catch (e: Exception) {
-			Logger.e("saveHand error: $e")
+			Logger.e("HandRecordRepo: saveHand failed - ${e.message}")
 		}
 	}
 
 	override suspend fun deleteHand(handId: String, onSuccess: () -> Unit) {
 		try {
 			localDataSource.deleteHand(handId)
+			Logger.d("HandRecordRepo: deleteHand success ($handId)")
 			onSuccess()
 		} catch (e: Exception) {
-			Logger.e("deleteHand error: $e")
+			Logger.e("HandRecordRepo: deleteHand failed - ${e.message}")
 		}
 	}
 }

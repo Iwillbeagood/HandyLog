@@ -24,4 +24,10 @@ internal class AppSettingsLocalDataSourceImpl(
 
 	override suspend fun setPotPercentPresets(presets: List<Int>) =
 		appSettingsDataSource.setPotPercentPresets(presets)
+
+	override fun observeSkipStepBackWarning(): Flow<Boolean> =
+		appSettingsDataSource.observeSkipStepBackWarning()
+
+	override suspend fun setSkipStepBackWarning(skip: Boolean) =
+		appSettingsDataSource.setSkipStepBackWarning(skip)
 }
