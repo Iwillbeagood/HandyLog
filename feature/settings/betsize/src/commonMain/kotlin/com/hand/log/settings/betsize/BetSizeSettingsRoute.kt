@@ -4,11 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
-import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-internal fun BetSizeSettingsRoute() {
-	val viewModel: BetSizeViewModel = koinViewModel()
+internal fun BetSizeSettingsRoute(
+	viewModel: BetSizeViewModel,
+) {
 	val state by viewModel.state.collectAsStateWithLifecycle()
 	val navAction = LocalNavigateActionInterop.current
 

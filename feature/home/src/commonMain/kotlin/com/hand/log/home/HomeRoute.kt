@@ -9,11 +9,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.home.contract.HomeEffect
-import com.hand.log.designsystem.component.FadeAnimatedVisibility
 import com.hand.log.home.contract.HomeModalEffect
-import com.hand.log.home.contract.HomeState
+import com.hand.log.navigation.interop.LocalMainActionInterop
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.tableedit.TableEditSheet
+import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,6 +24,7 @@ internal fun HomeRoute(
 	val homeState by viewModel.homeState.collectAsStateWithLifecycle()
 	val homeModalEffect by viewModel.homeModalEffect.collectAsStateWithLifecycle()
 	val navAction = LocalNavigateActionInterop.current
+	val mainAction = LocalMainActionInterop.current
 
 	var showSetupSheet by remember { mutableStateOf(false) }
 
@@ -32,15 +34,17 @@ internal fun HomeRoute(
 				is HomeEffect.NavigateToTable -> {
 					navAction.navigateToTableDetail(effect.tableId)
 				}
-				is HomeEffect.ShowSnackBar -> { /* TODO */ }
+				is HomeEffect.TableDeleted -> {
+					mainAction.onShowToast(Res.string.home_table_deleted)
+				}
 			}
 		}
 	}
 
-	HomeContent(
+	HomeScreen(
 		homeState = homeState,
 		onNavigateToTableDetail = navAction::navigateToTableDetail,
-		onFabClick = { showSetupSheet = true },
+		onTableAdd = { showSetupSheet = true },
 	)
 
 	HomeModalContent(
@@ -55,23 +59,6 @@ internal fun HomeRoute(
 			},
 			onDismiss = { showSetupSheet = false },
 		)
-	}
-}
-
-@Composable
-private fun HomeContent(
-	homeState: HomeState,
-	onNavigateToTableDetail: (String) -> Unit,
-	onFabClick: () -> Unit,
-) {
-	FadeAnimatedVisibility(homeState is HomeState.HomeData) {
-		if (homeState is HomeState.HomeData) {
-			HomeScreen(
-				homeState = homeState,
-				onNavigateToTableDetail = onNavigateToTableDetail,
-				onTableAdd = onFabClick,
-			)
-		}
 	}
 }
 

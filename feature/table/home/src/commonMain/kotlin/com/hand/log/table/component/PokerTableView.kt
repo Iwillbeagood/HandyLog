@@ -28,7 +28,6 @@ import com.hand.log.ui.poker.TableLayoutConfig
 import com.hand.log.ui.poker.formatChips
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.arrow_down
-import handylog.core.res.generated.resources.user_round
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.painterResource
 import com.hand.log.designsystem.etc.ThemePreview

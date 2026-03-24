@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
@@ -25,16 +26,18 @@ private const val SLIDE_DURATION = 450
 
 @Composable
 internal fun MainNavDisplay(
+	paddingValues: PaddingValues,
 	backStack: List<NavKey>,
 	onBack: () -> Unit,
 ) {
 	val entryProvider = entryProvider {
-		homeNavGraph()
-		playersNavGraph()
+		homeNavGraph(paddingValues)
+		playersNavGraph(paddingValues)
+		settingsMainNavGraph(paddingValues)
+
 		tableNavGraph()
 		recordHandNavGraph()
 		handDetailNavGraph()
-		settingsMainNavGraph()
 		betSizeNavGraph()
 	}
 

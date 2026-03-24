@@ -10,6 +10,7 @@ import platform.Foundation.dataWithBytes
 import platform.UIKit.UIActivityViewController
 import platform.UIKit.UIApplication
 import platform.UIKit.UIImage
+import platform.UIKit.UIImageWriteToSavedPhotosAlbum
 import platform.UIKit.UIViewController
 import platform.UIKit.UIWindow
 import platform.UIKit.UIWindowScene
@@ -41,6 +42,15 @@ actual class ShareManager {
 		)
 		activityVC.popoverPresentationController()?.sourceView = topVC.view
 		topVC.presentViewController(activityVC, animated = true, completion = null)
+	}
+
+	@OptIn(ExperimentalForeignApi::class)
+	actual fun saveImage(imageBytes: ByteArray, fileName: String) {
+		val nsData = imageBytes.usePinned {
+			NSData.dataWithBytes(it.addressOf(0), imageBytes.size.toULong())
+		}
+		val image = UIImage(data = nsData) ?: return
+		UIImageWriteToSavedPhotosAlbum(image, null, null, null)
 	}
 
 	private fun findTopViewController(): UIViewController? {

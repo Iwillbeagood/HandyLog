@@ -110,10 +110,10 @@ fun HandyTopAppbar(
 
 @Composable
 fun TopAppbarIcon(
-	tint: Color,
 	icon: DrawableResource,
 	onClick: () -> Unit,
 	modifier: Modifier = Modifier,
+	tint: Color = HandyTheme.colorScheme.textPrimary,
 ) {
 	Box(
 		modifier = modifier
@@ -168,7 +168,7 @@ fun TopAppbarIconButton(
 }
 
 @Composable
-private fun HomeLogo(title: String = "") {
+fun HomeLogo(title: String = "") {
 	val colors = HandyTheme.colorScheme
 
 	Row(

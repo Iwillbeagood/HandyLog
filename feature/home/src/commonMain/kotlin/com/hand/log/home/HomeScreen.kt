@@ -12,6 +12,7 @@ import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
+import com.hand.log.designsystem.component.FadeAnimatedVisibility
 import com.hand.log.designsystem.component.HandyHorizontalDivider
 import com.hand.log.designsystem.component.HandyTopAppbar
 import com.hand.log.designsystem.component.IconButton
@@ -30,7 +31,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun HomeScreen(
-	homeState: HomeState.HomeData,
+	homeState: HomeState,
 	onNavigateToTableDetail: (String) -> Unit,
 	onTableAdd: () -> Unit,
 ) {
@@ -48,25 +49,40 @@ internal fun HomeScreen(
 			)
 			HandyHorizontalDivider()
 
-			if (homeState.tables.isEmpty()) {
-				EmptyState(modifier = Modifier.fillMaxSize())
-			} else {
-				LazyColumn(
-					modifier = Modifier.fillMaxSize(),
-					verticalArrangement = Arrangement.spacedBy(12.dp),
-					contentPadding = PaddingValues(
-						start = 16.dp,
-						end = 16.dp,
-						top = 20.dp,
-						bottom = 12.dp,
-					),
-				) {
-					items(homeState.tables, key = { it.table.id }) { item ->
-						TableCard(
-							item = item,
-							onClick = { onNavigateToTableDetail(item.table.id) },
-						)
-					}
+			HomeContent(
+				homeState = homeState,
+				onNavigateToTableDetail = onNavigateToTableDetail,
+			)
+		}
+	}
+}
+
+@Composable
+private fun HomeContent(
+	homeState: HomeState,
+	onNavigateToTableDetail: (String) -> Unit,
+) {
+	FadeAnimatedVisibility(homeState is HomeState.HomeData) {
+		val data = homeState as? HomeState.HomeData ?: return@FadeAnimatedVisibility
+		if (data.tables.isEmpty()) {
+			EmptyState(modifier = Modifier.fillMaxSize())
+		} else {
+			LazyColumn(
+				modifier = Modifier.fillMaxSize(),
+				verticalArrangement = Arrangement.spacedBy(12.dp),
+				contentPadding = PaddingValues(
+					start = 16.dp,
+					end = 16.dp,
+					top = 20.dp,
+					bottom = 12.dp,
+				),
+			) {
+				items(data.tables, key = { it.table.id }) { item ->
+					TableCard(
+						item = item,
+						onClick = { onNavigateToTableDetail(item.table.id) },
+						modifier = Modifier.animateItem(),
+					)
 				}
 			}
 		}

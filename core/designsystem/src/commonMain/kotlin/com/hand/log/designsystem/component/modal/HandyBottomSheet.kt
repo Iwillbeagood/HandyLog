@@ -1,11 +1,9 @@
 package com.hand.log.designsystem.component.modal
 
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -17,10 +15,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.RegularButton
 import com.hand.log.designsystem.component.VerticalSpacer
@@ -61,17 +57,13 @@ fun HandyBottomSheet(
 ) {
 	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 	val colors = HandyTheme.colorScheme
-	val focusManager = LocalFocusManager.current
 
 	ModalBottomSheet(
 		onDismissRequest = onDismissRequest,
 		sheetState = sheetState,
 		containerColor = colors.card,
 		contentColor = colors.textPrimary,
-		contentWindowInsets = { WindowInsets(0) },
-		modifier = modifier.pointerInput(Unit) {
-			detectTapGestures { focusManager.clearFocus() }
-		},
+		modifier = modifier,
 	) {
 		Column(
 			modifier = Modifier

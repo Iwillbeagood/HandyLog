@@ -1,10 +1,7 @@
 package com.hand.log.main
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -52,12 +49,11 @@ private fun MainScreenContent(
 			)
 		},
 		content = { paddingValues ->
-			Box(modifier = Modifier.padding(paddingValues)) {
-				MainNavDisplay(
-					backStack = routeStack.backStack,
-					onBack = onBack,
-				)
-			}
+			MainNavDisplay(
+				paddingValues = paddingValues,
+				backStack = routeStack.backStack,
+				onBack = onBack,
+			)
 		},
 	)
 }

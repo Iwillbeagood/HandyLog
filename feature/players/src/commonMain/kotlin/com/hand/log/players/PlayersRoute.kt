@@ -6,11 +6,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.domain.model.SavedPlayer
 import com.hand.log.players.component.PlayerEditSheet
 import com.hand.log.players.contract.PlayersModalEffect
-import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-internal fun PlayersRoute() {
-	val viewModel: PlayersViewModel = koinViewModel()
+internal fun PlayersRoute(
+	viewModel: PlayersViewModel,
+) {
 	val state by viewModel.state.collectAsStateWithLifecycle()
 	val modalEffect by viewModel.modalEffect.collectAsStateWithLifecycle()
 

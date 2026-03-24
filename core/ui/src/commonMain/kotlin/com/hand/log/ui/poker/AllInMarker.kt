@@ -50,7 +50,7 @@ fun AllInMarker(
 		)
 		if (amount != null) {
 			Text(
-				text = "$amount",
+				text = amount,
 				style = HandyTheme.typography.bold8.nonScaledSp,
 				color = Color.White,
 				modifier = Modifier

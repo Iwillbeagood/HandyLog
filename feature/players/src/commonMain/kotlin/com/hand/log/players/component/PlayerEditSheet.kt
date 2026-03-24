@@ -49,8 +49,20 @@ internal fun PlayerEditSheet(
 
 	HandyBottomSheet(
 		onDismissRequest = onDismiss,
-		title = if (isNew) stringResource(Res.string.player_add) else stringResource(Res.string.player_edit),
-		confirmText = if (isNew) stringResource(Res.string.btn_add) else stringResource(Res.string.btn_save),
+		title = if (isNew) {
+			stringResource(
+				Res.string.player_add,
+			)
+		} else {
+			stringResource(Res.string.player_edit)
+		},
+		confirmText = if (isNew) {
+			stringResource(
+				Res.string.btn_add,
+			)
+		} else {
+			stringResource(Res.string.btn_save)
+		},
 		onConfirm = {
 			if (name.isNotBlank()) {
 				onSave(
@@ -93,7 +105,11 @@ private fun PlayerEditFields(
 ) {
 	val colors = HandyTheme.colorScheme
 
-	HandyTextField(value = name, onValueChange = onNameChange, label = stringResource(Res.string.player_name))
+	HandyTextField(
+		value = name,
+		onValueChange = onNameChange,
+		label = stringResource(Res.string.player_name),
+	)
 
 	VerticalSpacer(12.dp)
 	HandySectionLabel(stringResource(Res.string.player_tendency))
@@ -121,7 +137,11 @@ private fun PlayerEditFields(
 	}
 
 	VerticalSpacer(12.dp)
-	HandyTextField(value = memo, onValueChange = onMemoChange, label = stringResource(Res.string.player_memo))
+	HandyTextField(
+		value = memo,
+		onValueChange = onMemoChange,
+		label = stringResource(Res.string.player_memo),
+	)
 }
 
 @ThemePreviews

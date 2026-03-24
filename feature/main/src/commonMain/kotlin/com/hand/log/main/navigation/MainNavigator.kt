@@ -8,7 +8,7 @@ import com.hand.log.navigation.navigation.HandDetail
 import com.hand.log.navigation.navigation.RecordHand
 import com.hand.log.navigation.navigation.Route
 import com.hand.log.navigation.navigation.RouteStack
-import com.hand.log.navigation.navigation.TableDetail
+import com.hand.log.navigation.navigation.Table
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,11 +29,11 @@ internal class MainNavigator {
 		}
 
 		override fun navigateToTableDetail(tableId: String) {
-			navigate(TableDetail(tableId))
+			navigate(Table(tableId))
 		}
 
-		override fun navigateToRecordHand(tableId: String, handId: String?) {
-			navigate(RecordHand(tableId, handId))
+		override fun navigateToRecordHand(tableId: String) {
+			navigate(RecordHand(tableId))
 		}
 
 		override fun navigateToHandDetail(handId: String) {

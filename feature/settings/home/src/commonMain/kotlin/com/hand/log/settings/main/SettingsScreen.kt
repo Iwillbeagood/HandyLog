@@ -178,21 +178,11 @@ private fun BetSizeNavigationItem(
 			verticalAlignment = Alignment.CenterVertically,
 			horizontalArrangement = Arrangement.SpaceBetween,
 		) {
-			Column {
-				Text(
-					text = stringResource(Res.string.settings_bet_size_preset),
-					style = HandyTheme.typography.medium14,
-					color = colors.textPrimary,
-				)
-				val presetText = presets.joinToString(", ") { v ->
-					if (v % 1.0 == 0.0) "${v.toInt()}BB" else "${v}BB"
-				}
-				Text(
-					text = "${presets.size}개 설정됨 · $presetText",
-					style = HandyTheme.typography.regular12,
-					color = colors.textSecondary,
-				)
-			}
+			Text(
+				text = stringResource(Res.string.settings_bet_size_preset),
+				style = HandyTheme.typography.medium14,
+				color = colors.textPrimary,
+			)
 			Text(
 				text = ">",
 				style = HandyTheme.typography.bold16,
