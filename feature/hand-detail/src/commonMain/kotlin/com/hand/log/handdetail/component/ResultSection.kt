@@ -41,6 +41,7 @@ import handylog.core.res.generated.resources.showdown_result
 import org.jetbrains.compose.resources.stringResource
 import com.hand.log.ui.poker.CardSize
 import com.hand.log.ui.poker.PlayingCard
+import handylog.core.res.generated.resources.result_fold_win
 
 @Composable
 internal fun ResultSection(hand: HandRecord) {
@@ -52,7 +53,7 @@ internal fun ResultSection(hand: HandRecord) {
 			.fillMaxWidth()
 			.clip(RoundedCornerShape(12.dp))
 			.background(colors.card)
-			.padding(16.dp),
+			.padding(vertical = 16.dp, horizontal = 12.dp),
 		verticalArrangement = Arrangement.spacedBy(12.dp),
 	) {
 		Text(
@@ -77,20 +78,44 @@ internal fun ResultSection(hand: HandRecord) {
 			)
 		}
 
-		// 쇼다운 플레이어 핸드
-		if (showdownResults.isNotEmpty()) {
-			val playerCount = hand.streets.preflop.actions
-				.map { it.playerSeat }.distinct().size.coerceAtLeast(2)
-			showdownResults.forEach { result ->
-				val entry = hand.showdown.find { it.seat == result.seat }
-				if (entry != null) {
-					ShowdownPlayerRow(
-						positionName = getPositionName(entry.seat, hand.buttonSeat, playerCount),
-						entry = entry,
-						result = result,
-						isHero = entry.seat == hand.heroSeat,
-					)
-				}
+		val playerCount = hand.playerCount
+		val winnerSeats = hand.winnerSeats
+
+		if (hand.isFoldWin) {
+			// 폴드 승리: 승자만 표시
+			val winnerSeat = winnerSeats.firstOrNull()
+			if (winnerSeat != null) {
+				val isHero = winnerSeat == hand.heroSeat
+				val posName = getPositionName(winnerSeat, hand.buttonSeat, playerCount)
+				FoldWinPlayerRow(
+					positionName = posName,
+					heroHand = if (isHero) hand.heroHand else null,
+					isHero = isHero,
+				)
+			}
+		} else {
+			// 일반 쇼다운
+			hand.heroHand?.let { heroCards ->
+				val heroEntry = ShowdownEntry(seat = hand.heroSeat, cards = heroCards)
+				val heroResult = showdownResults.find { it.seat == hand.heroSeat }
+				ShowdownPlayerRow(
+					positionName = getPositionName(hand.heroSeat, hand.buttonSeat, playerCount),
+					entry = heroEntry,
+					result = heroResult,
+					isHero = true,
+					isWinner = hand.heroSeat in winnerSeats,
+				)
+			}
+
+			hand.showdown.filter { it.seat != hand.heroSeat }.forEach { entry ->
+				val result = showdownResults.find { it.seat == entry.seat }
+				ShowdownPlayerRow(
+					positionName = getPositionName(entry.seat, hand.buttonSeat, playerCount),
+					entry = entry,
+					result = result,
+					isHero = false,
+					isWinner = entry.seat in winnerSeats,
+				)
 			}
 		}
 
@@ -109,11 +134,11 @@ internal fun ResultSection(hand: HandRecord) {
 private fun ShowdownPlayerRow(
 	positionName: String,
 	entry: ShowdownEntry,
-	result: ShowdownResult,
+	result: ShowdownResult?,
 	isHero: Boolean,
+	isWinner: Boolean = result?.isWinner == true,
 ) {
 	val colors = HandyTheme.colorScheme
-	val isWinner = result.isWinner
 
 	Row(
 		modifier = Modifier
@@ -175,19 +200,20 @@ private fun ShowdownPlayerRow(
 					)
 				}
 			}
-			Text(
-				text = result.ranking.localizedLabel(),
-				style = HandyTheme.typography.regular12,
-				color = if (isWinner) colors.gold else colors.textSecondary,
-			)
-			// 베스트 5장
-			if (result.bestCards.isNotEmpty()) {
-				Row(
-					horizontalArrangement = Arrangement.spacedBy(2.dp),
-					modifier = Modifier.padding(top = 4.dp),
-				) {
-					result.bestCards.forEach { card ->
-						PlayingCard(card = card, size = CardSize.XS)
+			if (result != null) {
+				Text(
+					text = result.ranking.localizedLabel(),
+					style = HandyTheme.typography.regular12,
+					color = if (isWinner) colors.gold else colors.textSecondary,
+				)
+				if (result.bestCards.isNotEmpty()) {
+					Row(
+						horizontalArrangement = Arrangement.spacedBy(2.dp),
+						modifier = Modifier.padding(top = 4.dp),
+					) {
+						result.bestCards.forEach { card ->
+							PlayingCard(card = card, size = CardSize.XS)
+						}
 					}
 				}
 			}
@@ -197,6 +223,83 @@ private fun ShowdownPlayerRow(
 		Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
 			PlayingCard(card = entry.card1, size = CardSize.SM)
 			PlayingCard(card = entry.card2, size = CardSize.SM)
+		}
+	}
+}
+
+@Composable
+private fun FoldWinPlayerRow(
+	positionName: String,
+	heroHand: PocketCards?,
+	isHero: Boolean,
+) {
+	val colors = HandyTheme.colorScheme
+
+	Row(
+		modifier = Modifier
+			.fillMaxWidth()
+			.clip(RoundedCornerShape(8.dp))
+			.border(1.dp, colors.gold, RoundedCornerShape(8.dp))
+			.background(colors.gold.copy(alpha = 0.1f))
+			.padding(10.dp),
+		verticalAlignment = Alignment.CenterVertically,
+		horizontalArrangement = Arrangement.spacedBy(8.dp),
+	) {
+		Box(
+			modifier = Modifier
+				.size(28.dp)
+				.clip(CircleShape)
+				.background(
+					if (isHero) colors.gold.copy(alpha = 0.15f) else colors.primary.copy(alpha = 0.15f),
+				),
+			contentAlignment = Alignment.Center,
+		) {
+			Text(
+				text = positionName,
+				style = HandyTheme.typography.bold10,
+				color = if (isHero) colors.gold else colors.primary,
+				maxLines = 1,
+			)
+		}
+
+		Column(modifier = Modifier.weight(1f)) {
+			Row(
+				verticalAlignment = Alignment.CenterVertically,
+				horizontalArrangement = Arrangement.spacedBy(4.dp),
+			) {
+				if (isHero) {
+					Text(
+						text = "Hero",
+						style = HandyTheme.typography.bold12,
+						color = colors.gold,
+					)
+				}
+				Text(
+					text = "WIN",
+					style = HandyTheme.typography.bold10,
+					color = colors.gold,
+					modifier = Modifier
+						.clip(RoundedCornerShape(4.dp))
+						.background(colors.gold.copy(alpha = 0.2f))
+						.padding(horizontal = 4.dp, vertical = 1.dp),
+				)
+			}
+			Text(
+				text = stringResource(Res.string.result_fold_win),
+				style = HandyTheme.typography.regular12,
+				color = colors.textSecondary,
+			)
+		}
+
+		// 카드: 히어로면 카드 표시, 아니면 뒷면
+		Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+			if (heroHand != null) {
+				PlayingCard(card = heroHand.card1, size = CardSize.SM)
+				PlayingCard(card = heroHand.card2, size = CardSize.SM)
+			} else {
+				PlayingCard(card = null, size = CardSize.SM)
+				PlayingCard(card = null, size = CardSize.SM)
+			}
 		}
 	}
 }

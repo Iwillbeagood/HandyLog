@@ -52,12 +52,13 @@ internal fun ActionGridSection(
 		.map { it.playerSeat }.distinct().size.coerceAtLeast(2)
 	val buttonSeat = hand.buttonSeat
 
-	// 스트릿별 데이터 준비
+	// 스트릿별 데이터 준비 (프리플랍 폴드 제외)
+	val preflopActions = hand.streets.preflop.actions.filter { it.type != ActionType.FOLD }
 	val streets = buildList {
 		add(
 			StreetColumn(
 				"Pre-Flop",
-				hand.streets.preflop.actions,
+				preflopActions,
 				formatBb(calculatePot(hand, Street.PREFLOP), bb, useBbUnit),
 			),
 		)

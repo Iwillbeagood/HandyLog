@@ -30,6 +30,7 @@ import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.designsystem.theme.nonScaledSp
 import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.spade_filled
 import handylog.core.res.generated.resources.trophy
 import org.jetbrains.compose.resources.painterResource
 import androidx.compose.material3.Icon
@@ -49,6 +50,7 @@ import com.hand.log.domain.model.ShowdownEntry
 import com.hand.log.domain.model.Suit
 import com.hand.log.domain.model.TurnStreet
 import com.hand.log.handdetail.model.formatWithComma
+import androidx.compose.ui.unit.Dp
 import com.hand.log.ui.poker.CardSize
 import com.hand.log.ui.poker.PlayingCard
 import kotlin.math.cos
@@ -60,6 +62,9 @@ internal fun HandDetailTableView(
 	hand: HandRecord,
 	useBbUnit: Boolean = false,
 	modifier: Modifier = Modifier,
+	seatCircleSize: Dp = 28.dp,
+	seatCardSize: CardSize = CardSize.XXS,
+	boardCardSize: CardSize = CardSize.SM,
 ) {
 	val colors = HandyTheme.colorScheme
 	val bb = hand.blinds?.bb ?: 1.0
@@ -79,14 +84,23 @@ internal fun HandDetailTableView(
 			.clip(RoundedCornerShape(12.dp))
 			.background(colors.card)
 			.padding(horizontal = 8.dp)
-			.aspectRatio(1.2f),
+			.aspectRatio(1.4f),
 	) {
+		// 우측 상단 앱 로고
+		Row(
+			modifier = Modifier
+				.align(Alignment.TopEnd)
+				.padding(top = 6.dp, end = 2.dp),
+		) {
+			SmallLogo()
+		}
+
 		val density = LocalDensity.current
 		val containerWidthPx = with(density) { maxWidth.toPx() }
 		val containerHeightPx = with(density) { maxHeight.toPx() }
 
 		// 테이블 타원
-		val tableWidth = containerWidthPx * 0.78f
+		val tableWidth = containerWidthPx * 0.65f
 		val tableHeight = tableWidth / 1.8f
 		val tableRadiusX = tableWidth / 2f
 		val tableRadiusY = tableHeight / 2f
@@ -95,7 +109,7 @@ internal fun HandDetailTableView(
 
 		Box(
 			modifier = Modifier
-				.fillMaxWidth(0.78f)
+				.fillMaxWidth(0.65f)
 				.aspectRatio(1.8f)
 				.align(Alignment.Center)
 				.clip(RoundedCornerShape(40))
@@ -107,7 +121,7 @@ internal fun HandDetailTableView(
 			if (boardCards.isNotEmpty()) {
 				Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
 					boardCards.forEach { card ->
-						PlayingCard(card = card, size = CardSize.SM)
+						PlayingCard(card = card, size = boardCardSize)
 					}
 				}
 			}
@@ -149,6 +163,8 @@ internal fun HandDetailTableView(
 				isWinner = seat in winnerSeats,
 				isFolded = isFolded,
 				pocketCards = pocketCards,
+				circleSize = seatCircleSize,
+				cardSize = seatCardSize,
 				modifier = Modifier.offset { IntOffset(sx.roundToInt(), sy.roundToInt()) },
 			)
 		}
@@ -164,18 +180,19 @@ private fun DetailSeatView(
 	isWinner: Boolean = false,
 	isFolded: Boolean,
 	pocketCards: PocketCards? = null,
+	circleSize: Dp = 28.dp,
+	cardSize: CardSize = CardSize.XXS,
 	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme
 	val textAlpha = if (isFolded) 0.4f else 1f
 	val borderColor = when {
-		isWinner -> colors.gold
 		isFolded -> colors.border.copy(alpha = 0.3f)
 		isHero -> colors.gold
 		else -> colors.border
 	}
 	val bgColor = when {
-		isWinner -> colors.gold.copy(alpha = 0.2f)
+		isWinner -> colors.primary.copy(alpha = 0.15f)
 		isFolded -> colors.muted.copy(alpha = 0.3f)
 		isHero -> colors.gold.copy(alpha = 0.15f)
 		else -> colors.muted
@@ -216,7 +233,7 @@ private fun DetailSeatView(
 			// 포지션 원
 			Box(
 				modifier = Modifier
-					.requiredSize(28.dp)
+					.requiredSize(circleSize)
 					.clip(CircleShape)
 					.background(bgColor)
 					.border(
@@ -243,13 +260,13 @@ private fun DetailSeatView(
 				Row(horizontalArrangement = Arrangement.spacedBy((-3).dp)) {
 					PlayingCard(
 						card = pocketCards.card1,
-						size = CardSize.XXS,
-						modifier = Modifier.requiredSize(CardSize.XXS.width, CardSize.XXS.height),
+						size = cardSize,
+						modifier = Modifier.requiredSize(cardSize.width, cardSize.height),
 					)
 					PlayingCard(
 						card = pocketCards.card2,
-						size = CardSize.XXS,
-						modifier = Modifier.requiredSize(CardSize.XXS.width, CardSize.XXS.height),
+						size = cardSize,
+						modifier = Modifier.requiredSize(cardSize.width, cardSize.height),
 					)
 				}
 			}
@@ -369,6 +386,36 @@ private fun HandDetailTableViewPreview() {
 			),
 			useBbUnit = true,
 			modifier = Modifier.padding(16.dp),
+		)
+	}
+}
+
+@Composable
+private fun SmallLogo() {
+	val colors = HandyTheme.colorScheme
+
+	Row(
+		verticalAlignment = Alignment.CenterVertically,
+		horizontalArrangement = Arrangement.spacedBy(4.dp),
+	) {
+		Box(
+			modifier = Modifier
+				.size(16.dp)
+				.clip(RoundedCornerShape(4.dp))
+				.background(colors.felt),
+			contentAlignment = Alignment.Center,
+		) {
+			Icon(
+				painter = painterResource(Res.drawable.spade_filled),
+				contentDescription = null,
+				tint = colors.primary,
+				modifier = Modifier.size(9.dp),
+			)
+		}
+		Text(
+			text = "HandyLog",
+			style = HandyTheme.typography.bold8.nonScaledSp,
+			color = colors.textSecondary.copy(alpha = 0.6f),
 		)
 	}
 }

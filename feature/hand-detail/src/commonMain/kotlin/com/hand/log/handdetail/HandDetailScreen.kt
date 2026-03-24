@@ -9,20 +9,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
+import com.hand.log.designsystem.component.FadeAnimatedVisibility
 import com.hand.log.designsystem.component.HandyMenuItem
 import com.hand.log.designsystem.component.HandyPopupMenu
 import com.hand.log.designsystem.component.HandySwitch
-import handylog.core.res.generated.resources.hand_detail_share_image
-import handylog.core.res.generated.resources.hand_detail_share_text
-import handylog.core.res.generated.resources.hand_detail_title
 import org.jetbrains.compose.resources.stringResource
 import com.hand.log.designsystem.component.HandyTopAppbar
 import com.hand.log.designsystem.component.TopAppbarIcon
@@ -44,26 +41,22 @@ import com.hand.log.domain.model.ShowdownEntry
 import com.hand.log.domain.model.Suit
 import com.hand.log.domain.model.TurnStreet
 import com.hand.log.handdetail.contract.HandDetailState
-import handylog.core.res.generated.resources.Res
-import handylog.core.res.generated.resources.file_text
-import handylog.core.res.generated.resources.image
-import handylog.core.res.generated.resources.pencil
-import handylog.core.res.generated.resources.share_2
-import kotlinx.coroutines.launch
+import handylog.core.res.generated.resources.*
 
 @Composable
 internal fun HandDetailScreen(
-	state: HandDetailState.Success,
+	state: HandDetailState,
 	onToggleBbUnit: () -> Unit,
 	onBack: () -> Unit,
-	onEdit: () -> Unit,
+	onShowDeleteConfirm: () -> Unit,
+	onShowTableExpanded: () -> Unit,
 	onShareText: () -> Unit,
-	onShareImage: (ImageBitmap) -> Unit,
+	onShareImage: () -> Unit,
+	onDownloadImage: () -> Unit,
+	graphicsLayer: GraphicsLayer = rememberGraphicsLayer(),
 ) {
-	val hand = state.hand
+	val success = state as? HandDetailState.Success
 	val colors = HandyTheme.colorScheme
-	val graphicsLayer = rememberGraphicsLayer()
-	val scope = rememberCoroutineScope()
 
 	BaseScaffold(
 		containerColor = colors.background,
@@ -80,7 +73,7 @@ internal fun HandDetailScreen(
 						horizontalArrangement = Arrangement.End,
 					) {
 						HandySwitch(
-							checked = state.useBbUnit,
+							checked = success?.useBbUnit ?: false,
 							text = "BB",
 							onCheckedChange = { onToggleBbUnit() },
 						)
@@ -89,9 +82,8 @@ internal fun HandDetailScreen(
 				endContent = {
 					Row {
 						TopAppbarIcon(
-							tint = colors.textPrimary,
-							icon = Res.drawable.pencil,
-							onClick = onEdit,
+							icon = Res.drawable.delete,
+							onClick = onShowDeleteConfirm,
 						)
 						Box {
 							var showShareMenu by remember { mutableStateOf(false) }
@@ -114,12 +106,12 @@ internal fun HandDetailScreen(
 									HandyMenuItem(
 										icon = Res.drawable.image,
 										text = stringResource(Res.string.hand_detail_share_image),
-										onClick = {
-											scope.launch {
-												val bitmap = graphicsLayer.toImageBitmap()
-												onShareImage(bitmap)
-											}
-										},
+										onClick = onShareImage,
+									),
+									HandyMenuItem(
+										icon = Res.drawable.images,
+										text = stringResource(Res.string.hand_detail_download_image),
+										onClick = onDownloadImage,
 									),
 								),
 							)
@@ -129,11 +121,16 @@ internal fun HandDetailScreen(
 			)
 		},
 	) {
-		HandDetailContent(
-			hand = hand,
-			useBbUnit = state.useBbUnit,
-			graphicsLayer = graphicsLayer,
-		)
+		FadeAnimatedVisibility(success != null) {
+			if (success != null) {
+				HandDetailContent(
+					hand = success.hand,
+					useBbUnit = success.useBbUnit,
+					graphicsLayer = graphicsLayer,
+					onTableClick = onShowTableExpanded,
+				)
+			}
+		}
 	}
 }
 
@@ -205,9 +202,11 @@ private fun HandDetailScreenPreview() {
 			),
 			onToggleBbUnit = {},
 			onBack = {},
-			onEdit = {},
+			onShowDeleteConfirm = {},
 			onShareText = {},
-			onShareImage = { _ -> },
+			onShareImage = {},
+			onDownloadImage = {},
+			onShowTableExpanded = {},
 		)
 	}
 }

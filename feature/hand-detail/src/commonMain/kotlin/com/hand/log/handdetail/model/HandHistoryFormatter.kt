@@ -64,6 +64,7 @@ object HandHistoryFormatter {
 		appendLine("[Preflop]")
 		val preflopActions = hand.streets.preflop.actions
 		var foldCount = 0
+		var preflopMaxBet = bb // BB가 기본 베팅
 
 		preflopActions.forEach { action ->
 			if (action.type == ActionType.FOLD) {
@@ -73,15 +74,27 @@ object HandHistoryFormatter {
 			val posName = getPositionName(action.playerSeat, buttonSeat, playerCount)
 			val isHero = action.playerSeat == heroSeat
 			val prefix = if (isHero) "Hero ($posName)" else posName
+			val amount = action.amount ?: 0.0
 
 			when (action.type) {
-				ActionType.CALL -> appendLine("$prefix calls ${formatBb(action.amount ?: 0.0, bb)}")
+				ActionType.CALL -> appendLine("$prefix calls ${formatBb(amount, bb)}")
 				ActionType.RAISE -> {
 					val label = formatRaiseLabel(action.betLevel)
-					appendLine("$prefix $label ${formatBb(action.amount ?: 0.0, bb)}")
+					appendLine("$prefix $label ${formatBb(amount, bb)}")
+					preflopMaxBet = amount
 				}
-				ActionType.BET -> appendLine("$prefix bets ${formatBb(action.amount ?: 0.0, bb)}")
-				ActionType.ALL_IN -> appendLine("$prefix goes all-in ${formatBb(action.amount ?: 0.0, bb)}")
+				ActionType.BET -> {
+					appendLine("$prefix bets ${formatBb(amount, bb)}")
+					preflopMaxBet = amount
+				}
+				ActionType.ALL_IN -> {
+					if (amount > preflopMaxBet) {
+						appendLine("$prefix bets ${formatBb(amount, bb)} (all-in)")
+						preflopMaxBet = amount
+					} else {
+						appendLine("$prefix calls all-in for ${formatBb(amount, bb)}")
+					}
+				}
 				ActionType.CHECK -> appendLine("$prefix checks")
 				else -> {}
 			}
@@ -149,24 +162,37 @@ object HandHistoryFormatter {
 		sb: StringBuilder,
 	) {
 		val foldPositions = mutableListOf<String>()
+		var currentMaxBet = 0.0
 
 		actions.forEach { action ->
 			val posName = getPositionName(action.playerSeat, buttonSeat, playerCount)
 			val isHero = action.playerSeat == heroSeat
 			val prefix = if (isHero) "Hero ($posName)" else posName
+			val amount = action.amount ?: 0.0
 
 			when (action.type) {
 				ActionType.FOLD -> foldPositions.add(prefix)
 				ActionType.CHECK -> sb.appendLine("$prefix checks")
-				ActionType.CALL -> sb.appendLine("$prefix calls ${formatBb(action.amount ?: 0.0, bb)}")
-				ActionType.BET -> sb.appendLine("$prefix bets ${formatBb(action.amount ?: 0.0, bb)}")
+				ActionType.CALL -> sb.appendLine("$prefix calls ${formatBb(amount, bb)}")
+				ActionType.BET -> {
+					sb.appendLine("$prefix bets ${formatBb(amount, bb)}")
+					currentMaxBet = amount
+				}
 				ActionType.RAISE -> {
 					val label = formatRaiseLabel(action.betLevel)
-					sb.appendLine("$prefix $label ${formatBb(action.amount ?: 0.0, bb)}")
+					sb.appendLine("$prefix $label ${formatBb(amount, bb)}")
+					currentMaxBet = amount
 				}
-				ActionType.ALL_IN -> sb.appendLine(
-					"$prefix goes all-in (${formatBb(action.amount ?: 0.0, bb)})",
-				)
+				ActionType.ALL_IN -> {
+					if (amount > currentMaxBet) {
+						// 공격적 올인 (베팅/레이즈)
+						sb.appendLine("$prefix bets ${formatBb(amount, bb)} (all-in)")
+						currentMaxBet = amount
+					} else {
+						// 콜 올인 (상대 금액 이하)
+						sb.appendLine("$prefix calls all-in for ${formatBb(amount, bb)}")
+					}
+				}
 			}
 		}
 		if (foldPositions.isNotEmpty()) {
@@ -211,13 +237,51 @@ object HandHistoryFormatter {
 
 	private fun calculatePot(hand: HandRecord, upToStreet: Street): Double {
 		val blinds = hand.blinds
-		val blindsPot = (blinds?.sb ?: 0.0) + (blinds?.bb ?: 0.0)
-		val antePot = if (blinds?.isBigBlindAnte == true) blinds.bb else 0.0
-		var pot = blindsPot + antePot
+		val sb = blinds?.sb ?: 0.0
+		val bb = blinds?.bb ?: 0.0
+		val antePot = if (blinds?.isBigBlindAnte == true) bb else 0.0
+		var pot = antePot
 
 		val streets = listOf(Street.PREFLOP, Street.FLOP, Street.TURN, Street.RIVER)
 		for (s in streets) {
-			pot += hand.streets.getActions(s).sumOf { it.amount ?: 0.0 }
+			val actions = hand.streets.getActions(s)
+			// 각 좌석의 마지막 투입 금액 (프리플랍 amount는 블라인드 포함)
+			val seatAmounts = actions
+				.groupBy { it.playerSeat }
+				.mapValues { (_, acts) -> acts.last().amount ?: 0.0 }
+
+			if (s == Street.PREFLOP) {
+				// 프리플랍: 액션에 참여한 좌석의 amount에는 블라인드가 포함됨
+				// 폴드한 블라인드 플레이어의 블라인드는 별도로 추가
+				val playerCount = hand.playerCount
+				val btn = hand.buttonSeat
+				val sbSeat = (btn % playerCount) + 1
+				val bbSeat = ((btn + 1) % playerCount) + 1
+				val foldedSeats = actions.filter { it.type == ActionType.FOLD }.map { it.playerSeat }.toSet()
+
+				// SB가 폴드한 경우 SB 블라인드만 팟에 추가
+				if (sbSeat in foldedSeats && sbSeat !in seatAmounts) {
+					pot += sb
+				} else if (sbSeat in foldedSeats && (seatAmounts[sbSeat] ?: 0.0) == 0.0) {
+					pot += sb
+				}
+
+				val amounts = seatAmounts.values.sortedDescending()
+				if (amounts.size >= 2) {
+					val uncalledBet = amounts[0] - amounts[1]
+					pot += amounts.sum() - uncalledBet
+				} else {
+					pot += amounts.sum()
+				}
+			} else {
+				val amounts = seatAmounts.values.sortedDescending()
+				if (amounts.size >= 2) {
+					val uncalledBet = amounts[0] - amounts[1]
+					pot += amounts.sum() - uncalledBet
+				} else {
+					pot += amounts.sum()
+				}
+			}
 			if (s == upToStreet) break
 		}
 		return pot
