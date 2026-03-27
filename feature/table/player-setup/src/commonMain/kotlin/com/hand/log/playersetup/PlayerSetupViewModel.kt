@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.hand.log.domain.model.Player
 import com.hand.log.domain.model.PlayerTendency
 import com.hand.log.domain.model.SavedPlayer
+import com.hand.log.domain.repository.PokerTableRepository
 import com.hand.log.domain.repository.SavedPlayerRepository
 import com.hand.log.playersetup.contract.PlayerSetupEffect
 import com.hand.log.playersetup.contract.PlayerSetupState
@@ -20,6 +21,7 @@ import kotlinx.coroutines.launch
 
 class PlayerSetupViewModel(
 	private val savedPlayerRepository: SavedPlayerRepository,
+	private val pokerTableRepository: PokerTableRepository,
 ) : ViewModel() {
 
 	private val _state = MutableStateFlow(PlayerSetupState())
@@ -36,92 +38,84 @@ class PlayerSetupViewModel(
 		)
 
 	fun initialize(
+		tableId: String,
 		initialSeat: Int,
 		isHero: Boolean,
-		startingStack: Double,
-		players: List<Player>,
+		player: Player?,
+		occupiedSeats: Set<Int>,
 	) {
-		_state.value = PlayerSetupState.from(
-			initialSeat = initialSeat,
+		_state.value = PlayerSetupState(
+			tableId = tableId,
+			player = player ?: Player(seat = initialSeat),
 			isHero = isHero,
-			startingStack = startingStack,
-			players = players,
+			occupiedSeats = occupiedSeats - initialSeat,
 		)
 	}
 
 	fun updateName(name: String) {
-		updateCurrentPlayer { copy(name = name.ifBlank { null }) }
-	}
-
-	fun updateStack(stack: String) {
-		val value = stack.toDoubleOrNull() ?: 0.0
-		updateCurrentPlayer { copy(stack = value) }
+		updatePlayer { copy(name = name.ifBlank { null }) }
 	}
 
 	fun updateTendency(tendency: PlayerTendency?) {
-		updateCurrentPlayer { copy(tendency = tendency) }
+		updatePlayer { copy(tendency = tendency) }
 	}
 
 	fun updateMemo(memo: String) {
-		updateCurrentPlayer { copy(memo = memo.ifBlank { null }) }
+		updatePlayer { copy(memo = memo.ifBlank { null }) }
+	}
+
+	fun updateSeat(newSeat: Int) {
+		_state.update { it.copy(player = it.player.copy(seat = newSeat)) }
 	}
 
 	fun loadSavedPlayer(saved: SavedPlayer) {
-		updateCurrentPlayer {
-			copy(name = saved.name, tendency = saved.tendency, memo = saved.memo)
-		}
+		updatePlayer { copy(name = saved.name, tendency = saved.tendency, memo = saved.memo) }
 	}
 
 	fun loadSavedPlayerAndSave(saved: SavedPlayer) {
 		loadSavedPlayer(saved)
-		emitSave()
+		save()
 	}
 
 	fun toggleSaveToMarking() {
 		_state.update { it.copy(saveToMarking = !it.saveToMarking) }
 	}
 
-	fun resetAndSave() {
-		val seat = _state.value.initialSeat
-		val startingStack = _state.value.startingStack
-		updateCurrentPlayer { Player(seat = seat, stack = startingStack) }
-		emitSave()
+	fun clearSeatAndSave() {
+		val current = _state.value
+		viewModelScope.launch {
+			pokerTableRepository.deletePlayer(current.tableId, current.player.seat)
+			_effect.emit(PlayerSetupEffect.SaveComplete)
+		}
 	}
 
 	fun save() {
 		val current = _state.value
+		val player = current.player
+
 		if (current.saveToMarking) {
-			val player = current.currentPlayer
-			if (player.name != null) {
-				viewModelScope.launch {
-					savedPlayerRepository.savePlayer(
-						SavedPlayer(
-							id = "",
-							name = player.name!!,
-							tendency = player.tendency,
-							memo = player.memo,
-						),
-					)
-				}
+			if (player.name.isNullOrBlank()) {
+				viewModelScope.launch { _effect.emit(PlayerSetupEffect.NameRequired) }
+				return
+			}
+			viewModelScope.launch {
+				savedPlayerRepository.savePlayer(
+					SavedPlayer(
+						name = player.name!!,
+						tendency = player.tendency,
+						memo = player.memo,
+					),
+				)
 			}
 		}
-		emitSave()
-	}
 
-	private fun emitSave() {
 		viewModelScope.launch {
-			_effect.emit(PlayerSetupEffect.SaveComplete(_state.value.editingPlayers))
+			pokerTableRepository.upsertPlayer(current.tableId, player)
+			_effect.emit(PlayerSetupEffect.SaveComplete)
 		}
 	}
 
-	private fun updateCurrentPlayer(block: Player.() -> Player) {
-		val seat = _state.value.initialSeat
-		_state.update { state ->
-			state.copy(
-				editingPlayers = state.editingPlayers.map {
-					if (it.seat == seat) it.block() else it
-				},
-			)
-		}
+	private fun updatePlayer(block: Player.() -> Player) {
+		_state.update { it.copy(player = it.player.block()) }
 	}
 }

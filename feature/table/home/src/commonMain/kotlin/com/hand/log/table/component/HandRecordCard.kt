@@ -40,7 +40,6 @@ internal fun HandRecordCard(
 	hand: HandRecord,
 	index: Int = 0,
 	onClick: () -> Unit,
-	onDelete: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme
@@ -108,7 +107,7 @@ internal fun HandRecordCard(
 					Text(
 						text = hand.heroPosition.label,
 						style = HandyTheme.typography.bold12,
-						color = colors.gold,
+						color = colors.textSecondary,
 					)
 					hand.blinds?.let { blinds ->
 						Text(
@@ -225,7 +224,6 @@ private fun HandRecordCardPreview() {
 				memo = "탑투페어로 올인 콜",
 			),
 			onClick = {},
-			onDelete = {},
 		)
 	}
 }
@@ -246,7 +244,6 @@ private fun HandRecordCardNegativePreview() {
 				result = -8500.0,
 			),
 			onClick = {},
-			onDelete = {},
 		)
 	}
 }

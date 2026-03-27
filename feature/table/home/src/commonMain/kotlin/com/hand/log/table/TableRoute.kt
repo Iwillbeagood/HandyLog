@@ -5,7 +5,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
-import com.hand.log.domain.model.Player
 import com.hand.log.navigation.interop.LocalMainActionInterop
 import com.hand.log.playersetup.PlayerSetupSheet
 import com.hand.log.table.contract.TableEffect
@@ -30,7 +29,6 @@ internal fun TableRoute(
 		onBack = navAction::popBackStack,
 		onNavigateToRecordHand = viewModel::navigateToRecordHand,
 		onNavigateToHandDetail = navAction::navigateToHandDetail,
-		onDeleteHand = viewModel::deleteHand,
 		onShowDeleteConfirm = viewModel::showDeleteConfirm,
 		onSeatClick = viewModel::showPlayerSetup,
 		onShowTableEdit = viewModel::showTableEdit,
@@ -39,7 +37,7 @@ internal fun TableRoute(
 	TableModalContent(
 		modalEffect = modalEffect,
 		onDismiss = viewModel::dismissModal,
-		onUpdatePlayers = viewModel::updatePlayers,
+		onPlayerSaved = viewModel::onPlayerSaved,
 		onTableSaved = viewModel::onTableSaved,
 		onDeleteTable = viewModel::deleteTable,
 	)
@@ -66,7 +64,7 @@ internal fun TableRoute(
 private fun TableModalContent(
 	modalEffect: TableModalEffect,
 	onDismiss: () -> Unit,
-	onUpdatePlayers: (List<Player>) -> Unit,
+	onPlayerSaved: () -> Unit,
 	onTableSaved: () -> Unit,
 	onDeleteTable: () -> Unit,
 ) {
@@ -75,11 +73,13 @@ private fun TableModalContent(
 
 		is TableModalEffect.ShowPlayerSetup -> {
 			PlayerSetupSheet(
+				tableId = modalEffect.tableId,
 				initialSeat = modalEffect.initialSeat,
 				isHero = modalEffect.isHero,
-				startingStack = modalEffect.startingStack,
-				players = modalEffect.players,
-				onSave = onUpdatePlayers,
+				player = modalEffect.player,
+				occupiedSeats = modalEffect.occupiedSeats,
+				maxSeat = modalEffect.maxPlayers,
+				onComplete = onPlayerSaved,
 				onDismiss = onDismiss,
 			)
 		}

@@ -35,16 +35,18 @@ internal class TableEditViewModel(
 	fun initialize(table: PokerTable?) {
 		if (table != null) {
 			editingTableId = table.id
+			val cash = table.gameType as? GameType.Cash
+			val tournament = table.gameType as? GameType.Tournament
 			_state.value = TableEditState(
 				date = table.date.toString(),
 				location = table.location ?: "",
-				gameType = table.gameType,
-				startingStack = table.startingStack.toLong().toString(),
-				sbText = table.blinds?.sb?.toLong()?.toString() ?: "",
-				bbText = table.blinds?.bb?.toLong()?.toString() ?: "",
-				straddleEnabled = table.blinds?.straddle != null,
-				straddleText = table.blinds?.straddle?.toLong()?.toString() ?: "",
-				bigBlindAnteEnabled = table.blinds?.isBigBlindAnte ?: true,
+				isCash = cash != null,
+				sbText = cash?.sb?.toLong()?.toString() ?: "",
+				bbText = cash?.bb?.toLong()?.toString() ?: "",
+				straddleEnabled = cash?.straddle != null,
+				straddleText = cash?.straddle?.toLong()?.toString() ?: "",
+				bigBlindAnteEnabled = tournament?.isBigBlindAnte ?: true,
+				maxPlayers = table.maxPlayers.takeIf { it > 0 } ?: table.playerCount,
 				playerCount = table.playerCount,
 				heroSeat = table.heroSeat,
 				isEditMode = true,
@@ -55,22 +57,26 @@ internal class TableEditViewModel(
 		}
 	}
 
-	fun updateDate(date: String) = _state.update { it.copy(date = date) }
 	fun updateDateMillis(millis: Long) {
 		val localDate = LocalDate.fromEpochDays((millis / 86400000).toInt())
 		_state.update { it.copy(date = localDate.toString()) }
 	}
 	fun updateLocation(location: String) = _state.update { it.copy(location = location) }
-	fun updateGameType(gameType: GameType) = _state.update { it.copy(gameType = gameType) }
-	fun updateStartingStack(stack: String) = _state.update { it.copy(startingStack = stack) }
+	fun updateIsCash(isCash: Boolean) = _state.update { it.copy(isCash = isCash) }
 	fun updateSb(sb: String) = _state.update { it.copy(sbText = sb) }
 	fun updateBb(bb: String) = _state.update { it.copy(bbText = bb) }
 	fun updateStraddleEnabled(enabled: Boolean) = _state.update { it.copy(straddleEnabled = enabled) }
 	fun updateStraddle(straddle: String) = _state.update { it.copy(straddleText = straddle) }
 	fun updateBigBlindAnte(enabled: Boolean) = _state.update { it.copy(bigBlindAnteEnabled = enabled) }
+	fun updateMaxPlayers(count: Int) = _state.update {
+		it.copy(
+			maxPlayers = count,
+			playerCount = it.playerCount.coerceAtMost(count),
+			heroSeat = if (it.heroSeat > count) 1 else it.heroSeat,
+		)
+	}
 	fun updatePlayerCount(count: Int) = _state.update {
-		val maxSeat = maxOf(count, 9)
-		it.copy(playerCount = count, heroSeat = if (it.heroSeat > maxSeat) 1 else it.heroSeat)
+		it.copy(playerCount = count, heroSeat = if (it.heroSeat > it.maxPlayers) 1 else it.heroSeat)
 	}
 	fun updateHeroSeat(seat: Int) = _state.update { it.copy(heroSeat = seat) }
 
@@ -83,16 +89,23 @@ internal class TableEditViewModel(
 				id = editingTableId ?: "",
 				date = LocalDate.parse(s.date),
 				location = s.location.takeIf { it.isNotBlank() },
-				gameType = s.gameType,
-				startingStack = s.startingStack.toDoubleOrNull() ?: 0.0,
-				blinds = s.buildBlinds(),
+				gameType = s.buildGameType(),
+				maxPlayers = s.maxPlayers,
 				playerCount = s.playerCount,
 				heroSeat = s.heroSeat,
 				createdAt = 0L,
 			)
 			val savedTable = if (s.isEditMode) {
-				pokerTableRepository.updateTableInfo(table)
-				table
+				val existing = pokerTableRepository.getTableById(editingTableId!!)
+				val maxSeat = s.maxPlayers
+				val filteredPlayers = existing?.players?.filter { it.seat <= maxSeat } ?: emptyList()
+				pokerTableRepository.saveTable(
+					table.copy(
+						id = editingTableId!!,
+						players = filteredPlayers,
+						createdAt = existing?.createdAt ?: 0L,
+					),
+				)
 			} else {
 				createPokerTable(table)
 			}

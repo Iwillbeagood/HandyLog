@@ -52,7 +52,6 @@ internal fun TableScreen(
 	onBack: () -> Unit,
 	onNavigateToRecordHand: () -> Unit,
 	onNavigateToHandDetail: (String) -> Unit,
-	onDeleteHand: (String) -> Unit,
 	onShowDeleteConfirm: () -> Unit,
 	onSeatClick: (Int) -> Unit,
 	onShowTableEdit: () -> Unit,
@@ -65,7 +64,7 @@ internal fun TableScreen(
 		topBar = {
 			if (tableData != null) {
 				HandyTopAppbar(
-					title = if (tableData.table.gameType == GameType.TOURNAMENT) {
+					title = if (tableData.table.gameType is GameType.Tournament) {
 						stringResource(Res.string.table_detail_tournament)
 					} else {
 						stringResource(Res.string.table_detail_cash)
@@ -132,7 +131,6 @@ internal fun TableScreen(
 				state = data,
 				onSeatClick = onSeatClick,
 				onNavigateToHandDetail = onNavigateToHandDetail,
-				onDeleteHand = onDeleteHand,
 			)
 		}
 	}
@@ -144,7 +142,6 @@ private fun TableContent(
 	state: TableState.TableData,
 	onSeatClick: (Int) -> Unit,
 	onNavigateToHandDetail: (String) -> Unit,
-	onDeleteHand: (String) -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
 
@@ -212,7 +209,6 @@ private fun TableContent(
 					hand = hand,
 					index = handIndex,
 					onClick = { onNavigateToHandDetail(hand.id) },
-					onDelete = { onDeleteHand(hand.id) },
 				)
 			}
 		}
@@ -233,15 +229,13 @@ private fun TableScreenPreview() {
 					id = "1",
 					date = LocalDate(2026, 3, 12),
 					location = "강남 홀덤펍",
-					gameType = GameType.CASH,
-					startingStack = 50000.0,
-					blinds = Blinds(sb = 500.0, bb = 1000.0),
+					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
 					playerCount = 9,
 					heroSeat = 3,
 					players = listOf(
-						Player(seat = 1, stack = 45000.0, name = "Player 1"),
-						Player(seat = 3, stack = 62000.0, name = "Hero"),
-						Player(seat = 5, stack = 38000.0, name = "Player 5"),
+						Player(seat = 1, name = "Player 1"),
+						Player(seat = 3, name = "Hero"),
+						Player(seat = 5, name = "Player 5"),
 					),
 					createdAt = 1710000000000L,
 				),
@@ -279,7 +273,6 @@ private fun TableScreenPreview() {
 			onBack = {},
 			onNavigateToRecordHand = {},
 			onNavigateToHandDetail = {},
-			onDeleteHand = {},
 			onSeatClick = {},
 			onShowTableEdit = {},
 			onShowDeleteConfirm = {},
@@ -297,9 +290,7 @@ private fun TableScreenEmptyPreview() {
 					id = "1",
 					date = LocalDate(2026, 3, 12),
 					location = "강남",
-					gameType = GameType.CASH,
-					startingStack = 50000.0,
-					blinds = Blinds(sb = 500.0, bb = 1000.0),
+					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
 					playerCount = 6,
 					heroSeat = 1,
 					players = emptyList(),
@@ -309,7 +300,6 @@ private fun TableScreenEmptyPreview() {
 			onBack = {},
 			onNavigateToRecordHand = {},
 			onNavigateToHandDetail = {},
-			onDeleteHand = {},
 			onSeatClick = {},
 			onShowTableEdit = {},
 			onShowDeleteConfirm = {},

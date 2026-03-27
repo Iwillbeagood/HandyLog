@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,30 +23,31 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import com.hand.log.designsystem.component.HandyCheckBox
 import com.hand.log.designsystem.component.HandySelector
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.component.HandySectionLabel
 import com.hand.log.designsystem.component.HandySwitch
 import com.hand.log.designsystem.component.HandyTextField
 import com.hand.log.designsystem.component.HandyToggleGroup
 import com.hand.log.designsystem.component.VerticalSpacer
 import com.hand.log.designsystem.theme.HandyTheme
-import com.hand.log.domain.model.GameType
-import com.hand.log.ui.localizedLabel
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun TableFormFields(
+fun ColumnScope.TableFormFields(
 	date: String,
 	onDateClick: () -> Unit,
 	location: String,
 	onLocationChange: (String) -> Unit,
-	gameType: GameType,
-	onGameTypeChange: (GameType) -> Unit,
-	startingStack: String,
-	onStartingStackChange: (String) -> Unit,
+	isCash: Boolean,
+	onIsCashChange: (Boolean) -> Unit,
 	sbText: String,
 	onSbChange: (String) -> Unit,
 	bbText: String,
@@ -56,6 +58,8 @@ fun TableFormFields(
 	onStraddleChange: (String) -> Unit,
 	bigBlindAnteEnabled: Boolean,
 	onBigBlindAnteChange: (Boolean) -> Unit,
+	maxPlayers: Int,
+	onMaxPlayersChange: (Int) -> Unit,
 	playerCount: Int,
 	onPlayerCountChange: (Int) -> Unit,
 	heroSeat: Int,
@@ -106,25 +110,23 @@ fun TableFormFields(
 	VerticalSpacer(16.dp)
 	HandySectionLabel(stringResource(Res.string.table_form_game_type))
 	HandyToggleGroup(
-		options = GameType.entries.toList(),
-		selected = gameType,
+		options = listOf(false, true),
+		selected = isCash,
 		onSelect = {
 			focusManager.clearFocus()
-			onGameTypeChange(it)
+			onIsCashChange(it)
 		},
-		label = { it.localizedLabel() },
+		label = {
+			if (it) {
+				stringResource(Res.string.game_type_cash)
+			} else {
+				stringResource(Res.string.game_type_tournament)
+			}
+		},
 	)
 
-	VerticalSpacer(16.dp)
-	HandyTextField(
-		value = startingStack,
-		onValueChange = onStartingStackChange,
-		label = stringResource(Res.string.table_form_starting_stack),
-		keyboardType = KeyboardType.Number,
-	)
-
-	VerticalSpacer(16.dp)
-	if (gameType == GameType.CASH) {
+	if (isCash) {
+		VerticalSpacer(16.dp)
 		CashBlindsSection(
 			sbText = sbText,
 			onSbChange = onSbChange,
@@ -139,19 +141,34 @@ fun TableFormFields(
 			onStraddleChange = onStraddleChange,
 		)
 	} else {
-		TournamentBlindsSection(
-			bigBlindAnteEnabled = bigBlindAnteEnabled,
-			onBigBlindAnteChange = {
+		VerticalSpacer(8.dp)
+		HandyCheckBox(
+			text = stringResource(Res.string.table_form_bb_ante),
+			checked = bigBlindAnteEnabled,
+			onCheckedChange = {
 				focusManager.clearFocus()
 				onBigBlindAnteChange(it)
+
 			},
+			modifier = Modifier.align(Alignment.End),
 		)
 	}
 
 	VerticalSpacer(16.dp)
+	HandySectionLabel(stringResource(Res.string.table_form_max_players))
+	HandySelector(
+		range = 6..10,
+		selected = maxPlayers,
+		onSelect = {
+			focusManager.clearFocus()
+			onMaxPlayersChange(it)
+		},
+	)
+
+	VerticalSpacer(16.dp)
 	HandySectionLabel(stringResource(Res.string.table_form_player_count))
 	HandySelector(
-		range = 2..10,
+		range = 2..maxPlayers,
 		selected = playerCount,
 		onSelect = {
 			focusManager.clearFocus()
@@ -162,7 +179,7 @@ fun TableFormFields(
 	VerticalSpacer(16.dp)
 	HandySectionLabel(stringResource(Res.string.table_form_hero_seat))
 	HandySelector(
-		range = 1..maxOf(playerCount, 9),
+		range = 1..maxPlayers,
 		selected = heroSeat,
 		onSelect = {
 			focusManager.clearFocus()
@@ -242,30 +259,76 @@ private fun CashBlindsSection(
 	}
 }
 
+@ThemePreviews
 @Composable
-private fun TournamentBlindsSection(
-	bigBlindAnteEnabled: Boolean,
-	onBigBlindAnteChange: (Boolean) -> Unit,
-) {
-	val colors = HandyTheme.colorScheme
-	val typography = HandyTheme.typography
+private fun TableFormFieldsCashPreview() {
+	ThemePreview {
+		Column(
+			modifier = Modifier
+				.verticalScroll(rememberScrollState())
+				.padding(16.dp),
+		) {
+			TableFormFields(
+				date = "2026-03-25",
+				onDateClick = {},
+				location = "강남 홀덤펍",
+				onLocationChange = {},
+				isCash = true,
+				onIsCashChange = {},
+				sbText = "500",
+				onSbChange = {},
+				bbText = "1000",
+				onBbChange = {},
+				straddleEnabled = true,
+				onStraddleEnabledChange = {},
+				straddleText = "2000",
+				onStraddleChange = {},
+				bigBlindAnteEnabled = false,
+				onBigBlindAnteChange = {},
+				maxPlayers = 9,
+				onMaxPlayersChange = {},
+				playerCount = 9,
+				onPlayerCountChange = {},
+				heroSeat = 3,
+				onHeroSeatChange = {},
+			)
+		}
+	}
+}
 
-	Row(
-		modifier = Modifier
-			.fillMaxWidth()
-			.background(colors.muted, RoundedCornerShape(12.dp))
-			.padding(12.dp),
-		verticalAlignment = Alignment.CenterVertically,
-	) {
-		Text(
-			text = stringResource(Res.string.table_form_bb_ante),
-			style = typography.medium10,
-			color = colors.textSecondary,
-		)
-		Spacer(modifier = Modifier.weight(1f))
-		HandySwitch(
-			checked = bigBlindAnteEnabled,
-			onCheckedChange = onBigBlindAnteChange,
-		)
+@ThemePreviews
+@Composable
+private fun TableFormFieldsTournamentPreview() {
+	ThemePreview {
+		Column(
+			modifier = Modifier
+				.verticalScroll(rememberScrollState())
+				.padding(16.dp),
+		) {
+			TableFormFields(
+				date = "2026-03-25",
+				onDateClick = {},
+				location = "",
+				onLocationChange = {},
+				isCash = false,
+				onIsCashChange = {},
+				sbText = "",
+				onSbChange = {},
+				bbText = "",
+				onBbChange = {},
+				straddleEnabled = false,
+				onStraddleEnabledChange = {},
+				straddleText = "",
+				onStraddleChange = {},
+				bigBlindAnteEnabled = true,
+				onBigBlindAnteChange = {},
+				playerCount = 6,
+				maxPlayers = 6,
+				onMaxPlayersChange = {},
+				onPlayerCountChange = {},
+				heroSeat = 1,
+				onHeroSeatChange = {},
+			)
+		}
 	}
 }

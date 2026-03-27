@@ -15,14 +15,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.designsystem.component.HandyCheckBox
 import com.hand.log.designsystem.component.HandySectionLabel
+import com.hand.log.designsystem.component.HandySelector
 import com.hand.log.designsystem.component.HandyTextField
 import com.hand.log.designsystem.component.VerticalSpacer
 import com.hand.log.designsystem.component.modal.HandyBottomSheet
@@ -44,11 +47,13 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun PlayerSetupSheet(
+	tableId: String,
 	initialSeat: Int,
 	isHero: Boolean,
-	startingStack: Double,
-	players: List<Player>,
-	onSave: (List<Player>) -> Unit,
+	player: Player?,
+	occupiedSeats: Set<Int>,
+	maxSeat: Int,
+	onComplete: () -> Unit,
 	onDismiss: () -> Unit,
 	viewModel: PlayerSetupViewModel = koinViewModel(),
 ) {
@@ -57,17 +62,30 @@ fun PlayerSetupSheet(
 	val savedPlayers by viewModel.savedPlayers.collectAsStateWithLifecycle()
 
 	LaunchedEffect(initialSeat) {
-		viewModel.initialize(initialSeat, isHero, startingStack, players)
+		viewModel.initialize(tableId, initialSeat, isHero, player, occupiedSeats)
 	}
+
+	var warningMessage by remember { mutableStateOf<String?>(null) }
+	val nameRequiredMessage = stringResource(Res.string.player_setup_name_required)
 
 	LaunchedEffect(Unit) {
 		viewModel.effect.collect { effect ->
 			when (effect) {
-				is PlayerSetupEffect.SaveComplete -> {
-					onSave(effect.players)
+				PlayerSetupEffect.SaveComplete -> {
+					onComplete()
 					onDismiss()
 				}
+				PlayerSetupEffect.NameRequired -> {
+					warningMessage = nameRequiredMessage
+				}
 			}
+		}
+	}
+
+	LaunchedEffect(warningMessage) {
+		if (warningMessage != null) {
+			kotlinx.coroutines.delay(2000)
+			warningMessage = null
 		}
 	}
 
@@ -78,27 +96,26 @@ fun PlayerSetupSheet(
 			titleColor = colors.gold,
 			confirmText = stringResource(Res.string.btn_save),
 			onConfirm = viewModel::save,
-			subText = stringResource(Res.string.btn_reset),
-			onSub = viewModel::resetAndSave,
 		) {
 			HandyTextField(
-				value = state.playerStack,
-				onValueChange = viewModel::updateStack,
-				label = stringResource(Res.string.player_stack),
-				keyboardType = KeyboardType.Number,
+				value = state.playerName,
+				onValueChange = viewModel::updateName,
+				label = stringResource(Res.string.player_name),
 			)
 		}
 	} else {
 		PlayerSetupContent(
 			state = state,
 			savedPlayers = savedPlayers,
+			maxSeat = maxSeat,
+			warningMessage = warningMessage,
 			onNameChange = viewModel::updateName,
-			onStackChange = viewModel::updateStack,
 			onTendencyChange = viewModel::updateTendency,
 			onMemoChange = viewModel::updateMemo,
+			onSeatChange = viewModel::updateSeat,
 			onQuickLoadSavedPlayer = viewModel::loadSavedPlayerAndSave,
 			onSaveToMarkingChange = viewModel::toggleSaveToMarking,
-			onResetClick = viewModel::resetAndSave,
+			onClearSeatClick = viewModel::clearSeatAndSave,
 			onSaveClick = viewModel::save,
 			onDismiss = onDismiss,
 		)
@@ -110,13 +127,15 @@ fun PlayerSetupSheet(
 fun PlayerSetupContent(
 	state: PlayerSetupState,
 	savedPlayers: List<SavedPlayer>,
+	maxSeat: Int,
+	warningMessage: String? = null,
 	onNameChange: (String) -> Unit,
-	onStackChange: (String) -> Unit,
 	onTendencyChange: (PlayerTendency?) -> Unit,
 	onMemoChange: (String) -> Unit,
+	onSeatChange: (Int) -> Unit,
 	onQuickLoadSavedPlayer: (SavedPlayer) -> Unit,
 	onSaveToMarkingChange: () -> Unit,
-	onResetClick: () -> Unit,
+	onClearSeatClick: () -> Unit,
 	onSaveClick: () -> Unit,
 	onDismiss: () -> Unit,
 ) {
@@ -124,11 +143,11 @@ fun PlayerSetupContent(
 
 	HandyBottomSheet(
 		onDismissRequest = onDismiss,
-		title = "Seat ${state.initialSeat}",
+		title = "Seat ${state.player.seat}",
 		confirmText = stringResource(Res.string.btn_save),
 		onConfirm = onSaveClick,
-		subText = stringResource(Res.string.btn_reset),
-		onSub = onResetClick,
+		subText = stringResource(Res.string.player_setup_clear_seat),
+		onSub = onClearSeatClick,
 	) {
 		if (savedPlayers.isNotEmpty()) {
 			HandySectionLabel(stringResource(Res.string.player_saved)) {
@@ -170,11 +189,12 @@ fun PlayerSetupContent(
 		)
 
 		VerticalSpacer(12.dp)
-		HandyTextField(
-			value = state.playerStack,
-			onValueChange = onStackChange,
-			label = stringResource(Res.string.player_stack),
-			keyboardType = KeyboardType.Number,
+		HandySectionLabel(stringResource(Res.string.player_setup_seat))
+		HandySelector(
+			range = 1..maxSeat,
+			selected = state.player.seat,
+			onSelect = onSeatChange,
+			disabledValues = state.occupiedSeats,
 		)
 
 		VerticalSpacer(12.dp)
@@ -183,8 +203,7 @@ fun PlayerSetupContent(
 				horizontalArrangement = Arrangement.spacedBy(6.dp),
 				verticalArrangement = Arrangement.spacedBy(6.dp),
 			) {
-				val options = listOf<PlayerTendency?>(null) + PlayerTendency.entries
-				options.forEach { tendency ->
+				PlayerTendency.entries.forEach { tendency ->
 					val isSelected = tendency == state.selectedTendency
 					Box(
 						modifier = Modifier
@@ -194,7 +213,7 @@ fun PlayerSetupContent(
 							.padding(horizontal = 12.dp, vertical = 6.dp),
 					) {
 						Text(
-							text = tendency?.localizedLabel() ?: stringResource(Res.string.player_tendency_none),
+							text = tendency.localizedLabel(),
 							style = HandyTheme.typography.medium12,
 							color = if (isSelected) colors.onPrimary else colors.textSecondary,
 						)
@@ -219,6 +238,15 @@ fun PlayerSetupContent(
 				.padding(vertical = 4.dp)
 				.align(Alignment.End),
 		)
+
+		if (warningMessage != null) {
+			VerticalSpacer(8.dp)
+			Text(
+				text = warningMessage,
+				style = HandyTheme.typography.medium12,
+				color = HandyTheme.colorScheme.error,
+			)
+		}
 	}
 }
 
@@ -228,15 +256,14 @@ private fun PlayerSetupContentPreview() {
 	ThemePreview {
 		PlayerSetupContent(
 			state = PlayerSetupState(
-				initialSeat = 3,
-				editingPlayers = listOf(
-					Player(seat = 3, stack = 62000.0, name = "John", tendency = PlayerTendency.NIT, memo = "타이트"),
-				),
+				player = Player(seat = 3, name = "John", tendency = PlayerTendency.NIT, memo = "타이트"),
+				occupiedSeats = setOf(1, 2, 5),
 			),
 			savedPlayers = listOf(SavedPlayer(id = "1", name = "Mike", tendency = PlayerTendency.LOOSE)),
-			onNameChange = {}, onStackChange = {}, onTendencyChange = {}, onMemoChange = {},
-			onQuickLoadSavedPlayer = {}, onSaveToMarkingChange = {}, onResetClick = {}, onSaveClick = {},
-			onDismiss = {},
+			maxSeat = 9,
+			onNameChange = {}, onTendencyChange = {}, onMemoChange = {},
+			onSeatChange = {}, onQuickLoadSavedPlayer = {}, onSaveToMarkingChange = {},
+			onClearSeatClick = {}, onSaveClick = {}, onDismiss = {},
 		)
 	}
 }
@@ -246,11 +273,12 @@ private fun PlayerSetupContentPreview() {
 private fun PlayerSetupContentEmptyPreview() {
 	ThemePreview {
 		PlayerSetupContent(
-			state = PlayerSetupState(initialSeat = 1),
+			state = PlayerSetupState(player = Player(seat = 1)),
 			savedPlayers = emptyList(),
-			onNameChange = {}, onStackChange = {}, onTendencyChange = {}, onMemoChange = {},
-			onQuickLoadSavedPlayer = {}, onSaveToMarkingChange = {}, onResetClick = {}, onSaveClick = {},
-			onDismiss = {},
+			maxSeat = 9,
+			onNameChange = {}, onTendencyChange = {}, onMemoChange = {},
+			onSeatChange = {}, onQuickLoadSavedPlayer = {}, onSaveToMarkingChange = {},
+			onClearSeatClick = {}, onSaveClick = {}, onDismiss = {},
 		)
 	}
 }
