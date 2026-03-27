@@ -16,6 +16,7 @@ kotlin {
 			implementation(libs.androidx.datastore)
 			implementation(libs.androidx.datastore.preferences)
 			implementation(libs.kotlinx.serialization.core)
+			implementation(projects.data.datasource)
 		}
 	}
 }

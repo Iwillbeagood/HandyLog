@@ -21,7 +21,6 @@ data class TablePlayerEntity(
 	@PrimaryKey val id: String,
 	val tableId: String,
 	val seat: Int,
-	val stack: Double,
 	val tendency: String? = null,
 	val memo: String? = null,
 	val name: String? = null,

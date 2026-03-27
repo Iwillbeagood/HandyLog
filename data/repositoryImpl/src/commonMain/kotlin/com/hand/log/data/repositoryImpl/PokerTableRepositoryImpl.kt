@@ -1,6 +1,7 @@
 package com.hand.log.data.repositoryImpl
 
 import com.hand.log.data.datasoure.local.PokerTableLocalDataSource
+import com.hand.log.domain.model.Player
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.repository.PokerTableRepository
 import com.hand.log.utils.etc.Logger
@@ -12,6 +13,9 @@ internal class PokerTableRepositoryImpl(
 
 	override fun observeAllTables(): Flow<List<PokerTable>> =
 		localDataSource.observeAllTables()
+
+	override fun observeTableById(tableId: String): Flow<PokerTable?> =
+		localDataSource.observeTableById(tableId)
 
 	override suspend fun getTableById(tableId: String): PokerTable? =
 		localDataSource.getTableById(tableId)
@@ -35,6 +39,14 @@ internal class PokerTableRepositoryImpl(
 		} catch (e: Exception) {
 			Logger.e("TableRepo: updateTableInfo failed - ${e.message}")
 		}
+	}
+
+	override suspend fun upsertPlayer(tableId: String, player: Player) {
+		localDataSource.upsertPlayer(tableId, player)
+	}
+
+	override suspend fun deletePlayer(tableId: String, seat: Int) {
+		localDataSource.deletePlayer(tableId, seat)
 	}
 
 	override suspend fun deleteTable(tableId: String, onSuccess: () -> Unit) {

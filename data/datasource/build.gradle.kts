@@ -10,8 +10,6 @@ kotlin {
 		commonMain.dependencies {
 			implementation(projects.domain.model)
 			implementation(projects.domain.repository)
-			implementation(projects.local.database)
-			implementation(projects.local.datastore)
 			implementation(projects.core.utils)
 			implementation(libs.kotlinx.coroutines.core)
 			implementation(libs.koin.core)

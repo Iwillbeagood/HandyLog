@@ -1,5 +1,6 @@
-package com.hand.log.data.datasoure.local
+package com.hand.log.local.datastore.impl
 
+import com.hand.log.data.datasoure.local.AppSettingsLocalDataSource
 import com.hand.log.local.datastore.AppSettingsDataSource
 import kotlinx.coroutines.flow.Flow
 

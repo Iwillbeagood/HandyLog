@@ -17,10 +17,17 @@ private val json = Json { ignoreUnknownKeys = true }
 
 class Converters {
 	@TypeConverter
-	fun fromGameType(value: GameType): String = value.name
+	fun fromGameType(value: GameType): String = json.encodeToString(GameType.serializer(), value)
 
 	@TypeConverter
-	fun toGameType(value: String): GameType = GameType.valueOf(value)
+	fun toGameType(value: String): GameType {
+		// 이전 enum 형태 ("TOURNAMENT", "CASH") 호환
+		return when (value) {
+			"TOURNAMENT" -> GameType.Tournament()
+			"CASH" -> GameType.Cash(sb = 0.0, bb = 0.0)
+			else -> json.decodeFromString(GameType.serializer(), value)
+		}
+	}
 
 	@TypeConverter
 	fun fromActionType(value: ActionType): String = value.name
@@ -41,16 +48,16 @@ class Converters {
 	fun toPlayerTendency(value: String?): PlayerTendency? = value?.let { PlayerTendency.valueOf(it) }
 
 	@TypeConverter
-	fun fromLocalDate(value: LocalDate): String = value.toString()
-
-	@TypeConverter
-	fun toLocalDate(value: String): LocalDate = LocalDate.parse(value)
-
-	@TypeConverter
 	fun fromBlinds(value: Blinds?): String? = value?.let { json.encodeToString(Blinds.serializer(), it) }
 
 	@TypeConverter
 	fun toBlinds(value: String?): Blinds? = value?.let { json.decodeFromString(Blinds.serializer(), it) }
+
+	@TypeConverter
+	fun fromLocalDate(value: LocalDate): String = value.toString()
+
+	@TypeConverter
+	fun toLocalDate(value: String): LocalDate = LocalDate.parse(value)
 
 	@TypeConverter
 	fun fromPocketCards(value: PocketCards?): String? = value?.let { json.encodeToString(PocketCards.serializer(), it) }

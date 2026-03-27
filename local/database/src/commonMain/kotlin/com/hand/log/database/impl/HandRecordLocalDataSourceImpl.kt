@@ -1,5 +1,6 @@
-package com.hand.log.data.datasoure.local
+package com.hand.log.database.impl
 
+import com.hand.log.data.datasoure.local.HandRecordLocalDataSource
 import com.hand.log.database.dao.HandRecordDao
 import com.hand.log.database.entity.HandRecordEntity
 import com.hand.log.domain.model.HandRecord

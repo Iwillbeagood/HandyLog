@@ -3,20 +3,14 @@ package com.hand.log.database.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDate
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 @Entity(tableName = "poker_tables")
-data class PokerTableEntity @OptIn(ExperimentalUuidApi::class) constructor(
+data class PokerTableEntity(
 	@PrimaryKey val id: String,
 	val date: LocalDate,
 	val location: String? = null,
 	val gameType: String,
-	val startingStack: Double,
-	val blindsSb: Double? = null,
-	val blindsBb: Double? = null,
-	val blindsStraddle: Double? = null,
-	val isBigBlindAnte: Boolean = false,
+	val maxPlayers: Int = 0,
 	val playerCount: Int,
 	val heroSeat: Int,
 	val createdAt: Long,

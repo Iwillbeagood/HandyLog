@@ -1,5 +1,6 @@
-package com.hand.log.data.datasoure.local
+package com.hand.log.database.impl
 
+import com.hand.log.data.datasoure.local.SavedPlayerLocalDataSource
 import com.hand.log.database.dao.SavedPlayerDao
 import com.hand.log.database.entity.SavedPlayerEntity
 import com.hand.log.domain.model.PlayerTendency

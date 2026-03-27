@@ -17,6 +17,7 @@ kotlin {
 			implementation(libs.kotlinx.serialization.core)
 			implementation(libs.kotlinx.serialization.json)
 			implementation(projects.domain.model)
+			implementation(projects.data.datasource)
 			implementation(libs.koin.core)
 		}
 		androidMain.dependencies {

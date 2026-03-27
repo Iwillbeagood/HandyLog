@@ -20,9 +20,7 @@ interface PokerTableDao {
 	@Query(
 		"""UPDATE poker_tables SET
 		date = :date, location = :location, gameType = :gameType,
-		startingStack = :startingStack, blindsSb = :blindsSb, blindsBb = :blindsBb,
-		blindsStraddle = :blindsStraddle, isBigBlindAnte = :isBigBlindAnte,
-		playerCount = :playerCount, heroSeat = :heroSeat
+		maxPlayers = :maxPlayers, playerCount = :playerCount, heroSeat = :heroSeat
 		WHERE id = :id""",
 	)
 	suspend fun updateTableInfo(
@@ -30,11 +28,7 @@ interface PokerTableDao {
 		date: LocalDate,
 		location: String?,
 		gameType: String,
-		startingStack: Double,
-		blindsSb: Double?,
-		blindsBb: Double?,
-		blindsStraddle: Double?,
-		isBigBlindAnte: Boolean,
+		maxPlayers: Int,
 		playerCount: Int,
 		heroSeat: Int,
 	)
@@ -48,6 +42,12 @@ interface PokerTableDao {
 	@Query("SELECT * FROM poker_tables WHERE id = :tableId")
 	suspend fun getTableById(tableId: String): PokerTableEntity?
 
+	@Query("SELECT * FROM poker_tables WHERE id = :tableId")
+	fun observeTableById(tableId: String): Flow<PokerTableEntity?>
+
+	@Query("SELECT * FROM table_players WHERE tableId = :tableId ORDER BY seat ASC")
+	fun observePlayersForTable(tableId: String): Flow<List<TablePlayerEntity>>
+
 	@Insert(onConflict = OnConflictStrategy.REPLACE)
 	suspend fun insertPlayers(players: List<TablePlayerEntity>)
 
@@ -56,6 +56,22 @@ interface PokerTableDao {
 
 	@Query("DELETE FROM table_players WHERE tableId = :tableId")
 	suspend fun deletePlayersForTable(tableId: String)
+
+	@Query("DELETE FROM table_players WHERE tableId = :tableId AND seat > :maxSeat")
+	suspend fun deletePlayersOverSeat(tableId: String, maxSeat: Int)
+
+	@Query("DELETE FROM table_players WHERE tableId = :tableId AND seat = :seat")
+	suspend fun deletePlayerBySeat(tableId: String, seat: Int)
+
+	@Query(
+		"""UPDATE table_players SET
+		seat = :seat, tendency = :tendency, memo = :memo, name = :name
+		WHERE id = :id""",
+	)
+	suspend fun updatePlayer(id: String, seat: Int, tendency: String?, memo: String?, name: String?)
+
+	@Insert(onConflict = OnConflictStrategy.REPLACE)
+	suspend fun insertPlayer(player: TablePlayerEntity)
 
 	@Transaction
 	suspend fun insertCompleteTable(

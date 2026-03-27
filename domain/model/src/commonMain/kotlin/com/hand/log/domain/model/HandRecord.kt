@@ -1,16 +1,5 @@
 package com.hand.log.domain.model
 
-import kotlinx.serialization.Serializable
-
-@Serializable
-data class ShowdownEntry(
-	val seat: Int,
-	val cards: PocketCards,
-) {
-	val card1: Card get() = cards.card1
-	val card2: Card get() = cards.card2
-}
-
 data class HandRecord(
 	val id: String,
 	val tableId: String,
@@ -83,6 +72,47 @@ data class HandRecord(
 			idx == 1 -> Position.UTG1
 			else -> Position.MP
 		}
+	}
+
+	/** BB 금액 (기본값 1.0) */
+	val bbAmount: Double
+		get() = blinds?.bb?.takeIf { it > 0 } ?: 1.0
+
+	/** 좌석의 포지션 이름 */
+	fun getPositionName(seat: Int): String = getPosition(seat).label
+
+	/** 좌석의 프리플랍 시작 스택 */
+	fun getInitialStack(seat: Int): Double? =
+		streets.preflop.actions.firstOrNull { it.playerSeat == seat }?.stackBefore
+
+	/** 좌석의 쇼다운 카드 (히어로면 heroHand, 아니면 showdown에서 검색) */
+	fun getShowdownCards(seat: Int): PocketCards? =
+		if (seat == heroSeat) heroHand else showdown.find { it.seat == seat }?.cards
+
+	/** 특정 스트릿까지의 누적 팟 */
+	fun getPotAtStreet(upToStreet: Street): Double {
+		val blindsPot = (blinds?.sb ?: 0.0) + (blinds?.bb ?: 0.0)
+		val antePot = if (blinds?.isBigBlindAnte == true) blinds!!.bb else 0.0
+		var pot = blindsPot + antePot
+		val streetOrder = listOf(Street.PREFLOP, Street.FLOP, Street.TURN, Street.RIVER)
+		for (s in streetOrder) {
+			pot += streets.getActions(s).sumOf { it.amount ?: 0.0 }
+			if (s == upToStreet) break
+		}
+		return pot
+	}
+
+	/** 특정 스트릿 시점의 참여(폴드 안한) 인원 수 */
+	fun getActiveCountAt(upToStreet: Street): Int {
+		val foldedSeats = mutableSetOf<Int>()
+		val streetOrder = listOf(Street.PREFLOP, Street.FLOP, Street.TURN, Street.RIVER)
+		for (s in streetOrder) {
+			streets.getActions(s).forEach { action ->
+				if (action.type == ActionType.FOLD) foldedSeats.add(action.playerSeat)
+			}
+			if (s == upToStreet) break
+		}
+		return (allSeats.size - foldedSeats.size).coerceAtLeast(0)
 	}
 
 	/** 쇼다운 승자 좌석 */
