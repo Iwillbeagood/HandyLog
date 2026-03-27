@@ -183,10 +183,11 @@ private fun BetSizeNavigationItem(
 				style = HandyTheme.typography.medium14,
 				color = colors.textPrimary,
 			)
-			Text(
-				text = ">",
-				style = HandyTheme.typography.bold16,
-				color = colors.textSecondary,
+			Icon(
+				painter = painterResource(Res.drawable.chevron_right),
+				contentDescription = null,
+				tint = colors.textSecondary,
+				modifier = Modifier.size(16.dp),
 			)
 		}
 	}

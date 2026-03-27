@@ -41,6 +41,7 @@ kotlin {
 			implementation(projects.data.datasource)
 			implementation(projects.data.repositoryImpl)
 			implementation(projects.local.database)
+			implementation(projects.local.datastore)
 			implementation(projects.core.designsystem)
 			implementation(projects.core.navigation)
 			implementation(projects.core.utils)

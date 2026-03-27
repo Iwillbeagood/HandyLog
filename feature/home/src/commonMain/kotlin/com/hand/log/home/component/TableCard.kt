@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.theme.HandyTheme
-import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.GameType
 import com.hand.log.ui.localizedLabel
 import com.hand.log.domain.model.PokerTable
@@ -68,7 +67,7 @@ internal fun TableCard(
 					modifier = Modifier
 						.clip(RoundedCornerShape(50))
 						.background(
-							if (table.gameType == GameType.CASH) {
+							if (table.gameType is GameType.Cash) {
 								colors.primary.copy(alpha = 0.15f)
 							} else {
 								colors.gold.copy(alpha = 0.15f)
@@ -76,10 +75,10 @@ internal fun TableCard(
 						)
 						.padding(horizontal = 8.dp, vertical = 3.dp),
 				) {
-					val badgeColor = if (table.gameType == GameType.CASH) colors.primary else colors.gold
+					val badgeColor = if (table.gameType is GameType.Cash) colors.primary else colors.gold
 					Icon(
 						painter = painterResource(
-							if (table.gameType == GameType.TOURNAMENT) {
+							if (table.gameType is GameType.Tournament) {
 								Res.drawable.trophy
 							} else {
 								Res.drawable.dollar_sign
@@ -150,20 +149,18 @@ internal fun TableCard(
 			}
 
 			// Row 3: Blinds (Cash only)
-			if (table.gameType == GameType.CASH) {
-				table.blinds?.let { blinds ->
-					Spacer(modifier = Modifier.height(2.dp))
-					Text(
-						text = buildString {
-							append("${formatChip(blinds.sb)}/${formatChip(blinds.bb)}")
-							blinds.straddle?.let { straddle ->
-								append(" (스트래들 ${formatChip(straddle)})")
-							}
-						},
-						style = HandyTheme.typography.regular12,
-						color = colors.textSecondary,
-					)
-				}
+			(table.gameType as? GameType.Cash)?.let { cash ->
+				Spacer(modifier = Modifier.height(2.dp))
+				Text(
+					text = buildString {
+						append("${formatChip(cash.sb)}/${formatChip(cash.bb)}")
+						cash.straddle?.let { straddle ->
+							append(" (스트래들 ${formatChip(straddle)})")
+						}
+					},
+					style = HandyTheme.typography.regular12,
+					color = colors.textSecondary,
+				)
 			}
 
 			// Row 4: Hand count
@@ -203,9 +200,7 @@ private fun TableCardCashPreview() {
 					id = "1",
 					date = LocalDate(2025, 3, 10),
 					location = "강남 홀덤펍",
-					gameType = GameType.CASH,
-					startingStack = 200000.0,
-					blinds = Blinds(sb = 1000.0, bb = 2000.0, straddle = 4000.0),
+					gameType = GameType.Cash(sb = 1000.0, bb = 2000.0, straddle = 4000.0),
 					playerCount = 9,
 					heroSeat = 5,
 					createdAt = 1710000000000L,
@@ -227,8 +222,7 @@ private fun TableCardTournamentPreview() {
 					id = "2",
 					date = LocalDate(2025, 3, 9),
 					location = "WPT Korea",
-					gameType = GameType.TOURNAMENT,
-					startingStack = 50000.0,
+					gameType = GameType.Tournament(),
 					playerCount = 6,
 					heroSeat = 3,
 					createdAt = 1709900000000L,

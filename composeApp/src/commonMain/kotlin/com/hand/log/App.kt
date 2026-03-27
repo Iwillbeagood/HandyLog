@@ -7,22 +7,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.hand.log.data.datasoure.di.dataSourceModule
 import com.hand.log.data.repositoryImpl.di.repositoryModule
+import com.hand.log.database.di.databaseDataSourceModule
 import com.hand.log.database.di.databaseModule
 import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.ThemeMode
 import com.hand.log.domain.model.etc.ToastDurationType
 import com.hand.log.domain.repository.AppSettingsRepository
+import com.hand.log.handdetail.di.featureHandDetailModule
 import com.hand.log.home.di.featureHomeModule
+import com.hand.log.local.datastore.di.dataStoreDataSourceModule
+import com.hand.log.local.datastore.di.dataStoreModule
 import com.hand.log.main.MainScreen
 import com.hand.log.navigation.interop.LocalMainActionInterop
 import com.hand.log.navigation.interop.MainActionInterop
-import com.hand.log.handdetail.di.featureHandDetailModule
-import com.hand.log.local.datastore.di.dataStoreModule
-import com.hand.log.playersetup.di.featurePlayerSetupModule
 import com.hand.log.players.di.featurePlayersModule
+import com.hand.log.playersetup.di.featurePlayerSetupModule
 import com.hand.log.record.di.featureRecordModule
 import com.hand.log.settings.betsize.di.featureSettingsBetSizeModule
 import com.hand.log.settings.main.di.featureSettingsMainModule
@@ -73,8 +74,9 @@ internal fun App() {
 internal val appModule = module {
 	includes(
 		databaseModule,
+		databaseDataSourceModule,
 		dataStoreModule,
-		dataSourceModule,
+		dataStoreDataSourceModule,
 		repositoryModule,
 	)
 	includes(

@@ -17,7 +17,6 @@ import com.hand.log.designsystem.component.HandyHorizontalDivider
 import com.hand.log.designsystem.component.HandyTopAppbar
 import com.hand.log.designsystem.component.IconButton
 import com.hand.log.designsystem.component.TopAppbarType
-import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.GameType
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.home.component.EmptyState
@@ -113,9 +112,7 @@ private fun HomeScreenWithDataPreview() {
 							id = "1",
 							date = LocalDate(2025, 3, 10),
 							location = "강남 홀덤펍",
-							gameType = GameType.CASH,
-							startingStack = 200000.0,
-							blinds = Blinds(sb = 1000.0, bb = 2000.0),
+							gameType = GameType.Cash(sb = 1000.0, bb = 2000.0),
 							playerCount = 9,
 							heroSeat = 5,
 							createdAt = 1710000000000L,
@@ -127,8 +124,7 @@ private fun HomeScreenWithDataPreview() {
 							id = "2",
 							date = LocalDate(2025, 3, 9),
 							location = "토너먼트",
-							gameType = GameType.TOURNAMENT,
-							startingStack = 50000.0,
+							gameType = GameType.Tournament(),
 							playerCount = 6,
 							heroSeat = 3,
 							createdAt = 1709900000000L,
