@@ -291,6 +291,7 @@ private fun PlayerActionArea(
 				minRaiseAmount = state.minRaiseAmount,
 				maxAmount = currentStack + (state.players[state.currentActionSeat]?.currentBet ?: 0.0),
 				showAmountWarning = state.showAmountWarning,
+				useBbUnit = state.useBbUnit,
 			)
 		} else {
 			Box(
@@ -349,9 +350,7 @@ private fun StreetStepContentPreflopPreview() {
 				table = PokerTable(
 					id = "test",
 					date = LocalDate(2026, 3, 14),
-					gameType = GameType.CASH,
-					startingStack = 50000.0,
-					blinds = Blinds(sb = 500.0, bb = 1000.0),
+					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
 					playerCount = 9,
 					heroSeat = 3,
 					createdAt = 0L,
@@ -391,9 +390,7 @@ private fun StreetStepContentFlopPreview() {
 				table = PokerTable(
 					id = "test",
 					date = LocalDate(2026, 3, 14),
-					gameType = GameType.CASH,
-					startingStack = 50000.0,
-					blinds = Blinds(sb = 500.0, bb = 1000.0),
+					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
 					playerCount = 6,
 					heroSeat = 3,
 					createdAt = 0L,
@@ -433,9 +430,7 @@ private fun StreetStepContentCompletePreview() {
 				table = PokerTable(
 					id = "test",
 					date = LocalDate(2026, 3, 14),
-					gameType = GameType.CASH,
-					startingStack = 50000.0,
-					blinds = Blinds(sb = 500.0, bb = 1000.0),
+					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
 					playerCount = 6,
 					heroSeat = 3,
 					createdAt = 0L,
@@ -478,9 +473,7 @@ private fun StreetStepContentOpenerSelectionPreview() {
 				table = PokerTable(
 					id = "test",
 					date = LocalDate(2026, 3, 14),
-					gameType = GameType.CASH,
-					startingStack = 50000.0,
-					blinds = Blinds(sb = 500.0, bb = 1000.0),
+					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
 					playerCount = 9,
 					heroSeat = 3,
 					createdAt = 0L,

@@ -74,7 +74,7 @@ internal fun SetupStepContent(
 				)
 				state.table?.let {
 					Text(
-						text = "${it.gameType.localizedLabel()} · ${it.playerCount}인 · 스택 ${it.startingStack.toLong()}",
+						text = "${it.gameType.localizedLabel()} · ${it.playerCount}인",
 						style = HandyTheme.typography.regular12,
 						color = colors.textSecondary,
 					)
@@ -124,15 +124,7 @@ internal fun SetupStepContent(
 			selectedContentColor = colors.card,
 		)
 
-		VerticalSpacer(16.dp)
-		HandySectionLabel(stringResource(Res.string.record_button_seat))
-		HandySelector(
-			range = 1..(state.table?.playerCount ?: 9),
-			selected = state.buttonSeat,
-			onSelect = onUpdateButtonSeat,
-		)
-
-		if (state.table?.gameType == GameType.TOURNAMENT) {
+		if (state.table?.gameType is GameType.Tournament) {
 			VerticalSpacer(16.dp)
 			HandySectionLabel(stringResource(Res.string.table_form_blinds))
 			Row(
@@ -201,9 +193,7 @@ private fun SetupStepContentEmptyPreview() {
 				table = PokerTable(
 					id = "test",
 					date = LocalDate(2026, 3, 14),
-					gameType = GameType.CASH,
-					startingStack = 50000.0,
-					blinds = Blinds(sb = 500.0, bb = 1000.0),
+					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
 					playerCount = 9,
 					heroSeat = 3,
 					createdAt = 0L,
@@ -229,9 +219,7 @@ private fun SetupStepContentFilledPreview() {
 				table = PokerTable(
 					id = "test",
 					date = LocalDate(2026, 3, 14),
-					gameType = GameType.CASH,
-					startingStack = 50000.0,
-					blinds = Blinds(sb = 500.0, bb = 1000.0),
+					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
 					playerCount = 9,
 					heroSeat = 3,
 					createdAt = 0L,
@@ -259,9 +247,7 @@ private fun SetupStepContentTournamentPreview() {
 				table = PokerTable(
 					id = "test",
 					date = LocalDate(2026, 3, 14),
-					gameType = GameType.TOURNAMENT,
-					startingStack = 10000.0,
-					blinds = Blinds(sb = 50.0, bb = 100.0, isBigBlindAnte = true),
+					gameType = GameType.Tournament(isBigBlindAnte = true),
 					playerCount = 9,
 					heroSeat = 5,
 					createdAt = 0L,

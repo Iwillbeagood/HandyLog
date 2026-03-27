@@ -26,7 +26,6 @@ import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.designsystem.theme.nonScaledSp
-import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.GameType
 import com.hand.log.domain.model.PocketCards
@@ -109,7 +108,7 @@ internal fun ShowdownStepContent(
 				state = state,
 				seat = heroSeat,
 				result = null,
-				hasResults = hasResults,
+	
 				isFolded = true,
 				onSelectShowdownCard = onSelectShowdownCard,
 			)
@@ -121,7 +120,7 @@ internal fun ShowdownStepContent(
 				state = state,
 				seat = seat,
 				result = results.find { it.seat == seat },
-				hasResults = hasResults,
+	
 				onSelectShowdownCard = onSelectShowdownCard,
 			)
 			VerticalSpacer(8.dp)
@@ -130,16 +129,27 @@ internal fun ShowdownStepContent(
 		// 결과 (자동 계산)
 		if (hasResults) {
 			val heroResult = state.heroResult
-			val isPositive = heroResult >= 0
-			val prefix = if (isPositive) "+" else ""
+			val isWin = heroResult >= 0
 			val colors = HandyTheme.colorScheme
+			val heroShowdownResult = results.find { it.seat == state.table?.heroSeat }
 
 			VerticalSpacer(8.dp)
 			HandySectionLabel(stringResource(Res.string.showdown_result))
+
+			val resultText = if (state.isFoldWin) {
+				stringResource(Res.string.showdown_result_fold_win)
+			} else {
+				val ranking = heroShowdownResult?.ranking?.localizedLabel() ?: ""
+				if (isWin) {
+					stringResource(Res.string.showdown_result_win, ranking)
+				} else {
+					stringResource(Res.string.showdown_result_lose, ranking)
+				}
+			}
 			Text(
-				text = "$prefix${state.formatAmount(heroResult)}",
+				text = resultText,
 				style = HandyTheme.typography.bold20,
-				color = if (isPositive) colors.primary else colors.error,
+				color = if (isWin) colors.primary else colors.error,
 			)
 		}
 
@@ -159,7 +169,6 @@ private fun ShowdownPlayerCard(
 	state: RecordHandState.Recording,
 	seat: Int,
 	result: ShowdownResult?,
-	hasResults: Boolean,
 	isFolded: Boolean = false,
 	onSelectShowdownCard: (Int) -> Unit,
 ) {
@@ -167,12 +176,11 @@ private fun ShowdownPlayerCard(
 	val posName = state.positionName(seat)
 	val isHero = seat == state.table?.heroSeat
 	val hand = if (isHero) state.heroHand else state.showdown[seat]
-	val player = state.players[seat]
 	val isWinner = result?.isWinner == true
+	val player = state.players[seat]
 	val currentStack = state.getPlayerStack(seat)
 	val initialStack = player?.initialStack ?: 0.0
-	val stackChange = currentStack - initialStack
-	val isEliminated = result != null && currentStack <= 0.0
+	val isEliminated = result != null && initialStack > 0 && currentStack <= 0.0
 
 	Box {
 		Row(
@@ -221,7 +229,7 @@ private fun ShowdownPlayerCard(
 				)
 			}
 
-			// 포지션 + 족보 + 스택
+			// 포지션 + 족보
 			Column(modifier = Modifier.weight(1f)) {
 				Row(
 					verticalAlignment = Alignment.CenterVertically,
@@ -230,12 +238,10 @@ private fun ShowdownPlayerCard(
 					Text(
 						text = posName,
 						style = HandyTheme.typography.bold14,
-						color = if (isFolded) {
-							colors.textSecondary.copy(alpha = 0.5f)
-						} else if (isHero) {
-							colors.gold
-						} else {
-							colors.textPrimary
+						color = when {
+							isFolded -> colors.textSecondary.copy(alpha = 0.5f)
+							isHero -> colors.gold
+							else -> colors.textPrimary
 						},
 					)
 					if (isWinner) {
@@ -262,7 +268,7 @@ private fun ShowdownPlayerCard(
 					}
 				}
 
-				if (result != null) {
+				if (result != null && !state.isFoldWin) {
 					Text(
 						text = result.ranking.localizedLabel(),
 						style = HandyTheme.typography.regular12,
@@ -274,28 +280,6 @@ private fun ShowdownPlayerCard(
 						style = HandyTheme.typography.regular10.nonScaledSp,
 						color = if (isFolded) colors.textSecondary.copy(alpha = 0.5f) else colors.gold,
 					)
-				}
-
-				if (hasResults) {
-					Row(
-						horizontalArrangement = Arrangement.spacedBy(8.dp),
-						verticalAlignment = Alignment.CenterVertically,
-					) {
-						Text(
-							text = "스택: ${state.formatAmount(currentStack)}",
-							style = HandyTheme.typography.regular10.nonScaledSp,
-							color = colors.textSecondary,
-						)
-						if (stackChange != 0.0) {
-							val isPositive = stackChange > 0
-							val prefix = if (isPositive) "+" else ""
-							Text(
-								text = "$prefix${state.formatAmount(stackChange)}",
-								style = HandyTheme.typography.bold10.nonScaledSp,
-								color = if (isPositive) colors.primary else colors.error,
-							)
-						}
-					}
 				}
 			}
 
@@ -346,9 +330,7 @@ private fun ShowdownStepContentPreview() {
 				table = PokerTable(
 					id = "test",
 					date = LocalDate(2026, 3, 17),
-					gameType = GameType.CASH,
-					startingStack = 50000.0,
-					blinds = Blinds(sb = 500.0, bb = 1000.0),
+					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
 					playerCount = 6,
 					heroSeat = 3,
 					createdAt = 0L,
@@ -381,9 +363,7 @@ private fun ShowdownStepContentResultPreview() {
 				table = PokerTable(
 					id = "test",
 					date = LocalDate(2026, 3, 17),
-					gameType = GameType.CASH,
-					startingStack = 50000.0,
-					blinds = Blinds(sb = 500.0, bb = 1000.0),
+					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
 					playerCount = 6,
 					heroSeat = 3,
 					createdAt = 0L,

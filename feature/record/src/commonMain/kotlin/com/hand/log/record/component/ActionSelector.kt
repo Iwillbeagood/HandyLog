@@ -50,6 +50,7 @@ internal fun ActionSelector(
 	minRaiseAmount: Double = 0.0,
 	maxAmount: Double = 0.0,
 	showAmountWarning: Boolean = false,
+	useBbUnit: Boolean = false,
 	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme
@@ -85,10 +86,19 @@ internal fun ActionSelector(
 
 		if (needsAmount) {
 			VerticalSpacer(12.dp)
+
+			val displayMinRaise = if (useBbUnit && bbAmount > 0) {
+				val bbCount = minRaiseAmount / bbAmount
+				val rounded = (bbCount * 10).toLong() / 10.0
+				if (rounded == rounded.toLong().toDouble()) "${rounded.toLong()}BB" else "${rounded}BB"
+			} else {
+				minRaiseAmount.toLong().toString()
+			}
+
 			HandyTextField(
 				value = currentAmount,
 				onValueChange = onUpdateAmount,
-				label = stringResource(Res.string.record_amount_label, minRaiseAmount.toLong()),
+				label = stringResource(Res.string.record_amount_label, displayMinRaise),
 				keyboardType = KeyboardType.Number,
 				onDone = if (selectedAction == ActionType.BET || selectedAction == ActionType.RAISE) {
 					onConfirmAction
@@ -97,8 +107,15 @@ internal fun ActionSelector(
 				},
 			)
 			AnimatedVisibility(visible = showAmountWarning) {
+				val displayMax = if (useBbUnit && bbAmount > 0) {
+					val bbCount = maxAmount / bbAmount
+					val rounded = (bbCount * 10).toLong() / 10.0
+					if (rounded == rounded.toLong().toDouble()) "${rounded.toLong()}BB" else "${rounded}BB"
+				} else {
+					maxAmount.toLong().toString()
+				}
 				Text(
-					text = stringResource(Res.string.record_stack_warning, maxAmount.toLong()),
+					text = stringResource(Res.string.record_stack_warning, displayMax),
 					style = HandyTheme.typography.regular10,
 					color = colors.error,
 					modifier = Modifier.padding(top = 4.dp),
@@ -113,7 +130,16 @@ internal fun ActionSelector(
 				if (currentStreet == Street.PREFLOP) {
 					if (bbAmount > 0) {
 						preflopPresets.forEach { multiplier ->
-							val amount = (bbAmount * multiplier).toLong().toString()
+							val presetAmount = if (useBbUnit) {
+								val rounded = (multiplier * 10).toLong() / 10.0
+								if (rounded == rounded.toLong().toDouble()) {
+									rounded.toLong().toString()
+								} else {
+									rounded.toString()
+								}
+							} else {
+								(bbAmount * multiplier).toLong().toString()
+							}
 							val label = if (multiplier % 1.0 == 0.0) {
 								"${multiplier.toInt()}BB"
 							} else {
@@ -121,7 +147,7 @@ internal fun ActionSelector(
 							}
 							RegularButton(
 								text = label,
-								onClick = { onUpdateAmount(amount) },
+								onClick = { onUpdateAmount(presetAmount) },
 								containerColor = colors.muted,
 								contentColor = colors.textPrimary,
 								textStyle = HandyTheme.typography.medium14,
@@ -134,10 +160,21 @@ internal fun ActionSelector(
 				} else {
 					if (currentPot > 0) {
 						postflopPresets.forEach { percent ->
-							val amount = (currentPot * percent / 100).toLong().toString()
+							val chipAmount = currentPot * percent / 100
+							val presetAmount = if (useBbUnit && bbAmount > 0) {
+								val bbCount = chipAmount / bbAmount
+								val rounded = (bbCount * 10).toLong() / 10.0
+								if (rounded == rounded.toLong().toDouble()) {
+									rounded.toLong().toString()
+								} else {
+									rounded.toString()
+								}
+							} else {
+								chipAmount.toLong().toString()
+							}
 							RegularButton(
 								text = "$percent%",
-								onClick = { onUpdateAmount(amount) },
+								onClick = { onUpdateAmount(presetAmount) },
 								containerColor = colors.muted,
 								contentColor = colors.textPrimary,
 								textStyle = HandyTheme.typography.medium14,

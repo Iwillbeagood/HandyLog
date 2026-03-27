@@ -165,7 +165,6 @@ internal fun ActionTableView(
 
 		val seatSizeDp = 48.dp
 		val seatSizePx = with(density) { seatSizeDp.toPx() }
-		val seatCircleRadius = with(density) { 16.dp.toPx() }
 		val chipSizeDp = 16.dp
 		val dealerSizeDp = 16.dp
 		val chipSizePx = with(density) { chipSizeDp.toPx() }
@@ -244,7 +243,6 @@ internal fun ActionTableView(
 			}
 
 			ActionSeatView(
-				seatNumber = seat,
 				positionName = posName,
 				action = action,
 				isHero = isHero,
@@ -325,7 +323,6 @@ internal fun ActionTableView(
 					modifier = Modifier.offset { IntOffset(ax.roundToInt(), ay.roundToInt()) },
 				) {
 					AllInMarker(
-						size = dealerSizeDp,
 						amount = allInAmount?.let { state.formatAmount(it) },
 					)
 				}
@@ -372,7 +369,6 @@ internal fun ActionTableView(
 
 @Composable
 private fun ActionSeatView(
-	seatNumber: Int,
 	positionName: String,
 	action: Action?,
 	isHero: Boolean,
@@ -495,24 +491,22 @@ private fun ActionTableViewAllElementsPreview() {
 				table = PokerTable(
 					id = "test",
 					date = LocalDate(2026, 3, 14),
-					gameType = GameType.TOURNAMENT,
-					startingStack = 50000.0,
-					blinds = Blinds(sb = 500.0, bb = 1000.0, isBigBlindAnte = true),
+					gameType = GameType.Tournament(isBigBlindAnte = true),
 					playerCount = 9,
 					heroSeat = 3,
 					createdAt = 0L,
 				),
 				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.HEARTS)),
 				players = RecordPlayers(
-					player1 = RecordPlayer(seat = 1, stack = 50000.0),
-					player2 = RecordPlayer(seat = 2, stack = 49500.0),
-					player3 = RecordPlayer(seat = 3, stack = 49000.0),
-					player4 = RecordPlayer(seat = 4, stack = 47500.0),
-					player5 = RecordPlayer(seat = 5, stack = 50000.0, status = PlayerStatus.FOLDED),
-					player6 = RecordPlayer(seat = 6, stack = 42000.0),
-					player7 = RecordPlayer(seat = 7, stack = 42000.0),
-					player8 = RecordPlayer(seat = 8, stack = 0.0, status = PlayerStatus.ALL_IN),
-					player9 = RecordPlayer(seat = 9, stack = 50000.0),
+					player1 = RecordPlayer(seat = 1),
+					player2 = RecordPlayer(seat = 2),
+					player3 = RecordPlayer(seat = 3),
+					player4 = RecordPlayer(seat = 4),
+					player5 = RecordPlayer(seat = 5, status = PlayerStatus.FOLDED),
+					player6 = RecordPlayer(seat = 6),
+					player7 = RecordPlayer(seat = 7),
+					player8 = RecordPlayer(seat = 8, status = PlayerStatus.ALL_IN),
+					player9 = RecordPlayer(seat = 9),
 				),
 				currentStep = RecordStep.PREFLOP,
 				buttonSeat = 4,
@@ -547,24 +541,22 @@ private fun ActionTableView9MaxFlopPreview() {
 				table = PokerTable(
 					id = "test",
 					date = LocalDate(2026, 3, 14),
-					gameType = GameType.CASH,
-					startingStack = 50000.0,
-					blinds = Blinds(sb = 500.0, bb = 1000.0),
+					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
 					playerCount = 9,
 					heroSeat = 3,
 					createdAt = 0L,
 				),
 				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.HEARTS)),
 				players = RecordPlayers(
-					player1 = RecordPlayer(seat = 1, stack = 47000.0),
-					player2 = RecordPlayer(seat = 2, stack = 47000.0),
-					player3 = RecordPlayer(seat = 3, stack = 44000.0),
-					player4 = RecordPlayer(seat = 4, stack = 47000.0),
-					player5 = RecordPlayer(seat = 5, stack = 50000.0, status = PlayerStatus.FOLDED),
-					player6 = RecordPlayer(seat = 6, stack = 50000.0, status = PlayerStatus.FOLDED),
-					player7 = RecordPlayer(seat = 7, stack = 50000.0, status = PlayerStatus.FOLDED),
-					player8 = RecordPlayer(seat = 8, stack = 50000.0, status = PlayerStatus.FOLDED),
-					player9 = RecordPlayer(seat = 9, stack = 50000.0, status = PlayerStatus.FOLDED),
+					player1 = RecordPlayer(seat = 1),
+					player2 = RecordPlayer(seat = 2),
+					player3 = RecordPlayer(seat = 3),
+					player4 = RecordPlayer(seat = 4),
+					player5 = RecordPlayer(seat = 5, status = PlayerStatus.FOLDED),
+					player6 = RecordPlayer(seat = 6, status = PlayerStatus.FOLDED),
+					player7 = RecordPlayer(seat = 7, status = PlayerStatus.FOLDED),
+					player8 = RecordPlayer(seat = 8, status = PlayerStatus.FOLDED),
+					player9 = RecordPlayer(seat = 9, status = PlayerStatus.FOLDED),
 				),
 				currentStep = RecordStep.FLOP,
 				buttonSeat = 1,
