@@ -70,11 +70,12 @@ internal class RecordHandViewModel(
 					table = table,
 					players = RecordPlayers.create(
 						playerCount = table?.playerCount ?: 0,
-						defaultStack = table?.startingStack ?: 0.0,
-						stacks = table?.players?.associate { it.seat to it.stack } ?: emptyMap(),
+						defaultStack = 0.0,
 					),
 					buttonSeat = 1,
-					blinds = table?.blinds,
+					blinds = (table?.gameType as? com.hand.log.domain.model.GameType.Cash)?.let {
+						Blinds(sb = it.sb, bb = it.bb, straddle = it.straddle)
+					},
 					preflopPresets = data.preflopPresets,
 					postflopPresets = data.postflopPresets,
 				)
@@ -209,12 +210,15 @@ internal class RecordHandViewModel(
 	fun onTableSaved(table: PokerTable) {
 		val current = recording ?: return
 		val updatedPlayers = if (table.playerCount != current.table?.playerCount) {
-			RecordPlayers.create(playerCount = table.playerCount, defaultStack = table.startingStack)
+			RecordPlayers.create(playerCount = table.playerCount, defaultStack = 0.0)
 		} else {
 			current.players
 		}
 		updateRecording {
-			copy(table = table, blinds = table.blinds, players = updatedPlayers)
+			val newBlinds = (table.gameType as? com.hand.log.domain.model.GameType.Cash)?.let {
+				Blinds(sb = it.sb, bb = it.bb, straddle = it.straddle)
+			}
+			copy(table = table, blinds = newBlinds, players = updatedPlayers)
 		}
 		dismissModal()
 	}
@@ -325,8 +329,8 @@ internal class RecordHandViewModel(
 			val seat = currentActionSeat ?: return@updateRecording copy(currentActionAmount = amount)
 			val player = players[seat] ?: return@updateRecording copy(currentActionAmount = amount)
 			val effectiveStack = player.stack + player.currentBet
-			val parsed = amount.toDoubleOrNull() ?: 0.0
-			if (parsed > effectiveStack) return@updateRecording this
+			val chipAmount = parseInputToChip(amount)
+			if (chipAmount > effectiveStack) return@updateRecording this
 			copy(currentActionAmount = amount)
 		}
 	}
@@ -346,7 +350,7 @@ internal class RecordHandViewModel(
 			type = type,
 			effectiveStack = effectiveStack,
 			streetMaxBet = if (streetMaxBet > 0.0) streetMaxBet else current.blinds?.bb ?: 0.0,
-			raiseTarget = current.currentActionAmount.toDoubleOrNull() ?: 0.0,
+			raiseTarget = current.parseInputToChip(current.currentActionAmount),
 			minRaise = current.minRaiseAmount,
 		) ?: return
 
@@ -681,7 +685,18 @@ internal class RecordHandViewModel(
 	}
 
 	fun toggleBbUnit() {
-		updateRecording { copy(useBbUnit = !useBbUnit) }
+		updateRecording {
+			val newUseBb = !useBbUnit
+			val convertedAmount = if (currentActionAmount.isNotBlank()) {
+				val chipAmount = parseInputToChip(currentActionAmount)
+				// 새 모드 기준으로 변환
+				val newState = copy(useBbUnit = newUseBb)
+				newState.chipToInput(chipAmount)
+			} else {
+				currentActionAmount
+			}
+			copy(useBbUnit = newUseBb, currentActionAmount = convertedAmount)
+		}
 	}
 
 	// ──────────────────────────────────────────────

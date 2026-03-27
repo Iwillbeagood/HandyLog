@@ -11,7 +11,7 @@ enum class PlayerStatus {
 @Immutable
 data class RecordPlayer(
 	val seat: Int,
-	val stack: Double,
+	val stack: Double = 0.0,
 	val initialStack: Double = 0.0,
 	val status: PlayerStatus = PlayerStatus.ACTIVE,
 	val currentBet: Double = 0.0,

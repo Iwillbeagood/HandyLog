@@ -33,8 +33,6 @@ class RecordHandStateTest {
 		bb: Double = 1000.0,
 		sb: Double = 500.0,
 		isBigBlindAnte: Boolean = false,
-		startingStack: Double = 50000.0,
-		currentStreet: Street = Street.PREFLOP,
 		currentStep: RecordStep = RecordStep.PREFLOP,
 		currentActionSeat: Int? = null,
 		streets: HandStreets = HandStreets(),
@@ -43,9 +41,7 @@ class RecordHandStateTest {
 		val table = PokerTable(
 			id = "test",
 			date = LocalDate(2026, 3, 17),
-			gameType = GameType.TOURNAMENT,
-			startingStack = startingStack,
-			blinds = Blinds(sb = sb, bb = bb, isBigBlindAnte = isBigBlindAnte),
+			gameType = GameType.Tournament(isBigBlindAnte = isBigBlindAnte),
 			playerCount = playerCount,
 			heroSeat = heroSeat,
 			createdAt = 0L,
@@ -56,9 +52,8 @@ class RecordHandStateTest {
 			heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 			buttonSeat = buttonSeat,
 			blinds = Blinds(sb = sb, bb = bb, isBigBlindAnte = isBigBlindAnte),
-			players = players ?: RecordPlayers.create(playerCount, startingStack),
+			players = players ?: RecordPlayers.create(playerCount, 50000.0),
 			streets = streets,
-			currentStreet = currentStreet,
 			currentStep = currentStep,
 			currentActionSeat = currentActionSeat,
 		)
@@ -101,7 +96,6 @@ class RecordHandStateTest {
 			bb = 10000.0,
 			sb = 5000.0,
 			isBigBlindAnte = true,
-			startingStack = 50000.0,
 			streets = HandStreets(
 				preflop = PreflopStreet(
 					actions = listOf(
@@ -112,6 +106,205 @@ class RecordHandStateTest {
 			),
 		)
 		assertEquals(125000.0, state.currentPot)
+	}
+
+	// ===== 사이드 팟 =====
+
+	@Test
+	fun `올인 플레이어가 없으면 사이드 팟 없음`() {
+		val state = makeState(
+			playerCount = 3,
+			players = RecordPlayers(
+				player1 = RecordPlayer(seat = 1, initialStack = 50000.0),
+				player2 = RecordPlayer(seat = 2, initialStack = 50000.0),
+				player3 = RecordPlayer(seat = 3, initialStack = 50000.0),
+			),
+		)
+		assertTrue(state.sidePots.isEmpty())
+	}
+
+	@Test
+	fun `올인 1명과 콜러 1명이면 사이드 팟 없음 - 투입 금액이 동일`() {
+		val state = makeState(
+			playerCount = 3,
+			players = RecordPlayers(
+				player1 = RecordPlayer(
+					seat = 1,
+					stack = 0.0,
+					initialStack = 50000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player2 = RecordPlayer(seat = 2, initialStack = 50000.0),
+				player3 = RecordPlayer(
+					seat = 3,
+					stack = 50000.0,
+					initialStack = 50000.0,
+					status = PlayerStatus.FOLDED,
+				),
+			),
+		)
+		// 투입 레벨이 1개(50000)뿐 → 사이드 팟 없음
+		assertTrue(state.sidePots.isEmpty())
+	}
+
+	@Test
+	fun `숏스택 올인 시 메인팟과 사이드팟 분리`() {
+		// Seat1: 20K 올인, Seat2: 50K 올인, Seat3: 50K 콜
+		val state = makeState(
+			playerCount = 3,
+			players = RecordPlayers(
+				player1 = RecordPlayer(
+					seat = 1,
+					stack = 0.0,
+					initialStack = 20000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player2 = RecordPlayer(
+					seat = 2,
+					stack = 0.0,
+					initialStack = 50000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player3 = RecordPlayer(
+					seat = 3,
+					stack = 0.0,
+					initialStack = 50000.0,
+				),
+			),
+		)
+		val pots = state.sidePots
+		assertEquals(2, pots.size)
+		// 메인팟: 20K * 3명 = 60K
+		assertEquals(60000.0, pots[0])
+		// 사이드팟: (50K - 20K) * 2명 = 60K
+		assertEquals(60000.0, pots[1])
+	}
+
+	@Test
+	fun `3단계 사이드팟 - 서로 다른 스택 올인`() {
+		// Seat1: 10K 올인, Seat2: 30K 올인, Seat3: 50K 올인, Seat4: 50K 콜
+		val state = makeState(
+			playerCount = 4,
+			players = RecordPlayers(
+				player1 = RecordPlayer(
+					seat = 1,
+					stack = 0.0,
+					initialStack = 10000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player2 = RecordPlayer(
+					seat = 2,
+					stack = 0.0,
+					initialStack = 30000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player3 = RecordPlayer(
+					seat = 3,
+					stack = 0.0,
+					initialStack = 50000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player4 = RecordPlayer(seat = 4, stack = 0.0, initialStack = 50000.0),
+			),
+		)
+		val pots = state.sidePots
+		assertEquals(3, pots.size)
+		// 메인팟: 10K * 4명 = 40K
+		assertEquals(40000.0, pots[0])
+		// 사이드팟1: (30K - 10K) * 3명 = 60K
+		assertEquals(60000.0, pots[1])
+		// 사이드팟2: (50K - 30K) * 2명 = 40K
+		assertEquals(40000.0, pots[2])
+	}
+
+	@Test
+	fun `폴드한 플레이어 투입 금액도 팟에 포함`() {
+		// Seat1: 20K 올인, Seat2: 50K 올인, Seat3: 10K 투입 후 폴드
+		val state = makeState(
+			playerCount = 3,
+			players = RecordPlayers(
+				player1 = RecordPlayer(
+					seat = 1,
+					stack = 0.0,
+					initialStack = 20000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player2 = RecordPlayer(
+					seat = 2,
+					stack = 0.0,
+					initialStack = 50000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player3 = RecordPlayer(
+					seat = 3,
+					stack = 40000.0,
+					initialStack = 50000.0,
+					status = PlayerStatus.FOLDED,
+				),
+			),
+		)
+		val pots = state.sidePots
+		assertEquals(3, pots.size)
+		// 레벨 10K: 10K * 3명 = 30K
+		assertEquals(30000.0, pots[0])
+		// 레벨 20K: (20K - 10K) * 2명 = 20K
+		assertEquals(20000.0, pots[1])
+		// 레벨 50K: (50K - 20K) * 1명 = 30K
+		assertEquals(30000.0, pots[2])
+	}
+
+	@Test
+	fun `투입 금액이 없는 플레이어는 팟 계산에서 제외`() {
+		val state = makeState(
+			playerCount = 4,
+			players = RecordPlayers(
+				player1 = RecordPlayer(
+					seat = 1,
+					stack = 0.0,
+					initialStack = 30000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player2 = RecordPlayer(
+					seat = 2,
+					stack = 0.0,
+					initialStack = 50000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player3 = RecordPlayer(
+					seat = 3,
+					stack = 50000.0,
+					initialStack = 50000.0,
+					status = PlayerStatus.FOLDED,
+				),
+				player4 = RecordPlayer(seat = 4, stack = 50000.0, initialStack = 50000.0),
+			),
+		)
+		val pots = state.sidePots
+		// Seat3, Seat4는 투입 0 → 제외, 투입 플레이어 2명인데 레벨 2개
+		assertEquals(2, pots.size)
+		// 메인팟: 30K * 2명 = 60K
+		assertEquals(60000.0, pots[0])
+		// 사이드팟: (50K - 30K) * 1명 = 20K
+		assertEquals(20000.0, pots[1])
+	}
+
+	@Test
+	fun `올인 플레이어 1명뿐이고 투입 플레이어 1명이면 사이드 팟 없음`() {
+		val state = makeState(
+			playerCount = 3,
+			players = RecordPlayers(
+				player1 = RecordPlayer(
+					seat = 1,
+					stack = 0.0,
+					initialStack = 50000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player2 = RecordPlayer(seat = 2, initialStack = 50000.0),
+				player3 = RecordPlayer(seat = 3, initialStack = 50000.0),
+			),
+		)
+		// 투입 플레이어 1명뿐 → size < 2 → empty
+		assertTrue(state.sidePots.isEmpty())
 	}
 
 	// ===== 가능한 액션 =====
@@ -162,7 +355,6 @@ class RecordHandStateTest {
 	@Test
 	fun `포스트플랍 벳 없을 때 체크 벳 올인만 가능`() {
 		val state = makeState(
-			currentStreet = Street.FLOP,
 			currentStep = RecordStep.FLOP,
 			currentActionSeat = 2,
 		)
@@ -176,7 +368,6 @@ class RecordHandStateTest {
 	@Test
 	fun `포스트플랍 벳 후 폴드 콜 레이즈 올인 가능`() {
 		val state = makeState(
-			currentStreet = Street.FLOP,
 			currentStep = RecordStep.FLOP,
 			currentActionSeat = 3,
 			streets = HandStreets(
@@ -235,15 +426,15 @@ class RecordHandStateTest {
 			bb = 1000.0,
 			currentActionSeat = 5,
 			players = RecordPlayers(
-				player1 = RecordPlayer(seat = 1, stack = 50000.0),
-				player2 = RecordPlayer(seat = 2, stack = 50000.0),
-				player3 = RecordPlayer(seat = 3, stack = 50000.0),
-				player4 = RecordPlayer(seat = 4, stack = 0.0, status = PlayerStatus.ALL_IN),
-				player5 = RecordPlayer(seat = 5, stack = 30000.0),
-				player6 = RecordPlayer(seat = 6, stack = 50000.0),
-				player7 = RecordPlayer(seat = 7, stack = 50000.0),
-				player8 = RecordPlayer(seat = 8, stack = 50000.0),
-				player9 = RecordPlayer(seat = 9, stack = 50000.0),
+				player1 = RecordPlayer(seat = 1),
+				player2 = RecordPlayer(seat = 2),
+				player3 = RecordPlayer(seat = 3),
+				player4 = RecordPlayer(seat = 4, status = PlayerStatus.ALL_IN),
+				player5 = RecordPlayer(seat = 5),
+				player6 = RecordPlayer(seat = 6),
+				player7 = RecordPlayer(seat = 7),
+				player8 = RecordPlayer(seat = 8),
+				player9 = RecordPlayer(seat = 9),
 			),
 			streets = HandStreets(
 				preflop = PreflopStreet(
@@ -314,6 +505,50 @@ class RecordHandStateTest {
 		assertEquals(17500.0, state.minRaiseAmount)
 	}
 
+	@Test
+	fun `올인이 민레이즈 미달이면 다음 플레이어 레이즈 불가`() {
+		// 2500 오픈 → 3500 올인 (민3벳 4000 미달) → seat6은 레이즈 불가
+		val state = makeState(
+			bb = 1000.0,
+			currentActionSeat = 6,
+			streets = HandStreets(
+				preflop = PreflopStreet(
+					actions = listOf(
+						Action(playerSeat = 4, type = ActionType.RAISE, amount = 2500.0),
+						Action(playerSeat = 5, type = ActionType.ALL_IN, amount = 3500.0),
+					),
+				),
+			),
+		)
+		val actions = state.availableActions
+		assertTrue(ActionType.FOLD in actions)
+		assertTrue(ActionType.CALL in actions)
+		assertFalse(ActionType.RAISE in actions)
+		assertTrue(ActionType.ALL_IN in actions)
+	}
+
+	@Test
+	fun `올인이 민레이즈 충족하면 다음 플레이어 레이즈 가능`() {
+		// 2500 오픈 → 5000 올인 (민3벳 4000 충족) → seat6은 레이즈 가능
+		val state = makeState(
+			bb = 1000.0,
+			currentActionSeat = 6,
+			streets = HandStreets(
+				preflop = PreflopStreet(
+					actions = listOf(
+						Action(playerSeat = 4, type = ActionType.RAISE, amount = 2500.0),
+						Action(playerSeat = 5, type = ActionType.ALL_IN, amount = 5000.0),
+					),
+				),
+			),
+		)
+		val actions = state.availableActions
+		assertTrue(ActionType.FOLD in actions)
+		assertTrue(ActionType.CALL in actions)
+		assertTrue(ActionType.RAISE in actions)
+		assertTrue(ActionType.ALL_IN in actions)
+	}
+
 	// ===== 액션 순서 =====
 
 	@Test
@@ -329,15 +564,15 @@ class RecordHandStateTest {
 		val state = makeState(
 			buttonSeat = 1,
 			players = RecordPlayers(
-				player1 = RecordPlayer(seat = 1, stack = 50000.0),
-				player2 = RecordPlayer(seat = 2, stack = 50000.0),
-				player3 = RecordPlayer(seat = 3, stack = 50000.0),
-				player4 = RecordPlayer(seat = 4, stack = 50000.0, status = PlayerStatus.FOLDED),
-				player5 = RecordPlayer(seat = 5, stack = 50000.0),
-				player6 = RecordPlayer(seat = 6, stack = 50000.0),
-				player7 = RecordPlayer(seat = 7, stack = 50000.0),
-				player8 = RecordPlayer(seat = 8, stack = 50000.0),
-				player9 = RecordPlayer(seat = 9, stack = 50000.0),
+				player1 = RecordPlayer(seat = 1),
+				player2 = RecordPlayer(seat = 2),
+				player3 = RecordPlayer(seat = 3),
+				player4 = RecordPlayer(seat = 4, status = PlayerStatus.FOLDED),
+				player5 = RecordPlayer(seat = 5),
+				player6 = RecordPlayer(seat = 6),
+				player7 = RecordPlayer(seat = 7),
+				player8 = RecordPlayer(seat = 8),
+				player9 = RecordPlayer(seat = 9),
 			),
 		)
 		assertFalse(4 in state.actionOrder)
@@ -348,15 +583,15 @@ class RecordHandStateTest {
 		val state = makeState(
 			buttonSeat = 1,
 			players = RecordPlayers(
-				player1 = RecordPlayer(seat = 1, stack = 50000.0),
-				player2 = RecordPlayer(seat = 2, stack = 50000.0),
-				player3 = RecordPlayer(seat = 3, stack = 50000.0),
-				player4 = RecordPlayer(seat = 4, stack = 0.0, status = PlayerStatus.ALL_IN),
-				player5 = RecordPlayer(seat = 5, stack = 50000.0),
-				player6 = RecordPlayer(seat = 6, stack = 50000.0),
-				player7 = RecordPlayer(seat = 7, stack = 50000.0),
-				player8 = RecordPlayer(seat = 8, stack = 50000.0),
-				player9 = RecordPlayer(seat = 9, stack = 50000.0),
+				player1 = RecordPlayer(seat = 1),
+				player2 = RecordPlayer(seat = 2),
+				player3 = RecordPlayer(seat = 3),
+				player4 = RecordPlayer(seat = 4, status = PlayerStatus.ALL_IN),
+				player5 = RecordPlayer(seat = 5),
+				player6 = RecordPlayer(seat = 6),
+				player7 = RecordPlayer(seat = 7),
+				player8 = RecordPlayer(seat = 8),
+				player9 = RecordPlayer(seat = 9),
 			),
 		)
 		assertFalse(4 in state.actionOrder)
@@ -368,9 +603,9 @@ class RecordHandStateTest {
 			playerCount = 3,
 			buttonSeat = 1,
 			players = RecordPlayers(
-				player1 = RecordPlayer(seat = 1, stack = 50000.0, status = PlayerStatus.FOLDED),
-				player2 = RecordPlayer(seat = 2, stack = 0.0, status = PlayerStatus.ALL_IN),
-				player3 = RecordPlayer(seat = 3, stack = 0.0, status = PlayerStatus.ALL_IN),
+				player1 = RecordPlayer(seat = 1, status = PlayerStatus.FOLDED),
+				player2 = RecordPlayer(seat = 2, status = PlayerStatus.ALL_IN),
+				player3 = RecordPlayer(seat = 3, status = PlayerStatus.ALL_IN),
 			),
 		)
 		assertTrue(state.actionOrder.isEmpty())
@@ -423,7 +658,7 @@ class RecordHandStateTest {
 
 	@Test
 	fun `포스트플랍 초기 벳 레벨은 0`() {
-		val state = makeState(currentStreet = Street.FLOP, currentStep = RecordStep.FLOP)
+		val state = makeState(currentStep = RecordStep.FLOP)
 		assertEquals(0, state.currentBetLevel)
 		assertEquals("벳", state.nextRaiseLabel)
 	}
@@ -431,7 +666,6 @@ class RecordHandStateTest {
 	@Test
 	fun `포스트플랍 벳 후 레벨은 1이고 다음은 레이즈`() {
 		val state = makeState(
-			currentStreet = Street.FLOP,
 			currentStep = RecordStep.FLOP,
 			streets = HandStreets(
 				preflop = PreflopStreet(),
@@ -457,7 +691,6 @@ class RecordHandStateTest {
 	@Test
 	fun `플랍 카드 없으면 보드 준비 안됨`() {
 		val state = makeState(
-			currentStreet = Street.FLOP,
 			streets = HandStreets(preflop = PreflopStreet(), flop = FlopStreet()),
 		)
 		assertFalse(state.streets.isBoardReady(Street.FLOP))
@@ -466,7 +699,6 @@ class RecordHandStateTest {
 	@Test
 	fun `플랍 카드 3장이면 보드 준비 완료`() {
 		val state = makeState(
-			currentStreet = Street.FLOP,
 			streets = HandStreets(
 				preflop = PreflopStreet(),
 				flop = FlopStreet(

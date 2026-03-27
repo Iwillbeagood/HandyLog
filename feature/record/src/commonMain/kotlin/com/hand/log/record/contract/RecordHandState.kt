@@ -16,6 +16,7 @@ import com.hand.log.domain.model.Street
 import com.hand.log.record.model.RecordPlayers
 import com.hand.log.record.model.RecordShowdown
 import com.hand.log.domain.model.HandStreets
+import com.hand.log.ui.poker.formatAmountFull
 import com.hand.log.utils.poker.HandEvaluator
 
 @Stable
@@ -90,6 +91,7 @@ internal sealed interface RecordHandState {
 			}
 
 		// --- Player 상태 조회 ---
+
 		val heroStack: Double
 			get() = players.getStack(table?.heroSeat ?: 0)
 
@@ -102,6 +104,10 @@ internal sealed interface RecordHandState {
 			}
 
 		fun getPlayerStack(seat: Int): Double = players.getStack(seat)
+
+		/** 폴드 승리 여부 (1명만 남은 경우) */
+		val isFoldWin: Boolean
+			get() = remainingSeats.size == 1
 
 		/** 팟에 참여 중인(폴드 안 한) 좌석 목록 */
 		val remainingSeats: List<Int>
@@ -163,41 +169,45 @@ internal sealed interface RecordHandState {
 		val sbText: String
 			get() = blinds?.sb?.let { if (it == 0.0) "" else it.toLong().toString() } ?: ""
 
-		/** 금액을 BB 단위 또는 칩 단위 문자열로 변환 */
-		fun formatAmount(amount: Double): String {
-			val bb = blinds?.bb ?: 0.0
-			return if (useBbUnit && bb > 0) {
-				val bbCount = amount / bb
-				val rounded = (bbCount * 10).toLong() / 10.0
-				if (rounded == rounded.toLong().toDouble()) {
-					"${rounded.toLong()}BB"
-				} else {
-					"${rounded}BB"
-				}
-			} else {
-				formatWithComma(amount.toLong())
-			}
+		/** 칩 금액 → BB 수 */
+		fun chipToBb(chip: Double): Double {
+			val bb = blinds?.bb ?: return chip
+			return if (bb > 0) chip / bb else chip
 		}
 
-		companion object {
-			private fun formatWithComma(value: Long): String {
-				val isNegative = value < 0
-				val absValue = if (isNegative) -value else value
-				val str = absValue.toString()
-				val result = buildString {
-					str.forEachIndexed { index, c ->
-						if (index > 0 && (str.length - index) % 3 == 0) append(',')
-						append(c)
-					}
-				}
-				return if (isNegative) "-$result" else result
+		/** BB 수 → 칩 금액 */
+		fun bbToChip(bbCount: Double): Double {
+			val bb = blinds?.bb ?: return bbCount
+			return bbCount * bb
+		}
+
+		/** 칩 금액을 표시용 문자열로 변환 (BB 모드면 BB 단위) */
+		fun formatAmount(amount: Double): String =
+			formatAmountFull(amount, useBbUnit, blinds?.bb ?: 0.0)
+
+		/** 입력 문자열(BB 또는 칩)을 칩 금액으로 변환 */
+		fun parseInputToChip(input: String): Double {
+			val parsed = input.toDoubleOrNull() ?: 0.0
+			return if (useBbUnit) bbToChip(parsed) else parsed
+		}
+
+		/** 칩 금액을 입력 문자열로 변환 (BB 모드면 BB 수) */
+		fun chipToInput(chip: Double): String {
+			if (chip == 0.0) return ""
+			if (!useBbUnit) return chip.toLong().toString()
+			val bbCount = chipToBb(chip)
+			val rounded = (bbCount * 10).toLong() / 10.0
+			return if (rounded == rounded.toLong().toDouble()) {
+				rounded.toLong().toString()
+			} else {
+				rounded.toString()
 			}
 		}
 
 		val canProceedFromSetup: Boolean
 			get() {
 				if (heroHand == null) return false
-				if (table?.gameType == GameType.TOURNAMENT) {
+				if (table?.gameType is GameType.Tournament) {
 					val bb = blinds?.bb ?: 0.0
 					if (bb <= 0.0) return false
 				}
@@ -384,8 +394,38 @@ internal sealed interface RecordHandState {
 
 				// 콜 가능 여부
 				val canCall = playerStack >= maxBet
+				// 마지막 올인이 민레이즈 미달이면 리오픈 불가 (콜/폴드만)
+				val lastAllInUnderMinRaise = run {
+					val bb = blinds?.bb ?: 0.0
+					val aggressiveAmounts = mutableListOf<Double>()
+					var curMax = if (currentStreet == Street.PREFLOP) bb else 0.0
+					var lastActionType: ActionType? = null
+					streetActions.forEach { action ->
+						val amt = action.amount ?: 0.0
+						if (amt > curMax &&
+							(action.type == ActionType.BET || action.type == ActionType.RAISE || action.type == ActionType.ALL_IN)
+						) {
+							aggressiveAmounts.add(amt)
+							lastActionType = action.type
+							curMax = amt
+						}
+					}
+					if (lastActionType != ActionType.ALL_IN || aggressiveAmounts.size < 2) {
+						false
+					} else {
+						val lastAmt = aggressiveAmounts.last()
+						val prevAmt = aggressiveAmounts[aggressiveAmounts.size - 2]
+						val prevRaiseSize = if (aggressiveAmounts.size >= 3) {
+							prevAmt - aggressiveAmounts[aggressiveAmounts.size - 3]
+						} else {
+							prevAmt - (if (currentStreet == Street.PREFLOP) bb else 0.0)
+						}
+						val requiredMin = prevAmt + prevRaiseSize
+						lastAmt < requiredMin
+					}
+				}
 				// 민레이즈 이상 가능 여부
-				val canRaise = playerStack >= minRaiseAmount
+				val canRaise = playerStack >= minRaiseAmount && !lastAllInUnderMinRaise
 
 				return buildList {
 					if (currentStreet == Street.PREFLOP) {
