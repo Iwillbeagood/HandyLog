@@ -22,7 +22,6 @@ import com.hand.log.ui.localizedLabel
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Blinds
-import com.hand.log.domain.model.Position
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.FlopStreet
 import com.hand.log.domain.model.HandRecord
@@ -35,7 +34,7 @@ import com.hand.log.domain.model.ShowdownEntry
 import com.hand.log.domain.model.ShowdownResult
 import com.hand.log.domain.model.Suit
 import com.hand.log.domain.model.TurnStreet
-import com.hand.log.handdetail.model.formatWithComma
+import com.hand.log.ui.poker.formatAmountFull
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.showdown_result
 import org.jetbrains.compose.resources.stringResource
@@ -44,8 +43,12 @@ import com.hand.log.ui.poker.PlayingCard
 import handylog.core.res.generated.resources.result_fold_win
 
 @Composable
-internal fun ResultSection(hand: HandRecord) {
+internal fun ResultSection(
+	hand: HandRecord,
+	useBbUnit: Boolean = false,
+) {
 	val colors = HandyTheme.colorScheme
+	val bb = hand.bbAmount
 	val showdownResults = hand.showdownResults
 
 	Column(
@@ -65,14 +68,10 @@ internal fun ResultSection(hand: HandRecord) {
 		// 히어로 수익/손실
 		hand.result?.let { result ->
 			val isPositive = result >= 0
+			val prefix = if (isPositive) "+" else ""
+			val resultText = "$prefix${formatAmountFull(result, useBbUnit, bb)}"
 			Text(
-				text = if (isPositive) {
-					"+${formatWithComma(
-						result.toLong(),
-					)}"
-				} else {
-					formatWithComma(result.toLong())
-				},
+				text = resultText,
 				style = HandyTheme.typography.bold20,
 				color = if (isPositive) colors.primary else colors.error,
 			)
@@ -86,7 +85,7 @@ internal fun ResultSection(hand: HandRecord) {
 			val winnerSeat = winnerSeats.firstOrNull()
 			if (winnerSeat != null) {
 				val isHero = winnerSeat == hand.heroSeat
-				val posName = getPositionName(winnerSeat, hand.buttonSeat, playerCount)
+				val posName = hand.getPositionName(winnerSeat)
 				FoldWinPlayerRow(
 					positionName = posName,
 					heroHand = if (isHero) hand.heroHand else null,
@@ -99,7 +98,7 @@ internal fun ResultSection(hand: HandRecord) {
 				val heroEntry = ShowdownEntry(seat = hand.heroSeat, cards = heroCards)
 				val heroResult = showdownResults.find { it.seat == hand.heroSeat }
 				ShowdownPlayerRow(
-					positionName = getPositionName(hand.heroSeat, hand.buttonSeat, playerCount),
+					positionName = hand.getPositionName(hand.heroSeat),
 					entry = heroEntry,
 					result = heroResult,
 					isHero = true,
@@ -110,7 +109,7 @@ internal fun ResultSection(hand: HandRecord) {
 			hand.showdown.filter { it.seat != hand.heroSeat }.forEach { entry ->
 				val result = showdownResults.find { it.seat == entry.seat }
 				ShowdownPlayerRow(
-					positionName = getPositionName(entry.seat, hand.buttonSeat, playerCount),
+					positionName = hand.getPositionName(entry.seat),
 					entry = entry,
 					result = result,
 					isHero = false,
@@ -342,30 +341,6 @@ private fun ResultSectionWinPreview() {
 				memo = "탑투페어로 체크레이즈 → 올인 콜, 상대 QJo",
 			),
 		)
-	}
-}
-
-private fun getPositionName(seat: Int, buttonSeat: Int, count: Int): String {
-	val btn = buttonSeat
-	val sbSeat = (btn % count) + 1
-	val bbSeat = ((btn + 1) % count) + 1
-
-	if (seat == btn) return Position.BTN.label
-	if (seat == sbSeat) return Position.SB.label
-	if (seat == bbSeat) return Position.BB.label
-
-	val preflopOrder = (1..count).map { offset -> ((btn + 2 + offset - 1) % count) + 1 }
-	val utgOrder = preflopOrder.filter { it != btn && it != sbSeat && it != bbSeat }
-	val idx = utgOrder.indexOf(seat)
-
-	return when {
-		idx == 0 -> Position.UTG.label
-		idx == utgOrder.lastIndex -> Position.CO.label
-		count <= 6 -> Position.MP.label
-		idx == utgOrder.lastIndex - 1 -> Position.HJ.label
-		idx == utgOrder.lastIndex - 2 -> Position.LJ.label
-		idx == 1 -> Position.UTG1.label
-		else -> Position.MP.label
 	}
 }
 

@@ -72,7 +72,7 @@ internal fun HandDetailContent(
 			useBbUnit = useBbUnit,
 		)
 
-		ResultSection(hand = hand)
+		ResultSection(hand = hand, useBbUnit = useBbUnit)
 		VerticalSpacer(32.dp)
 	}
 

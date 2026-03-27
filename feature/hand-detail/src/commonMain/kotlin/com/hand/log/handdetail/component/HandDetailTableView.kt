@@ -41,7 +41,6 @@ import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.FlopStreet
 import com.hand.log.domain.model.HandRecord
 import com.hand.log.domain.model.HandStreets
-import com.hand.log.domain.model.Position
 import com.hand.log.domain.model.PreflopStreet
 import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.RiverStreet
@@ -49,7 +48,7 @@ import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.ShowdownEntry
 import com.hand.log.domain.model.Suit
 import com.hand.log.domain.model.TurnStreet
-import com.hand.log.handdetail.model.formatWithComma
+import com.hand.log.ui.poker.formatAmountFull
 import androidx.compose.ui.unit.Dp
 import com.hand.log.ui.poker.CardSize
 import com.hand.log.ui.poker.PlayingCard
@@ -62,15 +61,13 @@ internal fun HandDetailTableView(
 	hand: HandRecord,
 	useBbUnit: Boolean = false,
 	modifier: Modifier = Modifier,
-	seatCircleSize: Dp = 28.dp,
+	seatCircleSize: Dp = 32.dp,
 	seatCardSize: CardSize = CardSize.XXS,
 	boardCardSize: CardSize = CardSize.SM,
 ) {
 	val colors = HandyTheme.colorScheme
-	val bb = hand.blinds?.bb ?: 1.0
-	val playerCount = hand.streets.preflop.actions
-		.map { it.playerSeat }.distinct().size.coerceAtLeast(2)
-	val buttonSeat = hand.buttonSeat
+	val bb = hand.bbAmount
+	val playerCount = hand.playerCount
 	val heroSeat = hand.heroSeat
 	val boardCards = hand.streets.boardCards
 
@@ -144,21 +141,15 @@ internal fun HandDetailTableView(
 			val sx = seatCenterX - seatSizePx / 2f
 			val sy = seatCenterY - seatSizePx / 2f
 
-			val posName = getPositionName(seat, buttonSeat, playerCount)
+			val posName = hand.getPositionName(seat)
 			val isHero = seat == heroSeat
 			val isFolded = seat in foldedSeats
-			val stack = hand.streets.preflop.actions.firstOrNull { it.playerSeat == seat }?.stackBefore
-
-			// 히어로 카드 또는 쇼다운에서 밝혀진 카드
-			val pocketCards = if (isHero) {
-				hand.heroHand
-			} else {
-				hand.showdown.find { it.seat == seat }?.cards
-			}
+			val stack = hand.getInitialStack(seat)
+			val pocketCards = hand.getShowdownCards(seat)
 
 			DetailSeatView(
 				positionName = posName,
-				stack = stack?.let { formatAmount(it, bb, useBbUnit) },
+				stack = stack?.let { formatAmountFull(it, useBbUnit, bb) },
 				isHero = isHero,
 				isWinner = seat in winnerSeats,
 				isFolded = isFolded,
@@ -168,7 +159,6 @@ internal fun HandDetailTableView(
 				modifier = Modifier.offset { IntOffset(sx.roundToInt(), sy.roundToInt()) },
 			)
 		}
-
 	}
 }
 
@@ -210,17 +200,17 @@ private fun DetailSeatView(
 				modifier = Modifier
 					.clip(RoundedCornerShape(4.dp))
 					.background(colors.gold)
-					.padding(horizontal = 4.dp, vertical = 1.dp),
+					.padding(horizontal = 6.dp, vertical = 2.dp),
 			) {
 				Icon(
 					painter = painterResource(Res.drawable.trophy),
 					contentDescription = null,
-					modifier = Modifier.size(8.dp),
+					modifier = Modifier.size(10.dp),
 					tint = Color.White,
 				)
 				Text(
 					text = "WIN",
-					style = HandyTheme.typography.bold8.nonScaledSp,
+					style = HandyTheme.typography.bold10.nonScaledSp,
 					color = Color.White,
 				)
 			}
@@ -245,7 +235,7 @@ private fun DetailSeatView(
 			) {
 				Text(
 					text = positionName,
-					style = HandyTheme.typography.bold8.nonScaledSp,
+					style = HandyTheme.typography.bold10.nonScaledSp,
 					color = when {
 						isHero -> colors.gold
 						else -> colors.textPrimary.copy(alpha = textAlpha)
@@ -276,7 +266,7 @@ private fun DetailSeatView(
 		if (stack != null && !isFolded) {
 			Text(
 				text = stack,
-				style = HandyTheme.typography.regular8.nonScaledSp,
+				style = HandyTheme.typography.regular10.nonScaledSp,
 				color = colors.textSecondary.copy(alpha = textAlpha),
 				textAlign = TextAlign.Center,
 			)
@@ -286,40 +276,10 @@ private fun DetailSeatView(
 		if (isFolded) {
 			Text(
 				text = "Fold",
-				style = HandyTheme.typography.bold8.nonScaledSp,
+				style = HandyTheme.typography.bold10.nonScaledSp,
 				color = colors.textSecondary.copy(alpha = 0.4f),
 			)
 		}
-	}
-}
-
-private fun formatAmount(amount: Double, bb: Double, useBbUnit: Boolean): String {
-	return if (useBbUnit && bb > 0) {
-		val bbCount = (amount * 10 / bb).toLong() / 10.0
-		if (bbCount == bbCount.toLong().toDouble()) "${bbCount.toLong()} BB" else "$bbCount BB"
-	} else {
-		formatWithComma(amount.toLong())
-	}
-}
-
-private fun getPositionName(seat: Int, buttonSeat: Int, count: Int): String {
-	val btn = buttonSeat
-	val sbSeat = (btn % count) + 1
-	val bbSeat = ((btn + 1) % count) + 1
-	if (seat == btn) return Position.BTN.label
-	if (seat == sbSeat) return Position.SB.label
-	if (seat == bbSeat) return Position.BB.label
-	val preflopOrder = (1..count).map { offset -> ((btn + 2 + offset - 1) % count) + 1 }
-	val utgOrder = preflopOrder.filter { it != btn && it != sbSeat && it != bbSeat }
-	val idx = utgOrder.indexOf(seat)
-	return when {
-		idx == 0 -> Position.UTG.label
-		idx == utgOrder.lastIndex -> Position.CO.label
-		count <= 6 -> Position.MP.label
-		idx == utgOrder.lastIndex - 1 -> Position.HJ.label
-		idx == utgOrder.lastIndex - 2 -> Position.LJ.label
-		idx == 1 -> Position.UTG1.label
-		else -> Position.MP.label
 	}
 }
 

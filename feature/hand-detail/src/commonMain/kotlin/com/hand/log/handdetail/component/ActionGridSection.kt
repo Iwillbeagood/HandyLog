@@ -30,14 +30,13 @@ import com.hand.log.domain.model.FlopStreet
 import com.hand.log.domain.model.HandRecord
 import com.hand.log.domain.model.HandStreets
 import com.hand.log.domain.model.PocketCards
-import com.hand.log.domain.model.Position
 import com.hand.log.domain.model.PreflopStreet
 import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.RiverStreet
 import com.hand.log.domain.model.Street
 import com.hand.log.domain.model.Suit
 import com.hand.log.domain.model.TurnStreet
-import com.hand.log.handdetail.model.formatWithComma
+import com.hand.log.ui.poker.formatAmountFull
 import com.hand.log.ui.poker.indicatorColor
 
 @Composable
@@ -47,10 +46,8 @@ internal fun ActionGridSection(
 	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme
-	val bb = hand.blinds?.bb ?: 1.0
-	val playerCount = hand.streets.preflop.actions
-		.map { it.playerSeat }.distinct().size.coerceAtLeast(2)
-	val buttonSeat = hand.buttonSeat
+	val bb = hand.bbAmount
+	val playerCount = hand.playerCount
 
 	// 스트릿별 데이터 준비 (프리플랍 폴드 제외)
 	val preflopActions = hand.streets.preflop.actions.filter { it.type != ActionType.FOLD }
@@ -59,17 +56,35 @@ internal fun ActionGridSection(
 			StreetColumn(
 				"Pre-Flop",
 				preflopActions,
-				formatBb(calculatePot(hand, Street.PREFLOP), bb, useBbUnit),
+				formatAmountFull(hand.getPotAtStreet(Street.PREFLOP), useBbUnit, bb),
 			),
 		)
 		hand.streets.flop?.let {
-			add(StreetColumn("Flop", it.actions, formatBb(calculatePot(hand, Street.FLOP), bb, useBbUnit)))
+			add(
+				StreetColumn(
+					"Flop",
+					it.actions,
+					formatAmountFull(hand.getPotAtStreet(Street.FLOP), useBbUnit, bb),
+				),
+			)
 		}
 		hand.streets.turn?.let {
-			add(StreetColumn("Turn", it.actions, formatBb(calculatePot(hand, Street.TURN), bb, useBbUnit)))
+			add(
+				StreetColumn(
+					"Turn",
+					it.actions,
+					formatAmountFull(hand.getPotAtStreet(Street.TURN), useBbUnit, bb),
+				),
+			)
 		}
 		hand.streets.river?.let {
-			add(StreetColumn("River", it.actions, formatBb(calculatePot(hand, Street.RIVER), bb, useBbUnit)))
+			add(
+				StreetColumn(
+					"River",
+					it.actions,
+					formatAmountFull(hand.getPotAtStreet(Street.RIVER), useBbUnit, bb),
+				),
+			)
 		}
 	}
 
@@ -127,14 +142,14 @@ internal fun ActionGridSection(
 					val cellContent = when {
 						street.name == "Blinds" -> {
 							when (rowIndex) {
-								0 -> hand.blinds?.let { "SB ${formatBb(it.sb, bb, useBbUnit)}" }
-								1 -> hand.blinds?.let { "BB ${formatBb(it.bb, bb, useBbUnit)}" }
+								0 -> hand.blinds?.let { "SB ${formatAmountFull(it.sb, useBbUnit, bb)}" }
+								1 -> hand.blinds?.let { "BB ${formatAmountFull(it.bb, useBbUnit, bb)}" }
 								else -> null
 							}
 						}
 						rowIndex < street.actions.size -> {
 							val action = street.actions[rowIndex]
-							val pos = getPositionName(action.playerSeat, buttonSeat, playerCount)
+							val pos = hand.getPositionName(action.playerSeat)
 							val isHero = action.playerSeat == hand.heroSeat
 							val prefix = if (isHero) "Hero" else pos
 							formatActionCell(prefix, action, bb, useBbUnit)
@@ -211,7 +226,7 @@ private data class StreetColumn(
 )
 
 private fun formatActionCell(prefix: String, action: Action, bb: Double, useBbUnit: Boolean): String {
-	val amount = action.amount?.let { formatBb(it, bb, useBbUnit) } ?: ""
+	val amount = action.amount?.let { formatAmountFull(it, useBbUnit, bb) } ?: ""
 	return when (action.type) {
 		ActionType.FOLD -> "$prefix\nFold"
 		ActionType.CHECK -> "$prefix\nCheck"
@@ -228,53 +243,6 @@ private fun formatActionCell(prefix: String, action: Action, bb: Double, useBbUn
 			"$prefix\n$label $amount"
 		}
 		ActionType.ALL_IN -> "$prefix\nAll-in $amount"
-	}
-}
-
-private fun formatBb(amount: Double, bb: Double, useBbUnit: Boolean): String {
-	return if (useBbUnit && bb > 0) {
-		val bbCount = (amount * 10 / bb).toLong() / 10.0
-		if (bbCount == bbCount.toLong().toDouble()) {
-			"${bbCount.toLong()} BB"
-		} else {
-			"$bbCount BB"
-		}
-	} else {
-		formatWithComma(amount.toLong())
-	}
-}
-
-private fun calculatePot(hand: HandRecord, upToStreet: Street): Double {
-	val blinds = hand.blinds
-	val blindsPot = (blinds?.sb ?: 0.0) + (blinds?.bb ?: 0.0)
-	val antePot = if (blinds?.isBigBlindAnte == true) blinds.bb else 0.0
-	var pot = blindsPot + antePot
-	val streets = listOf(Street.PREFLOP, Street.FLOP, Street.TURN, Street.RIVER)
-	for (s in streets) {
-		pot += hand.streets.getActions(s).sumOf { it.amount ?: 0.0 }
-		if (s == upToStreet) break
-	}
-	return pot
-}
-
-private fun getPositionName(seat: Int, buttonSeat: Int, count: Int): String {
-	val btn = buttonSeat
-	val sbSeat = (btn % count) + 1
-	val bbSeat = ((btn + 1) % count) + 1
-	if (seat == btn) return Position.BTN.label
-	if (seat == sbSeat) return Position.SB.label
-	if (seat == bbSeat) return Position.BB.label
-	val preflopOrder = (1..count).map { offset -> ((btn + 2 + offset - 1) % count) + 1 }
-	val utgOrder = preflopOrder.filter { it != btn && it != sbSeat && it != bbSeat }
-	val idx = utgOrder.indexOf(seat)
-	return when {
-		idx == 0 -> Position.UTG.label
-		idx == utgOrder.lastIndex -> Position.CO.label
-		count <= 6 -> Position.MP.label
-		idx == utgOrder.lastIndex - 1 -> Position.HJ.label
-		idx == utgOrder.lastIndex - 2 -> Position.LJ.label
-		idx == 1 -> Position.UTG1.label
-		else -> Position.MP.label
 	}
 }
 
