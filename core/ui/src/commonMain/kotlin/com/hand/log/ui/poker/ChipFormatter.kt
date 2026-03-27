@@ -13,19 +13,50 @@ fun formatChips(amount: Double): String {
 }
 
 /**
- * BB 단위 또는 칩 단위 문자열로 변환
+ * BB 단위 또는 칩 약식(K/M) 문자열로 변환
  */
 fun formatAmountOrBb(amount: Double, useBbUnit: Boolean = false, bb: Double = 0.0): String {
 	return if (useBbUnit && bb > 0) {
-		val bbCount = (amount * 10 / bb).toLong() / 10.0
-		if (bbCount == bbCount.toLong().toDouble()) {
-			"${bbCount.toLong()}BB"
-		} else {
-			"${bbCount}BB"
-		}
+		formatBbCount(amount / bb)
 	} else {
 		formatChips(amount)
 	}
+}
+
+/**
+ * BB 단위 또는 콤마 포맷 문자열로 변환
+ */
+fun formatAmountFull(amount: Double, useBbUnit: Boolean = false, bb: Double = 0.0): String {
+	return if (useBbUnit && bb > 0) {
+		formatBbCount(amount / bb)
+	} else {
+		formatWithComma(amount.toLong())
+	}
+}
+
+/**
+ * BB 수를 문자열로 변환 (예: "2BB", "3.5BB")
+ */
+fun formatBbCount(bbCount: Double): String {
+	val rounded = (bbCount * 10).toLong() / 10.0
+	return if (rounded == rounded.toLong().toDouble()) {
+		"${rounded.toLong()}BB"
+	} else {
+		"${rounded}BB"
+	}
+}
+
+fun formatWithComma(value: Long): String {
+	val isNegative = value < 0
+	val absValue = if (isNegative) -value else value
+	val str = absValue.toString()
+	val result = buildString {
+		str.forEachIndexed { index, c ->
+			if (index > 0 && (str.length - index) % 3 == 0) append(',')
+			append(c)
+		}
+	}
+	return if (isNegative) "-$result" else result
 }
 
 private fun formatDecimal(value: Double): String {

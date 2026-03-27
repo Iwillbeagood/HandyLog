@@ -45,13 +45,18 @@
 	<string name="table_form_date_placeholder">请选择日期</string>
 	<string name="table_form_location">地点（可选）</string>
 	<string name="table_form_game_type">游戏类型</string>
-	<string name="table_form_starting_stack">起始筹码</string>
-	<string name="table_form_player_count">玩家人数</string>
+	<string name="table_form_max_players">最大玩家人数</string>
+	<string name="table_form_player_count">当前玩家人数</string>
 	<string name="table_form_hero_seat">我的座位号</string>
 	<string name="table_form_blinds">盲注</string>
 	<string name="table_form_straddle">Straddle</string>
 	<string name="table_form_straddle_amount">Straddle金额</string>
 	<string name="table_form_bb_ante">大盲注前注</string>
+
+	<!-- Player Setup -->
+	<string name="player_setup_seat">选择座位</string>
+	<string name="player_setup_clear_seat">清空座位</string>
+	<string name="player_setup_name_required">请输入名称以保存到收藏</string>
 
 	<!-- Record Hand -->
 	<string name="record_title">记录手牌</string>
@@ -59,12 +64,12 @@
 	<string name="record_table_settings">桌子设置</string>
 	<string name="record_hero_card">主角手牌</string>
 	<string name="record_hero_position">我的位置</string>
-	<string name="record_button_seat">庄家位置</string>
+
 	<string name="record_hero_stack">主角筹码</string>
 	<string name="record_select_opener">选择开局者</string>
 	<string name="record_all_actions_complete">所有玩家行动完毕</string>
-	<string name="record_amount_label">金额（最小 %d）</string>
-	<string name="record_stack_warning">超过筹码（%d）将被视为全押</string>
+	<string name="record_amount_label">金额（最小 %s）</string>
+	<string name="record_stack_warning">超过筹码（%s）将被视为全押</string>
 
 	<!-- Record Steps -->
 	<string name="step_setup">设置</string>
@@ -78,7 +83,9 @@
 	<string name="showdown_board_edit">公共牌（点击编辑）</string>
 	<string name="showdown_player_hand">玩家手牌</string>
 	<string name="showdown_result">结果</string>
-	<string name="showdown_stack">筹码: %d</string>
+	<string name="showdown_result_win">以%1$s获胜</string>
+	<string name="showdown_result_lose">以%1$s落败</string>
+	<string name="showdown_result_fold_win">弃牌获胜</string>
 	<string name="showdown_memo">备注</string>
 
 	<!-- Card Selector -->

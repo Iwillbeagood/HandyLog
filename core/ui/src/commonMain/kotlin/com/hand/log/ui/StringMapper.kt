@@ -45,8 +45,8 @@ fun Street.localizedLabel(): String = when (this) {
 
 @Composable
 fun GameType.localizedLabel(): String = when (this) {
-	GameType.CASH -> stringResource(Res.string.game_type_cash)
-	GameType.TOURNAMENT -> stringResource(Res.string.game_type_tournament)
+	is GameType.Cash -> stringResource(Res.string.game_type_cash)
+	is GameType.Tournament -> stringResource(Res.string.game_type_tournament)
 }
 
 @Composable

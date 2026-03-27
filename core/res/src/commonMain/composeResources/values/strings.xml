@@ -48,13 +48,18 @@
 	<string name="table_form_date_placeholder">날짜를 선택하세요</string>
 	<string name="table_form_location">장소 (선택)</string>
 	<string name="table_form_game_type">게임 유형</string>
-	<string name="table_form_starting_stack">시작 스택</string>
-	<string name="table_form_player_count">플레이어 수</string>
+	<string name="table_form_max_players">최대 플레이어 수</string>
+	<string name="table_form_player_count">현재 플레이어 수</string>
 	<string name="table_form_hero_seat">내 좌석 번호</string>
 	<string name="table_form_blinds">블라인드</string>
 	<string name="table_form_straddle">스트래들</string>
 	<string name="table_form_straddle_amount">스트래들 금액</string>
 	<string name="table_form_bb_ante">빅블라인드 엔티</string>
+
+	<!-- Player Setup -->
+	<string name="player_setup_seat">좌석 선택</string>
+	<string name="player_setup_clear_seat">자리 비우기</string>
+	<string name="player_setup_name_required">즐겨찾기에 저장하려면 이름을 입력하세요</string>
 
 	<!-- Record Hand -->
 	<string name="record_title">핸드 기록</string>
@@ -62,12 +67,12 @@
 	<string name="record_table_settings">테이블 설정</string>
 	<string name="record_hero_card">히어로 카드</string>
 	<string name="record_hero_position">내 포지션</string>
-	<string name="record_button_seat">버튼 좌석</string>
+
 	<string name="record_hero_stack">히어로 스택</string>
 	<string name="record_select_opener">오프너를 선택하세요</string>
 	<string name="record_all_actions_complete">모든 플레이어 액션 완료</string>
-	<string name="record_amount_label">금액 (최소 %1$d)</string>
-	<string name="record_stack_warning">스택(%1$d)을 초과하면 올인으로 처리됩니다</string>
+	<string name="record_amount_label">금액 (최소 %1$s)</string>
+	<string name="record_stack_warning">스택(%1$s)을 초과하면 올인으로 처리됩니다</string>
 
 	<!-- Record Steps -->
 	<string name="step_setup">설정</string>
@@ -81,7 +86,9 @@
 	<string name="showdown_board_edit">보드 (탭하여 수정)</string>
 	<string name="showdown_player_hand">플레이어 핸드</string>
 	<string name="showdown_result">결과</string>
-	<string name="showdown_stack">스택: %1$d</string>
+	<string name="showdown_result_win">%1$s(으)로 승리</string>
+	<string name="showdown_result_lose">%1$s(으)로 패배</string>
+	<string name="showdown_result_fold_win">폴드 승리</string>
 	<string name="showdown_memo">메모</string>
 
 	<!-- Card Selector -->

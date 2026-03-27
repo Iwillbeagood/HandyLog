@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -70,7 +69,6 @@ fun HandyBottomSheet(
 				.fillMaxWidth()
 				.nestedScroll(SheetDragBlocker)
 				.verticalScroll(rememberScrollState())
-				.imePadding()
 				.padding(horizontal = 20.dp)
 				.padding(bottom = 32.dp),
 		) {

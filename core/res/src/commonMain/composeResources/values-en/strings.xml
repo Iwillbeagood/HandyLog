@@ -45,13 +45,18 @@
 	<string name="table_form_date_placeholder">Select a date</string>
 	<string name="table_form_location">Location (optional)</string>
 	<string name="table_form_game_type">Game Type</string>
-	<string name="table_form_starting_stack">Starting Stack</string>
-	<string name="table_form_player_count">Player Count</string>
+	<string name="table_form_max_players">Max Players</string>
+	<string name="table_form_player_count">Current Players</string>
 	<string name="table_form_hero_seat">Hero Seat</string>
 	<string name="table_form_blinds">Blinds</string>
 	<string name="table_form_straddle">Straddle</string>
 	<string name="table_form_straddle_amount">Straddle Amount</string>
 	<string name="table_form_bb_ante">Big Blind Ante</string>
+
+	<!-- Player Setup -->
+	<string name="player_setup_seat">Seat</string>
+	<string name="player_setup_clear_seat">Clear Seat</string>
+	<string name="player_setup_name_required">Enter a name to save to favorites</string>
 
 	<!-- Record Hand -->
 	<string name="record_title">Record Hand</string>
@@ -59,12 +64,12 @@
 	<string name="record_table_settings">Table Settings</string>
 	<string name="record_hero_card">Hero Cards</string>
 	<string name="record_hero_position">My Position</string>
-	<string name="record_button_seat">Button Seat</string>
+
 	<string name="record_hero_stack">Hero Stack</string>
 	<string name="record_select_opener">Select the opener</string>
 	<string name="record_all_actions_complete">All actions complete</string>
-	<string name="record_amount_label">Amount (min %d)</string>
-	<string name="record_stack_warning">Exceeding stack (%d) will be treated as all-in</string>
+	<string name="record_amount_label">Amount (min %s)</string>
+	<string name="record_stack_warning">Exceeding stack (%s) will be treated as all-in</string>
 
 	<!-- Record Steps -->
 	<string name="step_setup">Setup</string>
@@ -78,7 +83,9 @@
 	<string name="showdown_board_edit">Board (tap to edit)</string>
 	<string name="showdown_player_hand">Player Hands</string>
 	<string name="showdown_result">Result</string>
-	<string name="showdown_stack">Stack: %d</string>
+	<string name="showdown_result_win">Win with %1$s</string>
+	<string name="showdown_result_lose">Lose with %1$s</string>
+	<string name="showdown_result_fold_win">Fold Win</string>
 	<string name="showdown_memo">Memo</string>
 
 	<!-- Card Selector -->

@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
@@ -35,7 +34,6 @@ private val AllInColor = Color(0xFFE84040)
 @Composable
 fun AllInMarker(
 	modifier: Modifier = Modifier,
-	size: Dp = 16.dp,
 	amount: String? = null,
 ) {
 	Column(
@@ -45,8 +43,7 @@ fun AllInMarker(
 		Icon(
 			painter = painterResource(Res.drawable.allin_marker),
 			contentDescription = "All-in",
-			modifier = Modifier.size(size),
-			tint = Color.Unspecified,
+			tint = AllInColor,
 		)
 		if (amount != null) {
 			Text(
@@ -72,7 +69,7 @@ private fun AllInMarkerPreview() {
 		) {
 			AllInMarker()
 			AllInMarker(amount = "50000")
-			AllInMarker(size = 20.dp, amount = "12500")
+			AllInMarker(amount = "12500")
 		}
 	}
 }

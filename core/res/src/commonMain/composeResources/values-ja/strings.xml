@@ -45,13 +45,18 @@
 	<string name="table_form_date_placeholder">日付を選択してください</string>
 	<string name="table_form_location">場所（任意）</string>
 	<string name="table_form_game_type">ゲームタイプ</string>
-	<string name="table_form_starting_stack">スターティングスタック</string>
-	<string name="table_form_player_count">プレイヤー数</string>
+	<string name="table_form_max_players">最大プレイヤー数</string>
+	<string name="table_form_player_count">現在のプレイヤー数</string>
 	<string name="table_form_hero_seat">自分の席番号</string>
 	<string name="table_form_blinds">ブラインド</string>
 	<string name="table_form_straddle">ストラドル</string>
 	<string name="table_form_straddle_amount">ストラドル金額</string>
 	<string name="table_form_bb_ante">ビッグブラインドアンティ</string>
+
+	<!-- Player Setup -->
+	<string name="player_setup_seat">席選択</string>
+	<string name="player_setup_clear_seat">席を空ける</string>
+	<string name="player_setup_name_required">お気に入りに保存するには名前を入力してください</string>
 
 	<!-- Record Hand -->
 	<string name="record_title">ハンド記録</string>
@@ -59,12 +64,12 @@
 	<string name="record_table_settings">テーブル設定</string>
 	<string name="record_hero_card">ヒーローカード</string>
 	<string name="record_hero_position">自分のポジション</string>
-	<string name="record_button_seat">ボタン席</string>
+
 	<string name="record_hero_stack">ヒーロースタック</string>
 	<string name="record_select_opener">オープナーを選択してください</string>
 	<string name="record_all_actions_complete">全プレイヤーのアクション完了</string>
-	<string name="record_amount_label">金額（最小 %d）</string>
-	<string name="record_stack_warning">スタック（%d）を超えるとオールインとして処理されます</string>
+	<string name="record_amount_label">金額（最小 %s）</string>
+	<string name="record_stack_warning">スタック（%s）を超えるとオールインとして処理されます</string>
 
 	<!-- Record Steps -->
 	<string name="step_setup">設定</string>
@@ -78,7 +83,9 @@
 	<string name="showdown_board_edit">ボード（タップして編集）</string>
 	<string name="showdown_player_hand">プレイヤーハンド</string>
 	<string name="showdown_result">結果</string>
-	<string name="showdown_stack">スタック: %d</string>
+	<string name="showdown_result_win">%1$sで勝利</string>
+	<string name="showdown_result_lose">%1$sで敗北</string>
+	<string name="showdown_result_fold_win">フォールド勝利</string>
 	<string name="showdown_memo">メモ</string>
 
 	<!-- Card Selector -->

@@ -1,6 +1,5 @@
 package com.hand.log.designsystem.component
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -39,8 +38,8 @@ fun HandyCheckBox(
 	enabled: Boolean = true,
 ) {
 	val boxShape = RoundedCornerShape(2.11.dp)
-	val backgroundColor = when {
-		!enabled -> HandyTheme.colorScheme.secondary
+	val iconColor = when {
+		!enabled -> HandyTheme.colorScheme.inputBorder
 		checked -> HandyTheme.colorScheme.primary
 		else -> Color.Transparent
 	}
@@ -57,9 +56,7 @@ fun HandyCheckBox(
 	) {
 		Box(
 			modifier = Modifier
-				.size(19.dp)
 				.clip(boxShape)
-				.background(backgroundColor, boxShape)
 				.border(1.5.dp, borderColor, boxShape)
 				.toggleable(
 					value = checked,
@@ -70,17 +67,18 @@ fun HandyCheckBox(
 				) { onCheckedChange(it) },
 			contentAlignment = Alignment.Center,
 		) {
-			if (checked) {
-				Icon(
-					painter = painterResource(Res.drawable.check),
-					contentDescription = null,
-					tint = if (enabled) {
-						HandyTheme.colorScheme.primary
-					} else {
-						HandyTheme.colorScheme.secondary
-					},
-				)
-			}
+			Icon(
+				painter = painterResource(Res.drawable.check),
+				contentDescription = null,
+				tint = if (enabled) {
+					iconColor
+				} else {
+					HandyTheme.colorScheme.secondary
+				},
+				modifier = Modifier
+					.size(20.dp)
+					.padding(2.dp),
+			)
 		}
 		HorizontalSpacer(5.dp)
 		if (text.isNotEmpty()) {

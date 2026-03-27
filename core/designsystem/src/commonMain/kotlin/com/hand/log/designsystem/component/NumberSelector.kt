@@ -30,6 +30,7 @@ fun HandySelector(
 	modifier: Modifier = Modifier,
 	selectedColor: Color = HandyTheme.colorScheme.primary,
 	selectedContentColor: Color = HandyTheme.colorScheme.onPrimary,
+	disabledValues: Set<Int> = emptySet(),
 ) {
 	val colors = HandyTheme.colorScheme
 	val typography = HandyTheme.typography
@@ -40,23 +41,38 @@ fun HandySelector(
 	) {
 		items(range.toList()) { number ->
 			val isSelected = number == selected
+			val isDisabled = number in disabledValues
 			Box(
 				modifier = Modifier
 					.size(40.dp)
 					.clip(RoundedCornerShape(8.dp))
-					.background(if (isSelected) selectedColor else colors.muted)
+					.background(
+						when {
+							isDisabled -> colors.muted.copy(alpha = 0.5f)
+							isSelected -> selectedColor
+							else -> colors.muted
+						},
+					)
 					.border(
 						width = 1.dp,
-						color = if (isSelected) selectedColor else colors.inputBorder,
+						color = when {
+							isDisabled -> colors.inputBorder.copy(alpha = 0.3f)
+							isSelected -> selectedColor
+							else -> colors.inputBorder
+						},
 						shape = RoundedCornerShape(8.dp),
 					)
-					.clickable { onSelect(number) },
+					.then(if (!isDisabled) Modifier.clickable { onSelect(number) } else Modifier),
 				contentAlignment = Alignment.Center,
 			) {
 				Text(
 					text = "$number",
 					style = typography.medium14.nonScaledSp,
-					color = if (isSelected) selectedContentColor else colors.textPrimary,
+					color = when {
+						isDisabled -> colors.textSecondary.copy(alpha = 0.3f)
+						isSelected -> selectedContentColor
+						else -> colors.textPrimary
+					},
 				)
 			}
 		}
