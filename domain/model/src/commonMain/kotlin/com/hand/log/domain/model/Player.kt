@@ -7,4 +7,5 @@ data class Player(
 	val memo: String? = null,
 	val name: String? = null,
 	val pocketCards: PocketCards? = null,
+	val savedPlayerId: String? = null,
 )

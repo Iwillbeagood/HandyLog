@@ -10,4 +10,5 @@ interface HandRecordRepository {
 	suspend fun getHandCountByTableId(tableId: String): Int
 	suspend fun saveHand(hand: HandRecord, onSuccess: () -> Unit = {})
 	suspend fun deleteHand(handId: String, onSuccess: () -> Unit = {})
+	fun observeAllHands(): Flow<List<HandRecord>>
 }

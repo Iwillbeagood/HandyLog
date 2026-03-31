@@ -8,45 +8,46 @@ import platform.CoreGraphics.CGRectMake
 import platform.UIKit.NSTextAlignmentCenter
 import platform.UIKit.UIApplication
 import platform.UIKit.UIColor
+import platform.UIKit.UIFont
 import platform.UIKit.UILabel
 import platform.UIKit.UIScreen
 import platform.UIKit.UIView
 import platform.UIKit.UIViewAnimationOptionCurveEaseOut
+import platform.UIKit.UIWindow
+import platform.UIKit.UIWindowScene
 
 actual open class ToastManager actual constructor() {
 	@OptIn(ExperimentalForeignApi::class)
 	actual fun showToast(message: String, toastDurationType: ToastDurationType) {
 
-		val duration = when (toastDurationType) {
-			ToastDurationType.SHORT -> 2.0
-			ToastDurationType.LONG -> 5.0
+		val (displayDuration, fadeDuration) = when (toastDurationType) {
+			ToastDurationType.SHORT -> 1.5 to 0.5
+			ToastDurationType.LONG -> 3.0 to 0.8
 		}
 
-		val rootViewController = UIApplication.sharedApplication.keyWindow?.rootViewController
+		val keyWindow = findKeyWindow() ?: return
+		val rootView = keyWindow.rootViewController?.view ?: return
+
+		val screenWidth = UIScreen.mainScreen.bounds.useContents { size.width }
+		val screenHeight = UIScreen.mainScreen.bounds.useContents { size.height }
+
 		val toastLabel = UILabel(
-			frame = CGRectMake(
-				0.0,
-				0.0,
-				UIScreen.mainScreen.bounds.useContents { size.width } - 40,
-				35.0,
-			),
+			frame = CGRectMake(0.0, 0.0, screenWidth - 60, 40.0),
 		)
-		toastLabel.center = CGPointMake(
-			UIScreen.mainScreen.bounds.useContents { size.width } / 2,
-			UIScreen.mainScreen.bounds.useContents { size.height } - 100.0,
-		)
+		toastLabel.center = CGPointMake(screenWidth / 2, screenHeight - 120.0)
 		toastLabel.textAlignment = NSTextAlignmentCenter
-		toastLabel.backgroundColor = UIColor.blackColor.colorWithAlphaComponent(0.6)
+		toastLabel.backgroundColor = UIColor.blackColor.colorWithAlphaComponent(0.75)
 		toastLabel.textColor = UIColor.whiteColor
+		toastLabel.font = UIFont.systemFontOfSize(14.0)
 		toastLabel.text = message
 		toastLabel.alpha = 1.0
-		toastLabel.layer.cornerRadius = 15.0
+		toastLabel.layer.cornerRadius = 20.0
 		toastLabel.clipsToBounds = true
-		rootViewController?.view?.addSubview(toastLabel)
+		rootView.addSubview(toastLabel)
 
 		UIView.animateWithDuration(
-			duration = duration,
-			delay = 0.1,
+			duration = fadeDuration,
+			delay = displayDuration,
 			options = UIViewAnimationOptionCurveEaseOut,
 			animations = {
 				toastLabel.alpha = 0.0
@@ -57,5 +58,20 @@ actual open class ToastManager actual constructor() {
 				}
 			},
 		)
+	}
+
+	private fun findKeyWindow(): UIWindow? {
+		val scenes = UIApplication.sharedApplication.connectedScenes
+		for (scene in scenes) {
+			if (scene is UIWindowScene) {
+				for (window in scene.windows) {
+					if ((window as? UIWindow)?.isKeyWindow() == true) {
+						return window as UIWindow
+					}
+				}
+				return scene.windows.firstOrNull() as? UIWindow
+			}
+		}
+		return null
 	}
 }

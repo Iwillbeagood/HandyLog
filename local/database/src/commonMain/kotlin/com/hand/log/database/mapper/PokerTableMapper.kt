@@ -28,7 +28,6 @@ fun PokerTableEntity.toDomain(playerEntities: List<TablePlayerEntity>): PokerTab
 		location = location,
 		gameType = gameTypeValue,
 		maxPlayers = maxPlayers,
-		playerCount = playerCount,
 		heroSeat = heroSeat,
 		players = players,
 		createdAt = createdAt,
@@ -41,6 +40,7 @@ fun TablePlayerEntity.toDomain(): Player = Player(
 	tendency = tendency?.let { PlayerTendency.valueOf(it) },
 	memo = memo,
 	name = name,
+	savedPlayerId = savedPlayerId,
 )
 
 fun Player.toEntity(tableId: String, generatedId: String): TablePlayerEntity = TablePlayerEntity(
@@ -50,6 +50,7 @@ fun Player.toEntity(tableId: String, generatedId: String): TablePlayerEntity = T
 	tendency = tendency?.name,
 	memo = memo,
 	name = name,
+	savedPlayerId = savedPlayerId,
 )
 
 fun PokerTable.toEntity(createdAt: Long): PokerTableEntity = PokerTableEntity(
@@ -58,7 +59,6 @@ fun PokerTable.toEntity(createdAt: Long): PokerTableEntity = PokerTableEntity(
 	location = location,
 	gameType = json.encodeToString(GameType.serializer(), gameType),
 	maxPlayers = maxPlayers,
-	playerCount = playerCount,
 	heroSeat = heroSeat,
 	createdAt = createdAt,
 )

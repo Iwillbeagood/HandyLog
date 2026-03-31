@@ -65,12 +65,11 @@ internal class HandDetailViewModel(
 		}
 	}
 
-	fun showTableExpanded() {
+	fun onPlayerClick(seat: Int) {
 		val success = state.value as? HandDetailState.Success ?: return
-		_modalEffect.value = HandDetailModalEffect.ShowTableExpanded(
-			hand = success.hand,
-			useBbUnit = success.useBbUnit,
-		)
+		viewModelScope.launch {
+			_effect.emit(HandDetailEffect.NavigateToPlayers(success.hand.tableId, seat))
+		}
 	}
 
 	fun dismissModal() {
@@ -85,29 +84,17 @@ internal class HandDetailViewModel(
 		}
 	}
 
-	fun requestShareImage() {
-		viewModelScope.launch {
-			_effect.emit(HandDetailEffect.RequestImageCapture)
-		}
-	}
-
-	fun shareImage(imageBytes: ByteArray) {
+	fun shareImage() {
 		val success = state.value as? HandDetailState.Success ?: return
 		viewModelScope.launch {
-			_effect.emit(HandDetailEffect.ShareImage(imageBytes, "hand_${success.hand.id}.png"))
+			_effect.emit(HandDetailEffect.ShareImage("hand_${success.hand.id}.png"))
 		}
 	}
 
-	fun requestDownloadImage() {
-		viewModelScope.launch {
-			_effect.emit(HandDetailEffect.RequestImageDownload)
-		}
-	}
-
-	fun downloadImage(imageBytes: ByteArray) {
+	fun downloadImage() {
 		val success = state.value as? HandDetailState.Success ?: return
 		viewModelScope.launch {
-			_effect.emit(HandDetailEffect.DownloadImage(imageBytes, "hand_${success.hand.id}.png"))
+			_effect.emit(HandDetailEffect.DownloadImage("hand_${success.hand.id}.png"))
 		}
 	}
 }

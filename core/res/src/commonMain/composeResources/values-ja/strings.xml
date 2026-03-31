@@ -36,8 +36,11 @@
 	<string name="table_detail_hand_count">%d件</string>
 	<string name="table_detail_empty_title">まだハンドが記録されていません</string>
 	<string name="table_detail_empty_desc">+ボタンを押して最初のハンドを記録しましょう</string>
-	<string name="table_detail_player_saved">プレイヤー情報が保存されました</string>
+	<string name="table_detail_player_added">プレイヤーが追加されました</string>
+	<string name="table_detail_player_updated">プレイヤー情報が更新されました</string>
+	<string name="table_detail_player_deleted">席を空けました</string>
 	<string name="table_detail_hand_deleted">ハンドが削除されました</string>
+	<string name="table_detail_table_created">テーブルが追加されました</string>
 	<string name="table_detail_table_updated">テーブルが更新されました</string>
 
 	<!-- Table Form -->
@@ -54,6 +57,8 @@
 	<string name="table_form_bb_ante">ビッグブラインドアンティ</string>
 
 	<!-- Player Setup -->
+	<string name="player_setup_add_title">Seat %1$s プレイヤー追加</string>
+	<string name="player_setup_edit_title">Seat %1$s プレイヤー編集</string>
 	<string name="player_setup_seat">席選択</string>
 	<string name="player_setup_clear_seat">席を空ける</string>
 	<string name="player_setup_name_required">お気に入りに保存するには名前を入力してください</string>
@@ -85,8 +90,10 @@
 	<string name="showdown_result">結果</string>
 	<string name="showdown_result_win">%1$sで勝利</string>
 	<string name="showdown_result_lose">%1$sで敗北</string>
+	<string name="showdown_result_split">%1$sでスプリット</string>
 	<string name="showdown_result_fold_win">フォールド勝利</string>
 	<string name="showdown_memo">メモ</string>
+	<string name="result_mark_player">マーク</string>
 
 	<!-- Card Selector -->
 	<string name="card_selector_hero">ヒーローカード選択</string>
@@ -119,11 +126,17 @@
 	<string name="player_edit">プレイヤー編集</string>
 	<string name="player_name">名前</string>
 	<string name="player_stack">スタック</string>
+	<string name="record_skip_stack">スキップ</string>
 	<string name="player_tendency">傾向</string>
 	<string name="player_tendency_none">なし</string>
 	<string name="player_memo">メモ</string>
 	<string name="player_save_to_marking">プレイヤーリストに保存</string>
 	<string name="player_saved">保存されたプレイヤー</string>
+	<string name="player_hands_empty">記録されたハンドがありません</string>
+	<string name="player_hands_total">全体</string>
+	<string name="player_hands_win">勝</string>
+	<string name="player_hands_lose">負</string>
+	<string name="player_hands_draw">引</string>
 
 	<!-- Settings -->
 	<string name="settings_title">設定</string>
@@ -131,6 +144,8 @@
 	<string name="settings_game">ゲーム設定</string>
 	<string name="settings_bet_size_preset">ベットサイズプリセット</string>
 	<string name="settings_preset_count">%d個設定済み</string>
+	<string name="settings_support">サポート</string>
+	<string name="settings_contact">お問い合わせ</string>
 	<string name="settings_app_info">アプリ情報</string>
 	<string name="settings_version">バージョン</string>
 

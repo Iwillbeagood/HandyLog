@@ -49,10 +49,10 @@ internal fun HandDetailScreen(
 	onToggleBbUnit: () -> Unit,
 	onBack: () -> Unit,
 	onShowDeleteConfirm: () -> Unit,
-	onShowTableExpanded: () -> Unit,
 	onShareText: () -> Unit,
 	onShareImage: () -> Unit,
 	onDownloadImage: () -> Unit,
+	onMarkPlayer: () -> Unit = {},
 	graphicsLayer: GraphicsLayer = rememberGraphicsLayer(),
 ) {
 	val success = state as? HandDetailState.Success
@@ -127,7 +127,7 @@ internal fun HandDetailScreen(
 					hand = success.hand,
 					useBbUnit = success.useBbUnit,
 					graphicsLayer = graphicsLayer,
-					onTableClick = onShowTableExpanded,
+					onMarkPlayer = onMarkPlayer,
 				)
 			}
 		}
@@ -206,7 +206,6 @@ private fun HandDetailScreenPreview() {
 			onShareText = {},
 			onShareImage = {},
 			onDownloadImage = {},
-			onShowTableExpanded = {},
 		)
 	}
 }

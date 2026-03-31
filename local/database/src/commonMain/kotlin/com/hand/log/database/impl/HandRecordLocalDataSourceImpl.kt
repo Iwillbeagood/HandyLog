@@ -19,6 +19,12 @@ internal class HandRecordLocalDataSourceImpl(
 		}
 	}
 
+	override fun observeAllHands(): Flow<List<HandRecord>> {
+		return handRecordDao.observeAllHands().map { hands ->
+			hands.map { it.toDomain() }
+		}
+	}
+
 	override fun observeHandById(handId: String): Flow<HandRecord?> {
 		return handRecordDao.observeHandById(handId).map { it?.toDomain() }
 	}

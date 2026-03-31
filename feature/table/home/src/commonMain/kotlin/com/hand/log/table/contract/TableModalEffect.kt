@@ -14,7 +14,6 @@ internal sealed interface TableModalEffect {
 	data class ShowPlayerSetup(
 		val tableId: String,
 		val initialSeat: Int,
-		val isHero: Boolean,
 		val player: Player?,
 		val occupiedSeats: Set<Int>,
 		val maxPlayers: Int,

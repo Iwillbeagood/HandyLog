@@ -1,5 +1,7 @@
 package com.hand.log.playersetup
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -7,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,6 +24,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.designsystem.component.HandyCheckBox
@@ -49,20 +54,19 @@ import org.koin.compose.viewmodel.koinViewModel
 fun PlayerSetupSheet(
 	tableId: String,
 	initialSeat: Int,
-	isHero: Boolean,
 	player: Player?,
 	occupiedSeats: Set<Int>,
 	maxSeat: Int,
-	onComplete: () -> Unit,
+	onSaved: (isEditMode: Boolean) -> Unit,
+	onDeleted: () -> Unit,
 	onDismiss: () -> Unit,
 	viewModel: PlayerSetupViewModel = koinViewModel(),
 ) {
-	val colors = HandyTheme.colorScheme
 	val state by viewModel.state.collectAsStateWithLifecycle()
 	val savedPlayers by viewModel.savedPlayers.collectAsStateWithLifecycle()
 
 	LaunchedEffect(initialSeat) {
-		viewModel.initialize(tableId, initialSeat, isHero, player, occupiedSeats)
+		viewModel.initialize(tableId, initialSeat, player, occupiedSeats)
 	}
 
 	var warningMessage by remember { mutableStateOf<String?>(null) }
@@ -71,8 +75,12 @@ fun PlayerSetupSheet(
 	LaunchedEffect(Unit) {
 		viewModel.effect.collect { effect ->
 			when (effect) {
-				PlayerSetupEffect.SaveComplete -> {
-					onComplete()
+				is PlayerSetupEffect.SaveComplete -> {
+					onSaved(effect.isEditMode)
+					onDismiss()
+				}
+				PlayerSetupEffect.DeleteComplete -> {
+					onDeleted()
 					onDismiss()
 				}
 				PlayerSetupEffect.NameRequired -> {
@@ -89,37 +97,21 @@ fun PlayerSetupSheet(
 		}
 	}
 
-	if (isHero) {
-		HandyBottomSheet(
-			onDismissRequest = onDismiss,
-			title = "Hero",
-			titleColor = colors.gold,
-			confirmText = stringResource(Res.string.btn_save),
-			onConfirm = viewModel::save,
-		) {
-			HandyTextField(
-				value = state.playerName,
-				onValueChange = viewModel::updateName,
-				label = stringResource(Res.string.player_name),
-			)
-		}
-	} else {
-		PlayerSetupContent(
-			state = state,
-			savedPlayers = savedPlayers,
-			maxSeat = maxSeat,
-			warningMessage = warningMessage,
-			onNameChange = viewModel::updateName,
-			onTendencyChange = viewModel::updateTendency,
-			onMemoChange = viewModel::updateMemo,
-			onSeatChange = viewModel::updateSeat,
-			onQuickLoadSavedPlayer = viewModel::loadSavedPlayerAndSave,
-			onSaveToMarkingChange = viewModel::toggleSaveToMarking,
-			onClearSeatClick = viewModel::clearSeatAndSave,
-			onSaveClick = viewModel::save,
-			onDismiss = onDismiss,
-		)
-	}
+	PlayerSetupContent(
+		state = state,
+		savedPlayers = savedPlayers,
+		maxSeat = maxSeat,
+		warningMessage = warningMessage,
+		onNameChange = viewModel::updateName,
+		onTendencyChange = viewModel::updateTendency,
+		onMemoChange = viewModel::updateMemo,
+		onSeatChange = viewModel::updateSeat,
+		onQuickLoadSavedPlayer = viewModel::loadSavedPlayerAndSave,
+		onSaveToMarkingChange = viewModel::toggleSaveToMarking,
+		onClearSeatClick = viewModel::clearSeatAndSave,
+		onSaveClick = viewModel::save,
+		onDismiss = onDismiss,
+	)
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -141,12 +133,24 @@ fun PlayerSetupContent(
 ) {
 	val colors = HandyTheme.colorScheme
 
+	val isEdit = state.isEditMode
+
 	HandyBottomSheet(
 		onDismissRequest = onDismiss,
-		title = "Seat ${state.player.seat}",
-		confirmText = stringResource(Res.string.btn_save),
+		title = if (isEdit) {
+			stringResource(Res.string.player_setup_edit_title, state.player.seat)
+		} else {
+			stringResource(Res.string.player_setup_add_title, state.player.seat)
+		},
+		confirmText = if (isEdit) {
+			stringResource(
+				Res.string.btn_edit,
+			)
+		} else {
+			stringResource(Res.string.btn_add)
+		},
 		onConfirm = onSaveClick,
-		subText = stringResource(Res.string.player_setup_clear_seat),
+		subText = if (isEdit) stringResource(Res.string.player_setup_clear_seat) else null,
 		onSub = onClearSeatClick,
 	) {
 		if (savedPlayers.isNotEmpty()) {
@@ -241,10 +245,19 @@ fun PlayerSetupContent(
 
 		if (warningMessage != null) {
 			VerticalSpacer(8.dp)
+			val shakeOffset = remember { Animatable(0f) }
+			LaunchedEffect(warningMessage) {
+				repeat(3) {
+					shakeOffset.animateTo(8f, tween(50))
+					shakeOffset.animateTo(-8f, tween(50))
+				}
+				shakeOffset.animateTo(0f, tween(50))
+			}
 			Text(
 				text = warningMessage,
 				style = HandyTheme.typography.medium12,
 				color = HandyTheme.colorScheme.error,
+				modifier = Modifier.offset { IntOffset(shakeOffset.value.roundToInt(), 0) },
 			)
 		}
 	}

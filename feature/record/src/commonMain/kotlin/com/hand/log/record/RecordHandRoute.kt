@@ -23,6 +23,7 @@ import org.jetbrains.compose.resources.stringResource
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
+import androidx.compose.ui.focus.FocusRequester
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
@@ -71,10 +72,13 @@ internal fun RecordHandRoute(
 		onBackCompleted = handleBack,
 	)
 
+	val heroStackFocusRequester = remember { FocusRequester() }
+
 	RecordHandContent(
 		state = state,
 		viewModel = viewModel,
 		onBack = handleBack,
+		heroStackFocusRequester = heroStackFocusRequester,
 	)
 
 	RecordHandModalContent(
@@ -91,6 +95,7 @@ internal fun RecordHandRoute(
 			when (effect) {
 				is RecordHandEffect.SaveSuccess -> navAction.popBackStack()
 				is RecordHandEffect.SaveError -> mainAction.onShowToast(Res.string.record_save_error)
+				is RecordHandEffect.FocusHeroStack -> heroStackFocusRequester.requestFocus()
 			}
 		}
 	}
@@ -101,6 +106,7 @@ private fun RecordHandContent(
 	state: RecordHandState,
 	viewModel: RecordHandViewModel,
 	onBack: () -> Unit,
+	heroStackFocusRequester: FocusRequester = FocusRequester(),
 ) {
 	if (state is RecordHandState.Recording) {
 		RecordHandScreen(
@@ -122,9 +128,9 @@ private fun RecordHandContent(
 			onPreviousStep = viewModel::previousStep,
 			onSelectShowdownCard = viewModel::selectShowdownCard,
 			onUpdateMemo = viewModel::updateMemo,
-			onShowTableEdit = viewModel::showTableEdit,
 			onToggleBbUnit = viewModel::toggleBbUnit,
 			onSave = viewModel::saveHand,
+			heroStackFocusRequester = heroStackFocusRequester,
 		)
 	}
 }
@@ -164,7 +170,7 @@ private fun RecordHandModalContent(
 				selectedCards = modalEffect.selectedCards,
 				onCardsSelected = onCardsSelected,
 				onDismiss = onDismiss,
-				onUnknownSelected = if (isShowdown) {
+				onUnknownSelected = if (isShowdown && modalEffect.allowUnknown) {
 					{ onSetShowdownUnknown(modalEffect.target.seat) }
 				} else {
 					null
@@ -175,7 +181,7 @@ private fun RecordHandModalContent(
 		is RecordHandModalEffect.ShowTableEdit -> {
 			TableEditSheet(
 				table = modalEffect.table,
-				onSaved = onTableSaved,
+				onSaved = { table, _ -> onTableSaved(table) },
 				onDismiss = onDismiss,
 			)
 		}

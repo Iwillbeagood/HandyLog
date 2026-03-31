@@ -10,4 +10,6 @@ data class Action(
 	val stackBefore: Double? = null,
 	val stackAfter: Double? = null,
 	val betLevel: Int = 0,
+	val playerName: String? = null,
+	val savedPlayerId: String? = null,
 )

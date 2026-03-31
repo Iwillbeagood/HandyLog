@@ -5,6 +5,7 @@ import com.hand.log.navigation.navigation.LaunchMode
 import com.hand.log.navigation.navigation.MainTabRoute
 import com.hand.log.navigation.navigation.BetSizeSettings
 import com.hand.log.navigation.navigation.HandDetail
+import com.hand.log.navigation.navigation.PlayerHands
 import com.hand.log.navigation.navigation.RecordHand
 import com.hand.log.navigation.navigation.Route
 import com.hand.log.navigation.navigation.RouteStack
@@ -40,8 +41,20 @@ internal class MainNavigator {
 			navigate(HandDetail(handId))
 		}
 
+		override fun navigateToPlayersWithAdd() {
+			navigate(MainTabRoute.Players(openAdd = true), LaunchMode.CLEAR_ALL)
+		}
+
+		override fun navigateToPlayerHands(savedPlayerId: String, playerName: String) {
+			navigate(PlayerHands(savedPlayerId, playerName))
+		}
+
 		override fun navigateToBetSizeSettings() {
 			navigate(BetSizeSettings)
+		}
+
+		override fun navigateToPlayers(tableId: String, openSeat: Int) {
+			navigate(Table(tableId, openSeat))
 		}
 	}
 
@@ -90,8 +103,8 @@ internal class MainNavigator {
 			MainTabRoute.Home -> {
 				navigate(MainTabRoute.Home, LaunchMode.CLEAR_ALL)
 			}
-			MainTabRoute.Players -> {
-				navigate(MainTabRoute.Players, LaunchMode.CLEAR_ALL)
+			is MainTabRoute.Players -> {
+				navigate(MainTabRoute.Players(), LaunchMode.CLEAR_ALL)
 			}
 			MainTabRoute.Settings -> {
 				navigate(MainTabRoute.Settings, LaunchMode.CLEAR_ALL)

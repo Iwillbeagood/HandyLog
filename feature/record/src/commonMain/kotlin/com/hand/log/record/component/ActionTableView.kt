@@ -104,7 +104,7 @@ internal fun ActionTableView(
 			contentAlignment = Alignment.Center,
 		) {
 			val sidePots = state.sidePots
-			val mainPot = if (sidePots.isNotEmpty()) sidePots.first() else state.currentPot
+			val mainPot = if (sidePots.size > 1) sidePots.first() else state.currentPot
 
 			Column(
 				horizontalAlignment = Alignment.CenterHorizontally,
@@ -130,7 +130,7 @@ internal fun ActionTableView(
 					)
 				}
 
-				// 사이드 팟 (메인 팟 제외)
+				// 사이드 팟 표시 (메인팟 제외)
 				if (sidePots.size > 1) {
 					VerticalSpacer(2.dp)
 					Row(
@@ -492,7 +492,6 @@ private fun ActionTableViewAllElementsPreview() {
 					id = "test",
 					date = LocalDate(2026, 3, 14),
 					gameType = GameType.Tournament(isBigBlindAnte = true),
-					playerCount = 9,
 					heroSeat = 3,
 					createdAt = 0L,
 				),
@@ -542,7 +541,6 @@ private fun ActionTableView9MaxFlopPreview() {
 					id = "test",
 					date = LocalDate(2026, 3, 14),
 					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
-					playerCount = 9,
 					heroSeat = 3,
 					createdAt = 0L,
 				),

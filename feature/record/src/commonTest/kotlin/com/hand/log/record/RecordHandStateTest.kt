@@ -6,6 +6,7 @@ import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.FlopStreet
 import com.hand.log.domain.model.GameType
+import com.hand.log.domain.model.Player
 import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.model.PreflopStreet
@@ -42,8 +43,8 @@ class RecordHandStateTest {
 			id = "test",
 			date = LocalDate(2026, 3, 17),
 			gameType = GameType.Tournament(isBigBlindAnte = isBigBlindAnte),
-			playerCount = playerCount,
 			heroSeat = heroSeat,
+			players = (1..playerCount).map { Player(seat = it) },
 			createdAt = 0L,
 		)
 		return RecordHandState.Recording(
@@ -307,6 +308,124 @@ class RecordHandStateTest {
 		assertTrue(state.sidePots.isEmpty())
 	}
 
+	// ===== 사이드 팟 분배 (potResults) =====
+
+	@Test
+	fun `A 10만 올인 B 5만 올인 C 8만 올인 - 메인팟 15만 사이드팟 6만 2만`() {
+		val state = makeState(
+			playerCount = 3,
+			players = RecordPlayers(
+				player1 = RecordPlayer(
+					seat = 1,
+					stack = 0.0,
+					initialStack = 100000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player2 = RecordPlayer(
+					seat = 2,
+					stack = 0.0,
+					initialStack = 50000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player3 = RecordPlayer(
+					seat = 3,
+					stack = 0.0,
+					initialStack = 80000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+			),
+		)
+		val pots = state.sidePots
+		assertEquals(3, pots.size)
+		// 메인팟: 5만 * 3 = 15만
+		assertEquals(150000.0, pots[0])
+		// 사이드팟1: (8만 - 5만) * 2 = 6만 (A, C만 eligible)
+		assertEquals(60000.0, pots[1])
+		// 사이드팟2: (10만 - 8만) * 1 = 2만 (A만 eligible)
+		assertEquals(20000.0, pots[2])
+	}
+
+	@Test
+	fun `사이드팟 없으면 potResults 비어있음`() {
+		val state = makeState(
+			playerCount = 3,
+			players = RecordPlayers(
+				player1 = RecordPlayer(
+					seat = 1,
+					stack = 0.0,
+					initialStack = 50000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player2 = RecordPlayer(seat = 2, stack = 0.0, initialStack = 50000.0),
+				player3 = RecordPlayer(
+					seat = 3,
+					stack = 50000.0,
+					initialStack = 50000.0,
+					status = PlayerStatus.FOLDED,
+				),
+			),
+		)
+		assertTrue(state.potResults.isEmpty())
+	}
+
+	@Test
+	fun `메인팟 표시에는 sidePots 첫번째가 사용된다`() {
+		val state = makeState(
+			playerCount = 3,
+			players = RecordPlayers(
+				player1 = RecordPlayer(
+					seat = 1,
+					stack = 0.0,
+					initialStack = 100000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player2 = RecordPlayer(
+					seat = 2,
+					stack = 0.0,
+					initialStack = 50000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player3 = RecordPlayer(
+					seat = 3,
+					stack = 0.0,
+					initialStack = 80000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+			),
+		)
+		val pots = state.sidePots
+		assertTrue(pots.size > 1)
+		// POT에 표시할 메인팟 = sidePots[0]
+		val mainPot = pots.first()
+		assertEquals(150000.0, mainPot)
+		// currentPot은 전체 합산
+		// 사이드팟은 drop(1)
+		val sidePotOnly = pots.drop(1)
+		assertEquals(2, sidePotOnly.size)
+	}
+
+	@Test
+	fun `스택 미입력 플레이어는 사이드팟 계산에 포함되지 않음`() {
+		// Seat1: 5만 올인, Seat2: 스택 미입력(0), Seat3: 5만 콜
+		val state = makeState(
+			playerCount = 3,
+			players = RecordPlayers(
+				player1 = RecordPlayer(
+					seat = 1,
+					stack = 0.0,
+					initialStack = 50000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player2 = RecordPlayer(seat = 2, stack = 0.0, initialStack = 0.0),
+				player3 = RecordPlayer(seat = 3, stack = 0.0, initialStack = 50000.0),
+			),
+		)
+		// Seat2는 invested = 0 → 팟 계산에서 제외
+		val pots = state.sidePots
+		// Seat1, Seat3만 동일 레벨 → 사이드팟 없음
+		assertTrue(pots.isEmpty())
+	}
+
 	// ===== 가능한 액션 =====
 
 	@Test
@@ -426,15 +545,20 @@ class RecordHandStateTest {
 			bb = 1000.0,
 			currentActionSeat = 5,
 			players = RecordPlayers(
-				player1 = RecordPlayer(seat = 1),
-				player2 = RecordPlayer(seat = 2),
-				player3 = RecordPlayer(seat = 3),
-				player4 = RecordPlayer(seat = 4, status = PlayerStatus.ALL_IN),
-				player5 = RecordPlayer(seat = 5),
-				player6 = RecordPlayer(seat = 6),
-				player7 = RecordPlayer(seat = 7),
-				player8 = RecordPlayer(seat = 8),
-				player9 = RecordPlayer(seat = 9),
+				player1 = RecordPlayer(seat = 1, stack = 50000.0, initialStack = 50000.0),
+				player2 = RecordPlayer(seat = 2, stack = 50000.0, initialStack = 50000.0),
+				player3 = RecordPlayer(seat = 3, stack = 50000.0, initialStack = 50000.0),
+				player4 = RecordPlayer(
+					seat = 4,
+					stack = 0.0,
+					initialStack = 50000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player5 = RecordPlayer(seat = 5, stack = 30000.0, initialStack = 30000.0),
+				player6 = RecordPlayer(seat = 6, stack = 50000.0, initialStack = 50000.0),
+				player7 = RecordPlayer(seat = 7, stack = 50000.0, initialStack = 50000.0),
+				player8 = RecordPlayer(seat = 8, stack = 50000.0, initialStack = 50000.0),
+				player9 = RecordPlayer(seat = 9, stack = 50000.0, initialStack = 50000.0),
 			),
 			streets = HandStreets(
 				preflop = PreflopStreet(

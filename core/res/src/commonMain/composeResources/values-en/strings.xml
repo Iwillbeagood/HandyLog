@@ -36,8 +36,11 @@
 	<string name="table_detail_hand_count">%d</string>
 	<string name="table_detail_empty_title">No hands recorded yet</string>
 	<string name="table_detail_empty_desc">Tap + to record your first hand</string>
-	<string name="table_detail_player_saved">Player info saved</string>
+	<string name="table_detail_player_added">Player added</string>
+	<string name="table_detail_player_updated">Player info updated</string>
+	<string name="table_detail_player_deleted">Seat cleared</string>
 	<string name="table_detail_hand_deleted">Hand deleted</string>
+	<string name="table_detail_table_created">Table created</string>
 	<string name="table_detail_table_updated">Table updated</string>
 
 	<!-- Table Form -->
@@ -54,6 +57,8 @@
 	<string name="table_form_bb_ante">Big Blind Ante</string>
 
 	<!-- Player Setup -->
+	<string name="player_setup_add_title">Add Player to Seat %1$s</string>
+	<string name="player_setup_edit_title">Edit Seat %1$s Player</string>
 	<string name="player_setup_seat">Seat</string>
 	<string name="player_setup_clear_seat">Clear Seat</string>
 	<string name="player_setup_name_required">Enter a name to save to favorites</string>
@@ -85,8 +90,10 @@
 	<string name="showdown_result">Result</string>
 	<string name="showdown_result_win">Win with %1$s</string>
 	<string name="showdown_result_lose">Lose with %1$s</string>
+	<string name="showdown_result_split">Split with %1$s</string>
 	<string name="showdown_result_fold_win">Fold Win</string>
 	<string name="showdown_memo">Memo</string>
+	<string name="result_mark_player">Mark</string>
 
 	<!-- Card Selector -->
 	<string name="card_selector_hero">Select Hero Cards</string>
@@ -119,11 +126,17 @@
 	<string name="player_edit">Edit Player</string>
 	<string name="player_name">Name</string>
 	<string name="player_stack">Stack</string>
+	<string name="record_skip_stack">Skip</string>
 	<string name="player_tendency">Tendency</string>
 	<string name="player_tendency_none">None</string>
 	<string name="player_memo">Memo</string>
 	<string name="player_save_to_marking">Save to player list</string>
 	<string name="player_saved">Saved Players</string>
+	<string name="player_hands_empty">No recorded hands</string>
+	<string name="player_hands_total">Total</string>
+	<string name="player_hands_win">Win</string>
+	<string name="player_hands_lose">Lose</string>
+	<string name="player_hands_draw">Draw</string>
 
 	<!-- Settings -->
 	<string name="settings_title">Settings</string>
@@ -131,6 +144,8 @@
 	<string name="settings_game">Game Settings</string>
 	<string name="settings_bet_size_preset">Bet Size Presets</string>
 	<string name="settings_preset_count">%d presets configured</string>
+	<string name="settings_support">Support</string>
+	<string name="settings_contact">Contact Us</string>
 	<string name="settings_app_info">App Info</string>
 	<string name="settings_version">Version</string>
 

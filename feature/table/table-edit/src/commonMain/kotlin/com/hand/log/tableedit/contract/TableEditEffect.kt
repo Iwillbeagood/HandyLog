@@ -5,5 +5,5 @@ import com.hand.log.domain.model.PokerTable
 
 @Immutable
 internal sealed interface TableEditEffect {
-	data class SaveComplete(val table: PokerTable) : TableEditEffect
+	data class SaveComplete(val table: PokerTable, val isEditMode: Boolean) : TableEditEffect
 }

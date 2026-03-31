@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "ed0627564f2d80e152db49a0ce5f46c5",
+    "identityHash": "0321c684ac5b963728aa3b34ff10ec10",
     "entities": [
       {
         "tableName": "poker_tables",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `date` TEXT NOT NULL, `location` TEXT, `gameType` TEXT NOT NULL, `maxPlayers` INTEGER NOT NULL, `playerCount` INTEGER NOT NULL, `heroSeat` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `date` TEXT NOT NULL, `location` TEXT, `gameType` TEXT NOT NULL, `maxPlayers` INTEGER NOT NULL, `heroSeat` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -38,12 +38,6 @@
             "notNull": true
           },
           {
-            "fieldPath": "playerCount",
-            "columnName": "playerCount",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
             "fieldPath": "heroSeat",
             "columnName": "heroSeat",
             "affinity": "INTEGER",
@@ -65,7 +59,7 @@
       },
       {
         "tableName": "table_players",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `tableId` TEXT NOT NULL, `seat` INTEGER NOT NULL, `tendency` TEXT, `memo` TEXT, `name` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`tableId`) REFERENCES `poker_tables`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `tableId` TEXT NOT NULL, `seat` INTEGER NOT NULL, `tendency` TEXT, `memo` TEXT, `name` TEXT, `savedPlayerId` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`tableId`) REFERENCES `poker_tables`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -98,6 +92,11 @@
           {
             "fieldPath": "name",
             "columnName": "name",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "savedPlayerId",
+            "columnName": "savedPlayerId",
             "affinity": "TEXT"
           }
         ],
@@ -285,7 +284,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ed0627564f2d80e152db49a0ce5f46c5')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0321c684ac5b963728aa3b34ff10ec10')"
     ]
   }
 }

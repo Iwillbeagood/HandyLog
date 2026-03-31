@@ -11,6 +11,7 @@ import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.Position
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.model.ShowdownEntry
+import com.hand.log.domain.model.ShowdownOutcome
 import com.hand.log.domain.model.ShowdownResult
 import com.hand.log.domain.model.Street
 import com.hand.log.record.model.RecordPlayers
@@ -105,6 +106,21 @@ internal sealed interface RecordHandState {
 
 		fun getPlayerStack(seat: Int): Double = players.getStack(seat)
 
+		/** 좌석의 프리플랍 블라인드 차감액 (SB/BB/Ante) */
+		fun getBlindCost(seat: Int): Double {
+			val count = table?.playerCount ?: return 0.0
+			val btn = buttonSeat
+			val sbSeat = (btn % count) + 1
+			val bbSeat = ((btn + 1) % count) + 1
+			val sb = blinds?.sb ?: 0.0
+			val bb = blinds?.bb ?: 0.0
+			return when (seat) {
+				sbSeat -> sb
+				bbSeat -> bb + if (blinds?.isBigBlindAnte == true) bb else 0.0
+				else -> 0.0
+			}
+		}
+
 		/** 폴드 승리 여부 (1명만 남은 경우) */
 		val isFoldWin: Boolean
 			get() = remainingSeats.size == 1
@@ -150,7 +166,7 @@ internal sealed interface RecordHandState {
 							seat = seat,
 							ranking = HandRanking.HIGH_CARD,
 							bestCards = emptyList(),
-							isWinner = seat == winnerSeat,
+							outcome = if (seat == winnerSeat) ShowdownOutcome.WIN else ShowdownOutcome.LOSE,
 						)
 					}
 				}
@@ -235,6 +251,55 @@ internal sealed interface RecordHandState {
 				val blindsPot = (if (sbInPot >= sb) 0.0 else sb) + (if (bbInPot >= bb) 0.0 else bb)
 				val antePot = if (blinds?.isBigBlindAnte == true) bb else 0.0
 				return actionsPot + blindsPot + antePot
+			}
+
+		val potResults: List<PotResult>
+			get() {
+				val pots = sidePots
+				if (pots.size <= 1) return emptyList()
+				val results = showdownResults
+				if (results.isEmpty()) return emptyList()
+
+				val count = table?.playerCount ?: return emptyList()
+				val investments = buildMap {
+					for (seat in 1..count) {
+						val player = players[seat] ?: continue
+						val invested = player.initialStack - player.stack
+						if (invested > 0) put(seat, invested)
+					}
+				}
+
+				val sortedLevels = investments.values.distinct().sorted()
+				var previousLevel = 0.0
+				val potResultList = mutableListOf<PotResult>()
+				var potIndex = 0
+
+				for (level in sortedLevels) {
+					val diff = level - previousLevel
+					if (diff <= 0) continue
+					val eligibleSeats = investments.filter { it.value >= level }.keys
+					val potForLevel = diff * eligibleSeats.size
+
+					// eligible 플레이어끼리 핸드 비교하여 팟별 승자 결정
+					val eligibleEntries = showdownEntries.filter {
+						it.seat in eligibleSeats && !showdown.isUnknown(it.seat)
+					}
+					val eligibleShowdown = if (eligibleEntries.size >= 2 && streets.boardCards.size == 5) {
+						HandEvaluator.calculateShowdown(streets.boardCards, eligibleEntries)
+					} else {
+						emptyList()
+					}
+					val winner = eligibleShowdown.firstOrNull { it.isWinner || it.isSplit }
+						?: eligibleShowdown.firstOrNull()
+
+					if (winner != null) {
+						val label = if (potIndex == 0) "Main Pot" else "Side Pot${if (sortedLevels.size > 2) " $potIndex" else ""}"
+						potResultList.add(PotResult(label, potForLevel, winner.seat))
+					}
+					previousLevel = level
+					potIndex++
+				}
+				return potResultList
 			}
 
 		/** 사이드 팟 목록 (올인 플레이어가 있을 때 발생) */
@@ -392,8 +457,10 @@ internal sealed interface RecordHandState {
 				val maxBet = streetActions.maxOfOrNull { it.amount ?: 0.0 }
 					?: if (currentStreet == Street.PREFLOP) (blinds?.bb ?: 0.0) else 0.0
 
+				// 스택 미입력(0) = 무제한
+				val isUnlimited = playerStack == 0.0
 				// 콜 가능 여부
-				val canCall = playerStack >= maxBet
+				val canCall = isUnlimited || playerStack >= maxBet
 				// 마지막 올인이 민레이즈 미달이면 리오픈 불가 (콜/폴드만)
 				val lastAllInUnderMinRaise = run {
 					val bb = blinds?.bb ?: 0.0
@@ -425,7 +492,7 @@ internal sealed interface RecordHandState {
 					}
 				}
 				// 민레이즈 이상 가능 여부
-				val canRaise = playerStack >= minRaiseAmount && !lastAllInUnderMinRaise
+				val canRaise = (isUnlimited || playerStack >= minRaiseAmount) && !lastAllInUnderMinRaise
 
 				return buildList {
 					if (currentStreet == Street.PREFLOP) {
@@ -439,12 +506,7 @@ internal sealed interface RecordHandState {
 							add(ActionType.FOLD)
 							if (canCall) add(ActionType.CALL)
 							if (canRaise) add(ActionType.RAISE)
-							if (!canCall) {
-								// 콜 불가(스택 부족) → 올인 or 폴드만
-								add(ActionType.ALL_IN)
-							} else {
-								add(ActionType.ALL_IN)
-							}
+							add(ActionType.ALL_IN)
 						}
 					} else {
 						// 포스트플랍
@@ -514,3 +576,10 @@ internal sealed interface RecordHandState {
 		fun positionName(seat: Int): String = positionOf(seat).label
 	}
 }
+
+@Immutable
+data class PotResult(
+	val label: String,
+	val amount: Double,
+	val winnerSeat: Int,
+)

@@ -230,7 +230,6 @@ private fun TableScreenPreview() {
 					date = LocalDate(2026, 3, 12),
 					location = "강남 홀덤펍",
 					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
-					playerCount = 9,
 					heroSeat = 3,
 					players = listOf(
 						Player(seat = 1, name = "Player 1"),
@@ -291,7 +290,6 @@ private fun TableScreenEmptyPreview() {
 					date = LocalDate(2026, 3, 12),
 					location = "강남",
 					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
-					playerCount = 6,
 					heroSeat = 1,
 					players = emptyList(),
 					createdAt = 1710000000000L,

@@ -16,6 +16,7 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.hand.log.handdetail.navigation.handDetailNavGraph
 import com.hand.log.home.navigation.homeNavGraph
+import com.hand.log.players.hands.navigation.playerHandsNavGraph
 import com.hand.log.players.navigation.playersNavGraph
 import com.hand.log.record.navigation.recordHandNavGraph
 import com.hand.log.settings.betsize.navigation.betSizeNavGraph
@@ -38,6 +39,7 @@ internal fun MainNavDisplay(
 		tableNavGraph()
 		recordHandNavGraph()
 		handDetailNavGraph()
+		playerHandsNavGraph()
 		betSizeNavGraph()
 	}
 

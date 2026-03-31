@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -49,11 +50,13 @@ internal fun ActionSelector(
 	postflopPresets: List<Int> = listOf(33, 50, 75, 100),
 	minRaiseAmount: Double = 0.0,
 	maxAmount: Double = 0.0,
+	lastBetAmount: Double = 0.0,
 	showAmountWarning: Boolean = false,
 	useBbUnit: Boolean = false,
 	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme
+	val focusManager = LocalFocusManager.current
 
 	Column(modifier = modifier) {
 		FlowRow(
@@ -68,7 +71,10 @@ internal fun ActionSelector(
 					modifier = Modifier
 						.clip(RoundedCornerShape(8.dp))
 						.background(if (isSelected) actionColors.background else colors.muted)
-						.clickable { onSelectAction(actionType) }
+						.clickable {
+							focusManager.clearFocus()
+							onSelectAction(actionType)
+						}
 						.padding(horizontal = 16.dp, vertical = 10.dp),
 				) {
 					Text(
@@ -127,7 +133,40 @@ internal fun ActionSelector(
 				horizontalArrangement = Arrangement.spacedBy(8.dp),
 				modifier = Modifier.horizontalScroll(rememberScrollState()),
 			) {
-				if (currentStreet == Street.PREFLOP) {
+				val isRaiseOrBet = selectedAction == ActionType.RAISE || selectedAction == ActionType.BET
+				if (isRaiseOrBet && lastBetAmount > 0) {
+					// 이전 베팅 배수 프리셋 (x2, x3, x3.5, x4)
+					val raiseMultipliers = listOf(2.0, 3.0, 3.5, 4.0)
+					raiseMultipliers.forEach { multiplier ->
+						val chipAmount = lastBetAmount * multiplier
+						val presetAmount = if (useBbUnit && bbAmount > 0) {
+							val bbCount = chipAmount / bbAmount
+							val rounded = (bbCount * 10).toLong() / 10.0
+							if (rounded == rounded.toLong().toDouble()) {
+								rounded.toLong().toString()
+							} else {
+								rounded.toString()
+							}
+						} else {
+							chipAmount.toLong().toString()
+						}
+						val label = if (multiplier % 1.0 == 0.0) {
+							"x${multiplier.toInt()}"
+						} else {
+							"x$multiplier"
+						}
+						RegularButton(
+							text = label,
+							onClick = { onUpdateAmount(presetAmount) },
+							containerColor = colors.muted,
+							contentColor = colors.textPrimary,
+							textStyle = HandyTheme.typography.medium14,
+							borderStroke = 8.dp,
+							verticalPadding = 8.dp,
+							horizontalPadding = 16.dp,
+						)
+					}
+				} else if (currentStreet == Street.PREFLOP) {
 					if (bbAmount > 0) {
 						preflopPresets.forEach { multiplier ->
 							val presetAmount = if (useBbUnit) {

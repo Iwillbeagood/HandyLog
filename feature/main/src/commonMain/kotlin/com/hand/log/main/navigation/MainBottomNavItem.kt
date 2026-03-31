@@ -19,7 +19,7 @@ enum class MainBottomNavItem(
 	),
 	Players(
 		icon = Res.drawable.users,
-		route = MainTabRoute.Players,
+		route = MainTabRoute.Players(),
 	),
 	Settings(
 		icon = Res.drawable.settings,

@@ -24,7 +24,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun TableEditSheet(
 	table: PokerTable? = null,
-	onSaved: (PokerTable) -> Unit,
+	onSaved: (PokerTable, Boolean) -> Unit,
 	onDismiss: () -> Unit,
 ) {
 	TableEditSheetContent(
@@ -38,7 +38,7 @@ fun TableEditSheet(
 @Composable
 private fun TableEditSheetContent(
 	table: PokerTable? = null,
-	onSaved: (PokerTable) -> Unit,
+	onSaved: (PokerTable, Boolean) -> Unit,
 	onDismiss: () -> Unit,
 	viewModel: TableEditViewModel = koinViewModel(),
 ) {
@@ -54,7 +54,7 @@ private fun TableEditSheetContent(
 		viewModel.effect.collect { effect ->
 			when (effect) {
 				is TableEditEffect.SaveComplete -> {
-					onSaved(effect.table)
+					onSaved(effect.table, effect.isEditMode)
 					onDismiss()
 				}
 			}
@@ -103,6 +103,7 @@ private fun TableEditSheetContent(
 			onPlayerCountChange = viewModel::updatePlayerCount,
 			heroSeat = state.heroSeat,
 			onHeroSeatChange = viewModel::updateHeroSeat,
+			isEditMode = state.isEditMode,
 		)
 	}
 

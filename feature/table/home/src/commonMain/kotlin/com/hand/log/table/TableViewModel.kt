@@ -48,9 +48,15 @@ internal class TableViewModel(
 	private val _effect = MutableSharedFlow<TableEffect>()
 	val effect: SharedFlow<TableEffect> get() = _effect.asSharedFlow()
 
-	fun onPlayerSaved() {
+	fun onPlayerSaved(isEditMode: Boolean) {
 		viewModelScope.launch {
-			_effect.emit(TableEffect.PlayerSaved)
+			_effect.emit(if (isEditMode) TableEffect.PlayerUpdated else TableEffect.PlayerAdded)
+		}
+	}
+
+	fun onPlayerDeleted() {
+		viewModelScope.launch {
+			_effect.emit(TableEffect.PlayerDeleted)
 		}
 	}
 
@@ -61,7 +67,6 @@ internal class TableViewModel(
 			TableModalEffect.ShowPlayerSetup(
 				tableId = table.id,
 				initialSeat = seat,
-				isHero = seat == table.heroSeat,
 				player = table.players.find { it.seat == seat },
 				occupiedSeats = table.players.map { it.seat }.toSet(),
 				maxPlayers = table.maxPlayers,
@@ -97,9 +102,9 @@ internal class TableViewModel(
 		}
 	}
 
-	fun onTableSaved() {
+	fun onTableSaved(isEditMode: Boolean) {
 		viewModelScope.launch {
-			_effect.emit(TableEffect.TableUpdated)
+			_effect.emit(if (isEditMode) TableEffect.TableUpdated else TableEffect.TableCreated)
 		}
 		dismissModal()
 	}

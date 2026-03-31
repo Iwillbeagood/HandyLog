@@ -2,7 +2,6 @@ package com.hand.log.database.impl
 
 import com.hand.log.data.datasoure.local.PokerTableLocalDataSource
 import com.hand.log.database.dao.PokerTableDao
-import com.hand.log.database.entity.TablePlayerEntity
 import com.hand.log.database.mapper.toDomain
 import com.hand.log.database.mapper.toEntity
 import com.hand.log.domain.model.GameType
@@ -67,11 +66,8 @@ internal class PokerTableLocalDataSourceImpl(
 			location = table.location,
 			gameType = json.encodeToString(GameType.serializer(), table.gameType),
 			maxPlayers = table.maxPlayers,
-			playerCount = table.playerCount,
 			heroSeat = table.heroSeat,
 		)
-		val maxSeat = table.maxPlayers.takeIf { it > 0 } ?: table.playerCount
-		pokerTableDao.deletePlayersOverSeat(table.id, maxSeat)
 	}
 
 	@OptIn(ExperimentalUuidApi::class)
@@ -83,6 +79,7 @@ internal class PokerTableLocalDataSourceImpl(
 				tendency = player.tendency?.name,
 				memo = player.memo,
 				name = player.name,
+				savedPlayerId = player.savedPlayerId,
 			)
 		} else {
 			pokerTableDao.insertPlayer(

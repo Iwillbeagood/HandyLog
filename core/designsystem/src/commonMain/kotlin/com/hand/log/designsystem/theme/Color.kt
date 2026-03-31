@@ -21,6 +21,7 @@ val DarkHandyColorScheme
 		onAccent = Color(0xFFF2F2F2), // 강조 위 텍스트
 		secondary = Color(0xFF2F3541), // 보조 요소 배경
 		onSecondary = Color(0xFFF2F2F2), // 보조 요소 텍스트
+		split = Color(0xFFE88A30), // 스플릿 (주황)
 		error = Color(0xFFDC2828), // 경고/삭제
 		border = Color(0xFF4A5060), // 테두리
 		inputBorder = Color(0xFF414855), // 입력 필드 테두리
@@ -47,6 +48,7 @@ val LightHandyColorScheme
 		onAccent = Color(0xFFFFFFFF),
 		secondary = Color(0xFFE7E9ED),
 		onSecondary = Color(0xFF353C49),
+		split = Color(0xFFD97B1E), // 스플릿 (주황)
 		error = Color(0xFFDC2828),
 		border = Color(0xFFDCDEE4),
 		inputBorder = Color(0xFFE1E4E9),
@@ -78,6 +80,9 @@ data class HandyColorScheme(
 	// 보조
 	val secondary: Color, // 보조 요소 배경
 	val onSecondary: Color, // 보조 요소 텍스트
+
+	// 스플릿
+	val split: Color, // 스플릿 (주황)
 
 	// 상태
 	val error: Color, // 경고/삭제

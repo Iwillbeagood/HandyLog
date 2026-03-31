@@ -3,6 +3,7 @@ package com.hand.log.tableedit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hand.log.domain.model.GameType
+import com.hand.log.domain.model.Player
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.repository.PokerTableRepository
 import com.hand.log.domain.usecase.CreatePokerTableUseCase
@@ -85,31 +86,24 @@ internal class TableEditViewModel(
 		if (!s.isSubmitEnabled) return
 
 		viewModelScope.launch {
+			val players = (1..s.playerCount).map { seat -> Player(seat = seat) }
 			val table = PokerTable(
 				id = editingTableId ?: "",
 				date = LocalDate.parse(s.date),
 				location = s.location.takeIf { it.isNotBlank() },
 				gameType = s.buildGameType(),
 				maxPlayers = s.maxPlayers,
-				playerCount = s.playerCount,
 				heroSeat = s.heroSeat,
+				players = players,
 				createdAt = 0L,
 			)
 			val savedTable = if (s.isEditMode) {
-				val existing = pokerTableRepository.getTableById(editingTableId!!)
-				val maxSeat = s.maxPlayers
-				val filteredPlayers = existing?.players?.filter { it.seat <= maxSeat } ?: emptyList()
-				pokerTableRepository.saveTable(
-					table.copy(
-						id = editingTableId!!,
-						players = filteredPlayers,
-						createdAt = existing?.createdAt ?: 0L,
-					),
-				)
+				pokerTableRepository.updateTableInfo(table.copy(id = editingTableId!!))
+				table.copy(id = editingTableId!!)
 			} else {
 				createPokerTable(table)
 			}
-			_effect.emit(TableEditEffect.SaveComplete(savedTable))
+			_effect.emit(TableEditEffect.SaveComplete(savedTable, s.isEditMode))
 		}
 	}
 

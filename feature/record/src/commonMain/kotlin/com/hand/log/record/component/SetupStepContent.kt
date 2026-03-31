@@ -2,21 +2,18 @@ package com.hand.log.record.component
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -28,7 +25,6 @@ import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.GameType
-import com.hand.log.ui.localizedLabel
 import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.model.Rank
@@ -50,44 +46,11 @@ internal fun SetupStepContent(
 	onUpdateHeroStack: (String) -> Unit,
 	onUpdateButtonSeat: (Int) -> Unit,
 	onUpdateBlinds: (String, String) -> Unit,
-	onShowTableEdit: () -> Unit = {},
+	heroStackFocusRequester: FocusRequester = FocusRequester(),
 ) {
 	val colors = HandyTheme.colorScheme
 
 	Column {
-		// 테이블 설정 버튼
-		Row(
-			modifier = Modifier
-				.fillMaxWidth()
-				.clip(RoundedCornerShape(8.dp))
-				.background(colors.muted)
-				.clickable(onClick = onShowTableEdit)
-				.padding(horizontal = 12.dp, vertical = 10.dp),
-			verticalAlignment = Alignment.CenterVertically,
-			horizontalArrangement = Arrangement.SpaceBetween,
-		) {
-			Column {
-				Text(
-					text = state.table?.location ?: "테이블",
-					style = HandyTheme.typography.bold14,
-					color = colors.textPrimary,
-				)
-				state.table?.let {
-					Text(
-						text = "${it.gameType.localizedLabel()} · ${it.playerCount}인",
-						style = HandyTheme.typography.regular12,
-						color = colors.textSecondary,
-					)
-				}
-			}
-			Text(
-				text = stringResource(Res.string.btn_edit),
-				style = HandyTheme.typography.bold12,
-				color = colors.primary,
-			)
-		}
-
-		VerticalSpacer(16.dp)
 		HandySectionLabel(stringResource(Res.string.record_hero_card))
 		Row(
 			horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -110,6 +73,7 @@ internal fun SetupStepContent(
 			onValueChange = onUpdateHeroStack,
 			label = stringResource(Res.string.record_hero_stack),
 			keyboardType = KeyboardType.Number,
+			modifier = Modifier.focusRequester(heroStackFocusRequester),
 		)
 
 		VerticalSpacer(16.dp)
@@ -194,7 +158,6 @@ private fun SetupStepContentEmptyPreview() {
 					id = "test",
 					date = LocalDate(2026, 3, 14),
 					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
-					playerCount = 9,
 					heroSeat = 3,
 					createdAt = 0L,
 				),
@@ -220,7 +183,6 @@ private fun SetupStepContentFilledPreview() {
 					id = "test",
 					date = LocalDate(2026, 3, 14),
 					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
-					playerCount = 9,
 					heroSeat = 3,
 					createdAt = 0L,
 				),
@@ -248,7 +210,6 @@ private fun SetupStepContentTournamentPreview() {
 					id = "test",
 					date = LocalDate(2026, 3, 14),
 					gameType = GameType.Tournament(isBigBlindAnte = true),
-					playerCount = 9,
 					heroSeat = 5,
 					createdAt = 0L,
 				),

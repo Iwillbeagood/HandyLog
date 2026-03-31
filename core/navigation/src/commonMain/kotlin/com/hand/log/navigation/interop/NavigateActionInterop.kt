@@ -13,5 +13,9 @@ interface NavigateActionInterop {
 	fun navigateToTableDetail(tableId: String)
 	fun navigateToRecordHand(tableId: String)
 	fun navigateToHandDetail(handId: String)
+	fun navigateToPlayerHands(savedPlayerId: String, playerName: String)
+	fun navigateToPlayersWithAdd()
 	fun navigateToBetSizeSettings()
+
+	fun navigateToPlayers(tableId: String, openSeat: Int = 0)
 }

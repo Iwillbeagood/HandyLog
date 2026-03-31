@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,7 +46,11 @@ import com.hand.log.record.model.RecordShowdown
 import com.hand.log.domain.model.HandStreets
 import com.hand.log.record.model.PlayerStatus
 import com.hand.log.ui.poker.CardSize
+import com.hand.log.ui.poker.HoleCards
+import com.hand.log.ui.poker.OutcomeBadge
 import com.hand.log.ui.poker.PlayingCard
+import com.hand.log.ui.poker.PositionBadge
+import com.hand.log.ui.poker.outcomeColor
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 import handylog.core.res.generated.resources.Res
@@ -57,6 +60,7 @@ import handylog.core.res.generated.resources.*
 internal fun ShowdownStepContent(
 	state: RecordHandState.Recording,
 	onSelectSingleBoardCard: (Street, Int) -> Unit,
+	onSelectHeroCard: () -> Unit,
 	onSelectShowdownCard: (Int) -> Unit,
 	onUpdateMemo: (String) -> Unit,
 ) {
@@ -108,8 +112,8 @@ internal fun ShowdownStepContent(
 				state = state,
 				seat = heroSeat,
 				result = null,
-	
 				isFolded = true,
+				onSelectHeroCard = onSelectHeroCard,
 				onSelectShowdownCard = onSelectShowdownCard,
 			)
 			VerticalSpacer(8.dp)
@@ -120,7 +124,7 @@ internal fun ShowdownStepContent(
 				state = state,
 				seat = seat,
 				result = results.find { it.seat == seat },
-	
+				onSelectHeroCard = onSelectHeroCard,
 				onSelectShowdownCard = onSelectShowdownCard,
 			)
 			VerticalSpacer(8.dp)
@@ -128,29 +132,63 @@ internal fun ShowdownStepContent(
 
 		// 결과 (자동 계산)
 		if (hasResults) {
+			val heroSeat = state.table?.heroSeat
 			val heroResult = state.heroResult
-			val isWin = heroResult >= 0
+			val heroWonAnyPot = state.potResults.any { it.winnerSeat == heroSeat }
+			val isWin = heroResult >= 0 || heroWonAnyPot
 			val colors = HandyTheme.colorScheme
-			val heroShowdownResult = results.find { it.seat == state.table?.heroSeat }
+			val heroShowdownResult = results.find { it.seat == heroSeat }
 
 			VerticalSpacer(8.dp)
 			HandySectionLabel(stringResource(Res.string.showdown_result))
 
+			val isSplitResult = heroShowdownResult?.isSplit == true
 			val resultText = if (state.isFoldWin) {
 				stringResource(Res.string.showdown_result_fold_win)
 			} else {
 				val ranking = heroShowdownResult?.ranking?.localizedLabel() ?: ""
-				if (isWin) {
-					stringResource(Res.string.showdown_result_win, ranking)
-				} else {
-					stringResource(Res.string.showdown_result_lose, ranking)
+				when {
+					isSplitResult -> stringResource(Res.string.showdown_result_split, ranking)
+					isWin -> stringResource(Res.string.showdown_result_win, ranking)
+					else -> stringResource(Res.string.showdown_result_lose, ranking)
 				}
 			}
 			Text(
 				text = resultText,
 				style = HandyTheme.typography.bold20,
-				color = if (isWin) colors.primary else colors.error,
+				color = when {
+					isSplitResult -> colors.split
+					isWin -> colors.primary
+					else -> colors.error
+				},
 			)
+
+			// 메인팟/사이드팟 분배 내역
+			val potResults = state.potResults
+			if (potResults.isNotEmpty()) {
+				VerticalSpacer(8.dp)
+				potResults.forEach { potResult ->
+					val winnerPos = state.positionName(potResult.winnerSeat)
+					val isHeroWin = potResult.winnerSeat == state.table?.heroSeat
+					Row(
+						modifier = Modifier
+							.fillMaxWidth()
+							.padding(vertical = 2.dp),
+						horizontalArrangement = Arrangement.SpaceBetween,
+					) {
+						Text(
+							text = "${potResult.label}: ${state.formatAmount(potResult.amount)}",
+							style = HandyTheme.typography.regular12,
+							color = colors.textSecondary,
+						)
+						Text(
+							text = "→ $winnerPos${if (isHeroWin) " (Hero)" else ""}",
+							style = HandyTheme.typography.bold12,
+							color = if (isHeroWin) colors.primary else colors.error,
+						)
+					}
+				}
+			}
 		}
 
 		VerticalSpacer(12.dp)
@@ -170,13 +208,19 @@ private fun ShowdownPlayerCard(
 	seat: Int,
 	result: ShowdownResult?,
 	isFolded: Boolean = false,
+	onSelectHeroCard: () -> Unit = {},
 	onSelectShowdownCard: (Int) -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
 	val posName = state.positionName(seat)
 	val isHero = seat == state.table?.heroSeat
 	val hand = if (isHero) state.heroHand else state.showdown[seat]
-	val isWinner = result?.isWinner == true
+	val isUnknown = !isHero && state.showdown.isUnknown(seat)
+	// 사이드팟에서 이긴 경우도 반영
+	val wonAnyPot = state.potResults.any { it.winnerSeat == seat }
+	val isSplit = result?.isSplit == true && !isUnknown
+	val isWinner = (result?.isWinner == true || wonAnyPot) && !isUnknown
+	val isLoser = (result != null && !isWinner && !isSplit && !isFolded) || isUnknown
 	val player = state.players[seat]
 	val currentStack = state.getPlayerStack(seat)
 	val initialStack = player?.initialStack ?: 0.0
@@ -188,46 +232,35 @@ private fun ShowdownPlayerCard(
 				.fillMaxWidth()
 				.clip(RoundedCornerShape(8.dp))
 				.then(
-					if (isWinner) {
-						Modifier.border(2.dp, colors.gold, RoundedCornerShape(8.dp))
-					} else {
-						Modifier
+					when {
+						isWinner -> Modifier.border(2.dp, colors.gold, RoundedCornerShape(8.dp))
+						isSplit -> Modifier.border(1.dp, colors.split, RoundedCornerShape(8.dp))
+						isLoser -> Modifier.border(1.dp, colors.error.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+						else -> Modifier
 					},
 				)
 				.background(
 					when {
 						isFolded -> colors.muted.copy(alpha = 0.5f)
 						isWinner -> colors.gold.copy(alpha = 0.15f)
+						isSplit -> colors.split.copy(alpha = 0.1f)
+						isLoser -> colors.error.copy(alpha = 0.05f)
 						isEliminated -> colors.error.copy(alpha = 0.05f)
-						isHero -> colors.gold.copy(alpha = 0.05f)
 						else -> colors.muted
 					},
 				)
-				.clickable(enabled = !isHero && !isFolded) { onSelectShowdownCard(seat) }
+				.clickable(enabled = !isFolded) {
+					if (isHero) onSelectHeroCard() else onSelectShowdownCard(seat)
+				}
 				.padding(12.dp),
 			verticalAlignment = Alignment.CenterVertically,
 			horizontalArrangement = Arrangement.spacedBy(8.dp),
 		) {
-			// 좌석 아이콘
-			Box(
-				modifier = Modifier
-					.size(32.dp)
-					.clip(CircleShape)
-					.background(
-						if (isHero) {
-							colors.gold.copy(alpha = 0.15f)
-						} else {
-							colors.primary.copy(alpha = 0.15f)
-						},
-					),
-				contentAlignment = Alignment.Center,
-			) {
-				Text(
-					text = posName,
-					style = HandyTheme.typography.bold12.nonScaledSp,
-					color = if (isHero) colors.gold else colors.primary,
-				)
-			}
+			PositionBadge(
+				positionName = posName,
+				isHero = isHero,
+				circleSize = 32.dp,
+			)
 
 			// 포지션 + 족보
 			Column(modifier = Modifier.weight(1f)) {
@@ -244,16 +277,8 @@ private fun ShowdownPlayerCard(
 							else -> colors.textPrimary
 						},
 					)
-					if (isWinner) {
-						Text(
-							text = "WIN",
-							style = HandyTheme.typography.bold10.nonScaledSp,
-							color = colors.gold,
-							modifier = Modifier
-								.clip(RoundedCornerShape(4.dp))
-								.background(colors.gold.copy(alpha = 0.2f))
-								.padding(horizontal = 6.dp, vertical = 2.dp),
-						)
+					result?.outcome?.let { outcome ->
+						OutcomeBadge(outcome = outcome)
 					}
 					if (isFolded) {
 						Text(
@@ -272,7 +297,7 @@ private fun ShowdownPlayerCard(
 					Text(
 						text = result.ranking.localizedLabel(),
 						style = HandyTheme.typography.regular12,
-						color = if (isWinner) colors.gold else colors.textSecondary,
+						color = outcomeColor(result?.outcome),
 					)
 				} else if (isHero) {
 					Text(
@@ -281,25 +306,20 @@ private fun ShowdownPlayerCard(
 						color = if (isFolded) colors.textSecondary.copy(alpha = 0.5f) else colors.gold,
 					)
 				}
-			}
 
-			// 카드 2장
-			val isUnknown = !isHero && state.showdown.isUnknown(seat)
-			Row(
-				horizontalArrangement = Arrangement.spacedBy(4.dp),
-				verticalAlignment = Alignment.CenterVertically,
-			) {
-				if (isUnknown) {
-					PlayingCard(card = null, size = CardSize.SM)
-					PlayingCard(card = null, size = CardSize.SM)
-				} else if (hand != null) {
-					PlayingCard(card = hand.card1, size = CardSize.SM)
-					PlayingCard(card = hand.card2, size = CardSize.SM)
-				} else {
-					PlayingCard(card = null, size = CardSize.SM, faceDown = true)
-					PlayingCard(card = null, size = CardSize.SM, faceDown = true)
+				if (result != null && currentStack > 0) {
+					Text(
+						text = state.formatAmount(currentStack),
+						style = HandyTheme.typography.regular10.nonScaledSp,
+						color = colors.textSecondary,
+					)
 				}
 			}
+
+			HoleCards(
+				cards = hand,
+				isUnknown = isUnknown,
+			)
 		}
 
 		if (isEliminated) {
@@ -331,7 +351,6 @@ private fun ShowdownStepContentPreview() {
 					id = "test",
 					date = LocalDate(2026, 3, 17),
 					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
-					playerCount = 6,
 					heroSeat = 3,
 					createdAt = 0L,
 				),
@@ -343,6 +362,7 @@ private fun ShowdownStepContentPreview() {
 				),
 			),
 			onSelectSingleBoardCard = { _, _ -> },
+			onSelectHeroCard = {},
 			onSelectShowdownCard = {},
 			onUpdateMemo = {},
 		)
@@ -364,7 +384,6 @@ private fun ShowdownStepContentResultPreview() {
 					id = "test",
 					date = LocalDate(2026, 3, 17),
 					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
-					playerCount = 6,
 					heroSeat = 3,
 					createdAt = 0L,
 				),
@@ -427,6 +446,7 @@ private fun ShowdownStepContentResultPreview() {
 				memo = "탑투페어로 올인 콜",
 			),
 			onSelectSingleBoardCard = { _, _ -> },
+			onSelectHeroCard = {},
 			onSelectShowdownCard = {},
 			onUpdateMemo = {},
 		)

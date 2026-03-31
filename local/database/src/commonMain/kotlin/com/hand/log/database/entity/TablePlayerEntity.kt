@@ -24,4 +24,5 @@ data class TablePlayerEntity(
 	val tendency: String? = null,
 	val memo: String? = null,
 	val name: String? = null,
+	val savedPlayerId: String? = null,
 )

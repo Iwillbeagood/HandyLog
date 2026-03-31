@@ -2,6 +2,7 @@ package com.hand.log.domain.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 enum class GameTypeEnum {
 	TOURNAMENT,
@@ -9,13 +10,18 @@ enum class GameTypeEnum {
 }
 
 @Serializable
-sealed class GameType(val type: GameTypeEnum) {
+sealed class GameType {
+
+	abstract val gameTypeEnum: GameTypeEnum
 
 	@Serializable
 	@SerialName("TOURNAMENT")
 	data class Tournament(
 		val isBigBlindAnte: Boolean = false,
-	) : GameType(GameTypeEnum.TOURNAMENT)
+	) : GameType() {
+		@Transient
+		override val gameTypeEnum: GameTypeEnum = GameTypeEnum.TOURNAMENT
+	}
 
 	@Serializable
 	@SerialName("CASH")
@@ -23,5 +29,8 @@ sealed class GameType(val type: GameTypeEnum) {
 		val sb: Double,
 		val bb: Double,
 		val straddle: Double? = null,
-	) : GameType(GameTypeEnum.CASH)
+	) : GameType() {
+		@Transient
+		override val gameTypeEnum: GameTypeEnum = GameTypeEnum.CASH
+	}
 }

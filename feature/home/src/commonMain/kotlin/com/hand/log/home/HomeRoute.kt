@@ -54,8 +54,8 @@ internal fun HomeRoute(
 
 	if (showSetupSheet) {
 		TableEditSheet(
-			onSaved = {
-				navAction.navigateToTableDetail(it.id)
+			onSaved = { table, _ ->
+				navAction.navigateToTableDetail(table.id)
 			},
 			onDismiss = { showSetupSheet = false },
 		)

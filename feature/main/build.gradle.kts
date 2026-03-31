@@ -8,7 +8,8 @@ kotlin {
 	sourceSets {
 		commonMain.dependencies {
 			implementation(projects.feature.home)
-			implementation(projects.feature.players)
+			implementation(projects.feature.players.home)
+			implementation(projects.feature.players.hands)
 			implementation(projects.feature.table.home)
 			implementation(projects.feature.record)
 			implementation(projects.feature.handDetail)

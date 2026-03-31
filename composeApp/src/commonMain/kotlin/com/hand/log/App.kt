@@ -23,6 +23,7 @@ import com.hand.log.main.MainScreen
 import com.hand.log.navigation.interop.LocalMainActionInterop
 import com.hand.log.navigation.interop.MainActionInterop
 import com.hand.log.players.di.featurePlayersModule
+import com.hand.log.players.hands.di.featurePlayerHandsModule
 import com.hand.log.playersetup.di.featurePlayerSetupModule
 import com.hand.log.record.di.featureRecordModule
 import com.hand.log.settings.betsize.di.featureSettingsBetSizeModule
@@ -86,6 +87,7 @@ internal val appModule = module {
 		featureRecordModule,
 		featureHandDetailModule,
 		featurePlayersModule,
+		featurePlayerHandsModule,
 		featurePlayerSetupModule,
 		featureSettingsMainModule,
 		featureSettingsBetSizeModule,

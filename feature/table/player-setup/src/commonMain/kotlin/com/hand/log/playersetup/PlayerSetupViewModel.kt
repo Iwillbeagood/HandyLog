@@ -40,15 +40,14 @@ class PlayerSetupViewModel(
 	fun initialize(
 		tableId: String,
 		initialSeat: Int,
-		isHero: Boolean,
 		player: Player?,
 		occupiedSeats: Set<Int>,
 	) {
 		_state.value = PlayerSetupState(
 			tableId = tableId,
 			player = player ?: Player(seat = initialSeat),
-			isHero = isHero,
 			occupiedSeats = occupiedSeats - initialSeat,
+			isEditMode = player != null,
 		)
 	}
 
@@ -69,7 +68,9 @@ class PlayerSetupViewModel(
 	}
 
 	fun loadSavedPlayer(saved: SavedPlayer) {
-		updatePlayer { copy(name = saved.name, tendency = saved.tendency, memo = saved.memo) }
+		updatePlayer {
+			copy(name = saved.name, tendency = saved.tendency, memo = saved.memo, savedPlayerId = saved.id)
+		}
 	}
 
 	fun loadSavedPlayerAndSave(saved: SavedPlayer) {
@@ -85,7 +86,7 @@ class PlayerSetupViewModel(
 		val current = _state.value
 		viewModelScope.launch {
 			pokerTableRepository.deletePlayer(current.tableId, current.player.seat)
-			_effect.emit(PlayerSetupEffect.SaveComplete)
+			_effect.emit(PlayerSetupEffect.DeleteComplete)
 		}
 	}
 
@@ -111,7 +112,7 @@ class PlayerSetupViewModel(
 
 		viewModelScope.launch {
 			pokerTableRepository.upsertPlayer(current.tableId, player)
-			_effect.emit(PlayerSetupEffect.SaveComplete)
+			_effect.emit(PlayerSetupEffect.SaveComplete(_state.value.isEditMode))
 		}
 	}
 

@@ -64,6 +64,7 @@ fun ColumnScope.TableFormFields(
 	onPlayerCountChange: (Int) -> Unit,
 	heroSeat: Int,
 	onHeroSeatChange: (Int) -> Unit,
+	isEditMode: Boolean = false,
 ) {
 	val colors = HandyTheme.colorScheme
 	val typography = HandyTheme.typography
@@ -165,29 +166,31 @@ fun ColumnScope.TableFormFields(
 		},
 	)
 
-	VerticalSpacer(16.dp)
-	HandySectionLabel(stringResource(Res.string.table_form_player_count))
-	HandySelector(
-		range = 2..maxPlayers,
-		selected = playerCount,
-		onSelect = {
-			focusManager.clearFocus()
-			onPlayerCountChange(it)
-		},
-	)
+	if (!isEditMode) {
+		VerticalSpacer(16.dp)
+		HandySectionLabel(stringResource(Res.string.table_form_player_count))
+		HandySelector(
+			range = 2..maxPlayers,
+			selected = playerCount,
+			onSelect = {
+				focusManager.clearFocus()
+				onPlayerCountChange(it)
+			},
+		)
 
-	VerticalSpacer(16.dp)
-	HandySectionLabel(stringResource(Res.string.table_form_hero_seat))
-	HandySelector(
-		range = 1..maxPlayers,
-		selected = heroSeat,
-		onSelect = {
-			focusManager.clearFocus()
-			onHeroSeatChange(it)
-		},
-		selectedColor = colors.gold,
-		selectedContentColor = colors.card,
-	)
+		VerticalSpacer(16.dp)
+		HandySectionLabel(stringResource(Res.string.table_form_hero_seat))
+		HandySelector(
+			range = 1..maxPlayers,
+			selected = heroSeat,
+			onSelect = {
+				focusManager.clearFocus()
+				onHeroSeatChange(it)
+			},
+			selectedColor = colors.gold,
+			selectedContentColor = colors.card,
+		)
+	}
 }
 
 @Composable

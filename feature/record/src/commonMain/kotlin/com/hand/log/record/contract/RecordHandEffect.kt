@@ -10,6 +10,7 @@ internal sealed interface RecordHandModalEffect {
 	data class ShowCardSelector(
 		val target: CardSelectorTarget,
 		val selectedCards: Set<Card>,
+		val allowUnknown: Boolean = true,
 	) : RecordHandModalEffect
 	data class ShowTableEdit(val table: PokerTable) : RecordHandModalEffect
 	data class ConfirmStepBack(val targetStep: RecordStep) : RecordHandModalEffect
@@ -19,4 +20,5 @@ internal sealed interface RecordHandModalEffect {
 internal sealed interface RecordHandEffect {
 	data object SaveSuccess : RecordHandEffect
 	data object SaveError : RecordHandEffect
+	data object FocusHeroStack : RecordHandEffect
 }

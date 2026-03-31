@@ -17,7 +17,7 @@ fun EntryProviderScope<NavKey>.playersNavGraph(
 ) {
 	entry<MainTabRoute.Players>(
 		metadata = tabTransitionMetadata,
-	) {
+	) { key ->
 		val viewModel: PlayersViewModel = koinViewModel()
 
 		Box(
@@ -25,6 +25,7 @@ fun EntryProviderScope<NavKey>.playersNavGraph(
 		) {
 			PlayersRoute(
 				viewModel = viewModel,
+				openAdd = key.openAdd,
 			)
 		}
 	}

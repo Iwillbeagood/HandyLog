@@ -8,8 +8,9 @@ data class PokerTable(
 	val location: String? = null,
 	val gameType: GameType,
 	val maxPlayers: Int = 0,
-	val playerCount: Int,
 	val heroSeat: Int,
 	val players: List<Player> = emptyList(),
 	val createdAt: Long,
-)
+) {
+	val playerCount: Int get() = players.size
+}

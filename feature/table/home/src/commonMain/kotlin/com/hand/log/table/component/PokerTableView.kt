@@ -22,10 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
+import com.hand.log.designsystem.etc.clickableSingle
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.designsystem.theme.nonScaledSp
 import com.hand.log.domain.model.GameType
@@ -93,7 +95,7 @@ internal fun PokerTableView(
 			val tableRadiusY = tableHeight / 2f
 			val seatSizeDp = 48.dp
 			val seatSizePx = with(density) { seatSizeDp.toPx() }
-			val gapPx = with(density) { 1.dp.toPx() }
+			val gapPx = with(density) { (-6).dp.toPx() }
 			val seatHalf = seatSizePx / 2f
 
 			// 딜러 + maxPlayers 좌석 배치
@@ -112,24 +114,23 @@ internal fun PokerTableView(
 							.offset { IntOffset(sx.roundToInt(), sy.roundToInt()) },
 					)
 				} else {
-					val seatNum = posIndex
-					val player = table.players.find { it.seat == seatNum }
-					val isHero = seatNum == table.heroSeat
+					val player = table.players.find { it.seat == posIndex }
+					val isHero = posIndex == table.heroSeat
 					val hasPlayer = player != null || isHero
 
 					if (hasPlayer) {
 						SeatView(
-							seatNumber = seatNum,
+							seatNumber = posIndex,
 							player = player,
 							isHero = isHero,
-							onClick = { onSeatClick(seatNum) },
+							onClick = { onSeatClick(posIndex) },
 							modifier = Modifier
 								.size(seatSizeDp)
 								.offset { IntOffset(sx.roundToInt(), sy.roundToInt()) },
 						)
 					} else {
 						EmptySeatView(
-							onClick = { onSeatClick(seatNum) },
+							onClick = { onSeatClick(posIndex) },
 							modifier = Modifier
 								.size(seatSizeDp)
 								.offset { IntOffset(sx.roundToInt(), sy.roundToInt()) },
@@ -181,7 +182,7 @@ private fun SeatView(
 	seatNumber: Int,
 	player: Player?,
 	isHero: Boolean,
-	onClick: (() -> Unit)? = null,
+	onClick: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme
@@ -202,10 +203,21 @@ private fun SeatView(
 	Column(
 		modifier = modifier
 			.clip(RoundedCornerShape(4.dp))
-			.then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
+			.clickableSingle(
+				onClick = onClick,
+				enabled = !isHero,
+			),
 		horizontalAlignment = Alignment.CenterHorizontally,
 		verticalArrangement = Arrangement.Center,
 	) {
+		if (isHero) {
+			Icon(
+				painter = painterResource(Res.drawable.crown),
+				contentDescription = null,
+				tint = colors.gold,
+				modifier = Modifier.size(12.dp),
+			)
+		}
 		Box(
 			modifier = Modifier
 				.size(32.dp)
@@ -214,23 +226,25 @@ private fun SeatView(
 				.border(2.dp, borderColor, CircleShape),
 			contentAlignment = Alignment.Center,
 		) {
-			if (isHero) {
-				Icon(
-					painter = painterResource(Res.drawable.crown),
-					contentDescription = null,
-					tint = colors.gold,
-					modifier = Modifier.size(14.dp),
-				)
-			} else {
-				Text(
-					text = player?.name?.take(1) ?: "$seatNumber",
-					style = HandyTheme.typography.bold10.nonScaledSp,
-					color = tendencyColor ?: colors.textPrimary,
-					textAlign = TextAlign.Center,
-				)
-			}
+			Text(
+				text = "$seatNumber",
+				style = HandyTheme.typography.bold10.nonScaledSp,
+				color = when {
+					isHero -> colors.gold
+					else -> tendencyColor ?: colors.textPrimary
+				},
+				textAlign = TextAlign.Center,
+			)
 		}
-
+		player?.name?.let { name ->
+			Text(
+				text = name.take(6),
+				style = HandyTheme.typography.medium8.nonScaledSp,
+				color = if (isHero) colors.gold else tendencyColor ?: colors.textSecondary,
+				maxLines = 1,
+				overflow = TextOverflow.Ellipsis,
+			)
+		}
 	}
 }
 
@@ -277,7 +291,6 @@ private fun PokerTableViewPreview() {
 				location = "강남",
 				gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
 				maxPlayers = 9,
-				playerCount = 6,
 				heroSeat = 3,
 				players = listOf(
 					Player(seat = 1, name = "Fish", tendency = PlayerTendency.LOOSE),
@@ -306,7 +319,6 @@ private fun PokerTableView6MaxPreview() {
 				date = LocalDate(2026, 3, 12),
 				gameType = GameType.Tournament(),
 				maxPlayers = 6,
-				playerCount = 2,
 				heroSeat = 1,
 				players = listOf(
 					Player(seat = 1, name = "Hero"),

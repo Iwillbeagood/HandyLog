@@ -11,7 +11,6 @@ data class PokerTableEntity(
 	val location: String? = null,
 	val gameType: String,
 	val maxPlayers: Int = 0,
-	val playerCount: Int,
 	val heroSeat: Int,
 	val createdAt: Long,
 )

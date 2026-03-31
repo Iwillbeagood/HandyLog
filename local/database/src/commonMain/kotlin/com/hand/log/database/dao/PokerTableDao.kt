@@ -20,7 +20,7 @@ interface PokerTableDao {
 	@Query(
 		"""UPDATE poker_tables SET
 		date = :date, location = :location, gameType = :gameType,
-		maxPlayers = :maxPlayers, playerCount = :playerCount, heroSeat = :heroSeat
+		maxPlayers = :maxPlayers, heroSeat = :heroSeat
 		WHERE id = :id""",
 	)
 	suspend fun updateTableInfo(
@@ -29,7 +29,6 @@ interface PokerTableDao {
 		location: String?,
 		gameType: String,
 		maxPlayers: Int,
-		playerCount: Int,
 		heroSeat: Int,
 	)
 
@@ -57,18 +56,15 @@ interface PokerTableDao {
 	@Query("DELETE FROM table_players WHERE tableId = :tableId")
 	suspend fun deletePlayersForTable(tableId: String)
 
-	@Query("DELETE FROM table_players WHERE tableId = :tableId AND seat > :maxSeat")
-	suspend fun deletePlayersOverSeat(tableId: String, maxSeat: Int)
-
 	@Query("DELETE FROM table_players WHERE tableId = :tableId AND seat = :seat")
 	suspend fun deletePlayerBySeat(tableId: String, seat: Int)
 
 	@Query(
 		"""UPDATE table_players SET
-		seat = :seat, tendency = :tendency, memo = :memo, name = :name
+		seat = :seat, tendency = :tendency, memo = :memo, name = :name, savedPlayerId = :savedPlayerId
 		WHERE id = :id""",
 	)
-	suspend fun updatePlayer(id: String, seat: Int, tendency: String?, memo: String?, name: String?)
+	suspend fun updatePlayer(id: String, seat: Int, tendency: String?, memo: String?, name: String?, savedPlayerId: String?)
 
 	@Insert(onConflict = OnConflictStrategy.REPLACE)
 	suspend fun insertPlayer(player: TablePlayerEntity)

@@ -4,6 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hand.log.domain.model.Action
 import com.hand.log.domain.model.ActionType
+import com.hand.log.domain.model.HandRanking
+import com.hand.log.domain.model.ShowdownOutcome
+import com.hand.log.domain.model.ShowdownResult
+import com.hand.log.utils.poker.HandEvaluator
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.HandRecord
@@ -80,6 +84,7 @@ internal class RecordHandViewModel(
 					postflopPresets = data.postflopPresets,
 				)
 			}
+			selectHeroCard()
 		}
 	}
 
@@ -122,16 +127,23 @@ internal class RecordHandViewModel(
 	fun selectShowdownCard(seat: Int) {
 		val current = recording ?: return
 		val existingCards = current.showdown[seat]?.let { setOf(it.card1, it.card2) } ?: emptySet()
+		val isAllIn = seat in current.players.allInSeats
 		showCardSelector(
 			target = CardSelectorTarget.ShowdownCard(seat, positionName = current.positionName(seat)),
 			usedCards = current.selectedCards - existingCards,
+			allowUnknown = !isAllIn,
 		)
 	}
 
-	private fun showCardSelector(target: CardSelectorTarget, usedCards: Set<Card>) {
+	private fun showCardSelector(
+		target: CardSelectorTarget,
+		usedCards: Set<Card>,
+		allowUnknown: Boolean = true,
+	) {
 		_modalEffect.value = RecordHandModalEffect.ShowCardSelector(
 			target = target,
 			selectedCards = usedCards,
+			allowUnknown = allowUnknown,
 		)
 	}
 
@@ -143,6 +155,9 @@ internal class RecordHandViewModel(
 			is CardSelectorTarget.HeroCard -> {
 				val newHeroHand = if (cards.size >= 2) PocketCards(cards[0], cards[1]) else null
 				updateRecording { copy(heroHand = newHeroHand) }
+				if (newHeroHand != null) {
+					viewModelScope.launch { _effect.emit(RecordHandEffect.FocusHeroStack) }
+				}
 			}
 
 			is CardSelectorTarget.BoardCard -> {
@@ -241,9 +256,11 @@ internal class RecordHandViewModel(
 	}
 
 	fun updatePlayerStack(seat: Int, amount: String) {
-		val stack = amount.toDoubleOrNull() ?: 0.0
+		val totalStack = amount.toDoubleOrNull() ?: 0.0
 		updateRecording {
-			copy(players = players.update(seat) { copy(stack = stack, initialStack = stack) })
+			val blindCost = getBlindCost(seat)
+			val effectiveStack = (totalStack - blindCost).coerceAtLeast(0.0)
+			copy(players = players.update(seat) { copy(stack = effectiveStack, initialStack = totalStack) })
 		}
 	}
 
@@ -273,23 +290,18 @@ internal class RecordHandViewModel(
 		val actionOrder = current.preflopActionOrder
 		val activeSeats = actionOrder.filter { it !in current.players.inactiveSeats && it !in actedSeats }
 
-		// 현재 액션 좌석부터 선택한 좌석까지 사이의 플레이어를 자동 폴드
-		// 현재 액션 중인 좌석도 아직 액션을 선택하지 않았으므로 폴드 대상
+		// 선택한 좌석이 활성 좌석이 아니면 무시
+		if (seat !in activeSeats) return
+
 		val seatsToFold = if (currentSeat == null) {
 			// 오프너 선택: 처음부터 선택한 좌석 직전까지
 			actionOrder.takeWhile { it != seat }.filter { it in activeSeats }
 		} else {
-			// 액션 진행 중: 현재 좌석(포함) ~ 선택한 좌석 직전까지
+			// 액션 진행 중: 현재 좌석(포함) ~ 선택한 좌석 직전까지 (앞으로만)
 			val currentIdx = activeSeats.indexOf(currentSeat)
 			val targetIdx = activeSeats.indexOf(seat)
-			if (targetIdx < 0) return
-			val between = mutableListOf<Int>()
-			var i = currentIdx
-			while (activeSeats[i] != seat) {
-				between.add(activeSeats[i])
-				i = (i + 1) % activeSeats.size
-			}
-			between
+			if (targetIdx <= currentIdx) return // 이미 지나간 좌석으로는 건너뛸 수 없음
+			activeSeats.subList(currentIdx, targetIdx)
 		}
 
 		updateRecording {
@@ -329,8 +341,10 @@ internal class RecordHandViewModel(
 			val seat = currentActionSeat ?: return@updateRecording copy(currentActionAmount = amount)
 			val player = players[seat] ?: return@updateRecording copy(currentActionAmount = amount)
 			val effectiveStack = player.stack + player.currentBet
-			val chipAmount = parseInputToChip(amount)
-			if (chipAmount > effectiveStack) return@updateRecording this
+			if (effectiveStack > 0) {
+				val chipAmount = parseInputToChip(amount)
+				if (chipAmount > effectiveStack) return@updateRecording this
+			}
 			copy(currentActionAmount = amount)
 		}
 	}
@@ -368,6 +382,7 @@ internal class RecordHandViewModel(
 		}
 
 		// 4) Streets & Players 업데이트
+		val tablePlayer = current.table?.players?.find { it.seat == seat }
 		val action = Action(
 			playerSeat = seat,
 			type = resolvedType,
@@ -375,6 +390,8 @@ internal class RecordHandViewModel(
 			stackBefore = effectiveStack,
 			stackAfter = newStack,
 			betLevel = betLevel,
+			playerName = tablePlayer?.name,
+			savedPlayerId = tablePlayer?.savedPlayerId,
 		)
 		val updatedStreets = current.streets.addAction(current.currentStreet, action)
 		val updatedPlayers = current.players.update(seat) {
@@ -427,21 +444,24 @@ internal class RecordHandViewModel(
 		streetMaxBet: Double,
 		raiseTarget: Double,
 		minRaise: Double,
-	): Pair<ActionType, Double?>? = when (type) {
-		ActionType.FOLD, ActionType.CHECK -> type to null
+	): Pair<ActionType, Double?>? {
+		val isUnlimited = effectiveStack == 0.0
+		return when (type) {
+			ActionType.FOLD, ActionType.CHECK -> type to null
 
-		ActionType.CALL -> if (streetMaxBet >= effectiveStack) {
-			ActionType.ALL_IN to effectiveStack
-		} else {
-			ActionType.CALL to streetMaxBet
-		}
+			ActionType.CALL -> if (!isUnlimited && streetMaxBet >= effectiveStack) {
+				ActionType.ALL_IN to effectiveStack
+			} else {
+				ActionType.CALL to streetMaxBet
+			}
 
-		ActionType.ALL_IN -> ActionType.ALL_IN to effectiveStack
+			ActionType.ALL_IN -> ActionType.ALL_IN to effectiveStack
 
-		ActionType.BET, ActionType.RAISE -> when {
-			raiseTarget < minRaise -> null
-			raiseTarget >= effectiveStack -> ActionType.ALL_IN to effectiveStack
-			else -> type to raiseTarget
+			ActionType.BET, ActionType.RAISE -> when {
+				raiseTarget < minRaise -> null
+				!isUnlimited && raiseTarget >= effectiveStack -> ActionType.ALL_IN to effectiveStack
+				else -> type to raiseTarget
+			}
 		}
 	}
 
@@ -757,10 +777,10 @@ internal class RecordHandViewModel(
 
 	private fun distributeWinnings() {
 		val current = recording ?: return
-		val winners = current.showdownResults.filter { it.isWinner }
-		if (winners.isEmpty()) return
+		if (current.showdownResults.isEmpty()) return
 
 		val count = current.table?.playerCount ?: return
+		val boardCards = current.streets.boardCards
 		val investments = buildMap {
 			for (seat in 1..count) {
 				val player = current.players[seat] ?: continue
@@ -769,7 +789,10 @@ internal class RecordHandViewModel(
 			}
 		}
 
-		// 사이드팟 계산: 투입 금액 기준 정렬
+		// 쇼다운 엔트리 (카드 공개된 플레이어만)
+		val entries = current.showdownEntries.filter { !current.showdown.isUnknown(it.seat) }
+
+		// 각 팟 레벨별로 eligible 플레이어끼리 핸드 비교
 		val sortedInvestments = investments.entries.sortedBy { it.value }
 		var previousLevel = 0.0
 		val winnings = mutableMapOf<Int, Double>()
@@ -778,17 +801,31 @@ internal class RecordHandViewModel(
 			val diff = invested - previousLevel
 			if (diff <= 0) continue
 
-			val eligible = investments.filter { it.value >= invested }
-			val potForLevel = diff * eligible.size
-			val levelWinners = winners.filter { it.seat in eligible }
-			if (levelWinners.isNotEmpty()) {
-				val share = potForLevel / levelWinners.size
-				levelWinners.forEach { winner ->
+			val eligibleSeats = investments.filter { it.value >= invested }.keys
+			val potForLevel = diff * eligibleSeats.size
+
+			// eligible 플레이어끼리만 핸드 비교
+			val eligibleEntries = entries.filter { it.seat in eligibleSeats }
+			val potWinners = if (eligibleEntries.size >= 2 && boardCards.size == 5) {
+				val results = HandEvaluator.calculateShowdown(boardCards, eligibleEntries)
+				results.filter { it.isWinner || it.isSplit }
+			} else if (eligibleEntries.size == 1) {
+				// 1명만 eligible → 자동 승리
+				listOf(eligibleEntries.first()).map {
+					ShowdownResult(seat = it.seat, ranking = HandRanking.HIGH_CARD, outcome = ShowdownOutcome.WIN)
+				}
+			} else {
+				emptyList()
+			}
+
+			if (potWinners.isNotEmpty()) {
+				val share = potForLevel / potWinners.size
+				potWinners.forEach { winner ->
 					winnings[winner.seat] = (winnings[winner.seat] ?: 0.0) + share
 				}
-			} else if (eligible.size == 1) {
-				// 이 레벨에 참여 가능한 플레이어가 1명뿐 → uncalled bet 반환
-				val sole = eligible.keys.first()
+			} else if (eligibleSeats.size == 1) {
+				// uncalled bet 반환
+				val sole = eligibleSeats.first()
 				winnings[sole] = (winnings[sole] ?: 0.0) + potForLevel
 			}
 			previousLevel = invested

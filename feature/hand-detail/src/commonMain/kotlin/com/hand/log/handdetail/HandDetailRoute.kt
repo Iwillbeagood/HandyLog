@@ -6,7 +6,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.designsystem.component.modal.DefaultDialog
-import com.hand.log.handdetail.component.TableExpandedDialog
 import com.hand.log.handdetail.contract.HandDetailEffect
 import com.hand.log.handdetail.contract.HandDetailModalEffect
 import com.hand.log.domain.model.etc.ToastDurationType
@@ -35,10 +34,10 @@ internal fun HandDetailRoute(
 		onToggleBbUnit = viewModel::toggleBbUnit,
 		onBack = navAction::popBackStack,
 		onShowDeleteConfirm = viewModel::showDeleteConfirm,
-		onShowTableExpanded = viewModel::showTableExpanded,
 		onShareText = viewModel::shareText,
-		onShareImage = viewModel::requestShareImage,
-		onDownloadImage = viewModel::requestDownloadImage,
+		onShareImage = viewModel::shareImage,
+		onDownloadImage = viewModel::downloadImage,
+		onMarkPlayer = { navAction.navigateToPlayersWithAdd() },
 		graphicsLayer = graphicsLayer,
 	)
 
@@ -52,26 +51,26 @@ internal fun HandDetailRoute(
 		viewModel.effect.collect { effect ->
 			when (effect) {
 				is HandDetailEffect.HandDeleted -> navAction.popBackStack()
-				is HandDetailEffect.ShareText -> shareManager.shareText(effect.text)
-				is HandDetailEffect.RequestImageCapture -> {
-					val bitmap = graphicsLayer.toImageBitmap()
-					val bytes = bitmap.toPngBytes()
-					viewModel.shareImage(bytes)
+				is HandDetailEffect.ShareText -> {
+					shareManager.shareText(effect.text)
+					mainAction.onShowToast(Res.string.clipboard_copied)
 				}
 				is HandDetailEffect.ShareImage -> {
-					shareManager.shareImage(effect.imageBytes, effect.fileName)
-				}
-				is HandDetailEffect.RequestImageDownload -> {
 					val bitmap = graphicsLayer.toImageBitmap()
 					val bytes = bitmap.toPngBytes()
-					viewModel.downloadImage(bytes)
+					shareManager.shareImage(bytes, effect.fileName)
 				}
 				is HandDetailEffect.DownloadImage -> {
-					shareManager.saveImage(effect.imageBytes, effect.fileName)
+					val bitmap = graphicsLayer.toImageBitmap()
+					val bytes = bitmap.toPngBytes()
+					shareManager.saveImage(bytes, effect.fileName)
 					mainAction.onShowToast(
 						getString(Res.string.hand_detail_image_downloaded),
 						ToastDurationType.SHORT,
 					)
+				}
+				is HandDetailEffect.NavigateToPlayers -> {
+					navAction.navigateToPlayers(effect.tableId, effect.seat)
 				}
 			}
 		}
@@ -93,13 +92,6 @@ private fun HandDetailModalContent(
 				onDismissRequest = onDismiss,
 				onConfirmClick = onConfirmDelete,
 				onDismissClick = onDismiss,
-			)
-		}
-		is HandDetailModalEffect.ShowTableExpanded -> {
-			TableExpandedDialog(
-				hand = modalEffect.hand,
-				useBbUnit = modalEffect.useBbUnit,
-				onDismiss = onDismiss,
 			)
 		}
 	}

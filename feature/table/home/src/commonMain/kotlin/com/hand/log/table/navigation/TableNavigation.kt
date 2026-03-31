@@ -14,6 +14,7 @@ fun EntryProviderScope<NavKey>.tableNavGraph() {
 
 		TableRoute(
 			viewModel = viewModel,
+			openSeat = key.openSeat,
 		)
 	}
 }

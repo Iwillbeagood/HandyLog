@@ -8,9 +8,9 @@ import com.hand.log.domain.model.PlayerTendency
 data class PlayerSetupState(
 	val tableId: String = "",
 	val player: Player = Player(seat = 0),
-	val isHero: Boolean = false,
 	val occupiedSeats: Set<Int> = emptySet(),
 	val saveToMarking: Boolean = false,
+	val isEditMode: Boolean = false,
 ) {
 	val playerName: String get() = player.name ?: ""
 	val selectedTendency: PlayerTendency? get() = player.tendency

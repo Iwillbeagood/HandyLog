@@ -17,6 +17,9 @@ interface HandRecordDao {
 	@Query("SELECT * FROM hand_records WHERE tableId = :tableId ORDER BY createdAt DESC")
 	fun observeHandsByTableId(tableId: String): Flow<List<HandRecordEntity>>
 
+	@Query("SELECT * FROM hand_records ORDER BY createdAt DESC")
+	fun observeAllHands(): Flow<List<HandRecordEntity>>
+
 	@Query("SELECT * FROM hand_records WHERE id = :handId")
 	fun observeHandById(handId: String): Flow<HandRecordEntity?>
 

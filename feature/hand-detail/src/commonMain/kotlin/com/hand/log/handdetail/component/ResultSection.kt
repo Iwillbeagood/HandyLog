@@ -1,55 +1,44 @@
 package com.hand.log.handdetail.component
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.etc.ThemePreview
-import com.hand.log.ui.localizedLabel
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.FlopStreet
+import com.hand.log.domain.model.HandRanking
 import com.hand.log.domain.model.HandRecord
 import com.hand.log.domain.model.HandStreets
+import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.PreflopStreet
 import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.RiverStreet
-import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.ShowdownEntry
+import com.hand.log.domain.model.ShowdownOutcome
 import com.hand.log.domain.model.ShowdownResult
 import com.hand.log.domain.model.Suit
 import com.hand.log.domain.model.TurnStreet
-import com.hand.log.ui.poker.formatAmountFull
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.showdown_result
 import org.jetbrains.compose.resources.stringResource
-import com.hand.log.ui.poker.CardSize
-import com.hand.log.ui.poker.PlayingCard
-import handylog.core.res.generated.resources.result_fold_win
 
 @Composable
 internal fun ResultSection(
 	hand: HandRecord,
-	useBbUnit: Boolean = false,
+	onMarkPlayer: () -> Unit = {},
 ) {
 	val colors = HandyTheme.colorScheme
-	val bb = hand.bbAmount
-	val showdownResults = hand.showdownResults
 
 	Column(
 		modifier = Modifier
@@ -65,55 +54,63 @@ internal fun ResultSection(
 			color = colors.textPrimary,
 		)
 
-		// 히어로 수익/손실
-		hand.result?.let { result ->
-			val isPositive = result >= 0
-			val prefix = if (isPositive) "+" else ""
-			val resultText = "$prefix${formatAmountFull(result, useBbUnit, bb)}"
-			Text(
-				text = resultText,
-				style = HandyTheme.typography.bold20,
-				color = if (isPositive) colors.primary else colors.error,
-			)
-		}
-
-		val playerCount = hand.playerCount
-		val winnerSeats = hand.winnerSeats
-
 		if (hand.isFoldWin) {
-			// 폴드 승리: 승자만 표시
-			val winnerSeat = winnerSeats.firstOrNull()
+			val winnerSeat = hand.winnerSeats.firstOrNull()
 			if (winnerSeat != null) {
 				val isHero = winnerSeat == hand.heroSeat
-				val posName = hand.getPositionName(winnerSeat)
-				FoldWinPlayerRow(
-					positionName = posName,
-					heroHand = if (isHero) hand.heroHand else null,
+				ShowdownPlayerRow(
+					positionName = hand.getPositionName(winnerSeat),
+					entry = hand.heroShowdownEntry ?: ShowdownEntry(
+						seat = winnerSeat,
+						cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.ACE, Suit.SPADES)),
+					),
+					result = ShowdownResult(
+						seat = winnerSeat,
+						ranking = HandRanking.HIGH_CARD,
+						outcome = ShowdownOutcome.WIN,
+					),
 					isHero = isHero,
+					isCardUnknown = !isHero || hand.heroHand == null,
 				)
 			}
 		} else {
-			// 일반 쇼다운
-			hand.heroHand?.let { heroCards ->
-				val heroEntry = ShowdownEntry(seat = hand.heroSeat, cards = heroCards)
-				val heroResult = showdownResults.find { it.seat == hand.heroSeat }
+			// 히어로
+			hand.heroShowdownEntry?.let { entry ->
 				ShowdownPlayerRow(
 					positionName = hand.getPositionName(hand.heroSeat),
-					entry = heroEntry,
-					result = heroResult,
+					entry = entry,
+					result = hand.getShowdownResult(hand.heroSeat),
 					isHero = true,
-					isWinner = hand.heroSeat in winnerSeats,
 				)
 			}
 
+			// 카드 공개 플레이어
 			hand.showdown.filter { it.seat != hand.heroSeat }.forEach { entry ->
-				val result = showdownResults.find { it.seat == entry.seat }
 				ShowdownPlayerRow(
 					positionName = hand.getPositionName(entry.seat),
 					entry = entry,
-					result = result,
+					result = hand.getShowdownResult(entry.seat),
 					isHero = false,
-					isWinner = entry.seat in winnerSeats,
+					playerName = hand.getPlayerName(entry.seat),
+					isMarked = hand.isPlayerMarked(entry.seat),
+					onMarkClick = if (!hand.isPlayerMarked(entry.seat)) onMarkPlayer else null,
+				)
+			}
+
+			// 카드 미공개 플레이어
+			hand.unknownCardSeats.forEach { seat ->
+				ShowdownPlayerRow(
+					positionName = hand.getPositionName(seat),
+					entry = ShowdownEntry(
+						seat = seat,
+						cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.ACE, Suit.SPADES)),
+					),
+					result = hand.getShowdownResult(seat),
+					isHero = false,
+					isCardUnknown = true,
+					playerName = hand.getPlayerName(seat),
+					isMarked = hand.isPlayerMarked(seat),
+					onMarkClick = if (!hand.isPlayerMarked(seat)) onMarkPlayer else null,
 				)
 			}
 		}
@@ -125,180 +122,6 @@ internal fun ResultSection(
 				style = HandyTheme.typography.regular14,
 				color = colors.textSecondary,
 			)
-		}
-	}
-}
-
-@Composable
-private fun ShowdownPlayerRow(
-	positionName: String,
-	entry: ShowdownEntry,
-	result: ShowdownResult?,
-	isHero: Boolean,
-	isWinner: Boolean = result?.isWinner == true,
-) {
-	val colors = HandyTheme.colorScheme
-
-	Row(
-		modifier = Modifier
-			.fillMaxWidth()
-			.clip(RoundedCornerShape(8.dp))
-			.then(
-				if (isWinner) Modifier.border(1.dp, colors.gold, RoundedCornerShape(8.dp)) else Modifier,
-			)
-			.background(
-				when {
-					isWinner -> colors.gold.copy(alpha = 0.1f)
-					else -> colors.muted
-				},
-			)
-			.padding(10.dp),
-		verticalAlignment = Alignment.CenterVertically,
-		horizontalArrangement = Arrangement.spacedBy(8.dp),
-	) {
-		// 포지션
-		Box(
-			modifier = Modifier
-				.size(28.dp)
-				.clip(CircleShape)
-				.background(
-					if (isHero) colors.gold.copy(alpha = 0.15f) else colors.primary.copy(alpha = 0.15f),
-				),
-			contentAlignment = Alignment.Center,
-		) {
-			Text(
-				text = positionName,
-				style = HandyTheme.typography.bold10,
-				color = if (isHero) colors.gold else colors.primary,
-				maxLines = 1,
-			)
-		}
-
-		// 포지션 + 태그 + 족보
-		Column(modifier = Modifier.weight(1f)) {
-			Row(
-				verticalAlignment = Alignment.CenterVertically,
-				horizontalArrangement = Arrangement.spacedBy(4.dp),
-			) {
-				if (isHero) {
-					Text(
-						text = "Hero",
-						style = HandyTheme.typography.bold12,
-						color = colors.gold,
-					)
-				}
-				if (isWinner) {
-					Text(
-						text = "WIN",
-						style = HandyTheme.typography.bold10,
-						color = colors.gold,
-						modifier = Modifier
-							.clip(RoundedCornerShape(4.dp))
-							.background(colors.gold.copy(alpha = 0.2f))
-							.padding(horizontal = 4.dp, vertical = 1.dp),
-					)
-				}
-			}
-			if (result != null) {
-				Text(
-					text = result.ranking.localizedLabel(),
-					style = HandyTheme.typography.regular12,
-					color = if (isWinner) colors.gold else colors.textSecondary,
-				)
-				if (result.bestCards.isNotEmpty()) {
-					Row(
-						horizontalArrangement = Arrangement.spacedBy(2.dp),
-						modifier = Modifier.padding(top = 4.dp),
-					) {
-						result.bestCards.forEach { card ->
-							PlayingCard(card = card, size = CardSize.XS)
-						}
-					}
-				}
-			}
-		}
-
-		// 홀카드 2장
-		Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-			PlayingCard(card = entry.card1, size = CardSize.SM)
-			PlayingCard(card = entry.card2, size = CardSize.SM)
-		}
-	}
-}
-
-@Composable
-private fun FoldWinPlayerRow(
-	positionName: String,
-	heroHand: PocketCards?,
-	isHero: Boolean,
-) {
-	val colors = HandyTheme.colorScheme
-
-	Row(
-		modifier = Modifier
-			.fillMaxWidth()
-			.clip(RoundedCornerShape(8.dp))
-			.border(1.dp, colors.gold, RoundedCornerShape(8.dp))
-			.background(colors.gold.copy(alpha = 0.1f))
-			.padding(10.dp),
-		verticalAlignment = Alignment.CenterVertically,
-		horizontalArrangement = Arrangement.spacedBy(8.dp),
-	) {
-		Box(
-			modifier = Modifier
-				.size(28.dp)
-				.clip(CircleShape)
-				.background(
-					if (isHero) colors.gold.copy(alpha = 0.15f) else colors.primary.copy(alpha = 0.15f),
-				),
-			contentAlignment = Alignment.Center,
-		) {
-			Text(
-				text = positionName,
-				style = HandyTheme.typography.bold10,
-				color = if (isHero) colors.gold else colors.primary,
-				maxLines = 1,
-			)
-		}
-
-		Column(modifier = Modifier.weight(1f)) {
-			Row(
-				verticalAlignment = Alignment.CenterVertically,
-				horizontalArrangement = Arrangement.spacedBy(4.dp),
-			) {
-				if (isHero) {
-					Text(
-						text = "Hero",
-						style = HandyTheme.typography.bold12,
-						color = colors.gold,
-					)
-				}
-				Text(
-					text = "WIN",
-					style = HandyTheme.typography.bold10,
-					color = colors.gold,
-					modifier = Modifier
-						.clip(RoundedCornerShape(4.dp))
-						.background(colors.gold.copy(alpha = 0.2f))
-						.padding(horizontal = 4.dp, vertical = 1.dp),
-				)
-			}
-			Text(
-				text = stringResource(Res.string.result_fold_win),
-				style = HandyTheme.typography.regular12,
-				color = colors.textSecondary,
-			)
-		}
-
-		// 카드: 히어로면 카드 표시, 아니면 뒷면
-		Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-			if (heroHand != null) {
-				PlayingCard(card = heroHand.card1, size = CardSize.SM)
-				PlayingCard(card = heroHand.card2, size = CardSize.SM)
-			} else {
-				PlayingCard(card = null, size = CardSize.SM)
-				PlayingCard(card = null, size = CardSize.SM)
-			}
 		}
 	}
 }
@@ -339,6 +162,51 @@ private fun ResultSectionWinPreview() {
 				),
 				result = 49000.0,
 				memo = "탑투페어로 체크레이즈 → 올인 콜, 상대 QJo",
+			),
+		)
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun ResultSectionSplitPreview() {
+	ThemePreview {
+		ResultSection(
+			hand = HandRecord(
+				id = "h3",
+				tableId = "t1",
+				createdAt = 0L,
+				blinds = Blinds(sb = 500.0, bb = 1000.0),
+				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.HEARTS)),
+				heroSeat = 3,
+				heroStack = 50000.0,
+				buttonSeat = 1,
+				streets = HandStreets(
+					preflop = PreflopStreet(),
+					flop = FlopStreet(
+						card1 = Card(Rank.ACE, Suit.HEARTS),
+						card2 = Card(Rank.TEN, Suit.DIAMONDS),
+						card3 = Card(Rank.SEVEN, Suit.CLUBS),
+					),
+					turn = TurnStreet(card = Card(Rank.KING, Suit.DIAMONDS)),
+					river = RiverStreet(card = Card(Rank.TWO, Suit.CLUBS)),
+				),
+				showdown = listOf(
+					ShowdownEntry(
+						seat = 3,
+						cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.HEARTS)),
+					),
+					ShowdownEntry(
+						seat = 1,
+						cards = PocketCards(Card(Rank.ACE, Suit.DIAMONDS), Card(Rank.KING, Suit.CLUBS)),
+					),
+				),
+				showdownResults = listOf(
+					ShowdownResult(seat = 3, ranking = HandRanking.TWO_PAIR, outcome = ShowdownOutcome.SPLIT),
+					ShowdownResult(seat = 1, ranking = HandRanking.TWO_PAIR, outcome = ShowdownOutcome.SPLIT),
+				),
+				result = 0.0,
+				memo = "AK vs AK 스플릿",
 			),
 		)
 	}

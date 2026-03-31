@@ -31,6 +31,7 @@ import com.hand.log.domain.model.RiverStreet
 import com.hand.log.domain.model.TurnStreet
 import com.hand.log.domain.model.Suit
 import com.hand.log.ui.poker.CardSize
+import com.hand.log.ui.poker.formatWithComma
 import com.hand.log.ui.poker.PlayingCard
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
@@ -53,27 +54,13 @@ internal fun HandRecordCard(
 			.clickable(onClick = onClick)
 			.padding(12.dp),
 	) {
-		// Hand number + Result
+		// Hand number
 		if (index > 0) {
-			Row(
-				modifier = Modifier.fillMaxWidth(),
-				horizontalArrangement = Arrangement.SpaceBetween,
-				verticalAlignment = Alignment.CenterVertically,
-			) {
-				Text(
-					text = "#$index",
-					style = HandyTheme.typography.regular12,
-					color = colors.textSecondary,
-				)
-				hand.result?.let { result ->
-					val isPositive = result >= 0
-					Text(
-						text = if (isPositive) "+${formatAmount(result)}" else formatAmount(result),
-						style = HandyTheme.typography.bold14,
-						color = if (isPositive) colors.primary else colors.error,
-					)
-				}
-			}
+			Text(
+				text = "#$index",
+				style = HandyTheme.typography.regular12,
+				color = colors.textSecondary,
+			)
 			Spacer(modifier = Modifier.height(6.dp))
 		}
 
@@ -111,7 +98,7 @@ internal fun HandRecordCard(
 					)
 					hand.blinds?.let { blinds ->
 						Text(
-							text = " • ${formatAmount(blinds.sb)}/${formatAmount(blinds.bb)}",
+							text = " • ${formatWithComma(blinds.sb.toLong())}/${formatWithComma(blinds.bb.toLong())}",
 							style = HandyTheme.typography.regular12,
 							color = colors.textSecondary,
 						)
@@ -158,29 +145,6 @@ internal fun HandRecordCard(
 			style = HandyTheme.typography.regular10,
 			color = colors.textSecondary.copy(alpha = 0.6f),
 		)
-	}
-}
-
-private fun formatAmount(amount: Double): String {
-	return when {
-		amount >= 1_000_000 || amount <= -1_000_000 -> {
-			val v = amount / 1_000_000
-			"${formatDecimal(v)}M"
-		}
-		amount >= 1_000 || amount <= -1_000 -> {
-			val v = amount / 1_000
-			"${formatDecimal(v)}K"
-		}
-		amount % 1.0 == 0.0 -> amount.toLong().toString()
-		else -> amount.toLong().toString()
-	}
-}
-
-private fun formatDecimal(value: Double): String {
-	return if (value % 1.0 == 0.0) {
-		value.toLong().toString()
-	} else {
-		((value * 10).toLong() / 10.0).toString()
 	}
 }
 

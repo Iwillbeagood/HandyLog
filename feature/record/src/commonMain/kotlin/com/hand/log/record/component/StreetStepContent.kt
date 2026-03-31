@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.HandySectionLabel
 import com.hand.log.designsystem.component.HandyTextField
+
 import com.hand.log.designsystem.component.VerticalSpacer
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.ActionType
@@ -130,7 +131,7 @@ internal fun StreetStepContent(
 			streetActions.isEmpty() &&
 			state.currentActionSeat == null
 
-		// 프리플랍에서는 좌석 클릭으로 해당 플레이어까지 건너뛰기 가능
+		// 프리플랍에서는 좌석 클릭으로 건너뛰기 가능
 		val isPreflopSeatClickable = currentStreet == Street.PREFLOP
 
 		// Action Table View + Pot
@@ -223,6 +224,8 @@ private fun PlayerActionArea(
 			val posName = state.positionName(state.currentActionSeat)
 			val isHero = state.currentActionSeat == state.table?.heroSeat
 			val currentStack = state.getPlayerStack(state.currentActionSeat)
+			val initialStack = state.players[state.currentActionSeat]?.initialStack ?: 0.0
+			val blindCost = state.getBlindCost(state.currentActionSeat)
 
 			Row(
 				modifier = Modifier.fillMaxWidth(),
@@ -259,14 +262,23 @@ private fun PlayerActionArea(
 					}
 				}
 				if (state.currentStreet == Street.PREFLOP) {
-					HandyTextField(
-						value = if (currentStack == 0.0) "" else currentStack.toLong().toString(),
-						onValueChange = { onUpdatePlayerStack(state.currentActionSeat, it) },
-						label = stringResource(Res.string.player_stack),
-						modifier = Modifier.weight(1f),
-						keyboardType = KeyboardType.Number,
-					)
-				} else {
+					Column(modifier = Modifier.weight(1f)) {
+						HandyTextField(
+							value = if (initialStack == 0.0) "" else initialStack.toLong().toString(),
+							onValueChange = { onUpdatePlayerStack(state.currentActionSeat, it) },
+							label = stringResource(Res.string.player_stack),
+							keyboardType = KeyboardType.Number,
+						)
+						if (blindCost > 0) {
+							Text(
+								text = "-${blindCost.toLong()} ($posName)",
+								style = HandyTheme.typography.regular10,
+								color = colors.textSecondary,
+								modifier = Modifier.padding(top = 2.dp),
+							)
+						}
+					}
+				} else if (initialStack > 0) {
 					Text(
 						text = state.formatAmount(currentStack),
 						style = HandyTheme.typography.bold14,
@@ -276,6 +288,18 @@ private fun PlayerActionArea(
 			}
 
 			VerticalSpacer(12.dp)
+			val streetActions = state.streets.getActions(state.currentStreet)
+			val aggressiveActions = streetActions.filter {
+				it.type == ActionType.BET || it.type == ActionType.RAISE || (it.type == ActionType.ALL_IN && (it.amount ?: 0.0) > 0)
+			}
+			// 프리플랍: 2벳(오픈 레이즈) 이상이 있어야 배수 프리셋 표시 (3벳부터)
+			// 포스트플랍: 베팅이 있으면 배수 프리셋 표시
+			val lastBet = if (state.currentStreet == Street.PREFLOP) {
+				if (aggressiveActions.isNotEmpty()) aggressiveActions.maxOf { it.amount ?: 0.0 } else 0.0
+			} else {
+				aggressiveActions.maxOfOrNull { it.amount ?: 0.0 } ?: 0.0
+			}
+
 			ActionSelector(
 				availableActions = state.availableActions,
 				selectedAction = state.currentActionType,
@@ -290,6 +314,7 @@ private fun PlayerActionArea(
 				postflopPresets = postflopPresets,
 				minRaiseAmount = state.minRaiseAmount,
 				maxAmount = currentStack + (state.players[state.currentActionSeat]?.currentBet ?: 0.0),
+				lastBetAmount = lastBet,
 				showAmountWarning = state.showAmountWarning,
 				useBbUnit = state.useBbUnit,
 			)
@@ -351,7 +376,6 @@ private fun StreetStepContentPreflopPreview() {
 					id = "test",
 					date = LocalDate(2026, 3, 14),
 					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
-					playerCount = 9,
 					heroSeat = 3,
 					createdAt = 0L,
 				),
@@ -391,7 +415,6 @@ private fun StreetStepContentFlopPreview() {
 					id = "test",
 					date = LocalDate(2026, 3, 14),
 					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
-					playerCount = 6,
 					heroSeat = 3,
 					createdAt = 0L,
 				),
@@ -431,7 +454,6 @@ private fun StreetStepContentCompletePreview() {
 					id = "test",
 					date = LocalDate(2026, 3, 14),
 					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
-					playerCount = 6,
 					heroSeat = 3,
 					createdAt = 0L,
 				),
@@ -474,7 +496,6 @@ private fun StreetStepContentOpenerSelectionPreview() {
 					id = "test",
 					date = LocalDate(2026, 3, 14),
 					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
-					playerCount = 9,
 					heroSeat = 3,
 					createdAt = 0L,
 				),

@@ -47,6 +47,7 @@ internal fun SettingsScreen(
 	settings: AppSettings,
 	onThemeChange: (ThemeMode) -> Unit,
 	onNavigateToBetSize: () -> Unit,
+	onContactClick: () -> Unit,
 ) {
 	BaseScaffold {
 		Column(
@@ -76,6 +77,9 @@ internal fun SettingsScreen(
 					presets = settings.betSizePresets,
 					onClick = onNavigateToBetSize,
 				)
+
+				// 문의하기
+				ContactNavigationItem(onClick = onContactClick)
 
 				// 앱 정보
 				AppInfoSection()
@@ -194,6 +198,40 @@ private fun BetSizeNavigationItem(
 }
 
 @Composable
+private fun ContactNavigationItem(
+	onClick: () -> Unit,
+) {
+	val colors = HandyTheme.colorScheme
+
+	Column {
+		HandySectionLabel(stringResource(Res.string.settings_support))
+		VerticalSpacer(8.dp)
+		Row(
+			modifier = Modifier
+				.fillMaxWidth()
+				.clip(RoundedCornerShape(12.dp))
+				.background(colors.card)
+				.clickable(onClick = onClick)
+				.padding(16.dp),
+			verticalAlignment = Alignment.CenterVertically,
+			horizontalArrangement = Arrangement.SpaceBetween,
+		) {
+			Text(
+				text = stringResource(Res.string.settings_contact),
+				style = HandyTheme.typography.medium14,
+				color = colors.textPrimary,
+			)
+			Icon(
+				painter = painterResource(Res.drawable.chevron_right),
+				contentDescription = null,
+				tint = colors.textSecondary,
+				modifier = Modifier.size(16.dp),
+			)
+		}
+	}
+}
+
+@Composable
 private fun AppInfoSection() {
 	val colors = HandyTheme.colorScheme
 
@@ -235,6 +273,7 @@ private fun SettingsScreenPreview() {
 			settings = AppSettings(),
 			onThemeChange = {},
 			onNavigateToBetSize = {},
+			onContactClick = {},
 		)
 	}
 }

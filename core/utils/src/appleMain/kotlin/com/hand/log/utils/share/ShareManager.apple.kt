@@ -8,6 +8,7 @@ import kotlinx.cinterop.usePinned
 import platform.Foundation.NSData
 import platform.Foundation.dataWithBytes
 import platform.UIKit.UIActivityViewController
+import platform.UIKit.UIPasteboard
 import platform.UIKit.UIApplication
 import platform.UIKit.UIImage
 import platform.UIKit.UIImageWriteToSavedPhotosAlbum
@@ -18,13 +19,7 @@ import platform.UIKit.popoverPresentationController
 
 actual class ShareManager {
 	actual fun shareText(text: String) {
-		val topVC = findTopViewController() ?: return
-		val activityVC = UIActivityViewController(
-			activityItems = listOf(text),
-			applicationActivities = null,
-		)
-		activityVC.popoverPresentationController()?.sourceView = topVC.view
-		topVC.presentViewController(activityVC, animated = true, completion = null)
+		UIPasteboard.generalPasteboard.string = text
 	}
 
 	@OptIn(ExperimentalForeignApi::class)

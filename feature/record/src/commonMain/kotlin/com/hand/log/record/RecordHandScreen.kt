@@ -24,6 +24,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -51,6 +53,8 @@ import com.hand.log.record.contract.localizedLabel
 import kotlinx.datetime.LocalDate
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
+import com.hand.log.domain.model.PocketCards
+import com.hand.log.record.model.RecordPlayers.Companion.create
 import org.jetbrains.compose.resources.stringResource
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.*
@@ -75,9 +79,9 @@ internal fun RecordHandScreen(
 	onPreviousStep: () -> Unit,
 	onSelectShowdownCard: (Int) -> Unit,
 	onUpdateMemo: (String) -> Unit,
-	onShowTableEdit: () -> Unit,
 	onToggleBbUnit: () -> Unit,
 	onSave: () -> Unit,
+	heroStackFocusRequester: FocusRequester = remember { FocusRequester() },
 ) {
 	val colors = HandyTheme.colorScheme
 
@@ -166,7 +170,7 @@ internal fun RecordHandScreen(
 							onUpdateHeroStack = onUpdateHeroStack,
 							onUpdateButtonSeat = onUpdateButtonSeat,
 							onUpdateBlinds = onUpdateBlinds,
-							onShowTableEdit = onShowTableEdit,
+							heroStackFocusRequester = heroStackFocusRequester,
 						)
 					}
 
@@ -189,6 +193,7 @@ internal fun RecordHandScreen(
 						ShowdownStepContent(
 							state = state,
 							onSelectSingleBoardCard = onSelectSingleBoardCard,
+							onSelectHeroCard = onSelectHeroCard,
 							onSelectShowdownCard = onSelectShowdownCard,
 							onUpdateMemo = onUpdateMemo,
 						)
@@ -324,7 +329,6 @@ private fun RecordHandScreenPreview() {
 			onPreviousStep = {},
 			onSelectShowdownCard = {},
 			onUpdateMemo = {},
-			onShowTableEdit = {},
 			onToggleBbUnit = {},
 			onSave = {},
 		)
@@ -343,16 +347,15 @@ private fun RecordHandScreenTournamentPreview() {
 					date = LocalDate(2026, 3, 14),
 					location = "WPT Korea",
 					gameType = GameType.Tournament(),
-					playerCount = 9,
 					heroSeat = 3,
 					createdAt = 0L,
 				),
-				players = com.hand.log.record.model.RecordPlayers.create(
+				players = create(
 					playerCount = 9,
 					defaultStack = 10000.0,
 				),
 				blinds = Blinds(sb = 50.0, bb = 100.0),
-				heroHand = com.hand.log.domain.model.PocketCards(
+				heroHand = PocketCards(
 					Card(Rank.ACE, Suit.SPADES),
 					Card(Rank.KING, Suit.SPADES),
 				),
@@ -374,7 +377,6 @@ private fun RecordHandScreenTournamentPreview() {
 			onPreviousStep = {},
 			onSelectShowdownCard = {},
 			onUpdateMemo = {},
-			onShowTableEdit = {},
 			onToggleBbUnit = {},
 			onSave = {},
 		)

@@ -13,6 +13,9 @@ internal class HandRecordRepositoryImpl(
 	override fun observeHandsByTableId(tableId: String): Flow<List<HandRecord>> =
 		localDataSource.observeHandsByTableId(tableId)
 
+	override fun observeAllHands(): Flow<List<HandRecord>> =
+		localDataSource.observeAllHands()
+
 	override fun observeHandById(handId: String): Flow<HandRecord?> =
 		localDataSource.observeHandById(handId)
 

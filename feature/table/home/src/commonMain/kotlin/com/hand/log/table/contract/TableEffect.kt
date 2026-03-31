@@ -7,10 +7,19 @@ import androidx.compose.runtime.Stable
 internal sealed interface TableEffect {
 
 	@Immutable
-	data object PlayerSaved : TableEffect
+	data object PlayerAdded : TableEffect
+
+	@Immutable
+	data object PlayerUpdated : TableEffect
+
+	@Immutable
+	data object PlayerDeleted : TableEffect
 
 	@Immutable
 	data object HandDeleted : TableEffect
+
+	@Immutable
+	data object TableCreated : TableEffect
 
 	@Immutable
 	data object TableUpdated : TableEffect

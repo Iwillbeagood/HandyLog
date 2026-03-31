@@ -39,10 +39,19 @@ data class EvaluatedHand(
 	}
 }
 
+enum class ShowdownOutcome {
+	WIN,
+	LOSE,
+	SPLIT,
+}
+
 @Serializable
 data class ShowdownResult(
 	val seat: Int,
 	val ranking: HandRanking,
 	val bestCards: List<Card> = emptyList(),
-	val isWinner: Boolean,
-)
+	val outcome: ShowdownOutcome = ShowdownOutcome.LOSE,
+) {
+	val isWinner: Boolean get() = outcome == ShowdownOutcome.WIN
+	val isSplit: Boolean get() = outcome == ShowdownOutcome.SPLIT
+}

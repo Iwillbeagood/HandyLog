@@ -1,22 +1,34 @@
 package com.hand.log.players
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.domain.model.SavedPlayer
+import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.players.component.PlayerEditSheet
 import com.hand.log.players.contract.PlayersModalEffect
 
 @Composable
 internal fun PlayersRoute(
 	viewModel: PlayersViewModel,
+	openAdd: Boolean = false,
 ) {
 	val state by viewModel.state.collectAsStateWithLifecycle()
 	val modalEffect by viewModel.modalEffect.collectAsStateWithLifecycle()
+	val navAction = LocalNavigateActionInterop.current
+
+	LaunchedEffect(openAdd) {
+		if (openAdd) {
+			viewModel.showAddPlayer()
+		}
+	}
 
 	PlayersScreen(
 		state = state,
-		onPlayerClick = viewModel::showPlayerEdit,
+		onPlayerClick = { player ->
+			navAction.navigateToPlayerHands(player.id, player.name)
+		},
 		onEditPlayer = viewModel::showPlayerEdit,
 		onDeletePlayer = viewModel::deletePlayer,
 		onAddPlayer = viewModel::showAddPlayer,
@@ -49,7 +61,7 @@ private fun PlayersModalContent(
 			)
 		}
 
-		PlayersModalEffect.ShowAddPlayer -> {
+		is PlayersModalEffect.ShowAddPlayer -> {
 			PlayerEditSheet(
 				player = null,
 				onSave = onSavePlayer,

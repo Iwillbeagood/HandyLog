@@ -30,16 +30,13 @@ internal sealed interface HandDetailEffect {
 	data class ShareText(val text: String) : HandDetailEffect
 
 	@Immutable
-	data object RequestImageCapture : HandDetailEffect
+	data class ShareImage(val fileName: String) : HandDetailEffect
 
 	@Immutable
-	data class ShareImage(val imageBytes: ByteArray, val fileName: String) : HandDetailEffect
+	data class DownloadImage(val fileName: String) : HandDetailEffect
 
 	@Immutable
-	data object RequestImageDownload : HandDetailEffect
-
-	@Immutable
-	data class DownloadImage(val imageBytes: ByteArray, val fileName: String) : HandDetailEffect
+	data class NavigateToPlayers(val tableId: String, val seat: Int) : HandDetailEffect
 }
 
 @Stable
@@ -50,10 +47,4 @@ internal sealed interface HandDetailModalEffect {
 
 	@Immutable
 	data object ConfirmDelete : HandDetailModalEffect
-
-	@Immutable
-	data class ShowTableExpanded(
-		val hand: HandRecord,
-		val useBbUnit: Boolean,
-	) : HandDetailModalEffect
 }

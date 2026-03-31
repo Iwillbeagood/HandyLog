@@ -5,6 +5,7 @@ import com.hand.log.domain.model.EvaluatedHand
 import com.hand.log.domain.model.HandRanking
 import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.ShowdownEntry
+import com.hand.log.domain.model.ShowdownOutcome
 import com.hand.log.domain.model.ShowdownResult
 
 object HandEvaluator {
@@ -144,13 +145,24 @@ object HandEvaluator {
 		}
 
 		val bestHand = evaluated.mapNotNull { it.second }.minOrNull()
+		val winnerCount = if (bestHand != null) {
+			evaluated.count { it.second != null && it.second == bestHand }
+		} else {
+			0
+		}
+		val isSplit = winnerCount > 1
 
 		return evaluated.map { (seat, hand, cards) ->
+			val isBest = hand != null && hand == bestHand
 			ShowdownResult(
 				seat = seat,
 				ranking = hand?.ranking ?: HandRanking.HIGH_CARD,
 				bestCards = cards,
-				isWinner = hand != null && hand == bestHand,
+				outcome = when {
+					isBest && isSplit -> ShowdownOutcome.SPLIT
+					isBest -> ShowdownOutcome.WIN
+					else -> ShowdownOutcome.LOSE
+				},
 			)
 		}
 	}

@@ -1,10 +1,8 @@
 package com.hand.log.handdetail
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -41,14 +39,13 @@ internal fun HandDetailContent(
 	hand: HandRecord,
 	useBbUnit: Boolean,
 	graphicsLayer: GraphicsLayer,
-	onTableClick: () -> Unit,
+	onMarkPlayer: () -> Unit = {},
 	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme
 
 	Column(
 		modifier = modifier
-			.fillMaxSize()
 			.verticalScroll(rememberScrollState())
 			.background(colors.background)
 			.drawWithContent {
@@ -64,7 +61,6 @@ internal fun HandDetailContent(
 		HandDetailTableView(
 			hand = hand,
 			useBbUnit = useBbUnit,
-			modifier = Modifier.clickable(onClick = onTableClick),
 		)
 
 		ActionGridSection(
@@ -72,7 +68,7 @@ internal fun HandDetailContent(
 			useBbUnit = useBbUnit,
 		)
 
-		ResultSection(hand = hand, useBbUnit = useBbUnit)
+		ResultSection(hand = hand, onMarkPlayer = onMarkPlayer)
 		VerticalSpacer(32.dp)
 	}
 
@@ -155,7 +151,6 @@ private fun HandDetailContentPreview() {
 			hand = hand,
 			useBbUnit = false,
 			graphicsLayer = rememberGraphicsLayer(),
-			onTableClick = {},
 		)
 	}
 }
