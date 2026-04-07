@@ -13,7 +13,7 @@
 	<key>CFBundleDisplayName</key>
 	<string>HandyLog</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
-	<false/>
+	<true/>
 	<key>CFBundleName</key>
 	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundlePackageType</key>

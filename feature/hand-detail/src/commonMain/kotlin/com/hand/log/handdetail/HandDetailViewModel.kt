@@ -2,7 +2,9 @@ package com.hand.log.handdetail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hand.log.domain.model.SavedPlayer
 import com.hand.log.domain.repository.HandRecordRepository
+import com.hand.log.domain.usecase.MarkPlayerOnHandUseCase
 import com.hand.log.handdetail.contract.HandDetailEffect
 import com.hand.log.handdetail.contract.HandDetailModalEffect
 import com.hand.log.handdetail.contract.HandDetailState
@@ -20,6 +22,7 @@ import kotlinx.coroutines.launch
 internal class HandDetailViewModel(
 	handId: String,
 	private val handRecordRepository: HandRecordRepository,
+	private val markPlayerOnHandUseCase: MarkPlayerOnHandUseCase,
 ) : ViewModel() {
 
 	private val useBbUnit = MutableStateFlow(false)
@@ -69,6 +72,18 @@ internal class HandDetailViewModel(
 		val success = state.value as? HandDetailState.Success ?: return
 		viewModelScope.launch {
 			_effect.emit(HandDetailEffect.NavigateToPlayers(success.hand.tableId, seat))
+		}
+	}
+
+	fun showPlayerMark(seat: Int) {
+		_modalEffect.value = HandDetailModalEffect.ShowPlayerMark(seat)
+	}
+
+	fun saveAndMarkPlayer(player: SavedPlayer, seat: Int) {
+		val success = state.value as? HandDetailState.Success ?: return
+		dismissModal()
+		viewModelScope.launch {
+			markPlayerOnHandUseCase(player, success.hand.id, seat)
 		}
 	}
 

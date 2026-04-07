@@ -54,6 +54,7 @@ internal fun PlayerHandsScreen(
 	state: PlayerHandsState,
 	onHandClick: (String) -> Unit,
 	onBack: () -> Unit,
+	paddingValues: PaddingValues = PaddingValues(),
 ) {
 	val colors = HandyTheme.colorScheme
 
@@ -87,7 +88,12 @@ internal fun PlayerHandsScreen(
 
 					LazyColumn(
 						modifier = Modifier.fillMaxSize(),
-						contentPadding = PaddingValues(16.dp),
+						contentPadding = PaddingValues(
+							start = 16.dp,
+							end = 16.dp,
+							top = 16.dp,
+							bottom = 16.dp + paddingValues.calculateBottomPadding(),
+						),
 						verticalArrangement = Arrangement.spacedBy(8.dp),
 					) {
 						item {

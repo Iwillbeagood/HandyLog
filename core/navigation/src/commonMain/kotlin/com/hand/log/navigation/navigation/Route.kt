@@ -14,7 +14,7 @@ sealed interface MainTabRoute : Route {
 	data object Home : MainTabRoute
 
 	@Serializable
-	data class Players(val openAdd: Boolean = false) : MainTabRoute
+	data class Players(val openAdd: Boolean = false, val nonce: Long = 0) : MainTabRoute
 
 	@Serializable
 	data object Settings : MainTabRoute

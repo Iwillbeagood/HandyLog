@@ -39,6 +39,7 @@ import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.Street
 import com.hand.log.domain.model.PreflopStreet
 import com.hand.log.domain.model.FlopStreet
+import com.hand.log.domain.model.Player
 import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.HandStreets
 import com.hand.log.domain.model.Suit
@@ -49,6 +50,7 @@ import handylog.core.res.generated.resources.undo
 import org.jetbrains.compose.resources.painterResource
 import com.hand.log.record.contract.RecordHandState
 import com.hand.log.record.contract.RecordStep
+import com.hand.log.record.model.calculateLastRaiseTo
 import com.hand.log.ui.poker.CardSize
 import com.hand.log.ui.poker.PlayingCard
 import kotlinx.datetime.LocalDate
@@ -208,7 +210,7 @@ internal fun StreetStepContent(
 }
 
 @Composable
-private fun PlayerActionArea(
+internal fun PlayerActionArea(
 	state: RecordHandState.Recording,
 	onSelectActionType: (ActionType) -> Unit,
 	onUpdateActionAmount: (String) -> Unit,
@@ -289,16 +291,14 @@ private fun PlayerActionArea(
 
 			VerticalSpacer(12.dp)
 			val streetActions = state.streets.getActions(state.currentStreet)
-			val aggressiveActions = streetActions.filter {
-				it.type == ActionType.BET || it.type == ActionType.RAISE || (it.type == ActionType.ALL_IN && (it.amount ?: 0.0) > 0)
-			}
-			// 프리플랍: 2벳(오픈 레이즈) 이상이 있어야 배수 프리셋 표시 (3벳부터)
-			// 포스트플랍: 베팅이 있으면 배수 프리셋 표시
-			val lastBet = if (state.currentStreet == Street.PREFLOP) {
-				if (aggressiveActions.isNotEmpty()) aggressiveActions.maxOf { it.amount ?: 0.0 } else 0.0
-			} else {
-				aggressiveActions.maxOfOrNull { it.amount ?: 0.0 } ?: 0.0
-			}
+			val lastBet = calculateLastRaiseTo(
+				streetActions = streetActions,
+				currentStreet = state.currentStreet,
+				bb = state.blinds?.bb ?: 0.0,
+			)
+			println(
+				"DEBUG_LASTBET lastBet=$lastBet bb=${state.blinds?.bb} actions=${streetActions.map { "${it.type}(amt=${it.amount})" }}",
+			)
 
 			ActionSelector(
 				availableActions = state.availableActions,
@@ -377,6 +377,7 @@ private fun StreetStepContentPreflopPreview() {
 					date = LocalDate(2026, 3, 14),
 					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
 					heroSeat = 3,
+					players = (1..6).map { Player(seat = it) },
 					createdAt = 0L,
 				),
 				currentStep = RecordStep.PREFLOP,
@@ -416,6 +417,7 @@ private fun StreetStepContentFlopPreview() {
 					date = LocalDate(2026, 3, 14),
 					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
 					heroSeat = 3,
+					players = (1..6).map { Player(seat = it) },
 					createdAt = 0L,
 				),
 				currentStep = RecordStep.FLOP,
@@ -455,6 +457,7 @@ private fun StreetStepContentCompletePreview() {
 					date = LocalDate(2026, 3, 14),
 					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
 					heroSeat = 3,
+					players = (1..6).map { Player(seat = it) },
 					createdAt = 0L,
 				),
 				currentStep = RecordStep.PREFLOP,
@@ -497,6 +500,7 @@ private fun StreetStepContentOpenerSelectionPreview() {
 					date = LocalDate(2026, 3, 14),
 					gameType = GameType.Cash(sb = 500.0, bb = 1000.0),
 					heroSeat = 3,
+					players = (1..6).map { Player(seat = it) },
 					createdAt = 0L,
 				),
 				currentStep = RecordStep.PREFLOP,

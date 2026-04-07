@@ -65,6 +65,7 @@
 
 	<!-- Record Hand -->
 	<string name="record_title">ハンド記録</string>
+	<string name="record_title_edit">ハンド記録 (編集)</string>
 	<string name="record_save_error">保存中にエラーが発生しました</string>
 	<string name="record_table_settings">テーブル設定</string>
 	<string name="record_hero_card">ヒーローカード</string>
@@ -73,6 +74,9 @@
 	<string name="record_hero_stack">ヒーロースタック</string>
 	<string name="record_select_opener">オープナーを選択してください</string>
 	<string name="record_all_actions_complete">全プレイヤーのアクション完了</string>
+	<string name="record_edit_action_log">記録されたアクション</string>
+	<string name="record_edit_action_modify">アクション修正</string>
+	<string name="record_resume_recording">続けて記録</string>
 	<string name="record_amount_label">金額（最小 %s）</string>
 	<string name="record_stack_warning">スタック（%s）を超えるとオールインとして処理されます</string>
 
@@ -162,4 +166,7 @@
 
 	<!-- Board Cards -->
 	<string name="board_cards">ボードカード</string>
+
+	<!-- Hand Record Card -->
+	<string name="hand_record_later">後日記録</string>
 </resources>

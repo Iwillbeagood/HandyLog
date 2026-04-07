@@ -13,6 +13,7 @@ import com.hand.log.main.navigation.MainNavDisplay
 import com.hand.log.main.navigation.MainNavigator
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.navigation.navigation.MainTabRoute
+import com.hand.log.navigation.navigation.PlayerHands
 import com.hand.log.navigation.navigation.RouteStack
 import kotlinx.collections.immutable.toPersistentList
 
@@ -41,10 +42,18 @@ private fun MainScreenContent(
 	Scaffold(
 		contentWindowInsets = WindowInsets(),
 		bottomBar = {
+			val showBottomBar = routeStack.current is MainTabRoute ||
+				routeStack.current is PlayerHands
+			val currentItem = MainBottomNavItem.entries.find { it.route == routeStack.current }
+				?: when (routeStack.current) {
+					is MainTabRoute.Players -> MainBottomNavItem.Players
+					is PlayerHands -> MainBottomNavItem.Players
+					else -> null
+				}
 			MainBottomBar(
-				visible = routeStack.current in MainBottomNavItem.entries.map { it.route },
+				visible = showBottomBar,
 				bottomItems = MainBottomNavItem.entries.toPersistentList(),
-				currentItem = MainBottomNavItem.entries.find { it.route == routeStack.current },
+				currentItem = currentItem,
 				onItemClick = onTabSelected,
 			)
 		},

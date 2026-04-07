@@ -245,13 +245,12 @@ class RecordHandStateTest {
 			),
 		)
 		val pots = state.sidePots
-		assertEquals(3, pots.size)
+		// 레벨 50K는 eligible=1(Seat2만) → 미콜 베팅으로 제외
+		assertEquals(2, pots.size)
 		// 레벨 10K: 10K * 3명 = 30K
 		assertEquals(30000.0, pots[0])
 		// 레벨 20K: (20K - 10K) * 2명 = 20K
 		assertEquals(20000.0, pots[1])
-		// 레벨 50K: (50K - 20K) * 1명 = 30K
-		assertEquals(30000.0, pots[2])
 	}
 
 	@Test
@@ -281,12 +280,10 @@ class RecordHandStateTest {
 			),
 		)
 		val pots = state.sidePots
-		// Seat3, Seat4는 투입 0 → 제외, 투입 플레이어 2명인데 레벨 2개
-		assertEquals(2, pots.size)
-		// 메인팟: 30K * 2명 = 60K
-		assertEquals(60000.0, pots[0])
-		// 사이드팟: (50K - 30K) * 1명 = 20K
-		assertEquals(20000.0, pots[1])
+		// Seat3, Seat4는 투입 0 → 제외, 투입 플레이어 2명
+		// (50K - 30K) × 1명 = eligible 1 → 미콜 베팅 제외
+		// 사이드팟 1개뿐 → emptyList
+		assertTrue(pots.isEmpty())
 	}
 
 	@Test
@@ -336,13 +333,12 @@ class RecordHandStateTest {
 			),
 		)
 		val pots = state.sidePots
-		assertEquals(3, pots.size)
+		// (10만 - 8만) × 1 = eligible 1 → 미콜 베팅 제외
+		assertEquals(2, pots.size)
 		// 메인팟: 5만 * 3 = 15만
 		assertEquals(150000.0, pots[0])
 		// 사이드팟1: (8만 - 5만) * 2 = 6만 (A, C만 eligible)
 		assertEquals(60000.0, pots[1])
-		// 사이드팟2: (10만 - 8만) * 1 = 2만 (A만 eligible)
-		assertEquals(20000.0, pots[2])
 	}
 
 	@Test
@@ -398,10 +394,9 @@ class RecordHandStateTest {
 		// POT에 표시할 메인팟 = sidePots[0]
 		val mainPot = pots.first()
 		assertEquals(150000.0, mainPot)
-		// currentPot은 전체 합산
-		// 사이드팟은 drop(1)
+		// 사이드팟은 drop(1) - 미콜 베팅 제외로 1개
 		val sidePotOnly = pots.drop(1)
-		assertEquals(2, sidePotOnly.size)
+		assertEquals(1, sidePotOnly.size)
 	}
 
 	@Test
@@ -423,6 +418,73 @@ class RecordHandStateTest {
 		// Seat2는 invested = 0 → 팟 계산에서 제외
 		val pots = state.sidePots
 		// Seat1, Seat3만 동일 레벨 → 사이드팟 없음
+		assertTrue(pots.isEmpty())
+	}
+
+	@Test
+	fun `BBA 포함 3인 올인 - 메인팟에 ante 포함, 미콜 베팅은 사이드팟 제외`() {
+		// BTN(seat1): 50만, SB(seat2): 10만, BB(seat3): 40만
+		// SB=8000, BB=8000, BBA=true (ante=8000)
+		val state = makeState(
+			playerCount = 3,
+			buttonSeat = 1,
+			sb = 8000.0,
+			bb = 8000.0,
+			isBigBlindAnte = true,
+			players = RecordPlayers(
+				player1 = RecordPlayer(
+					seat = 1,
+					stack = 0.0,
+					initialStack = 500000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player2 = RecordPlayer(
+					seat = 2,
+					stack = 0.0,
+					initialStack = 100000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player3 = RecordPlayer(
+					seat = 3,
+					stack = 0.0,
+					initialStack = 400000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+			),
+		)
+		val pots = state.sidePots
+		// 사이드팟은 2개 (미콜 베팅은 제외)
+		assertEquals(2, pots.size)
+		// 메인팟: 100,000 × 3 + 8,000(ante) = 308,000
+		assertEquals(308000.0, pots[0])
+		// 사이드팟: (392,000 - 100,000) × 2 = 584,000
+		assertEquals(584000.0, pots[1])
+	}
+
+	@Test
+	fun `미콜 베팅은 사이드팟에서 제외`() {
+		// Seat1: 50만 올인, Seat2: 30만 올인, Seat3: 30만 콜
+		val state = makeState(
+			playerCount = 3,
+			players = RecordPlayers(
+				player1 = RecordPlayer(
+					seat = 1,
+					stack = 0.0,
+					initialStack = 500000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player2 = RecordPlayer(
+					seat = 2,
+					stack = 0.0,
+					initialStack = 300000.0,
+					status = PlayerStatus.ALL_IN,
+				),
+				player3 = RecordPlayer(seat = 3, stack = 0.0, initialStack = 300000.0),
+			),
+		)
+		val pots = state.sidePots
+		// 300K × 3 = 900K (메인팟), 200K × 1 = 미콜 → 제외
+		// 사이드팟 1개뿐 → emptyList
 		assertTrue(pots.isEmpty())
 	}
 

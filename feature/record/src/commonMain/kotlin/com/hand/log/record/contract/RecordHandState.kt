@@ -53,6 +53,7 @@ internal sealed interface RecordHandState {
 		val preflopPresets: List<Double> = listOf(2.0, 2.5, 3.0, 4.0, 5.0),
 		val postflopPresets: List<Int> = listOf(33, 50, 75, 100),
 		val showAmountWarning: Boolean = false,
+		val isEditing: Boolean = false,
 	) : RecordHandState {
 
 		/** 현재 사용 중인 모든 카드 (히어로 + 보드 + 쇼다운) */
@@ -309,10 +310,18 @@ internal sealed interface RecordHandState {
 				val allInSeats = players.allInSeats
 				if (allInSeats.isEmpty()) return emptyList()
 
+				// BBA ante는 BB의 투자금에서 분리하여 메인팟에 별도 추가
+				val bbSeat = ((buttonSeat + 1) % count) + 1
+				val anteAmount = if (blinds?.isBigBlindAnte == true) (blinds?.bb ?: 0.0) else 0.0
+
 				val investments = mutableMapOf<Int, Double>()
 				for (seat in 1..count) {
 					val player = players[seat] ?: continue
-					val invested = player.initialStack - player.stack
+					var invested = player.initialStack - player.stack
+					// BB의 ante는 별도 처리하므로 투자금에서 제외
+					if (seat == bbSeat && anteAmount > 0) {
+						invested -= anteAmount
+					}
 					if (invested > 0) investments[seat] = invested
 				}
 				if (investments.size < 2) return emptyList()
@@ -325,9 +334,15 @@ internal sealed interface RecordHandState {
 					val diff = level - previousLevel
 					if (diff <= 0) continue
 					val eligible = investments.count { it.value >= level }
+					if (eligible <= 1) break // 1명만 eligible하면 미콜 베팅 → 반환
 					val potForLevel = diff * eligible
 					pots.add(potForLevel)
 					previousLevel = level
+				}
+
+				// ante를 메인팟에 추가
+				if (pots.isNotEmpty() && anteAmount > 0) {
+					pots[0] = pots[0] + anteAmount
 				}
 
 				return if (pots.size <= 1) emptyList() else pots

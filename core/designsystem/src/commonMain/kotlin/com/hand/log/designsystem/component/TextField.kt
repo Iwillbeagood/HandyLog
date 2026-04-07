@@ -29,10 +29,12 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import androidx.compose.ui.draw.clip
+import com.hand.log.designsystem.component.visualTransformation.amountVisualTransformation
 import com.hand.log.designsystem.theme.HandyTheme
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.calendar
@@ -57,6 +59,12 @@ fun HandyTextField(
 	val isFocused by interactionSource.collectIsFocusedAsState()
 	val borderColor = if (isFocused) colors.primary else colors.inputBorder
 
+	val visualTransformation = if (keyboardType == KeyboardType.Number) {
+		amountVisualTransformation()
+	} else {
+		VisualTransformation.None
+	}
+
 	Column(modifier = modifier.fillMaxWidth()) {
 		HandySectionLabel(
 			text = label,
@@ -67,6 +75,7 @@ fun HandyTextField(
 			textStyle = typography.regular14.copy(color = colors.textPrimary),
 			singleLine = true,
 			cursorBrush = SolidColor(colors.primary),
+			visualTransformation = visualTransformation,
 			keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = ImeAction.Done),
 			keyboardActions = KeyboardActions(
 				onDone = {

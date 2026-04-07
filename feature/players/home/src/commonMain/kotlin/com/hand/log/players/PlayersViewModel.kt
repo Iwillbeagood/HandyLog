@@ -41,6 +41,10 @@ internal class PlayersViewModel(
 		}
 	}
 
+	fun consumeOpenAdd() {
+		showAddPlayer()
+	}
+
 	fun dismissModal() {
 		_modalEffect.update {
 			PlayersModalEffect.Idle

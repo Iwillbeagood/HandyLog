@@ -35,10 +35,18 @@ import com.hand.log.ui.poker.formatWithComma
 import com.hand.log.ui.poker.PlayingCard
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
+import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.hand_record_later
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
+import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun HandRecordCard(
 	hand: HandRecord,
+	tableDate: LocalDate,
 	index: Int = 0,
 	onClick: () -> Unit,
 	modifier: Modifier = Modifier,
@@ -139,23 +147,36 @@ internal fun HandRecordCard(
 		}
 
 		// Created date
+		val laterLabel = stringResource(Res.string.hand_record_later)
 		Spacer(modifier = Modifier.height(4.dp))
 		Text(
-			text = formatTimestamp(hand.createdAt),
+			text = formatTimestamp(hand.createdAt, tableDate, laterLabel),
 			style = HandyTheme.typography.regular10,
 			color = colors.textSecondary.copy(alpha = 0.6f),
 		)
 	}
 }
 
-private fun formatTimestamp(timestamp: Long): String {
-	val seconds = timestamp / 1000
-	val minutes = seconds / 60
-	val hours = minutes / 60
+@OptIn(kotlin.time.ExperimentalTime::class)
+@Suppress("DEPRECATION")
+private fun formatTimestamp(
+	timestamp: Long,
+	tableDate: LocalDate,
+	laterLabel: String,
+): String {
+	val dateTime = kotlinx.datetime.Instant.fromEpochMilliseconds(timestamp)
+		.toLocalDateTime(TimeZone.currentSystemDefault())
+	val recordDate = dateTime.date
+	val daysDiff = (recordDate.toEpochDays() - tableDate.toEpochDays()).toInt()
 
-	val h = (hours % 24).toString().padStart(2, '0')
-	val m = (minutes % 60).toString().padStart(2, '0')
-	return "$h:$m"
+	val h = dateTime.hour.toString().padStart(2, '0')
+	val m = dateTime.minute.toString().padStart(2, '0')
+
+	return when {
+		daysDiff <= 0 -> "$h:$m"
+		daysDiff == 1 -> "${recordDate.month.number}/${recordDate.dayOfMonth} $h:$m"
+		else -> laterLabel
+	}
 }
 
 @ThemePreviews
@@ -163,6 +184,7 @@ private fun formatTimestamp(timestamp: Long): String {
 private fun HandRecordCardPreview() {
 	ThemePreview {
 		HandRecordCard(
+			tableDate = LocalDate(2024, 3, 9),
 			hand = HandRecord(
 				id = "h1",
 				tableId = "1",
@@ -197,6 +219,7 @@ private fun HandRecordCardPreview() {
 private fun HandRecordCardNegativePreview() {
 	ThemePreview {
 		HandRecordCard(
+			tableDate = LocalDate(2024, 3, 8),
 			hand = HandRecord(
 				id = "h2",
 				tableId = "1",

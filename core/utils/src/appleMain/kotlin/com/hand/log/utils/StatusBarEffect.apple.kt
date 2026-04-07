@@ -3,23 +3,21 @@ package com.hand.log.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
+import platform.Foundation.NSNotificationCenter
+import platform.Foundation.NSNotificationName
 import platform.UIKit.UIApplication
 import platform.UIKit.UIColor
-import platform.UIKit.UIStatusBarStyleDarkContent
-import platform.UIKit.UIStatusBarStyleLightContent
 import platform.UIKit.UIWindow
 import platform.UIKit.UIWindowScene
-import platform.UIKit.setStatusBarStyle
 
 @Composable
 actual fun StatusBarEffect(isDarkTheme: Boolean, backgroundColor: Color) {
 	LaunchedEffect(isDarkTheme, backgroundColor) {
-		val style = if (isDarkTheme) {
-			UIStatusBarStyleLightContent
-		} else {
-			UIStatusBarStyleDarkContent
-		}
-		UIApplication.sharedApplication.setStatusBarStyle(style, animated = true)
+		NSNotificationCenter.defaultCenter.postNotificationName(
+			aName = "UpdateStatusBarStyle" as NSNotificationName,
+			`object` = null,
+			userInfo = mapOf("isDarkTheme" to isDarkTheme),
+		)
 
 		val uiColor = UIColor.colorWithRed(
 			red = backgroundColor.red.toDouble(),

@@ -65,6 +65,7 @@
 
 	<!-- Record Hand -->
 	<string name="record_title">Record Hand</string>
+	<string name="record_title_edit">Record Hand (Edit)</string>
 	<string name="record_save_error">Error saving hand</string>
 	<string name="record_table_settings">Table Settings</string>
 	<string name="record_hero_card">Hero Cards</string>
@@ -73,6 +74,9 @@
 	<string name="record_hero_stack">Hero Stack</string>
 	<string name="record_select_opener">Select the opener</string>
 	<string name="record_all_actions_complete">All actions complete</string>
+	<string name="record_edit_action_log">Recorded Actions</string>
+	<string name="record_edit_action_modify">Edit Actions</string>
+	<string name="record_resume_recording">Resume Recording</string>
 	<string name="record_amount_label">Amount (min %s)</string>
 	<string name="record_stack_warning">Exceeding stack (%s) will be treated as all-in</string>
 
@@ -162,4 +166,7 @@
 
 	<!-- Board Cards -->
 	<string name="board_cards">Board Cards</string>
+
+	<!-- Hand Record Card -->
+	<string name="hand_record_later">Later record</string>
 </resources>

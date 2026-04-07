@@ -47,6 +47,7 @@ import com.hand.log.domain.model.Suit
 import com.hand.log.record.component.SetupStepContent
 import com.hand.log.record.component.ShowdownStepContent
 import com.hand.log.record.component.StreetStepContent
+import com.hand.log.record.component.StreetStepEditContent
 import com.hand.log.record.contract.RecordHandState
 import com.hand.log.record.contract.RecordStep
 import com.hand.log.record.contract.localizedLabel
@@ -62,6 +63,7 @@ import handylog.core.res.generated.resources.*
 @Composable
 internal fun RecordHandScreen(
 	state: RecordHandState.Recording,
+	editingActionIndex: Int? = null,
 	onBack: () -> Unit,
 	onSelectHeroCard: () -> Unit,
 	onSelectBoardCard: (Street) -> Unit,
@@ -75,8 +77,11 @@ internal fun RecordHandScreen(
 	onUpdatePlayerStack: (Int, String) -> Unit,
 	onConfirmAction: () -> Unit,
 	onRemoveLastAction: () -> Unit,
+	onEditAction: (Int) -> Unit,
+	onResumeRecording: () -> Unit = {},
 	onNextStep: () -> Unit,
 	onPreviousStep: () -> Unit,
+	onNavigateToStep: (RecordStep) -> Unit,
 	onSelectShowdownCard: (Int) -> Unit,
 	onUpdateMemo: (String) -> Unit,
 	onToggleBbUnit: () -> Unit,
@@ -95,7 +100,11 @@ internal fun RecordHandScreen(
 				verticalAlignment = Alignment.CenterVertically,
 			) {
 				HandyTopAppbar(
-					title = stringResource(Res.string.record_title),
+					title = if (state.isEditing) {
+						stringResource(Res.string.record_title_edit)
+					} else {
+						stringResource(Res.string.record_title)
+					},
 					onBackEvent = {
 						if (state.currentStep == RecordStep.SETUP) {
 							onBack()
@@ -120,7 +129,7 @@ internal fun RecordHandScreen(
 				state.streets.getActions(Street.PREFLOP).isEmpty() &&
 				state.currentActionSeat == null
 			val isStreetCompleted = !isSetup && !isShowdown && !isOpenerSelection &&
-				state.currentActionSeat == null
+				state.currentActionSeat == null && state.isEditing
 			if (isSetup || isShowdown || isStreetCompleted) {
 				BottomNavigationBar(
 					currentStep = state.currentStep,
@@ -138,6 +147,7 @@ internal fun RecordHandScreen(
 			StepIndicator(
 				currentStep = state.currentStep,
 				activeSteps = state.activeSteps,
+				onStepClick = onNavigateToStep,
 				modifier = Modifier
 					.fillMaxWidth()
 					.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -175,18 +185,28 @@ internal fun RecordHandScreen(
 					}
 
 					RecordStep.PREFLOP, RecordStep.FLOP, RecordStep.TURN, RecordStep.RIVER -> {
-						StreetStepContent(
-							state = state,
-							onSelectBoardCard = onSelectBoardCard,
-							onSelectActionSeat = onSelectActionSeat,
-							onSelectActionType = onSelectActionType,
-							onUpdateActionAmount = onUpdateActionAmount,
-							onUpdatePlayerStack = onUpdatePlayerStack,
-							onConfirmAction = onConfirmAction,
-							onRemoveLastAction = onRemoveLastAction,
-							preflopPresets = state.preflopPresets,
-							postflopPresets = state.postflopPresets,
-						)
+						if (state.isEditing) {
+							StreetStepEditContent(
+								state = state,
+								editingActionIndex = editingActionIndex,
+								onSelectBoardCard = onSelectBoardCard,
+								onEditAction = onEditAction,
+								onResumeRecording = onResumeRecording,
+							)
+						} else {
+							StreetStepContent(
+								state = state,
+								onSelectBoardCard = onSelectBoardCard,
+								onSelectActionSeat = onSelectActionSeat,
+								onSelectActionType = onSelectActionType,
+								onUpdateActionAmount = onUpdateActionAmount,
+								onUpdatePlayerStack = onUpdatePlayerStack,
+								onConfirmAction = onConfirmAction,
+								onRemoveLastAction = onRemoveLastAction,
+								preflopPresets = state.preflopPresets,
+								postflopPresets = state.postflopPresets,
+							)
+						}
 					}
 
 					RecordStep.SHOWDOWN -> {
@@ -325,8 +345,10 @@ private fun RecordHandScreenPreview() {
 			onUpdatePlayerStack = { _, _ -> },
 			onConfirmAction = {},
 			onRemoveLastAction = {},
+			onEditAction = {},
 			onNextStep = {},
 			onPreviousStep = {},
+			onNavigateToStep = {},
 			onSelectShowdownCard = {},
 			onUpdateMemo = {},
 			onToggleBbUnit = {},
@@ -373,8 +395,10 @@ private fun RecordHandScreenTournamentPreview() {
 			onUpdatePlayerStack = { _, _ -> },
 			onConfirmAction = {},
 			onRemoveLastAction = {},
+			onEditAction = {},
 			onNextStep = {},
 			onPreviousStep = {},
+			onNavigateToStep = {},
 			onSelectShowdownCard = {},
 			onUpdateMemo = {},
 			onToggleBbUnit = {},

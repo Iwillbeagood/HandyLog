@@ -47,4 +47,7 @@ internal sealed interface HandDetailModalEffect {
 
 	@Immutable
 	data object ConfirmDelete : HandDetailModalEffect
+
+	@Immutable
+	data class ShowPlayerMark(val seat: Int) : HandDetailModalEffect
 }

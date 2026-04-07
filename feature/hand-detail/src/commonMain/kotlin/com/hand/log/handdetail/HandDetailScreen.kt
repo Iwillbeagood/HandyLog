@@ -1,15 +1,10 @@
 package com.hand.log.handdetail
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.layer.GraphicsLayer
@@ -17,15 +12,13 @@ import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
 import com.hand.log.designsystem.component.FadeAnimatedVisibility
-import com.hand.log.designsystem.component.HandyMenuItem
-import com.hand.log.designsystem.component.HandyPopupMenu
 import com.hand.log.designsystem.component.HandySwitch
-import org.jetbrains.compose.resources.stringResource
 import com.hand.log.designsystem.component.HandyTopAppbar
-import com.hand.log.designsystem.component.TopAppbarIcon
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
+import com.hand.log.handdetail.component.HandDetailTopBarEndContent
+import org.jetbrains.compose.resources.stringResource
 import com.hand.log.domain.model.Action
 import com.hand.log.domain.model.ActionType
 import com.hand.log.domain.model.Blinds
@@ -48,11 +41,12 @@ internal fun HandDetailScreen(
 	state: HandDetailState,
 	onToggleBbUnit: () -> Unit,
 	onBack: () -> Unit,
+	onEdit: () -> Unit,
 	onShowDeleteConfirm: () -> Unit,
 	onShareText: () -> Unit,
 	onShareImage: () -> Unit,
 	onDownloadImage: () -> Unit,
-	onMarkPlayer: () -> Unit = {},
+	onMarkPlayer: (Int) -> Unit = {},
 	graphicsLayer: GraphicsLayer = rememberGraphicsLayer(),
 ) {
 	val success = state as? HandDetailState.Success
@@ -80,43 +74,13 @@ internal fun HandDetailScreen(
 					}
 				},
 				endContent = {
-					Row {
-						TopAppbarIcon(
-							icon = Res.drawable.delete,
-							onClick = onShowDeleteConfirm,
-						)
-						Box {
-							var showShareMenu by remember { mutableStateOf(false) }
-
-							TopAppbarIcon(
-								tint = colors.textPrimary,
-								icon = Res.drawable.share_2,
-								onClick = { showShareMenu = true },
-							)
-
-							HandyPopupMenu(
-								expanded = showShareMenu,
-								onDismissRequest = { showShareMenu = false },
-								items = listOf(
-									HandyMenuItem(
-										icon = Res.drawable.file_text,
-										text = stringResource(Res.string.hand_detail_share_text),
-										onClick = onShareText,
-									),
-									HandyMenuItem(
-										icon = Res.drawable.image,
-										text = stringResource(Res.string.hand_detail_share_image),
-										onClick = onShareImage,
-									),
-									HandyMenuItem(
-										icon = Res.drawable.images,
-										text = stringResource(Res.string.hand_detail_download_image),
-										onClick = onDownloadImage,
-									),
-								),
-							)
-						}
-					}
+					HandDetailTopBarEndContent(
+						onEdit = onEdit,
+						onShowDeleteConfirm = onShowDeleteConfirm,
+						onShareText = onShareText,
+						onShareImage = onShareImage,
+						onDownloadImage = onDownloadImage,
+					)
 				},
 			)
 		},
@@ -202,6 +166,7 @@ private fun HandDetailScreenPreview() {
 			),
 			onToggleBbUnit = {},
 			onBack = {},
+			onEdit = {},
 			onShowDeleteConfirm = {},
 			onShareText = {},
 			onShareImage = {},

@@ -24,8 +24,10 @@ import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.compose.ui.focus.FocusRequester
+import com.hand.log.domain.model.ActionType
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.PokerTable
+import com.hand.log.record.component.EditActionSheet
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.navigation.interop.LocalMainActionInterop
 import com.hand.log.record.contract.CardSelectorTarget
@@ -76,6 +78,7 @@ internal fun RecordHandRoute(
 
 	RecordHandContent(
 		state = state,
+		modalEffect = modalEffect,
 		viewModel = viewModel,
 		onBack = handleBack,
 		heroStackFocusRequester = heroStackFocusRequester,
@@ -83,10 +86,14 @@ internal fun RecordHandRoute(
 
 	RecordHandModalContent(
 		modalEffect = modalEffect,
+		state = state,
 		onCardsSelected = viewModel::onCardsSelected,
 		onSetShowdownUnknown = viewModel::setShowdownUnknown,
 		onTableSaved = viewModel::onTableSaved,
 		onConfirmStepBack = viewModel::confirmStepBack,
+		onSelectActionType = viewModel::selectActionType,
+		onUpdateActionAmount = viewModel::updateActionAmount,
+		onConfirmEditAction = viewModel::restartFromAction,
 		onDismiss = viewModel::dismissModal,
 	)
 
@@ -104,13 +111,17 @@ internal fun RecordHandRoute(
 @Composable
 private fun RecordHandContent(
 	state: RecordHandState,
+	modalEffect: RecordHandModalEffect,
 	viewModel: RecordHandViewModel,
 	onBack: () -> Unit,
 	heroStackFocusRequester: FocusRequester = FocusRequester(),
 ) {
+	val editingActionIndex = (modalEffect as? RecordHandModalEffect.EditAction)?.actionIndex
+
 	if (state is RecordHandState.Recording) {
 		RecordHandScreen(
 			state = state,
+			editingActionIndex = editingActionIndex,
 			onBack = onBack,
 			onSelectHeroCard = viewModel::selectHeroCard,
 			onSelectBoardCard = viewModel::selectBoardCard,
@@ -124,8 +135,11 @@ private fun RecordHandContent(
 			onUpdatePlayerStack = viewModel::updatePlayerStack,
 			onConfirmAction = viewModel::confirmAction,
 			onRemoveLastAction = viewModel::removeLastAction,
+			onEditAction = viewModel::editAction,
+			onResumeRecording = viewModel::resumeRecording,
 			onNextStep = viewModel::nextStep,
 			onPreviousStep = viewModel::previousStep,
+			onNavigateToStep = viewModel::navigateToStep,
 			onSelectShowdownCard = viewModel::selectShowdownCard,
 			onUpdateMemo = viewModel::updateMemo,
 			onToggleBbUnit = viewModel::toggleBbUnit,
@@ -138,10 +152,14 @@ private fun RecordHandContent(
 @Composable
 private fun RecordHandModalContent(
 	modalEffect: RecordHandModalEffect,
+	state: RecordHandState?,
 	onCardsSelected: (List<Card>) -> Unit,
 	onSetShowdownUnknown: (Int) -> Unit,
 	onTableSaved: (PokerTable) -> Unit,
 	onConfirmStepBack: (RecordStep, Boolean) -> Unit,
+	onSelectActionType: (ActionType) -> Unit,
+	onUpdateActionAmount: (String) -> Unit,
+	onConfirmEditAction: (Int) -> Unit,
 	onDismiss: () -> Unit,
 ) {
 	when (modalEffect) {
@@ -192,6 +210,21 @@ private fun RecordHandModalContent(
 				onConfirm = onConfirmStepBack,
 				onDismiss = onDismiss,
 			)
+		}
+
+		is RecordHandModalEffect.EditAction -> {
+			val recording = state as? RecordHandState.Recording
+			if (recording != null) {
+				EditActionSheet(
+					state = recording,
+					positionName = modalEffect.positionName,
+					actionIndex = modalEffect.actionIndex,
+					onSelectActionType = onSelectActionType,
+					onUpdateActionAmount = onUpdateActionAmount,
+					onConfirmEditAction = onConfirmEditAction,
+					onDismiss = onDismiss,
+				)
+			}
 		}
 	}
 }

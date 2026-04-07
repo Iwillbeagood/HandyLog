@@ -65,6 +65,7 @@
 
 	<!-- Record Hand -->
 	<string name="record_title">记录手牌</string>
+	<string name="record_title_edit">记录手牌 (编辑)</string>
 	<string name="record_save_error">保存时发生错误</string>
 	<string name="record_table_settings">桌子设置</string>
 	<string name="record_hero_card">主角手牌</string>
@@ -73,6 +74,9 @@
 	<string name="record_hero_stack">主角筹码</string>
 	<string name="record_select_opener">选择开局者</string>
 	<string name="record_all_actions_complete">所有玩家行动完毕</string>
+	<string name="record_edit_action_log">已记录的行动</string>
+	<string name="record_edit_action_modify">修改行动</string>
+	<string name="record_resume_recording">继续记录</string>
 	<string name="record_amount_label">金额（最小 %s）</string>
 	<string name="record_stack_warning">超过筹码（%s）将被视为全押</string>
 
@@ -162,4 +166,7 @@
 
 	<!-- Board Cards -->
 	<string name="board_cards">公共牌</string>
+
+	<!-- Hand Record Card -->
+	<string name="hand_record_later">之后记录</string>
 </resources>

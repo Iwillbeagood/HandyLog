@@ -3,7 +3,8 @@ import ComposeApp
 
 struct ComposeView: UIViewControllerRepresentable {
 	func makeUIViewController(context: Context) -> UIViewController {
-		MainViewControllerKt.mainViewController()
+		let composeVC = MainViewControllerKt.mainViewController()
+		return StatusBarHostingController(childVC: composeVC)
 	}
 
 	func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}

@@ -20,7 +20,7 @@ internal fun PlayersRoute(
 
 	LaunchedEffect(openAdd) {
 		if (openAdd) {
-			viewModel.showAddPlayer()
+			viewModel.consumeOpenAdd()
 		}
 	}
 

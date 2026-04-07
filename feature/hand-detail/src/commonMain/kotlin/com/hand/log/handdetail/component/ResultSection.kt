@@ -36,7 +36,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun ResultSection(
 	hand: HandRecord,
-	onMarkPlayer: () -> Unit = {},
+	onMarkPlayer: (Int) -> Unit = {},
 ) {
 	val colors = HandyTheme.colorScheme
 
@@ -93,7 +93,11 @@ internal fun ResultSection(
 					isHero = false,
 					playerName = hand.getPlayerName(entry.seat),
 					isMarked = hand.isPlayerMarked(entry.seat),
-					onMarkClick = if (!hand.isPlayerMarked(entry.seat)) onMarkPlayer else null,
+					onMarkClick = if (!hand.isPlayerMarked(entry.seat)) {
+						{ onMarkPlayer(entry.seat) }
+					} else {
+						null
+					},
 				)
 			}
 
@@ -110,7 +114,11 @@ internal fun ResultSection(
 					isCardUnknown = true,
 					playerName = hand.getPlayerName(seat),
 					isMarked = hand.isPlayerMarked(seat),
-					onMarkClick = if (!hand.isPlayerMarked(seat)) onMarkPlayer else null,
+					onMarkClick = if (!hand.isPlayerMarked(seat)) {
+						{ onMarkPlayer(seat) }
+					} else {
+						null
+					},
 				)
 			}
 		}

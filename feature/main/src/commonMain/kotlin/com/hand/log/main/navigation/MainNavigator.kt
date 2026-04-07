@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.update
 
 internal class MainNavigator {
 
+	private var openAddNonce = 0L
 	private val _routeStack = MutableStateFlow(RouteStack(MainTabRoute.Home))
 	val routeStack: StateFlow<RouteStack> = _routeStack.asStateFlow()
 
@@ -42,7 +43,7 @@ internal class MainNavigator {
 		}
 
 		override fun navigateToPlayersWithAdd() {
-			navigate(MainTabRoute.Players(openAdd = true), LaunchMode.CLEAR_ALL)
+			navigateTab(MainTabRoute.Players(openAdd = true, nonce = ++openAddNonce))
 		}
 
 		override fun navigateToPlayerHands(savedPlayerId: String, playerName: String) {
@@ -99,16 +100,6 @@ internal class MainNavigator {
 	}
 
 	fun navigateTab(tab: MainTabRoute) {
-		when (tab) {
-			MainTabRoute.Home -> {
-				navigate(MainTabRoute.Home, LaunchMode.CLEAR_ALL)
-			}
-			is MainTabRoute.Players -> {
-				navigate(MainTabRoute.Players(), LaunchMode.CLEAR_ALL)
-			}
-			MainTabRoute.Settings -> {
-				navigate(MainTabRoute.Settings, LaunchMode.CLEAR_ALL)
-			}
-		}
+		navigate(tab, LaunchMode.CLEAR_ALL)
 	}
 }

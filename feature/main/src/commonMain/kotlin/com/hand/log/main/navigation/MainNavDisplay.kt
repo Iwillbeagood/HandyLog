@@ -39,7 +39,7 @@ internal fun MainNavDisplay(
 		tableNavGraph()
 		recordHandNavGraph()
 		handDetailNavGraph()
-		playerHandsNavGraph()
+		playerHandsNavGraph(paddingValues)
 		betSizeNavGraph()
 	}
 

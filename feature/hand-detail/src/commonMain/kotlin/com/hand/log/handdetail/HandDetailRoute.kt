@@ -8,7 +8,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.designsystem.component.modal.DefaultDialog
 import com.hand.log.handdetail.contract.HandDetailEffect
 import com.hand.log.handdetail.contract.HandDetailModalEffect
+import com.hand.log.domain.model.SavedPlayer
 import com.hand.log.domain.model.etc.ToastDurationType
+import com.hand.log.playersedit.PlayerEditSheet
 import com.hand.log.navigation.interop.LocalMainActionInterop
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.utils.share.rememberShareManager
@@ -33,17 +35,19 @@ internal fun HandDetailRoute(
 		state = state,
 		onToggleBbUnit = viewModel::toggleBbUnit,
 		onBack = navAction::popBackStack,
+		onEdit = { /* TODO */ },
 		onShowDeleteConfirm = viewModel::showDeleteConfirm,
 		onShareText = viewModel::shareText,
 		onShareImage = viewModel::shareImage,
 		onDownloadImage = viewModel::downloadImage,
-		onMarkPlayer = { navAction.navigateToPlayersWithAdd() },
+		onMarkPlayer = viewModel::showPlayerMark,
 		graphicsLayer = graphicsLayer,
 	)
 
 	HandDetailModalContent(
 		modalEffect = modalEffect,
 		onConfirmDelete = viewModel::confirmDelete,
+		onSaveAndMarkPlayer = viewModel::saveAndMarkPlayer,
 		onDismiss = viewModel::dismissModal,
 	)
 
@@ -81,6 +85,7 @@ internal fun HandDetailRoute(
 private fun HandDetailModalContent(
 	modalEffect: HandDetailModalEffect,
 	onConfirmDelete: () -> Unit,
+	onSaveAndMarkPlayer: (SavedPlayer, Int) -> Unit,
 	onDismiss: () -> Unit,
 ) {
 	when (modalEffect) {
@@ -92,6 +97,13 @@ private fun HandDetailModalContent(
 				onDismissRequest = onDismiss,
 				onConfirmClick = onConfirmDelete,
 				onDismissClick = onDismiss,
+			)
+		}
+		is HandDetailModalEffect.ShowPlayerMark -> {
+			PlayerEditSheet(
+				player = null,
+				onSave = { player -> onSaveAndMarkPlayer(player, modalEffect.seat) },
+				onDismiss = onDismiss,
 			)
 		}
 	}

@@ -207,6 +207,7 @@ private fun TableContent(
 				val handIndex = state.hands.size - state.hands.indexOf(hand)
 				HandRecordCard(
 					hand = hand,
+					tableDate = state.table.date,
 					index = handIndex,
 					onClick = { onNavigateToHandDetail(hand.id) },
 				)

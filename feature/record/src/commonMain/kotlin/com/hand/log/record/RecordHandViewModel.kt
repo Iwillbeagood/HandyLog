@@ -10,7 +10,9 @@ import com.hand.log.domain.model.ShowdownResult
 import com.hand.log.utils.poker.HandEvaluator
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.Card
+import com.hand.log.domain.model.GameType.Cash
 import com.hand.log.domain.model.HandRecord
+import com.hand.log.domain.model.HandStreets
 import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.model.Street
@@ -50,7 +52,7 @@ internal class RecordHandViewModel(
 		loadTable()
 	}.stateIn(
 		scope = viewModelScope,
-		started = SharingStarted.WhileSubscribed(5_000),
+		started = SharingStarted.Eagerly,
 		initialValue = RecordHandState.Loading,
 	)
 
@@ -62,7 +64,6 @@ internal class RecordHandViewModel(
 
 	private val recording: RecordHandState.Recording?
 		get() = _state.value as? RecordHandState.Recording
-
 	private fun loadTable() {
 		viewModelScope.launch {
 			val data = loadRecordData(tableId)
@@ -77,7 +78,7 @@ internal class RecordHandViewModel(
 						defaultStack = 0.0,
 					),
 					buttonSeat = 1,
-					blinds = (table?.gameType as? com.hand.log.domain.model.GameType.Cash)?.let {
+					blinds = (table?.gameType as? Cash)?.let {
 						Blinds(sb = it.sb, bb = it.bb, straddle = it.straddle)
 					},
 					preflopPresets = data.preflopPresets,
@@ -230,7 +231,7 @@ internal class RecordHandViewModel(
 			current.players
 		}
 		updateRecording {
-			val newBlinds = (table.gameType as? com.hand.log.domain.model.GameType.Cash)?.let {
+			val newBlinds = (table.gameType as? Cash)?.let {
 				Blinds(sb = it.sb, bb = it.bb, straddle = it.straddle)
 			}
 			copy(table = table, blinds = newBlinds, players = updatedPlayers)
@@ -505,6 +506,53 @@ internal class RecordHandViewModel(
 		}
 	}
 
+	fun editAction(actionIndex: Int) {
+		val current = recording ?: return
+		val streetActions = current.streets.getActions(current.currentStreet)
+		if (actionIndex < 0 || actionIndex >= streetActions.size) return
+
+		val action = streetActions[actionIndex]
+		val posName = current.positionName(action.playerSeat)
+
+		// 해당 좌석을 currentActionSeat로 설정 (액션 제거 없이)
+		updateRecording {
+			copy(
+				currentActionSeat = action.playerSeat,
+				currentActionType = null,
+				currentActionAmount = "",
+			)
+		}
+
+		_modalEffect.value = RecordHandModalEffect.EditAction(
+			actionIndex = actionIndex,
+			positionName = posName,
+		)
+	}
+
+	/** 마지막 액션 이후부터 기록 재개 — 기존 액션 유지, editing 모드 해제 */
+	fun resumeRecording() {
+		updateRecording {
+			copy(isEditing = false)
+		}
+	}
+
+	/** 해당 인덱스부터 액션 재시작 — 이후 액션을 모두 제거하고 recording 모드로 전환 */
+	fun restartFromAction(actionIndex: Int) {
+		val current = recording ?: return
+		val streetActions = current.streets.getActions(current.currentStreet)
+		if (actionIndex < 0 || actionIndex >= streetActions.size) return
+
+		// 해당 인덱스 이후 액션을 모두 제거
+		val removeCount = streetActions.size - actionIndex
+		repeat(removeCount) { removeLastAction() }
+
+		// editing 모드 해제 → StreetStepContent로 전환
+		updateRecording {
+			copy(isEditing = false)
+		}
+		dismissModal()
+	}
+
 	// ──────────────────────────────────────────────
 	// Navigation
 	// ──────────────────────────────────────────────
@@ -529,10 +577,11 @@ internal class RecordHandViewModel(
 					currentActionSeat = null,
 					currentActionType = null,
 					currentActionAmount = "",
+					isEditing = false,
 				)
 			}
 
-			val stepped = copy(currentStep = nextStep)
+			val stepped = copy(currentStep = nextStep, isEditing = false)
 			var updatedPlayers = players.resetCurrentBets()
 
 			// 프리플랍 진입 시 SB/BB 스택 차감
@@ -584,8 +633,42 @@ internal class RecordHandViewModel(
 		val current = recording ?: return
 		if (current.currentStep == RecordStep.SETUP) return
 
-		val targetStep = current.findLastActiveStep()
-		requestStepBack(targetStep)
+		if (current.isEditing) {
+			val targetStep = current.findLastActiveStep()
+			navigateToStepWithoutClear(targetStep)
+		} else {
+			val targetStep = current.findLastActiveStep()
+			requestStepBack(targetStep)
+		}
+	}
+
+	fun navigateToStep(step: RecordStep) {
+		val current = recording ?: return
+		if (step.ordinal >= current.currentStep.ordinal) return
+		if (current.isEditing) {
+			navigateToStepWithoutClear(step)
+		} else {
+			requestStepBack(step)
+		}
+	}
+
+	private fun navigateToStepWithoutClear(targetStep: RecordStep) {
+		updateRecording {
+			val lastAction = streets.getActions(
+				when (targetStep) {
+					RecordStep.SETUP, RecordStep.PREFLOP -> Street.PREFLOP
+					RecordStep.FLOP -> Street.FLOP
+					RecordStep.TURN -> Street.TURN
+					RecordStep.RIVER, RecordStep.SHOWDOWN -> Street.RIVER
+				},
+			).lastOrNull()
+			copy(
+				currentStep = targetStep,
+				currentActionSeat = lastAction?.playerSeat,
+				currentActionType = null,
+				currentActionAmount = "",
+			)
+		}
 	}
 
 	private fun requestStepBack(targetStep: RecordStep) {
@@ -618,17 +701,66 @@ internal class RecordHandViewModel(
 				RecordStep.RIVER, RecordStep.SHOWDOWN -> Street.RIVER
 			}
 			val clearedStreets = streets.clearAfter(targetStreet)
+
+			// 남은 스트릿의 액션들로부터 플레이어 상태 복원
+			val restoredPlayers = restorePlayersFromStreets(clearedStreets, targetStreet)
+
 			val updated = copy(
 				currentStep = targetStep,
 				streets = clearedStreets,
+				players = restoredPlayers,
 				showdown = com.hand.log.record.model.RecordShowdown(),
 				currentActionType = null,
 				currentActionAmount = "",
 				lastAggressorSeat = null,
+				isEditing = true,
 			)
 			val lastAction = updated.streets.getActions(updated.currentStreet).lastOrNull()
 			updated.copy(currentActionSeat = lastAction?.playerSeat)
 		}
+	}
+
+	private fun RecordHandState.Recording.restorePlayersFromStreets(
+		streets: HandStreets,
+		targetStreet: Street,
+	): RecordPlayers {
+		// 각 플레이어의 마지막 액션 기준으로 상태 복원
+		val actions = streets.getActions(targetStreet)
+		val lastActionBySeat = mutableMapOf<Int, Action>()
+		actions.forEach { action ->
+			lastActionBySeat[action.playerSeat] = action
+		}
+
+		var restored = players
+		val allSeats = (1..(table?.playerCount ?: 0))
+		allSeats.forEach { seat ->
+			val player = players[seat] ?: return@forEach
+			val lastAction = lastActionBySeat[seat]
+			if (lastAction != null) {
+				restored = restored.update(seat) {
+					copy(
+						stack = lastAction.stackAfter ?: player.stack,
+						currentBet = lastAction.amount ?: 0.0,
+						status = when (lastAction.type) {
+							ActionType.FOLD -> PlayerStatus.FOLDED
+							ActionType.ALL_IN -> PlayerStatus.ALL_IN
+							else -> PlayerStatus.ACTIVE
+						},
+					)
+				}
+			} else {
+				// 해당 스트릿에서 액션이 없는 플레이어는 초기 상태로
+				val blindCost = getBlindCost(seat)
+				restored = restored.update(seat) {
+					copy(
+						stack = initialStack - blindCost,
+						currentBet = blindCost,
+						status = PlayerStatus.ACTIVE,
+					)
+				}
+			}
+		}
+		return restored
 	}
 
 	private fun goToShowdown() {

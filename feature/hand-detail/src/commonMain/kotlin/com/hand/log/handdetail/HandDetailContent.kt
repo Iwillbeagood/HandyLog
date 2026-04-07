@@ -39,7 +39,7 @@ internal fun HandDetailContent(
 	hand: HandRecord,
 	useBbUnit: Boolean,
 	graphicsLayer: GraphicsLayer,
-	onMarkPlayer: () -> Unit = {},
+	onMarkPlayer: (Int) -> Unit = {},
 	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme
