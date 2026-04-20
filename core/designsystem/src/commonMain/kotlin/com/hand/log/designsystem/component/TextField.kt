@@ -47,6 +47,7 @@ fun HandyTextField(
 	value: String,
 	onValueChange: (String) -> Unit,
 	modifier: Modifier = Modifier,
+	innerModifier: Modifier = Modifier,
 	label: String = "",
 	leadingIcon: DrawableResource? = null,
 	keyboardType: KeyboardType = KeyboardType.Text,
@@ -72,6 +73,7 @@ fun HandyTextField(
 		BasicTextField(
 			value = value,
 			onValueChange = onValueChange,
+			modifier = innerModifier,
 			textStyle = typography.regular14.copy(color = colors.textPrimary),
 			singleLine = true,
 			cursorBrush = SolidColor(colors.primary),
@@ -91,7 +93,7 @@ fun HandyTextField(
 						.background(colors.muted, RoundedCornerShape(8.dp))
 						.border(1.dp, borderColor, RoundedCornerShape(8.dp))
 						.padding(horizontal = 12.dp, vertical = 10.dp),
-					verticalAlignment = Alignment.CenterVertically,
+					verticalAlignment = Alignment.Top,
 				) {
 					if (leadingIcon != null) {
 						Icon(

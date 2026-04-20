@@ -5,12 +5,13 @@ import androidx.compose.ui.graphics.Color
 import com.hand.log.domain.model.PlayerTendency
 
 private val TendencyColors = mapOf(
-	PlayerTendency.TIGHT to Color(0xFF4A90D9),
-	PlayerTendency.LOOSE to Color(0xFFE8943A),
-	PlayerTendency.AGGRESSIVE to Color(0xFFE84040),
-	PlayerTendency.PASSIVE to Color(0xFF7B8FA0),
-	PlayerTendency.NIT to Color(0xFF6BC5E8),
-	PlayerTendency.MANIAC to Color(0xFFD94ABB),
+	PlayerTendency.TIGHT_AGGRESSIVE to Color(0xFFE84040),
+	PlayerTendency.TIGHT_PASSIVE to Color(0xFF4A90D9),
+	PlayerTendency.LOOSE_AGGRESSIVE to Color(0xFFE8943A),
+	PlayerTendency.LOOSE_PASSIVE to Color(0xFF7B8FA0),
+	PlayerTendency.SHARK to Color(0xFF2E7D32),
+	PlayerTendency.REGULAR to Color(0xFF5C6BC0),
+	PlayerTendency.FISH to Color(0xFFFF8A65),
 	PlayerTendency.UNKNOWN to Color(0xFF808897),
 )
 

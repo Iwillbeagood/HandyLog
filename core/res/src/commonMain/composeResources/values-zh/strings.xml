@@ -27,6 +27,8 @@
 	<string name="home_table_deleted">桌子已删除</string>
 	<string name="home_hand_count">%d手牌记录</string>
 	<string name="home_player_count">%d人</string>
+	<string name="home_tab_table">桌子</string>
+	<string name="home_tab_hand">手牌记录</string>
 
 	<!-- Table Detail -->
 	<string name="table_detail_tournament">锦标赛</string>
@@ -112,6 +114,7 @@
 	<string name="hand_detail_text_shared">文本已分享</string>
 	<string name="hand_detail_image_shared">图片已分享</string>
 
+
 	<!-- Action Types -->
 	<string name="action_fold">弃牌</string>
 	<string name="action_check">看牌</string>
@@ -169,4 +172,12 @@
 
 	<!-- Hand Record Card -->
 	<string name="hand_record_later">之后记录</string>
+	<string name="player_position_setup_title">玩家位置设置</string>
+	<string name="player_position_setup_desc">选择玩家所在的座位</string>
+	<string name="player_position_setup_hero">HERO</string>
+	<string name="player_position_setup_skip">跳过</string>
+	<string name="player_position_setup_count">已选 %1$d / %2$d人</string>
+	<string name="table_balance">桌面平衡</string>
+	<string name="table_balance_player_count">玩家数: %1$d / %2$d</string>
+	<string name="table_balance_hero_seat">HERO座位: %1$d号</string>
 </resources>

@@ -153,6 +153,7 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 .claude
+CLAUDE.md
 
 ### AndroidStudio Patch ###
 

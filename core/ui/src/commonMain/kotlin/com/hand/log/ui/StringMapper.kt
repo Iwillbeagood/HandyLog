@@ -51,12 +51,13 @@ fun GameType.localizedLabel(): String = when (this) {
 
 @Composable
 fun PlayerTendency.localizedLabel(): String = when (this) {
-	PlayerTendency.TIGHT -> stringResource(Res.string.tendency_tight)
-	PlayerTendency.LOOSE -> stringResource(Res.string.tendency_loose)
-	PlayerTendency.AGGRESSIVE -> stringResource(Res.string.tendency_aggressive)
-	PlayerTendency.PASSIVE -> stringResource(Res.string.tendency_passive)
-	PlayerTendency.NIT -> stringResource(Res.string.tendency_nit)
-	PlayerTendency.MANIAC -> stringResource(Res.string.tendency_maniac)
+	PlayerTendency.TIGHT_AGGRESSIVE -> stringResource(Res.string.tendency_tight_aggressive)
+	PlayerTendency.TIGHT_PASSIVE -> stringResource(Res.string.tendency_tight_passive)
+	PlayerTendency.LOOSE_AGGRESSIVE -> stringResource(Res.string.tendency_loose_aggressive)
+	PlayerTendency.LOOSE_PASSIVE -> stringResource(Res.string.tendency_loose_passive)
+	PlayerTendency.SHARK -> stringResource(Res.string.tendency_shark)
+	PlayerTendency.REGULAR -> stringResource(Res.string.tendency_regular)
+	PlayerTendency.FISH -> stringResource(Res.string.tendency_fish)
 	PlayerTendency.UNKNOWN -> stringResource(Res.string.tendency_unknown)
 }
 

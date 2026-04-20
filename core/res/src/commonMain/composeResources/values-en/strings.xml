@@ -27,6 +27,8 @@
 	<string name="home_table_deleted">Table deleted</string>
 	<string name="home_hand_count">%d hands recorded</string>
 	<string name="home_player_count">%d players</string>
+	<string name="home_tab_table">Tables</string>
+	<string name="home_tab_hand">Hands</string>
 
 	<!-- Table Detail -->
 	<string name="table_detail_tournament">Tournament</string>
@@ -112,6 +114,7 @@
 	<string name="hand_detail_text_shared">Text shared</string>
 	<string name="hand_detail_image_shared">Image shared</string>
 
+
 	<!-- Action Types -->
 	<string name="action_fold">Fold</string>
 	<string name="action_check">Check</string>
@@ -169,4 +172,12 @@
 
 	<!-- Hand Record Card -->
 	<string name="hand_record_later">Later record</string>
+	<string name="player_position_setup_title">Player Position Setup</string>
+	<string name="player_position_setup_desc">Select seats where players are sitting</string>
+	<string name="player_position_setup_hero">HERO</string>
+	<string name="player_position_setup_skip">Skip</string>
+	<string name="player_position_setup_count">%1$d / %2$d selected</string>
+	<string name="table_balance">Table Balance</string>
+	<string name="table_balance_player_count">Players: %1$d / %2$d</string>
+	<string name="table_balance_hero_seat">HERO Seat: #%1$d</string>
 </resources>

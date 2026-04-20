@@ -30,6 +30,8 @@
 	<string name="home_table_deleted">테이블이 삭제되었습니다</string>
 	<string name="home_hand_count">%1$d개 핸드 기록</string>
 	<string name="home_player_count">%1$d명</string>
+	<string name="home_tab_table">테이블</string>
+	<string name="home_tab_hand">핸드 기록</string>
 
 	<!-- Table Detail -->
 	<string name="table_detail_tournament">토너먼트</string>
@@ -119,6 +121,7 @@
 	<string name="hand_detail_delete_description">이 핸드 기록을 삭제하시겠습니까?</string>
 	<string name="hand_detail_image_shared">이미지가 공유되었습니다</string>
 
+
 	<!-- Action Types -->
 	<string name="action_fold">폴드</string>
 	<string name="action_check">체크</string>
@@ -192,7 +195,18 @@
 	<string name="table_edit_button">수정 완료</string>
 	<string name="table_edit_create_button">테이블 생성</string>
 
+	<!-- Player Position Setup -->
+	<string name="player_position_setup_title">플레이어 위치 설정</string>
+	<string name="player_position_setup_desc">플레이어가 앉아 있는 좌석을 선택하세요</string>
+	<string name="player_position_setup_hero">HERO</string>
+	<string name="player_position_setup_skip">건너뛰기</string>
+	<string name="player_position_setup_count">%1$d / %2$d명 선택</string>
+	<string name="table_balance_player_count">플레이어 수</string>
+	<string name="table_balance_hero_seat">HERO 좌석: %1$d번</string>
+	<string name="table_balance_seat_select_desc">좌석을 선택하세요 (%1$d / %2$d)</string>
+
 	<!-- Misc -->
+	<string name="table_balance">테이블 밸런싱</string>
 	<string name="table_default_name">테이블</string>
 	<string name="next_raise_bet">벳</string>
 	<string name="next_raise_raise">레이즈</string>
@@ -209,12 +223,13 @@
 	<string name="game_type_cash">캐시</string>
 
 	<!-- Player Tendency -->
-	<string name="tendency_tight">타이트</string>
-	<string name="tendency_loose">루즈</string>
-	<string name="tendency_aggressive">어그레시브</string>
-	<string name="tendency_passive">패시브</string>
-	<string name="tendency_nit">닛</string>
-	<string name="tendency_maniac">매니악</string>
+	<string name="tendency_tight_aggressive">타이트 어그레시브</string>
+	<string name="tendency_tight_passive">타이트 패시브</string>
+	<string name="tendency_loose_aggressive">루즈 어그레시브</string>
+	<string name="tendency_loose_passive">루즈 패시브</string>
+	<string name="tendency_shark">샤크</string>
+	<string name="tendency_regular">레귤러</string>
+	<string name="tendency_fish">피쉬</string>
 	<string name="tendency_unknown">알 수 없음</string>
 
 	<!-- Theme Mode -->

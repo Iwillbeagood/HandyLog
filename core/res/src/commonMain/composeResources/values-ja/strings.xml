@@ -27,6 +27,8 @@
 	<string name="home_table_deleted">テーブルが削除されました</string>
 	<string name="home_hand_count">%d件のハンド記録</string>
 	<string name="home_player_count">%d人</string>
+	<string name="home_tab_table">テーブル</string>
+	<string name="home_tab_hand">ハンド記録</string>
 
 	<!-- Table Detail -->
 	<string name="table_detail_tournament">トーナメント</string>
@@ -112,6 +114,7 @@
 	<string name="hand_detail_text_shared">テキストを共有しました</string>
 	<string name="hand_detail_image_shared">画像を共有しました</string>
 
+
 	<!-- Action Types -->
 	<string name="action_fold">フォールド</string>
 	<string name="action_check">チェック</string>
@@ -169,4 +172,12 @@
 
 	<!-- Hand Record Card -->
 	<string name="hand_record_later">後日記録</string>
+	<string name="player_position_setup_title">プレイヤー位置設定</string>
+	<string name="player_position_setup_desc">プレイヤーが座っている席を選択してください</string>
+	<string name="player_position_setup_hero">HERO</string>
+	<string name="player_position_setup_skip">スキップ</string>
+	<string name="player_position_setup_count">%1$d / %2$d名選択</string>
+	<string name="table_balance">テーブルバランス</string>
+	<string name="table_balance_player_count">プレイヤー数: %1$d / %2$d</string>
+	<string name="table_balance_hero_seat">HERO席: %1$d番</string>
 </resources>
