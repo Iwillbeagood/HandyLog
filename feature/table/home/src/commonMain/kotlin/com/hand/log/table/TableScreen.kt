@@ -55,6 +55,7 @@ internal fun TableScreen(
 	onShowDeleteConfirm: () -> Unit,
 	onSeatClick: (Int) -> Unit,
 	onShowTableEdit: () -> Unit,
+	onBalanceClick: () -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
 	val typography = HandyTheme.typography
@@ -77,7 +78,7 @@ internal fun TableScreen(
 								onClick = onShowDeleteConfirm,
 							)
 							TopAppbarIcon(
-								icon = Res.drawable.settings,
+								icon = Res.drawable.pencil,
 								onClick = onShowTableEdit,
 							)
 						}
@@ -130,6 +131,7 @@ internal fun TableScreen(
 			TableContent(
 				state = data,
 				onSeatClick = onSeatClick,
+				onBalanceClick = onBalanceClick,
 				onNavigateToHandDetail = onNavigateToHandDetail,
 			)
 		}
@@ -141,6 +143,7 @@ internal fun TableScreen(
 private fun TableContent(
 	state: TableState.TableData,
 	onSeatClick: (Int) -> Unit,
+	onBalanceClick: () -> Unit,
 	onNavigateToHandDetail: (String) -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
@@ -154,6 +157,7 @@ private fun TableContent(
 			PokerTableView(
 				table = state.table,
 				onSeatClick = onSeatClick,
+				onBalanceClick = onBalanceClick,
 				modifier = Modifier
 					.fillMaxWidth()
 					.padding(vertical = 8.dp),
@@ -276,6 +280,7 @@ private fun TableScreenPreview() {
 			onSeatClick = {},
 			onShowTableEdit = {},
 			onShowDeleteConfirm = {},
+			onBalanceClick = {},
 		)
 	}
 }
@@ -302,6 +307,7 @@ private fun TableScreenEmptyPreview() {
 			onSeatClick = {},
 			onShowTableEdit = {},
 			onShowDeleteConfirm = {},
+			onBalanceClick = {},
 		)
 	}
 }

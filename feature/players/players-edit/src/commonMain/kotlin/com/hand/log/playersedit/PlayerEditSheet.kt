@@ -84,7 +84,9 @@ fun PlayerEditSheet(
 			name = name,
 			onNameChange = { name = it },
 			tendency = tendency,
-			onTendencyChange = { tendency = it },
+			onTendencySelect = { t ->
+				tendency = if (tendency == t) null else t
+			},
 			memo = memo,
 			onMemoChange = { memo = it },
 		)
@@ -97,7 +99,7 @@ private fun PlayerEditFields(
 	name: String,
 	onNameChange: (String) -> Unit,
 	tendency: PlayerTendency?,
-	onTendencyChange: (PlayerTendency?) -> Unit,
+	onTendencySelect: (PlayerTendency) -> Unit,
 	memo: String,
 	onMemoChange: (String) -> Unit,
 ) {
@@ -115,18 +117,17 @@ private fun PlayerEditFields(
 		horizontalArrangement = Arrangement.spacedBy(6.dp),
 		verticalArrangement = Arrangement.spacedBy(6.dp),
 	) {
-		val options = listOf<PlayerTendency?>(null) + PlayerTendency.entries
-		options.forEach { option ->
-			val isSelected = option == tendency
+		PlayerTendency.entries.forEach { t ->
+			val isSelected = t == tendency
 			Box(
 				modifier = Modifier
 					.clip(RoundedCornerShape(8.dp))
 					.background(if (isSelected) colors.primary else colors.muted)
-					.clickable { onTendencyChange(option) }
+					.clickable { onTendencySelect(t) }
 					.padding(horizontal = 12.dp, vertical = 6.dp),
 			) {
 				Text(
-					text = option?.localizedLabel() ?: stringResource(Res.string.player_tendency_none),
+					text = t.localizedLabel(),
 					style = HandyTheme.typography.medium12,
 					color = if (isSelected) colors.onPrimary else colors.textSecondary,
 				)

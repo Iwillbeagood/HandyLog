@@ -7,6 +7,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.navigation.interop.LocalMainActionInterop
 import com.hand.log.playersetup.PlayerSetupSheet
+import com.hand.log.table.component.PlayerPositionSetupSheet
+import com.hand.log.table.component.TableBalanceSheet
 import com.hand.log.table.contract.TableEffect
 import com.hand.log.table.contract.TableModalEffect
 import com.hand.log.designsystem.component.modal.DefaultDialog
@@ -18,18 +20,11 @@ import handylog.core.res.generated.resources.*
 @Composable
 internal fun TableRoute(
 	viewModel: TableViewModel,
-	openSeat: Int = 0,
 ) {
 	val state by viewModel.state.collectAsStateWithLifecycle()
 	val modalEffect by viewModel.modalEffect.collectAsStateWithLifecycle()
 	val navAction = LocalNavigateActionInterop.current
 	val mainAction = LocalMainActionInterop.current
-
-	LaunchedEffect(openSeat) {
-		if (openSeat > 0) {
-			viewModel.showPlayerSetup(openSeat)
-		}
-	}
 
 	TableScreen(
 		state = state,
@@ -39,6 +34,7 @@ internal fun TableRoute(
 		onShowDeleteConfirm = viewModel::showDeleteConfirm,
 		onSeatClick = viewModel::showPlayerSetup,
 		onShowTableEdit = viewModel::showTableEdit,
+		onBalanceClick = viewModel::showTableBalance,
 	)
 
 	TableModalContent(
@@ -46,21 +42,19 @@ internal fun TableRoute(
 		onDismiss = viewModel::dismissModal,
 		onPlayerSaved = viewModel::onPlayerSaved,
 		onPlayerDeleted = viewModel::onPlayerDeleted,
-		onTableSaved = { isEdit -> viewModel.onTableSaved(isEdit) },
+		onTableSaved = viewModel::onTableSaved,
 		onDeleteTable = viewModel::deleteTable,
+		onPlayerPositionsConfirmed = viewModel::savePlayerPositions,
+		onPositionSetupDismiss = viewModel::dismissPositionSetup,
+		onBalanceConfirmed = viewModel::applyTableBalance,
 	)
 
 	LaunchedEffect(Unit) {
 		viewModel.effect.collect { effect ->
 			when (effect) {
-				is TableEffect.PlayerAdded -> mainAction.onShowToast(Res.string.table_detail_player_added)
-				is TableEffect.PlayerUpdated -> mainAction.onShowToast(Res.string.table_detail_player_updated)
-				is TableEffect.PlayerDeleted -> mainAction.onShowToast(Res.string.table_detail_player_deleted)
-				is TableEffect.HandDeleted -> mainAction.onShowToast(Res.string.table_detail_hand_deleted)
-				is TableEffect.TableCreated -> mainAction.onShowToast(Res.string.table_detail_table_created)
-				is TableEffect.TableUpdated -> mainAction.onShowToast(Res.string.table_detail_table_updated)
-				is TableEffect.TableDeleted -> {
-					mainAction.onShowToast(Res.string.home_table_deleted)
+				is TableEffect.ShowToast -> mainAction.onShowToast(effect.message)
+				is TableEffect.ShowToastAndPop -> {
+					mainAction.onShowToast(effect.message)
 					navAction.popBackStack()
 				}
 				is TableEffect.NavigateToRecordHand -> navAction.navigateToRecordHand(effect.tableId)
@@ -77,6 +71,9 @@ private fun TableModalContent(
 	onPlayerDeleted: () -> Unit,
 	onTableSaved: (Boolean) -> Unit,
 	onDeleteTable: () -> Unit,
+	onPlayerPositionsConfirmed: (Set<Int>) -> Unit,
+	onPositionSetupDismiss: () -> Unit,
+	onBalanceConfirmed: (heroSeat: Int, otherSeats: Set<Int>) -> Unit,
 ) {
 	when (modalEffect) {
 		TableModalEffect.Idle -> {}
@@ -109,6 +106,24 @@ private fun TableModalContent(
 				onDismissRequest = onDismiss,
 				onConfirmClick = onDeleteTable,
 				onDismissClick = onDismiss,
+			)
+		}
+
+		is TableModalEffect.ShowTableBalance -> {
+			TableBalanceSheet(
+				table = modalEffect.table,
+				onConfirm = onBalanceConfirmed,
+				onDismiss = onDismiss,
+			)
+		}
+
+		is TableModalEffect.ShowPlayerPositionSetup -> {
+			PlayerPositionSetupSheet(
+				maxPlayers = modalEffect.maxPlayers,
+				heroSeat = modalEffect.heroSeat,
+				playerCount = modalEffect.playerCount,
+				onConfirm = onPlayerPositionsConfirmed,
+				onDismiss = onPositionSetupDismiss,
 			)
 		}
 	}

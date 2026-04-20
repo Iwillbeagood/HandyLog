@@ -106,9 +106,19 @@ private fun PlayersScreenWithPlayersPreview() {
 		PlayersScreen(
 			state = PlayersState.Success(
 				players = listOf(
-					SavedPlayer(id = "1", name = "John", tendency = PlayerTendency.TIGHT, memo = "프리플랍 타이트"),
-					SavedPlayer(id = "2", name = "Mike", tendency = PlayerTendency.LOOSE),
-					SavedPlayer(id = "3", name = "Phil", tendency = PlayerTendency.MANIAC, memo = "3벳 빈도 높음"),
+					SavedPlayer(
+						id = "1",
+						name = "John",
+						tendency = PlayerTendency.TIGHT_AGGRESSIVE,
+						memo = "프리플랍 타이트",
+					),
+					SavedPlayer(id = "2", name = "Mike", tendency = PlayerTendency.LOOSE_AGGRESSIVE),
+					SavedPlayer(
+						id = "3",
+						name = "Phil",
+						tendency = PlayerTendency.SHARK,
+						memo = "3벳 빈도 높음",
+					),
 					SavedPlayer(id = "4", name = "Dan"),
 				),
 			),

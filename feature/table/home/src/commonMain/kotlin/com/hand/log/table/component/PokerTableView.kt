@@ -7,11 +7,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -37,10 +40,13 @@ import com.hand.log.domain.model.PokerTable
 import com.hand.log.ui.color.tendencyColor
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.arrow_down
+import handylog.core.res.generated.resources.arrow_right_left
 import handylog.core.res.generated.resources.crown
+import handylog.core.res.generated.resources.table_balance
 import handylog.core.res.generated.resources.user_round
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
@@ -49,6 +55,7 @@ import kotlin.math.sin
 internal fun PokerTableView(
 	table: PokerTable,
 	onSeatClick: (Int) -> Unit = {},
+	onBalanceClick: () -> Unit = {},
 	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme
@@ -80,11 +87,27 @@ internal fun PokerTableView(
 					.border(2.dp, colors.feltLight, RoundedCornerShape(40)),
 				contentAlignment = Alignment.Center,
 			) {
-				Text(
-					text = "POKER TABLE",
-					style = HandyTheme.typography.medium14.nonScaledSp,
-					color = colors.feltLight.copy(alpha = 0.4f),
-				)
+				Row(
+					modifier = Modifier
+						.clip(RoundedCornerShape(16.dp))
+						.background(colors.background.copy(alpha = 0.6f))
+						.clickableSingle(onClick = onBalanceClick)
+						.padding(horizontal = 14.dp, vertical = 6.dp),
+					verticalAlignment = Alignment.CenterVertically,
+				) {
+					Icon(
+						painter = painterResource(Res.drawable.arrow_right_left),
+						contentDescription = null,
+						tint = colors.primary,
+						modifier = Modifier.size(14.dp),
+					)
+					Spacer(modifier = Modifier.width(6.dp))
+					Text(
+						text = stringResource(Res.string.table_balance),
+						style = HandyTheme.typography.bold12.nonScaledSp,
+						color = colors.textPrimary,
+					)
+				}
 			}
 
 			val centerX = containerWidthPx / 2f
@@ -293,12 +316,12 @@ private fun PokerTableViewPreview() {
 				maxPlayers = 9,
 				heroSeat = 3,
 				players = listOf(
-					Player(seat = 1, name = "Fish", tendency = PlayerTendency.LOOSE),
-					Player(seat = 2, name = "Shark", tendency = PlayerTendency.AGGRESSIVE),
+					Player(seat = 1, name = "Fish", tendency = PlayerTendency.FISH),
+					Player(seat = 2, name = "Shark", tendency = PlayerTendency.SHARK),
 					Player(seat = 3, name = "Hero"),
-					Player(seat = 5, name = "Nit", tendency = PlayerTendency.NIT),
-					Player(seat = 7, tendency = PlayerTendency.MANIAC),
-					Player(seat = 9, name = "Tag", tendency = PlayerTendency.TIGHT),
+					Player(seat = 5, name = "Reg", tendency = PlayerTendency.REGULAR),
+					Player(seat = 7, tendency = PlayerTendency.LOOSE_AGGRESSIVE),
+					Player(seat = 9, name = "Tag", tendency = PlayerTendency.TIGHT_AGGRESSIVE),
 				),
 				createdAt = 1710000000000L,
 			),
@@ -322,7 +345,7 @@ private fun PokerTableView6MaxPreview() {
 				heroSeat = 1,
 				players = listOf(
 					Player(seat = 1, name = "Hero"),
-					Player(seat = 4, name = "Villain", tendency = PlayerTendency.PASSIVE),
+					Player(seat = 4, name = "Villain", tendency = PlayerTendency.TIGHT_PASSIVE),
 				),
 				createdAt = 1710000000000L,
 			),

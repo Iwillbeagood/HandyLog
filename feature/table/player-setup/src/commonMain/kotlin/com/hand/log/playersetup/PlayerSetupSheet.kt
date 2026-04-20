@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -103,7 +104,7 @@ fun PlayerSetupSheet(
 		maxSeat = maxSeat,
 		warningMessage = warningMessage,
 		onNameChange = viewModel::updateName,
-		onTendencyChange = viewModel::updateTendency,
+		onTendencySelect = viewModel::selectTendency,
 		onMemoChange = viewModel::updateMemo,
 		onSeatChange = viewModel::updateSeat,
 		onQuickLoadSavedPlayer = viewModel::loadSavedPlayerAndSave,
@@ -122,7 +123,7 @@ fun PlayerSetupContent(
 	maxSeat: Int,
 	warningMessage: String? = null,
 	onNameChange: (String) -> Unit,
-	onTendencyChange: (PlayerTendency?) -> Unit,
+	onTendencySelect: (PlayerTendency) -> Unit,
 	onMemoChange: (String) -> Unit,
 	onSeatChange: (Int) -> Unit,
 	onQuickLoadSavedPlayer: (SavedPlayer) -> Unit,
@@ -213,7 +214,7 @@ fun PlayerSetupContent(
 						modifier = Modifier
 							.clip(RoundedCornerShape(8.dp))
 							.background(if (isSelected) colors.primary else colors.muted)
-							.clickable { onTendencyChange(tendency) }
+							.clickable { onTendencySelect(tendency) }
 							.padding(horizontal = 12.dp, vertical = 6.dp),
 					) {
 						Text(
@@ -231,6 +232,7 @@ fun PlayerSetupContent(
 			value = state.playerMemo,
 			onValueChange = onMemoChange,
 			label = stringResource(Res.string.player_memo),
+			innerModifier = Modifier.heightIn(min = 120.dp),
 		)
 
 		VerticalSpacer(4.dp)
@@ -269,12 +271,19 @@ private fun PlayerSetupContentPreview() {
 	ThemePreview {
 		PlayerSetupContent(
 			state = PlayerSetupState(
-				player = Player(seat = 3, name = "John", tendency = PlayerTendency.NIT, memo = "타이트"),
+				player = Player(
+					seat = 3,
+					name = "John",
+					tendency = PlayerTendency.TIGHT_AGGRESSIVE,
+					memo = "타이트",
+				),
 				occupiedSeats = setOf(1, 2, 5),
 			),
-			savedPlayers = listOf(SavedPlayer(id = "1", name = "Mike", tendency = PlayerTendency.LOOSE)),
+			savedPlayers = listOf(
+				SavedPlayer(id = "1", name = "Mike", tendency = PlayerTendency.LOOSE_AGGRESSIVE),
+			),
 			maxSeat = 9,
-			onNameChange = {}, onTendencyChange = {}, onMemoChange = {},
+			onNameChange = {}, onTendencySelect = {}, onMemoChange = {},
 			onSeatChange = {}, onQuickLoadSavedPlayer = {}, onSaveToMarkingChange = {},
 			onClearSeatClick = {}, onSaveClick = {}, onDismiss = {},
 		)
@@ -289,7 +298,7 @@ private fun PlayerSetupContentEmptyPreview() {
 			state = PlayerSetupState(player = Player(seat = 1)),
 			savedPlayers = emptyList(),
 			maxSeat = 9,
-			onNameChange = {}, onTendencyChange = {}, onMemoChange = {},
+			onNameChange = {}, onTendencySelect = {}, onMemoChange = {},
 			onSeatChange = {}, onQuickLoadSavedPlayer = {}, onSaveToMarkingChange = {},
 			onClearSeatClick = {}, onSaveClick = {}, onDismiss = {},
 		)

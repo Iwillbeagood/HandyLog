@@ -3,6 +3,7 @@ package com.hand.log.table.contract
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.hand.log.domain.model.Player
+import com.hand.log.domain.model.PokerTable
 
 @Stable
 internal sealed interface TableModalEffect {
@@ -21,9 +22,22 @@ internal sealed interface TableModalEffect {
 
 	@Immutable
 	data class ShowTableEdit(
-		val table: com.hand.log.domain.model.PokerTable,
+		val table: PokerTable,
 	) : TableModalEffect
 
 	@Immutable
 	data object ShowDeleteConfirm : TableModalEffect
+
+	@Immutable
+	data class ShowTableBalance(
+		val table: PokerTable,
+	) : TableModalEffect
+
+	@Immutable
+	data class ShowPlayerPositionSetup(
+		val tableId: String,
+		val maxPlayers: Int,
+		val heroSeat: Int,
+		val playerCount: Int = 0,
+	) : TableModalEffect
 }

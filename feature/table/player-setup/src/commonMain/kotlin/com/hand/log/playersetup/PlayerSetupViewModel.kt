@@ -55,8 +55,10 @@ class PlayerSetupViewModel(
 		updatePlayer { copy(name = name.ifBlank { null }) }
 	}
 
-	fun updateTendency(tendency: PlayerTendency?) {
-		updatePlayer { copy(tendency = tendency) }
+	fun selectTendency(tendency: PlayerTendency) {
+		updatePlayer {
+			copy(tendency = if (this.tendency == tendency) null else tendency)
+		}
 	}
 
 	fun updateMemo(memo: String) {
@@ -69,7 +71,12 @@ class PlayerSetupViewModel(
 
 	fun loadSavedPlayer(saved: SavedPlayer) {
 		updatePlayer {
-			copy(name = saved.name, tendency = saved.tendency, memo = saved.memo, savedPlayerId = saved.id)
+			copy(
+				name = saved.name,
+				tendency = saved.tendency,
+				memo = saved.memo,
+				savedPlayerId = saved.id,
+			)
 		}
 	}
 

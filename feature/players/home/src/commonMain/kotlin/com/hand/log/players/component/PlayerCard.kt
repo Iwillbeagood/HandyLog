@@ -139,7 +139,7 @@ private fun PlayerCardPreview() {
 			player = SavedPlayer(
 				id = "1",
 				name = "John",
-				tendency = PlayerTendency.TIGHT,
+				tendency = PlayerTendency.TIGHT_AGGRESSIVE,
 				memo = "프리플랍 타이트, 포스트플랍 어그레시브",
 			),
 			onClick = {},
@@ -169,13 +169,13 @@ private fun PlayerCardNoTendencyPreview() {
 
 @ThemePreviews
 @Composable
-private fun PlayerCardManiacPreview() {
+private fun PlayerCardMultiTendencyPreview() {
 	ThemePreview {
 		PlayerCard(
 			player = SavedPlayer(
 				id = "3",
 				name = "Phil",
-				tendency = PlayerTendency.MANIAC,
+				tendency = PlayerTendency.LOOSE_AGGRESSIVE,
 				memo = "3벳 빈도 높음, 블러프 많이 함",
 			),
 			onClick = {},
