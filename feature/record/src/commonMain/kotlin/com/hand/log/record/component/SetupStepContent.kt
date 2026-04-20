@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -28,6 +30,7 @@ import com.hand.log.domain.model.GameType
 import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.model.Rank
+import com.hand.log.domain.model.Street
 import com.hand.log.domain.model.Suit
 import com.hand.log.record.contract.RecordHandState
 import com.hand.log.record.model.RecordPlayers
@@ -43,6 +46,7 @@ import handylog.core.res.generated.resources.*
 internal fun SetupStepContent(
 	state: RecordHandState.Recording,
 	onSelectHeroCard: () -> Unit,
+	onSelectBoardCards: () -> Unit,
 	onUpdateHeroStack: (String) -> Unit,
 	onUpdateButtonSeat: (Int) -> Unit,
 	onUpdateBlinds: (String, String) -> Unit,
@@ -64,6 +68,50 @@ internal fun SetupStepContent(
 			HeroCardAnimated(
 				card = state.heroHand?.card2,
 				index = 1,
+			)
+		}
+
+		VerticalSpacer(16.dp)
+		HandySectionLabel(stringResource(Res.string.board_cards))
+		Row(
+			horizontalArrangement = Arrangement.spacedBy(4.dp),
+			verticalAlignment = Alignment.CenterVertically,
+			modifier = Modifier.clickable { onSelectBoardCards() },
+		) {
+			val flopCards = state.streets.getCards(Street.FLOP)
+			val turnCards = state.streets.getCards(Street.TURN)
+			val riverCards = state.streets.getCards(Street.RIVER)
+			// Flop (3 slots)
+			(0 until 3).forEach { index ->
+				PlayingCard(
+					card = flopCards.getOrNull(index),
+					size = CardSize.MD,
+					faceDown = flopCards.getOrNull(index) == null,
+				)
+			}
+			// Turn separator + slot
+			Text(
+				text = "|",
+				style = HandyTheme.typography.regular14,
+				color = colors.textSecondary,
+				modifier = Modifier.padding(horizontal = 2.dp),
+			)
+			PlayingCard(
+				card = turnCards.firstOrNull(),
+				size = CardSize.MD,
+				faceDown = turnCards.firstOrNull() == null,
+			)
+			// River separator + slot
+			Text(
+				text = "|",
+				style = HandyTheme.typography.regular14,
+				color = colors.textSecondary,
+				modifier = Modifier.padding(horizontal = 2.dp),
+			)
+			PlayingCard(
+				card = riverCards.firstOrNull(),
+				size = CardSize.MD,
+				faceDown = riverCards.firstOrNull() == null,
 			)
 		}
 
@@ -165,6 +213,7 @@ private fun SetupStepContentEmptyPreview() {
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
 			),
 			onSelectHeroCard = {},
+			onSelectBoardCards = {},
 			onUpdateHeroStack = {},
 			onUpdateButtonSeat = {},
 			onUpdateBlinds = { _, _ -> },
@@ -192,6 +241,7 @@ private fun SetupStepContentFilledPreview() {
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
 			),
 			onSelectHeroCard = {},
+			onSelectBoardCards = {},
 			onUpdateHeroStack = {},
 			onUpdateButtonSeat = {},
 			onUpdateBlinds = { _, _ -> },
@@ -219,6 +269,7 @@ private fun SetupStepContentTournamentPreview() {
 				blinds = Blinds(sb = 50.0, bb = 100.0, isBigBlindAnte = true),
 			),
 			onSelectHeroCard = {},
+			onSelectBoardCards = {},
 			onUpdateHeroStack = {},
 			onUpdateButtonSeat = {},
 			onUpdateBlinds = { _, _ -> },

@@ -124,6 +124,7 @@ private fun RecordHandContent(
 			editingActionIndex = editingActionIndex,
 			onBack = onBack,
 			onSelectHeroCard = viewModel::selectHeroCard,
+			onSelectAllBoardCards = viewModel::selectAllBoardCards,
 			onSelectBoardCard = viewModel::selectBoardCard,
 			onSelectSingleBoardCard = viewModel::selectSingleBoardCard,
 			onUpdateHeroStack = viewModel::updateHeroStack,
@@ -169,6 +170,7 @@ private fun RecordHandModalContent(
 			val isShowdown = modalEffect.target is CardSelectorTarget.ShowdownCard
 			val title = when (val target = modalEffect.target) {
 				is CardSelectorTarget.HeroCard -> stringResource(Res.string.card_selector_hero)
+				is CardSelectorTarget.AllBoardCards -> stringResource(Res.string.board_cards)
 				is CardSelectorTarget.BoardCard -> stringResource(
 					Res.string.card_selector_board,
 					target.street.localizedLabel(),
@@ -193,6 +195,7 @@ private fun RecordHandModalContent(
 				} else {
 					null
 				},
+				heroHand = modalEffect.heroHand,
 			)
 		}
 

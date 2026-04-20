@@ -102,6 +102,15 @@ internal class RecordHandViewModel(
 		)
 	}
 
+	fun selectAllBoardCards() {
+		val current = recording ?: return
+		val existingBoardCards = current.streets.boardCards.toSet()
+		showCardSelector(
+			target = CardSelectorTarget.AllBoardCards(),
+			usedCards = current.selectedCards - existingBoardCards,
+		)
+	}
+
 	fun selectBoardCard(street: Street) {
 		val current = recording ?: return
 		val existingCards = current.streets.getCards(street).toSet()
@@ -141,10 +150,14 @@ internal class RecordHandViewModel(
 		usedCards: Set<Card>,
 		allowUnknown: Boolean = true,
 	) {
+		val isBoardSelector = target is CardSelectorTarget.AllBoardCards ||
+			target is CardSelectorTarget.BoardCard ||
+			target is CardSelectorTarget.SingleBoardCard
 		_modalEffect.value = RecordHandModalEffect.ShowCardSelector(
 			target = target,
 			selectedCards = usedCards,
 			allowUnknown = allowUnknown,
+			heroHand = if (isBoardSelector) recording?.heroHand else null,
 		)
 	}
 
@@ -157,8 +170,24 @@ internal class RecordHandViewModel(
 				val newHeroHand = if (cards.size >= 2) PocketCards(cards[0], cards[1]) else null
 				updateRecording { copy(heroHand = newHeroHand) }
 				if (newHeroHand != null) {
-					viewModelScope.launch { _effect.emit(RecordHandEffect.FocusHeroStack) }
+					dismissModal()
+					selectAllBoardCards()
+					return
 				}
+			}
+
+			is CardSelectorTarget.AllBoardCards -> {
+				val flopCards = cards.take(3)
+				val turnCard = cards.getOrNull(3)?.let { listOf(it) } ?: emptyList()
+				val riverCard = cards.getOrNull(4)?.let { listOf(it) } ?: emptyList()
+				updateRecording {
+					var updated = streets
+					if (flopCards.isNotEmpty()) updated = updated.setCards(Street.FLOP, flopCards)
+					if (turnCard.isNotEmpty()) updated = updated.setCards(Street.TURN, turnCard)
+					if (riverCard.isNotEmpty()) updated = updated.setCards(Street.RIVER, riverCard)
+					copy(streets = updated)
+				}
+				viewModelScope.launch { _effect.emit(RecordHandEffect.FocusHeroStack) }
 			}
 
 			is CardSelectorTarget.BoardCard -> {

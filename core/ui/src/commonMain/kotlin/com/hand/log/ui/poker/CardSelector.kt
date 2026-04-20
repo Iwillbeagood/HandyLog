@@ -32,6 +32,7 @@ import com.hand.log.designsystem.component.modal.SheetDragBlocker
 import com.hand.log.designsystem.theme.HandyTheme
 import org.jetbrains.compose.resources.painterResource
 import com.hand.log.domain.model.Card
+import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.Suit
 
@@ -44,6 +45,7 @@ fun CardSelectorSheet(
 	onCardsSelected: (List<Card>) -> Unit,
 	onDismiss: () -> Unit,
 	onUnknownSelected: (() -> Unit)? = null,
+	heroHand: PocketCards? = null,
 	modifier: Modifier = Modifier,
 ) {
 	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -80,6 +82,18 @@ fun CardSelectorSheet(
 					style = HandyTheme.typography.medium14,
 					color = if (pickedCards.size == maxCards) colors.primary else colors.textSecondary,
 				)
+			}
+
+			// Hero hand preview
+			if (heroHand != null) {
+				Row(
+					horizontalArrangement = Arrangement.spacedBy(8.dp),
+					verticalAlignment = Alignment.CenterVertically,
+					modifier = Modifier.padding(bottom = 12.dp),
+				) {
+					PlayingCard(card = heroHand.card1, size = CardSize.MD)
+					PlayingCard(card = heroHand.card2, size = CardSize.MD)
+				}
 			}
 
 			// Selected cards preview

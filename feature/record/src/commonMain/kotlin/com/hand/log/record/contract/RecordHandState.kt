@@ -175,7 +175,16 @@ internal sealed interface RecordHandState {
 				if (!isShowdownComplete || streets.boardCards.size != 5) return emptyList()
 				val knownEntries = showdownEntries.filter { !showdown.isUnknown(it.seat) }
 				if (knownEntries.size < 2) return emptyList()
-				return HandEvaluator.calculateShowdown(streets.boardCards, knownEntries)
+
+				val hasUnknownPlayers = remainingSeats.any { seat ->
+					seat != table?.heroSeat && showdown.isUnknown(seat)
+				}
+				val results = HandEvaluator.calculateShowdown(streets.boardCards, knownEntries)
+				if (hasUnknownPlayers) {
+					// 미공개 플레이어가 있으면 승자 판정 불가 — 족보만 표시
+					return results.map { it.copy(outcome = ShowdownOutcome.LOSE) }
+				}
+				return results
 			}
 
 		// --- Blinds ---
@@ -282,10 +291,14 @@ internal sealed interface RecordHandState {
 					val potForLevel = diff * eligibleSeats.size
 
 					// eligible 플레이어끼리 핸드 비교하여 팟별 승자 결정
+					val eligibleRemaining = eligibleSeats.intersect(remainingSeats.toSet())
+					val hasUnknownEligible = eligibleRemaining.any { seat ->
+						seat != table?.heroSeat && showdown.isUnknown(seat)
+					}
 					val eligibleEntries = showdownEntries.filter {
 						it.seat in eligibleSeats && !showdown.isUnknown(it.seat)
 					}
-					val eligibleShowdown = if (eligibleEntries.size >= 2 && streets.boardCards.size == 5) {
+					val eligibleShowdown = if (!hasUnknownEligible && eligibleEntries.size >= 2 && streets.boardCards.size == 5) {
 						HandEvaluator.calculateShowdown(streets.boardCards, eligibleEntries)
 					} else {
 						emptyList()
