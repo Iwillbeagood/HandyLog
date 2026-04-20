@@ -20,7 +20,8 @@ interface PokerTableDao {
 	@Query(
 		"""UPDATE poker_tables SET
 		date = :date, location = :location, gameType = :gameType,
-		maxPlayers = :maxPlayers, heroSeat = :heroSeat
+		maxPlayers = :maxPlayers, heroSeat = :heroSeat,
+		hasShownPositionSetup = :hasShownPositionSetup
 		WHERE id = :id""",
 	)
 	suspend fun updateTableInfo(
@@ -30,6 +31,7 @@ interface PokerTableDao {
 		gameType: String,
 		maxPlayers: Int,
 		heroSeat: Int,
+		hasShownPositionSetup: Boolean,
 	)
 
 	@Delete

@@ -11,6 +11,7 @@ data class PokerTable(
 	val heroSeat: Int,
 	val players: List<Player> = emptyList(),
 	val createdAt: Long,
+	val hasShownPositionSetup: Boolean = false,
 ) {
 	val playerCount: Int get() = players.size
 }

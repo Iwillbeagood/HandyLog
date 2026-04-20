@@ -59,7 +59,7 @@ internal class SavedPlayerLocalDataSourceImpl(
 	private fun SavedPlayerEntity.toDomain(): SavedPlayer = SavedPlayer(
 		id = id,
 		name = name,
-		tendency = tendency?.let { PlayerTendency.valueOf(it) },
+		tendency = tendency?.let { PlayerTendency.valueOf(it.trim()) },
 		memo = memo,
 		createdAt = createdAt,
 	)

@@ -21,7 +21,7 @@ import com.hand.log.database.entity.TablePlayerEntity
 		HandRecordEntity::class,
 		SavedPlayerEntity::class,
 	],
-	version = 1,
+	version = 2,
 )
 @TypeConverters(Converters::class)
 @ConstructedBy(AppDatabaseConstructor::class)

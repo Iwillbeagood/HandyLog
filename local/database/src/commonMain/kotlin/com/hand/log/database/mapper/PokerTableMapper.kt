@@ -31,13 +31,14 @@ fun PokerTableEntity.toDomain(playerEntities: List<TablePlayerEntity>): PokerTab
 		heroSeat = heroSeat,
 		players = players,
 		createdAt = createdAt,
+		hasShownPositionSetup = hasShownPositionSetup,
 	)
 }
 
 fun TablePlayerEntity.toDomain(): Player = Player(
 	id = id,
 	seat = seat,
-	tendency = tendency?.let { PlayerTendency.valueOf(it) },
+	tendency = tendency?.let { PlayerTendency.valueOf(it.trim()) },
 	memo = memo,
 	name = name,
 	savedPlayerId = savedPlayerId,
@@ -61,4 +62,5 @@ fun PokerTable.toEntity(createdAt: Long): PokerTableEntity = PokerTableEntity(
 	maxPlayers = maxPlayers,
 	heroSeat = heroSeat,
 	createdAt = createdAt,
+	hasShownPositionSetup = hasShownPositionSetup,
 )

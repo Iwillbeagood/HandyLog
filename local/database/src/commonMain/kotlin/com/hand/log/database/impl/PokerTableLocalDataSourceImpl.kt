@@ -67,6 +67,7 @@ internal class PokerTableLocalDataSourceImpl(
 			gameType = json.encodeToString(GameType.serializer(), table.gameType),
 			maxPlayers = table.maxPlayers,
 			heroSeat = table.heroSeat,
+			hasShownPositionSetup = table.hasShownPositionSetup,
 		)
 	}
 
