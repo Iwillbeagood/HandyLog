@@ -53,10 +53,6 @@ internal class MainNavigator {
 		override fun navigateToBetSizeSettings() {
 			navigate(BetSizeSettings)
 		}
-
-		override fun navigateToPlayers(tableId: String, openSeat: Int) {
-			navigate(Table(tableId, openSeat))
-		}
 	}
 
 	fun navigate(
