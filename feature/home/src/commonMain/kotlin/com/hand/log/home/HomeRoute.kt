@@ -4,10 +4,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hand.log.domain.model.PokerTable
 import com.hand.log.home.contract.HomeEffect
 import com.hand.log.home.contract.HomeModalEffect
 import com.hand.log.navigation.interop.LocalMainActionInterop
@@ -22,11 +20,10 @@ internal fun HomeRoute(
 	viewModel: HomeViewModel,
 ) {
 	val homeState by viewModel.homeState.collectAsStateWithLifecycle()
+	val selectedTab by viewModel.selectedTab.collectAsStateWithLifecycle()
 	val homeModalEffect by viewModel.homeModalEffect.collectAsStateWithLifecycle()
 	val navAction = LocalNavigateActionInterop.current
 	val mainAction = LocalMainActionInterop.current
-
-	var showSetupSheet by remember { mutableStateOf(false) }
 
 	LaunchedEffect(Unit) {
 		viewModel.homeEffect.collect { effect ->
@@ -43,31 +40,35 @@ internal fun HomeRoute(
 
 	HomeScreen(
 		homeState = homeState,
+		selectedTab = selectedTab,
+		onTabSelect = viewModel::selectTab,
 		onNavigateToTableDetail = navAction::navigateToTableDetail,
-		onTableAdd = { showSetupSheet = true },
+		onNavigateToHandDetail = navAction::navigateToHandDetail,
+		onTableAdd = viewModel::showTableEditSheet,
 	)
 
 	HomeModalContent(
 		homeModalEffect = homeModalEffect,
 		onDismissRequest = viewModel::dismissDialog,
+		onTableSaved = { table ->
+			viewModel.onTableSaved(table)
+		},
 	)
-
-	if (showSetupSheet) {
-		TableEditSheet(
-			onSaved = { table, _ ->
-				navAction.navigateToTableDetail(table.id)
-			},
-			onDismiss = { showSetupSheet = false },
-		)
-	}
 }
 
 @Composable
 private fun HomeModalContent(
 	homeModalEffect: HomeModalEffect,
 	onDismissRequest: () -> Unit,
+	onTableSaved: (PokerTable) -> Unit,
 ) {
 	when (homeModalEffect) {
 		HomeModalEffect.Idle -> {}
+		HomeModalEffect.TableEditSheet -> {
+			TableEditSheet(
+				onSaved = { table, _ -> onTableSaved(table) },
+				onDismiss = onDismissRequest,
+			)
+		}
 	}
 }

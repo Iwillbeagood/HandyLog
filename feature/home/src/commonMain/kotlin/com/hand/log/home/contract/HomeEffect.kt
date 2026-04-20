@@ -8,6 +8,9 @@ internal sealed interface HomeModalEffect {
 
 	@Immutable
 	data object Idle : HomeModalEffect
+
+	@Immutable
+	data object TableEditSheet : HomeModalEffect
 }
 
 @Stable
