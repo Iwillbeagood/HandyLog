@@ -47,6 +47,9 @@ internal fun HandDetailScreen(
 	onShareImage: () -> Unit,
 	onDownloadImage: () -> Unit,
 	onMarkPlayer: (Int) -> Unit = {},
+	memo: String = "",
+	onMemoChange: (String) -> Unit = {},
+	onMemoSave: () -> Unit = {},
 	graphicsLayer: GraphicsLayer = rememberGraphicsLayer(),
 ) {
 	val success = state as? HandDetailState.Success
@@ -90,6 +93,9 @@ internal fun HandDetailScreen(
 				HandDetailContent(
 					hand = success.hand,
 					useBbUnit = success.useBbUnit,
+					memo = memo,
+					onMemoChange = onMemoChange,
+					onMemoSave = onMemoSave,
 					graphicsLayer = graphicsLayer,
 					onMarkPlayer = onMarkPlayer,
 				)

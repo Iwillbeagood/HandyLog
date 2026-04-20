@@ -26,21 +26,33 @@ internal fun HandDetailRoute(
 ) {
 	val state by viewModel.state.collectAsStateWithLifecycle()
 	val modalEffect by viewModel.modalEffect.collectAsStateWithLifecycle()
+	val memo by viewModel.memo.collectAsStateWithLifecycle()
 	val navAction = LocalNavigateActionInterop.current
 	val mainAction = LocalMainActionInterop.current
 	val shareManager = rememberShareManager()
 	val graphicsLayer = rememberGraphicsLayer()
 
+	val success = state as? com.hand.log.handdetail.contract.HandDetailState.Success
+	LaunchedEffect(success?.hand?.memo) {
+		success?.hand?.memo?.let { viewModel.initMemo(it) }
+	}
+
 	HandDetailScreen(
 		state = state,
 		onToggleBbUnit = viewModel::toggleBbUnit,
-		onBack = navAction::popBackStack,
+		onBack = {
+			viewModel.saveMemo()
+			navAction.popBackStack()
+		},
 		onEdit = { /* TODO */ },
 		onShowDeleteConfirm = viewModel::showDeleteConfirm,
 		onShareText = viewModel::shareText,
 		onShareImage = viewModel::shareImage,
 		onDownloadImage = viewModel::downloadImage,
 		onMarkPlayer = viewModel::showPlayerMark,
+		memo = memo,
+		onMemoChange = viewModel::updateMemo,
+		onMemoSave = viewModel::saveMemo,
 		graphicsLayer = graphicsLayer,
 	)
 
@@ -57,7 +69,6 @@ internal fun HandDetailRoute(
 				is HandDetailEffect.HandDeleted -> navAction.popBackStack()
 				is HandDetailEffect.ShareText -> {
 					shareManager.shareText(effect.text)
-					mainAction.onShowToast(Res.string.clipboard_copied)
 				}
 				is HandDetailEffect.ShareImage -> {
 					val bitmap = graphicsLayer.toImageBitmap()
@@ -74,7 +85,7 @@ internal fun HandDetailRoute(
 					)
 				}
 				is HandDetailEffect.NavigateToPlayers -> {
-					navAction.navigateToPlayers(effect.tableId, effect.seat)
+					navAction.navigateToTableDetail(effect.tableId)
 				}
 			}
 		}

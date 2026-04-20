@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import com.hand.log.designsystem.component.HandyTextField
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
@@ -30,12 +31,16 @@ import com.hand.log.domain.model.ShowdownResult
 import com.hand.log.domain.model.Suit
 import com.hand.log.domain.model.TurnStreet
 import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.showdown_memo
 import handylog.core.res.generated.resources.showdown_result
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun ResultSection(
 	hand: HandRecord,
+	memo: String,
+	onMemoChange: (String) -> Unit,
+	onMemoSave: () -> Unit,
 	onMarkPlayer: (Int) -> Unit = {},
 ) {
 	val colors = HandyTheme.colorScheme
@@ -124,13 +129,12 @@ internal fun ResultSection(
 		}
 
 		// 메모
-		hand.memo?.let { memo ->
-			Text(
-				text = memo,
-				style = HandyTheme.typography.regular14,
-				color = colors.textSecondary,
-			)
-		}
+		HandyTextField(
+			value = memo,
+			onValueChange = onMemoChange,
+			label = stringResource(Res.string.showdown_memo),
+			onDone = onMemoSave,
+		)
 	}
 }
 
@@ -139,6 +143,9 @@ internal fun ResultSection(
 private fun ResultSectionWinPreview() {
 	ThemePreview {
 		ResultSection(
+			memo = "탑투페어로 체크레이즈 → 올인 콜, 상대 QJo",
+			onMemoChange = {},
+			onMemoSave = {},
 			hand = HandRecord(
 				id = "h1",
 				tableId = "t1",
@@ -180,6 +187,9 @@ private fun ResultSectionWinPreview() {
 private fun ResultSectionSplitPreview() {
 	ThemePreview {
 		ResultSection(
+			memo = "AK vs AK 스플릿",
+			onMemoChange = {},
+			onMemoSave = {},
 			hand = HandRecord(
 				id = "h3",
 				tableId = "t1",
@@ -225,6 +235,9 @@ private fun ResultSectionSplitPreview() {
 private fun ResultSectionLosePreview() {
 	ThemePreview {
 		ResultSection(
+			memo = "블러프 캐치 실패",
+			onMemoChange = {},
+			onMemoSave = {},
 			hand = HandRecord(
 				id = "h2",
 				tableId = "t1",

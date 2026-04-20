@@ -38,6 +38,9 @@ import com.hand.log.handdetail.component.ResultSection
 internal fun HandDetailContent(
 	hand: HandRecord,
 	useBbUnit: Boolean,
+	memo: String,
+	onMemoChange: (String) -> Unit,
+	onMemoSave: () -> Unit,
 	graphicsLayer: GraphicsLayer,
 	onMarkPlayer: (Int) -> Unit = {},
 	modifier: Modifier = Modifier,
@@ -68,7 +71,13 @@ internal fun HandDetailContent(
 			useBbUnit = useBbUnit,
 		)
 
-		ResultSection(hand = hand, onMarkPlayer = onMarkPlayer)
+		ResultSection(
+			hand = hand,
+			memo = memo,
+			onMemoChange = onMemoChange,
+			onMemoSave = onMemoSave,
+			onMarkPlayer = onMarkPlayer,
+		)
 		VerticalSpacer(32.dp)
 	}
 
@@ -150,6 +159,9 @@ private fun HandDetailContentPreview() {
 		HandDetailContent(
 			hand = hand,
 			useBbUnit = false,
+			memo = hand.memo.orEmpty(),
+			onMemoChange = {},
+			onMemoSave = {},
 			graphicsLayer = rememberGraphicsLayer(),
 		)
 	}

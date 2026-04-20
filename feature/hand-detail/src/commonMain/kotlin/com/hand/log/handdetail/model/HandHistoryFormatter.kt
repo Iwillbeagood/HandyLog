@@ -238,11 +238,6 @@ object HandHistoryFormatter {
 
 		// --- Result ---
 		val finalStacks = hand.getFinalStacks(HandEvaluator::calculateShowdown)
-		val heroFinal = finalStacks[heroSeat] ?: 0.0
-		val heroInitial = hand.getInitialStack(heroSeat) ?: 0.0
-		val heroProfit = heroFinal - heroInitial
-		val isPositive = heroProfit >= 0
-		appendLine("[Result] ${if (isPositive) "+" else ""}${formatBb(heroProfit, bb)}")
 
 		hand.allSeats.filter { hand.getInitialStack(it) != null }.forEach { seat ->
 			val finalStack = finalStacks[seat] ?: return@forEach

@@ -91,6 +91,31 @@ internal class HandDetailViewModel(
 		_modalEffect.value = HandDetailModalEffect.Idle
 	}
 
+	private var memoInitialized = false
+	private val _memo = MutableStateFlow("")
+	val memo: StateFlow<String> get() = _memo
+
+	fun initMemo(value: String) {
+		if (!memoInitialized) {
+			memoInitialized = true
+			_memo.value = value
+		}
+	}
+
+	fun updateMemo(text: String) {
+		_memo.value = text
+	}
+
+	fun saveMemo() {
+		val success = state.value as? HandDetailState.Success ?: return
+		val text = _memo.value
+		if (text == (success.hand.memo.orEmpty())) return
+		viewModelScope.launch {
+			val updated = success.hand.copy(memo = text.ifBlank { null })
+			handRecordRepository.saveHand(updated)
+		}
+	}
+
 	fun shareText() {
 		val success = state.value as? HandDetailState.Success ?: return
 		val text = HandHistoryFormatter.format(success.hand)
