@@ -19,6 +19,7 @@ import com.hand.log.record.model.PlayerStatus
 import com.hand.log.record.model.RecordPlayer
 import com.hand.log.record.model.RecordPlayers
 import com.hand.log.domain.model.HandStreets
+import com.hand.log.domain.model.ShowdownOutcome
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -47,13 +48,14 @@ class RecordHandStateTest {
 			players = (1..playerCount).map { Player(seat = it) },
 			createdAt = 0L,
 		)
+		val heroCards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES))
+		val basePlayers = players ?: RecordPlayers.create(playerCount, 50000.0)
 		return RecordHandState.Recording(
 			tableId = "test",
 			table = table,
-			heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 			buttonSeat = buttonSeat,
 			blinds = Blinds(sb = sb, bb = bb, isBigBlindAnte = isBigBlindAnte),
-			players = players ?: RecordPlayers.create(playerCount, 50000.0),
+			players = basePlayers.update(heroSeat) { copy(cards = heroCards) },
 			streets = streets,
 			currentStep = currentStep,
 			currentActionSeat = currentActionSeat,
@@ -115,11 +117,11 @@ class RecordHandStateTest {
 	fun `올인 플레이어가 없으면 사이드 팟 없음`() {
 		val state = makeState(
 			playerCount = 3,
-			players = RecordPlayers(
-				player1 = RecordPlayer(seat = 1, initialStack = 50000.0),
-				player2 = RecordPlayer(seat = 2, initialStack = 50000.0),
-				player3 = RecordPlayer(seat = 3, initialStack = 50000.0),
-			),
+			players = RecordPlayers(mapOf(
+				1 to RecordPlayer(seat = 1, initialStack = 50000.0),
+				2 to RecordPlayer(seat = 2, initialStack = 50000.0),
+				3 to RecordPlayer(seat = 3, initialStack = 50000.0),
+			)),
 		)
 		assertTrue(state.sidePots.isEmpty())
 	}
@@ -129,18 +131,20 @@ class RecordHandStateTest {
 		val state = makeState(
 			playerCount = 3,
 			players = RecordPlayers(
-				player1 = RecordPlayer(
-					seat = 1,
-					stack = 0.0,
-					initialStack = 50000.0,
-					status = PlayerStatus.ALL_IN,
-				),
-				player2 = RecordPlayer(seat = 2, initialStack = 50000.0),
-				player3 = RecordPlayer(
-					seat = 3,
-					stack = 50000.0,
-					initialStack = 50000.0,
-					status = PlayerStatus.FOLDED,
+				mapOf(
+					1 to RecordPlayer(
+						seat = 1,
+						stack = 0.0,
+						initialStack = 50000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					2 to RecordPlayer(seat = 2, initialStack = 50000.0),
+					3 to RecordPlayer(
+						seat = 3,
+						stack = 50000.0,
+						initialStack = 50000.0,
+						status = PlayerStatus.FOLDED,
+					),
 				),
 			),
 		)
@@ -154,22 +158,24 @@ class RecordHandStateTest {
 		val state = makeState(
 			playerCount = 3,
 			players = RecordPlayers(
-				player1 = RecordPlayer(
-					seat = 1,
-					stack = 0.0,
-					initialStack = 20000.0,
-					status = PlayerStatus.ALL_IN,
-				),
-				player2 = RecordPlayer(
-					seat = 2,
-					stack = 0.0,
-					initialStack = 50000.0,
-					status = PlayerStatus.ALL_IN,
-				),
-				player3 = RecordPlayer(
-					seat = 3,
-					stack = 0.0,
-					initialStack = 50000.0,
+				mapOf(
+					1 to RecordPlayer(
+						seat = 1,
+						stack = 0.0,
+						initialStack = 20000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					2 to RecordPlayer(
+						seat = 2,
+						stack = 0.0,
+						initialStack = 50000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					3 to RecordPlayer(
+						seat = 3,
+						stack = 0.0,
+						initialStack = 50000.0,
+					),
 				),
 			),
 		)
@@ -187,25 +193,27 @@ class RecordHandStateTest {
 		val state = makeState(
 			playerCount = 4,
 			players = RecordPlayers(
-				player1 = RecordPlayer(
-					seat = 1,
-					stack = 0.0,
-					initialStack = 10000.0,
-					status = PlayerStatus.ALL_IN,
+				mapOf(
+					1 to RecordPlayer(
+						seat = 1,
+						stack = 0.0,
+						initialStack = 10000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					2 to RecordPlayer(
+						seat = 2,
+						stack = 0.0,
+						initialStack = 30000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					3 to RecordPlayer(
+						seat = 3,
+						stack = 0.0,
+						initialStack = 50000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					4 to RecordPlayer(seat = 4, stack = 0.0, initialStack = 50000.0),
 				),
-				player2 = RecordPlayer(
-					seat = 2,
-					stack = 0.0,
-					initialStack = 30000.0,
-					status = PlayerStatus.ALL_IN,
-				),
-				player3 = RecordPlayer(
-					seat = 3,
-					stack = 0.0,
-					initialStack = 50000.0,
-					status = PlayerStatus.ALL_IN,
-				),
-				player4 = RecordPlayer(seat = 4, stack = 0.0, initialStack = 50000.0),
 			),
 		)
 		val pots = state.sidePots
@@ -224,23 +232,25 @@ class RecordHandStateTest {
 		val state = makeState(
 			playerCount = 3,
 			players = RecordPlayers(
-				player1 = RecordPlayer(
-					seat = 1,
-					stack = 0.0,
-					initialStack = 20000.0,
-					status = PlayerStatus.ALL_IN,
-				),
-				player2 = RecordPlayer(
-					seat = 2,
-					stack = 0.0,
-					initialStack = 50000.0,
-					status = PlayerStatus.ALL_IN,
-				),
-				player3 = RecordPlayer(
-					seat = 3,
-					stack = 40000.0,
-					initialStack = 50000.0,
-					status = PlayerStatus.FOLDED,
+				mapOf(
+					1 to RecordPlayer(
+						seat = 1,
+						stack = 0.0,
+						initialStack = 20000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					2 to RecordPlayer(
+						seat = 2,
+						stack = 0.0,
+						initialStack = 50000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					3 to RecordPlayer(
+						seat = 3,
+						stack = 40000.0,
+						initialStack = 50000.0,
+						status = PlayerStatus.FOLDED,
+					),
 				),
 			),
 		)
@@ -258,25 +268,27 @@ class RecordHandStateTest {
 		val state = makeState(
 			playerCount = 4,
 			players = RecordPlayers(
-				player1 = RecordPlayer(
-					seat = 1,
-					stack = 0.0,
-					initialStack = 30000.0,
-					status = PlayerStatus.ALL_IN,
+				mapOf(
+					1 to RecordPlayer(
+						seat = 1,
+						stack = 0.0,
+						initialStack = 30000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					2 to RecordPlayer(
+						seat = 2,
+						stack = 0.0,
+						initialStack = 50000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					3 to RecordPlayer(
+						seat = 3,
+						stack = 50000.0,
+						initialStack = 50000.0,
+						status = PlayerStatus.FOLDED,
+					),
+					4 to RecordPlayer(seat = 4, stack = 50000.0, initialStack = 50000.0),
 				),
-				player2 = RecordPlayer(
-					seat = 2,
-					stack = 0.0,
-					initialStack = 50000.0,
-					status = PlayerStatus.ALL_IN,
-				),
-				player3 = RecordPlayer(
-					seat = 3,
-					stack = 50000.0,
-					initialStack = 50000.0,
-					status = PlayerStatus.FOLDED,
-				),
-				player4 = RecordPlayer(seat = 4, stack = 50000.0, initialStack = 50000.0),
 			),
 		)
 		val pots = state.sidePots
@@ -291,14 +303,16 @@ class RecordHandStateTest {
 		val state = makeState(
 			playerCount = 3,
 			players = RecordPlayers(
-				player1 = RecordPlayer(
-					seat = 1,
-					stack = 0.0,
-					initialStack = 50000.0,
-					status = PlayerStatus.ALL_IN,
+				mapOf(
+					1 to RecordPlayer(
+						seat = 1,
+						stack = 0.0,
+						initialStack = 50000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					2 to RecordPlayer(seat = 2, initialStack = 50000.0),
+					3 to RecordPlayer(seat = 3, initialStack = 50000.0),
 				),
-				player2 = RecordPlayer(seat = 2, initialStack = 50000.0),
-				player3 = RecordPlayer(seat = 3, initialStack = 50000.0),
 			),
 		)
 		// 투입 플레이어 1명뿐 → size < 2 → empty
@@ -312,23 +326,25 @@ class RecordHandStateTest {
 		val state = makeState(
 			playerCount = 3,
 			players = RecordPlayers(
-				player1 = RecordPlayer(
-					seat = 1,
-					stack = 0.0,
-					initialStack = 100000.0,
-					status = PlayerStatus.ALL_IN,
-				),
-				player2 = RecordPlayer(
-					seat = 2,
-					stack = 0.0,
-					initialStack = 50000.0,
-					status = PlayerStatus.ALL_IN,
-				),
-				player3 = RecordPlayer(
-					seat = 3,
-					stack = 0.0,
-					initialStack = 80000.0,
-					status = PlayerStatus.ALL_IN,
+				mapOf(
+					1 to RecordPlayer(
+						seat = 1,
+						stack = 0.0,
+						initialStack = 100000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					2 to RecordPlayer(
+						seat = 2,
+						stack = 0.0,
+						initialStack = 50000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					3 to RecordPlayer(
+						seat = 3,
+						stack = 0.0,
+						initialStack = 80000.0,
+						status = PlayerStatus.ALL_IN,
+					),
 				),
 			),
 		)
@@ -346,18 +362,20 @@ class RecordHandStateTest {
 		val state = makeState(
 			playerCount = 3,
 			players = RecordPlayers(
-				player1 = RecordPlayer(
-					seat = 1,
-					stack = 0.0,
-					initialStack = 50000.0,
-					status = PlayerStatus.ALL_IN,
-				),
-				player2 = RecordPlayer(seat = 2, stack = 0.0, initialStack = 50000.0),
-				player3 = RecordPlayer(
-					seat = 3,
-					stack = 50000.0,
-					initialStack = 50000.0,
-					status = PlayerStatus.FOLDED,
+				mapOf(
+					1 to RecordPlayer(
+						seat = 1,
+						stack = 0.0,
+						initialStack = 50000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					2 to RecordPlayer(seat = 2, stack = 0.0, initialStack = 50000.0),
+					3 to RecordPlayer(
+						seat = 3,
+						stack = 50000.0,
+						initialStack = 50000.0,
+						status = PlayerStatus.FOLDED,
+					),
 				),
 			),
 		)
@@ -369,23 +387,25 @@ class RecordHandStateTest {
 		val state = makeState(
 			playerCount = 3,
 			players = RecordPlayers(
-				player1 = RecordPlayer(
-					seat = 1,
-					stack = 0.0,
-					initialStack = 100000.0,
-					status = PlayerStatus.ALL_IN,
-				),
-				player2 = RecordPlayer(
-					seat = 2,
-					stack = 0.0,
-					initialStack = 50000.0,
-					status = PlayerStatus.ALL_IN,
-				),
-				player3 = RecordPlayer(
-					seat = 3,
-					stack = 0.0,
-					initialStack = 80000.0,
-					status = PlayerStatus.ALL_IN,
+				mapOf(
+					1 to RecordPlayer(
+						seat = 1,
+						stack = 0.0,
+						initialStack = 100000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					2 to RecordPlayer(
+						seat = 2,
+						stack = 0.0,
+						initialStack = 50000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					3 to RecordPlayer(
+						seat = 3,
+						stack = 0.0,
+						initialStack = 80000.0,
+						status = PlayerStatus.ALL_IN,
+					),
 				),
 			),
 		)
@@ -405,14 +425,16 @@ class RecordHandStateTest {
 		val state = makeState(
 			playerCount = 3,
 			players = RecordPlayers(
-				player1 = RecordPlayer(
-					seat = 1,
-					stack = 0.0,
-					initialStack = 50000.0,
-					status = PlayerStatus.ALL_IN,
+				mapOf(
+					1 to RecordPlayer(
+						seat = 1,
+						stack = 0.0,
+						initialStack = 50000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					2 to RecordPlayer(seat = 2, stack = 0.0, initialStack = null),
+					3 to RecordPlayer(seat = 3, stack = 0.0, initialStack = 50000.0),
 				),
-				player2 = RecordPlayer(seat = 2, stack = 0.0, initialStack = 0.0),
-				player3 = RecordPlayer(seat = 3, stack = 0.0, initialStack = 50000.0),
 			),
 		)
 		// Seat2는 invested = 0 → 팟 계산에서 제외
@@ -422,7 +444,7 @@ class RecordHandStateTest {
 	}
 
 	@Test
-	fun `BBA 포함 3인 올인 - 메인팟에 ante 포함, 미콜 베팅은 사이드팟 제외`() {
+	fun `BBA 포함 3인 올인 - 메인팟에 ante 포함 미콜 베팅은 사이드팟 제외`() {
 		// BTN(seat1): 50만, SB(seat2): 10만, BB(seat3): 40만
 		// SB=8000, BB=8000, BBA=true (ante=8000)
 		val state = makeState(
@@ -432,23 +454,25 @@ class RecordHandStateTest {
 			bb = 8000.0,
 			isBigBlindAnte = true,
 			players = RecordPlayers(
-				player1 = RecordPlayer(
-					seat = 1,
-					stack = 0.0,
-					initialStack = 500000.0,
-					status = PlayerStatus.ALL_IN,
-				),
-				player2 = RecordPlayer(
-					seat = 2,
-					stack = 0.0,
-					initialStack = 100000.0,
-					status = PlayerStatus.ALL_IN,
-				),
-				player3 = RecordPlayer(
-					seat = 3,
-					stack = 0.0,
-					initialStack = 400000.0,
-					status = PlayerStatus.ALL_IN,
+				mapOf(
+					1 to RecordPlayer(
+						seat = 1,
+						stack = 0.0,
+						initialStack = 500000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					2 to RecordPlayer(
+						seat = 2,
+						stack = 0.0,
+						initialStack = 100000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					3 to RecordPlayer(
+						seat = 3,
+						stack = 0.0,
+						initialStack = 400000.0,
+						status = PlayerStatus.ALL_IN,
+					),
 				),
 			),
 		)
@@ -467,25 +491,82 @@ class RecordHandStateTest {
 		val state = makeState(
 			playerCount = 3,
 			players = RecordPlayers(
-				player1 = RecordPlayer(
-					seat = 1,
-					stack = 0.0,
-					initialStack = 500000.0,
-					status = PlayerStatus.ALL_IN,
+				mapOf(
+					1 to RecordPlayer(
+						seat = 1,
+						stack = 0.0,
+						initialStack = 500000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					2 to RecordPlayer(
+						seat = 2,
+						stack = 0.0,
+						initialStack = 300000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					3 to RecordPlayer(seat = 3, stack = 0.0, initialStack = 300000.0),
 				),
-				player2 = RecordPlayer(
-					seat = 2,
-					stack = 0.0,
-					initialStack = 300000.0,
-					status = PlayerStatus.ALL_IN,
-				),
-				player3 = RecordPlayer(seat = 3, stack = 0.0, initialStack = 300000.0),
 			),
 		)
 		val pots = state.sidePots
 		// 300K × 3 = 900K (메인팟), 200K × 1 = 미콜 → 제외
 		// 사이드팟 1개뿐 → emptyList
 		assertTrue(pots.isEmpty())
+	}
+
+	@Test
+	fun `BB앤티 4000-4000-2000 UTG 2BB레이즈 LJ BTN 콜 시 팟에 앤티 포함`() {
+		// 8인 테이블: BTN=1, SB=2, BB=3, UTG=4, UTG1=5, LJ=6, HJ=7, CO=8
+		val state = makeState(
+			playerCount = 8,
+			buttonSeat = 1,
+			bb = 4000.0,
+			sb = 2000.0,
+			isBigBlindAnte = true,
+			streets = HandStreets(
+				preflop = PreflopStreet(
+					actions = listOf(
+						Action(playerSeat = 4, type = ActionType.RAISE, amount = 8000.0),
+						Action(playerSeat = 5, type = ActionType.FOLD),
+						Action(playerSeat = 6, type = ActionType.CALL, amount = 8000.0),
+						Action(playerSeat = 7, type = ActionType.FOLD),
+						Action(playerSeat = 8, type = ActionType.FOLD),
+						Action(playerSeat = 1, type = ActionType.CALL, amount = 8000.0),
+						Action(playerSeat = 2, type = ActionType.FOLD),
+						Action(playerSeat = 3, type = ActionType.FOLD),
+					),
+				),
+			),
+		)
+		// 앤티(4000) + SB(2000) + BB(4000) + UTG(8000) + LJ(8000) + BTN(8000) = 34000
+		assertEquals(34000.0, state.currentPot)
+	}
+
+	@Test
+	fun `BB앤티 없이 동일 상황이면 앤티 제외 30000`() {
+		val state = makeState(
+			playerCount = 8,
+			buttonSeat = 1,
+			bb = 4000.0,
+			sb = 2000.0,
+			isBigBlindAnte = false,
+			streets = HandStreets(
+				preflop = PreflopStreet(
+					actions = listOf(
+						Action(playerSeat = 4, type = ActionType.RAISE, amount = 8000.0),
+						Action(playerSeat = 5, type = ActionType.FOLD),
+						Action(playerSeat = 6, type = ActionType.CALL, amount = 8000.0),
+						Action(playerSeat = 7, type = ActionType.FOLD),
+						Action(playerSeat = 8, type = ActionType.FOLD),
+						Action(playerSeat = 1, type = ActionType.CALL, amount = 8000.0),
+						Action(playerSeat = 2, type = ActionType.FOLD),
+						Action(playerSeat = 3, type = ActionType.FOLD),
+					),
+				),
+			),
+		)
+		// SB(2000) + BB(4000) + UTG(8000) + LJ(8000) + BTN(8000) = 30000
+		assertEquals(30000.0, state.currentPot)
 	}
 
 	// ===== 가능한 액션 =====
@@ -576,15 +657,17 @@ class RecordHandStateTest {
 			bb = 1000.0,
 			currentActionSeat = 5,
 			players = RecordPlayers(
-				player1 = RecordPlayer(seat = 1, stack = 50000.0),
-				player2 = RecordPlayer(seat = 2, stack = 50000.0),
-				player3 = RecordPlayer(seat = 3, stack = 50000.0),
-				player4 = RecordPlayer(seat = 4, stack = 47500.0),
-				player5 = RecordPlayer(seat = 5, stack = 3000.0),
-				player6 = RecordPlayer(seat = 6, stack = 50000.0),
-				player7 = RecordPlayer(seat = 7, stack = 50000.0),
-				player8 = RecordPlayer(seat = 8, stack = 50000.0),
-				player9 = RecordPlayer(seat = 9, stack = 50000.0),
+				mapOf(
+					1 to RecordPlayer(seat = 1, stack = 50000.0, initialStack = 50000.0),
+					2 to RecordPlayer(seat = 2, stack = 50000.0, initialStack = 50000.0),
+					3 to RecordPlayer(seat = 3, stack = 50000.0, initialStack = 50000.0),
+					4 to RecordPlayer(seat = 4, stack = 47500.0, initialStack = 50000.0),
+					5 to RecordPlayer(seat = 5, stack = 3000.0, initialStack = 3000.0),
+					6 to RecordPlayer(seat = 6, stack = 50000.0, initialStack = 50000.0),
+					7 to RecordPlayer(seat = 7, stack = 50000.0, initialStack = 50000.0),
+					8 to RecordPlayer(seat = 8, stack = 50000.0, initialStack = 50000.0),
+					9 to RecordPlayer(seat = 9, stack = 50000.0, initialStack = 50000.0),
+				),
 			),
 			streets = HandStreets(
 				preflop = PreflopStreet(
@@ -607,20 +690,22 @@ class RecordHandStateTest {
 			bb = 1000.0,
 			currentActionSeat = 5,
 			players = RecordPlayers(
-				player1 = RecordPlayer(seat = 1, stack = 50000.0, initialStack = 50000.0),
-				player2 = RecordPlayer(seat = 2, stack = 50000.0, initialStack = 50000.0),
-				player3 = RecordPlayer(seat = 3, stack = 50000.0, initialStack = 50000.0),
-				player4 = RecordPlayer(
-					seat = 4,
-					stack = 0.0,
-					initialStack = 50000.0,
-					status = PlayerStatus.ALL_IN,
+				mapOf(
+					1 to RecordPlayer(seat = 1, stack = 50000.0, initialStack = 50000.0),
+					2 to RecordPlayer(seat = 2, stack = 50000.0, initialStack = 50000.0),
+					3 to RecordPlayer(seat = 3, stack = 50000.0, initialStack = 50000.0),
+					4 to RecordPlayer(
+						seat = 4,
+						stack = 0.0,
+						initialStack = 50000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					5 to RecordPlayer(seat = 5, stack = 30000.0, initialStack = 30000.0),
+					6 to RecordPlayer(seat = 6, stack = 50000.0, initialStack = 50000.0),
+					7 to RecordPlayer(seat = 7, stack = 50000.0, initialStack = 50000.0),
+					8 to RecordPlayer(seat = 8, stack = 50000.0, initialStack = 50000.0),
+					9 to RecordPlayer(seat = 9, stack = 50000.0, initialStack = 50000.0),
 				),
-				player5 = RecordPlayer(seat = 5, stack = 30000.0, initialStack = 30000.0),
-				player6 = RecordPlayer(seat = 6, stack = 50000.0, initialStack = 50000.0),
-				player7 = RecordPlayer(seat = 7, stack = 50000.0, initialStack = 50000.0),
-				player8 = RecordPlayer(seat = 8, stack = 50000.0, initialStack = 50000.0),
-				player9 = RecordPlayer(seat = 9, stack = 50000.0, initialStack = 50000.0),
 			),
 			streets = HandStreets(
 				preflop = PreflopStreet(
@@ -633,6 +718,114 @@ class RecordHandStateTest {
 		val actions = state.availableActions
 		assertTrue(ActionType.FOLD in actions)
 		assertFalse(ActionType.CALL in actions)
+		assertTrue(ActionType.ALL_IN in actions)
+	}
+
+	@Test
+	fun `스택 미입력 initialStack null이면 모든 액션 가능`() {
+		// 프리플랍 오픈 상황, seat4가 레이즈 후 seat5의 initialStack이 null
+		val state = makeState(
+			bb = 1000.0,
+			currentActionSeat = 5,
+			players = RecordPlayers(
+				mapOf(
+					1 to RecordPlayer(seat = 1, stack = 50000.0, initialStack = 50000.0),
+					2 to RecordPlayer(seat = 2, stack = 50000.0, initialStack = 50000.0),
+					3 to RecordPlayer(seat = 3, stack = 50000.0, initialStack = 50000.0),
+					4 to RecordPlayer(seat = 4, stack = 47500.0, initialStack = 50000.0),
+					5 to RecordPlayer(seat = 5, initialStack = null),
+					6 to RecordPlayer(seat = 6, stack = 50000.0, initialStack = 50000.0),
+					7 to RecordPlayer(seat = 7, stack = 50000.0, initialStack = 50000.0),
+					8 to RecordPlayer(seat = 8, stack = 50000.0, initialStack = 50000.0),
+					9 to RecordPlayer(seat = 9, stack = 50000.0, initialStack = 50000.0),
+				),
+			),
+			streets = HandStreets(
+				preflop = PreflopStreet(
+					actions = listOf(
+						Action(playerSeat = 4, type = ActionType.RAISE, amount = 2500.0),
+					),
+				),
+			),
+		)
+		val actions = state.availableActions
+		assertTrue(ActionType.FOLD in actions)
+		assertTrue(ActionType.CALL in actions)
+		assertTrue(ActionType.RAISE in actions)
+		assertTrue(ActionType.ALL_IN in actions)
+	}
+
+	@Test
+	fun `스택 미입력 initialStack null이면 큰 레이즈 후에도 레이즈 가능`() {
+		// seat4가 50000 올인 후 seat5 (initialStack null) → 여전히 모든 액션 가능
+		val state = makeState(
+			bb = 1000.0,
+			currentActionSeat = 5,
+			players = RecordPlayers(
+				mapOf(
+					1 to RecordPlayer(seat = 1, stack = 50000.0, initialStack = 50000.0),
+					2 to RecordPlayer(seat = 2, stack = 50000.0, initialStack = 50000.0),
+					3 to RecordPlayer(seat = 3, stack = 50000.0, initialStack = 50000.0),
+					4 to RecordPlayer(
+						seat = 4,
+						stack = 0.0,
+						initialStack = 50000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					5 to RecordPlayer(seat = 5, initialStack = null),
+					6 to RecordPlayer(seat = 6, stack = 50000.0, initialStack = 50000.0),
+					7 to RecordPlayer(seat = 7, stack = 50000.0, initialStack = 50000.0),
+					8 to RecordPlayer(seat = 8, stack = 50000.0, initialStack = 50000.0),
+					9 to RecordPlayer(seat = 9, stack = 50000.0, initialStack = 50000.0),
+				),
+			),
+			streets = HandStreets(
+				preflop = PreflopStreet(
+					actions = listOf(
+						Action(playerSeat = 4, type = ActionType.ALL_IN, amount = 50000.0),
+					),
+				),
+			),
+		)
+		val actions = state.availableActions
+		assertTrue(ActionType.FOLD in actions)
+		assertTrue(ActionType.CALL in actions)
+		assertTrue(ActionType.RAISE in actions)
+		assertTrue(ActionType.ALL_IN in actions)
+	}
+
+	@Test
+	fun `스택 입력됨이고 민레이즈 미달이면 레이즈 불가`() {
+		// seat4가 레이즈, seat5의 initialStack = 3000 (입력됨, 민레이즈 미달)
+		val state = makeState(
+			bb = 1000.0,
+			currentActionSeat = 5,
+			players = RecordPlayers(
+				mapOf(
+					1 to RecordPlayer(seat = 1, stack = 50000.0, initialStack = 50000.0),
+					2 to RecordPlayer(seat = 2, stack = 50000.0, initialStack = 50000.0),
+					3 to RecordPlayer(seat = 3, stack = 50000.0, initialStack = 50000.0),
+					4 to RecordPlayer(seat = 4, stack = 47500.0, initialStack = 50000.0),
+					5 to RecordPlayer(seat = 5, stack = 3000.0, initialStack = 3000.0),
+					6 to RecordPlayer(seat = 6, stack = 50000.0, initialStack = 50000.0),
+					7 to RecordPlayer(seat = 7, stack = 50000.0, initialStack = 50000.0),
+					8 to RecordPlayer(seat = 8, stack = 50000.0, initialStack = 50000.0),
+					9 to RecordPlayer(seat = 9, stack = 50000.0, initialStack = 50000.0),
+				),
+			),
+			streets = HandStreets(
+				preflop = PreflopStreet(
+					actions = listOf(
+						Action(playerSeat = 4, type = ActionType.RAISE, amount = 2500.0),
+					),
+				),
+			),
+		)
+		val actions = state.availableActions
+		assertTrue(ActionType.FOLD in actions)
+		assertTrue(ActionType.CALL in actions)
+		// 스택 3000 < 민레이즈 4000 → 레이즈 불가
+		assertFalse(ActionType.RAISE in actions)
 		assertTrue(ActionType.ALL_IN in actions)
 	}
 
@@ -750,15 +943,17 @@ class RecordHandStateTest {
 		val state = makeState(
 			buttonSeat = 1,
 			players = RecordPlayers(
-				player1 = RecordPlayer(seat = 1),
-				player2 = RecordPlayer(seat = 2),
-				player3 = RecordPlayer(seat = 3),
-				player4 = RecordPlayer(seat = 4, status = PlayerStatus.FOLDED),
-				player5 = RecordPlayer(seat = 5),
-				player6 = RecordPlayer(seat = 6),
-				player7 = RecordPlayer(seat = 7),
-				player8 = RecordPlayer(seat = 8),
-				player9 = RecordPlayer(seat = 9),
+				mapOf(
+					1 to RecordPlayer(seat = 1),
+					2 to RecordPlayer(seat = 2),
+					3 to RecordPlayer(seat = 3),
+					4 to RecordPlayer(seat = 4, status = PlayerStatus.FOLDED),
+					5 to RecordPlayer(seat = 5),
+					6 to RecordPlayer(seat = 6),
+					7 to RecordPlayer(seat = 7),
+					8 to RecordPlayer(seat = 8),
+					9 to RecordPlayer(seat = 9),
+				),
 			),
 		)
 		assertFalse(4 in state.actionOrder)
@@ -769,15 +964,17 @@ class RecordHandStateTest {
 		val state = makeState(
 			buttonSeat = 1,
 			players = RecordPlayers(
-				player1 = RecordPlayer(seat = 1),
-				player2 = RecordPlayer(seat = 2),
-				player3 = RecordPlayer(seat = 3),
-				player4 = RecordPlayer(seat = 4, status = PlayerStatus.ALL_IN),
-				player5 = RecordPlayer(seat = 5),
-				player6 = RecordPlayer(seat = 6),
-				player7 = RecordPlayer(seat = 7),
-				player8 = RecordPlayer(seat = 8),
-				player9 = RecordPlayer(seat = 9),
+				mapOf(
+					1 to RecordPlayer(seat = 1),
+					2 to RecordPlayer(seat = 2),
+					3 to RecordPlayer(seat = 3),
+					4 to RecordPlayer(seat = 4, status = PlayerStatus.ALL_IN),
+					5 to RecordPlayer(seat = 5),
+					6 to RecordPlayer(seat = 6),
+					7 to RecordPlayer(seat = 7),
+					8 to RecordPlayer(seat = 8),
+					9 to RecordPlayer(seat = 9),
+				),
 			),
 		)
 		assertFalse(4 in state.actionOrder)
@@ -789,9 +986,11 @@ class RecordHandStateTest {
 			playerCount = 3,
 			buttonSeat = 1,
 			players = RecordPlayers(
-				player1 = RecordPlayer(seat = 1, status = PlayerStatus.FOLDED),
-				player2 = RecordPlayer(seat = 2, status = PlayerStatus.ALL_IN),
-				player3 = RecordPlayer(seat = 3, status = PlayerStatus.ALL_IN),
+				mapOf(
+					1 to RecordPlayer(seat = 1, status = PlayerStatus.FOLDED),
+					2 to RecordPlayer(seat = 2, status = PlayerStatus.ALL_IN),
+					3 to RecordPlayer(seat = 3, status = PlayerStatus.ALL_IN),
+				),
 			),
 		)
 		assertTrue(state.actionOrder.isEmpty())
@@ -895,5 +1094,42 @@ class RecordHandStateTest {
 			),
 		)
 		assertTrue(state.streets.isBoardReady(Street.FLOP))
+	}
+
+	// ===== 폴드 승리 쇼다운 결과 =====
+
+	@Test
+	fun `폴드 승리 시 폴드한 플레이어는 HIGH_CARD가 아닌 폴드 패배여야 한다`() {
+		// 3인 테이블: seat 1(BTN), seat 2(SB 폴드), seat 3(BB 폴드)
+		// seat 1이 레이즈 → seat 2, 3 폴드 → seat 1 폴드 승리
+		val state = makeState(
+			playerCount = 3,
+			heroSeat = 2,
+			buttonSeat = 1,
+			players = RecordPlayers(
+				mapOf(
+					1 to RecordPlayer(seat = 1, status = PlayerStatus.ACTIVE),
+					2 to RecordPlayer(seat = 2, status = PlayerStatus.FOLDED),
+					3 to RecordPlayer(seat = 3, status = PlayerStatus.FOLDED),
+				),
+			),
+		)
+		assertTrue(state.isFoldWin)
+
+		val results = state.showdownResults
+		// 승자(seat 1)는 WIN
+		val winnerResult = results.find { it.seat == 1 }
+		assertEquals(ShowdownOutcome.WIN, winnerResult?.outcome)
+
+		// 폴드한 플레이어(seat 2, 3)는 LOSE이고 ranking이 HIGH_CARD가 아니어야 함
+		// → 폴드 패배임을 구분할 수 있어야 한다
+		val loserResult = results.find { it.seat == 2 }
+		assertEquals(ShowdownOutcome.LOSE, loserResult?.outcome)
+		// 현재 버그: ranking = HIGH_CARD → "하이카드(으)로 패배" 표시됨
+		// 기대: 폴드 패배를 구분할 수 있는 결과
+		assertTrue(
+			state.isFoldWin,
+			"폴드 승리 상황에서 패배자의 결과에 폴드 패배 여부를 알 수 있어야 한다",
+		)
 	}
 }

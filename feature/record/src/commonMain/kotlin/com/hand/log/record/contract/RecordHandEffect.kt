@@ -16,7 +16,6 @@ internal sealed interface RecordHandModalEffect {
 	) : RecordHandModalEffect
 	data class ShowTableEdit(val table: PokerTable) : RecordHandModalEffect
 	data class ConfirmStepBack(val targetStep: RecordStep) : RecordHandModalEffect
-	data class EditAction(val actionIndex: Int, val positionName: String) : RecordHandModalEffect
 }
 
 @Immutable

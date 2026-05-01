@@ -74,7 +74,9 @@ internal fun ActionTableView(
 	onSeatClick: ((Int) -> Unit)? = null,
 ) {
 	val colors = HandyTheme.colorScheme
-	val playerCount = state.table?.playerCount ?: return
+	val seats = state.occupiedSeats
+	val maxPlayers = state.table?.maxPlayers ?: return
+	if (seats.isEmpty()) return
 	val actions = state.streets.getActions(state.currentStreet)
 
 	val seatActions = mutableMapOf<Int, Action>()
@@ -174,13 +176,14 @@ internal fun ActionTableView(
 		val chipGapPx = with(density) { 12.dp.toPx() }
 
 		val btnSeat = state.buttonSeat
-		val sbSeat = (btnSeat % playerCount) + 1
-		val bbSeat = ((btnSeat + 1) % playerCount) + 1
+		val btnIdx = seats.indexOf(btnSeat)
+		val sbSeat = if (btnIdx >= 0 && seats.size >= 2) seats[(btnIdx + 1) % seats.size] else 0
+		val bbSeat = if (btnIdx >= 0 && seats.size >= 3) seats[(btnIdx + 2) % seats.size] else 0
 
 		// 딜러 버튼: 칩/좌석보다 먼저 그려서 아래(뒤)에 위치
 		run {
-			val btnAngle = (2 * kotlin.math.PI * (btnSeat - 1) / playerCount) - (kotlin.math.PI / 2)
-			val sbAngle = (2 * kotlin.math.PI * (sbSeat - 1) / playerCount) - (kotlin.math.PI / 2)
+			val btnAngle = (2 * kotlin.math.PI * (btnSeat - 1) / maxPlayers) - (kotlin.math.PI / 2)
+			val sbAngle = (2 * kotlin.math.PI * (sbSeat - 1) / maxPlayers) - (kotlin.math.PI / 2)
 			val midAngle = if (sbAngle > btnAngle) {
 				(btnAngle + sbAngle) / 2.0
 			} else {
@@ -216,8 +219,8 @@ internal fun ActionTableView(
 			}
 		}
 
-		for (seat in 1..playerCount) {
-			val angle = (2 * kotlin.math.PI * (seat - 1) / playerCount) - (kotlin.math.PI / 2)
+		for (seat in seats) {
+			val angle = (2 * kotlin.math.PI * (seat - 1) / maxPlayers) - (kotlin.math.PI / 2)
 			val cosA = cos(angle).toFloat()
 			val sinA = sin(angle).toFloat()
 
@@ -495,17 +498,18 @@ private fun ActionTableViewAllElementsPreview() {
 					heroSeat = 3,
 					createdAt = 0L,
 				),
-				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.HEARTS)),
 				players = RecordPlayers(
-					player1 = RecordPlayer(seat = 1),
-					player2 = RecordPlayer(seat = 2),
-					player3 = RecordPlayer(seat = 3),
-					player4 = RecordPlayer(seat = 4),
-					player5 = RecordPlayer(seat = 5, status = PlayerStatus.FOLDED),
-					player6 = RecordPlayer(seat = 6),
-					player7 = RecordPlayer(seat = 7),
-					player8 = RecordPlayer(seat = 8, status = PlayerStatus.ALL_IN),
-					player9 = RecordPlayer(seat = 9),
+					mapOf(
+						1 to RecordPlayer(seat = 1),
+						2 to RecordPlayer(seat = 2),
+						3 to RecordPlayer(seat = 3, cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.HEARTS))),
+						4 to RecordPlayer(seat = 4),
+						5 to RecordPlayer(seat = 5, status = PlayerStatus.FOLDED),
+						6 to RecordPlayer(seat = 6),
+						7 to RecordPlayer(seat = 7),
+						8 to RecordPlayer(seat = 8, status = PlayerStatus.ALL_IN),
+						9 to RecordPlayer(seat = 9),
+					),
 				),
 				currentStep = RecordStep.PREFLOP,
 				buttonSeat = 4,
@@ -544,17 +548,18 @@ private fun ActionTableView9MaxFlopPreview() {
 					heroSeat = 3,
 					createdAt = 0L,
 				),
-				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.HEARTS)),
 				players = RecordPlayers(
-					player1 = RecordPlayer(seat = 1),
-					player2 = RecordPlayer(seat = 2),
-					player3 = RecordPlayer(seat = 3),
-					player4 = RecordPlayer(seat = 4),
-					player5 = RecordPlayer(seat = 5, status = PlayerStatus.FOLDED),
-					player6 = RecordPlayer(seat = 6, status = PlayerStatus.FOLDED),
-					player7 = RecordPlayer(seat = 7, status = PlayerStatus.FOLDED),
-					player8 = RecordPlayer(seat = 8, status = PlayerStatus.FOLDED),
-					player9 = RecordPlayer(seat = 9, status = PlayerStatus.FOLDED),
+					mapOf(
+						1 to RecordPlayer(seat = 1),
+						2 to RecordPlayer(seat = 2),
+						3 to RecordPlayer(seat = 3, cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.HEARTS))),
+						4 to RecordPlayer(seat = 4),
+						5 to RecordPlayer(seat = 5, status = PlayerStatus.FOLDED),
+						6 to RecordPlayer(seat = 6, status = PlayerStatus.FOLDED),
+						7 to RecordPlayer(seat = 7, status = PlayerStatus.FOLDED),
+						8 to RecordPlayer(seat = 8, status = PlayerStatus.FOLDED),
+						9 to RecordPlayer(seat = 9, status = PlayerStatus.FOLDED),
+					),
 				),
 				currentStep = RecordStep.FLOP,
 				buttonSeat = 1,

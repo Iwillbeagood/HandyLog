@@ -4,19 +4,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Text
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import com.hand.log.designsystem.component.HandyCheckBox
-import com.hand.log.designsystem.component.VerticalSpacer
-import com.hand.log.designsystem.component.modal.ButtonDialog
-import com.hand.log.designsystem.theme.HandyTheme
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
@@ -27,7 +17,7 @@ import androidx.compose.ui.focus.FocusRequester
 import com.hand.log.domain.model.ActionType
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.PokerTable
-import com.hand.log.record.component.EditActionSheet
+import com.hand.log.record.component.StepBackConfirmDialog
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.navigation.interop.LocalMainActionInterop
 import com.hand.log.record.contract.CardSelectorTarget
@@ -93,7 +83,6 @@ internal fun RecordHandRoute(
 		onConfirmStepBack = viewModel::confirmStepBack,
 		onSelectActionType = viewModel::selectActionType,
 		onUpdateActionAmount = viewModel::updateActionAmount,
-		onConfirmEditAction = viewModel::restartFromAction,
 		onDismiss = viewModel::dismissModal,
 	)
 
@@ -116,12 +105,9 @@ private fun RecordHandContent(
 	onBack: () -> Unit,
 	heroStackFocusRequester: FocusRequester = FocusRequester(),
 ) {
-	val editingActionIndex = (modalEffect as? RecordHandModalEffect.EditAction)?.actionIndex
-
 	if (state is RecordHandState.Recording) {
 		RecordHandScreen(
 			state = state,
-			editingActionIndex = editingActionIndex,
 			onBack = onBack,
 			onSelectHeroCard = viewModel::selectHeroCard,
 			onSelectAllBoardCards = viewModel::selectAllBoardCards,
@@ -136,8 +122,6 @@ private fun RecordHandContent(
 			onUpdatePlayerStack = viewModel::updatePlayerStack,
 			onConfirmAction = viewModel::confirmAction,
 			onRemoveLastAction = viewModel::removeLastAction,
-			onEditAction = viewModel::editAction,
-			onResumeRecording = viewModel::resumeRecording,
 			onNextStep = viewModel::nextStep,
 			onPreviousStep = viewModel::previousStep,
 			onNavigateToStep = viewModel::navigateToStep,
@@ -160,7 +144,6 @@ private fun RecordHandModalContent(
 	onConfirmStepBack: (RecordStep, Boolean) -> Unit,
 	onSelectActionType: (ActionType) -> Unit,
 	onUpdateActionAmount: (String) -> Unit,
-	onConfirmEditAction: (Int) -> Unit,
 	onDismiss: () -> Unit,
 ) {
 	when (modalEffect) {
@@ -184,6 +167,7 @@ private fun RecordHandModalContent(
 					target.positionName,
 				)
 			}
+			val isAllBoard = modalEffect.target is CardSelectorTarget.AllBoardCards
 			CardSelectorSheet(
 				title = title,
 				maxCards = modalEffect.target.maxCards,
@@ -195,7 +179,9 @@ private fun RecordHandModalContent(
 				} else {
 					null
 				},
-				heroHand = modalEffect.heroHand,
+				heroHand = if (isAllBoard) null else modalEffect.heroHand,
+				minCards = if (isAllBoard) 3 else modalEffect.target.maxCards,
+				boardPreview = isAllBoard,
 			)
 		}
 
@@ -215,49 +201,5 @@ private fun RecordHandModalContent(
 			)
 		}
 
-		is RecordHandModalEffect.EditAction -> {
-			val recording = state as? RecordHandState.Recording
-			if (recording != null) {
-				EditActionSheet(
-					state = recording,
-					positionName = modalEffect.positionName,
-					actionIndex = modalEffect.actionIndex,
-					onSelectActionType = onSelectActionType,
-					onUpdateActionAmount = onUpdateActionAmount,
-					onConfirmEditAction = onConfirmEditAction,
-					onDismiss = onDismiss,
-				)
-			}
-		}
-	}
-}
-
-@Composable
-private fun StepBackConfirmDialog(
-	targetStep: RecordStep,
-	onConfirm: (RecordStep, Boolean) -> Unit,
-	onDismiss: () -> Unit,
-) {
-	var skipWarning by remember { mutableStateOf(false) }
-
-	ButtonDialog(
-		title = stringResource(Res.string.step_back_title),
-		onDismissRequest = onDismiss,
-		onConfirmClick = { onConfirm(targetStep, skipWarning) },
-		onDismissClick = onDismiss,
-	) {
-		Text(
-			text = stringResource(Res.string.step_back_description),
-			style = HandyTheme.typography.regular14,
-			textAlign = TextAlign.Center,
-			color = HandyTheme.colorScheme.textSecondary,
-			modifier = Modifier.fillMaxWidth(),
-		)
-		VerticalSpacer(16.dp)
-		HandyCheckBox(
-			text = stringResource(Res.string.step_back_skip_warning),
-			checked = skipWarning,
-			onCheckedChange = { skipWarning = it },
-		)
 	}
 }

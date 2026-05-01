@@ -49,9 +49,11 @@ import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.undo
 import org.jetbrains.compose.resources.painterResource
 import com.hand.log.record.contract.RecordHandState
+import com.hand.log.record.model.RecordPlayers
 import com.hand.log.record.contract.RecordStep
 import com.hand.log.record.model.calculateLastRaiseTo
 import com.hand.log.ui.poker.CardSize
+import com.hand.log.ui.poker.HoleCards
 import com.hand.log.ui.poker.PlayingCard
 import kotlinx.datetime.LocalDate
 import com.hand.log.designsystem.etc.ThemePreview
@@ -79,6 +81,18 @@ internal fun StreetStepContent(
 	val streetActions = state.streets.getActions(currentStreet)
 
 	Column {
+		// Hero Hand
+		if (state.heroHand != null) {
+			Row(
+				verticalAlignment = Alignment.CenterVertically,
+				horizontalArrangement = Arrangement.spacedBy(8.dp),
+			) {
+				HandySectionLabel(stringResource(Res.string.record_hero_card))
+				HoleCards(cards = state.heroHand, size = CardSize.SM)
+			}
+			VerticalSpacer(16.dp)
+		}
+
 		// Board Cards (not for PREFLOP)
 		if (currentStreet != Street.PREFLOP) {
 			HandySectionLabel(stringResource(Res.string.board_cards))
@@ -226,7 +240,7 @@ internal fun PlayerActionArea(
 			val posName = state.positionName(state.currentActionSeat)
 			val isHero = state.currentActionSeat == state.table?.heroSeat
 			val currentStack = state.getPlayerStack(state.currentActionSeat)
-			val initialStack = state.players[state.currentActionSeat]?.initialStack ?: 0.0
+			val initialStack = state.players[state.currentActionSeat]?.initialStack
 			val blindCost = state.getBlindCost(state.currentActionSeat)
 
 			Row(
@@ -266,7 +280,7 @@ internal fun PlayerActionArea(
 				if (state.currentStreet == Street.PREFLOP) {
 					Column(modifier = Modifier.weight(1f)) {
 						HandyTextField(
-							value = if (initialStack == 0.0) "" else initialStack.toLong().toString(),
+							value = if (initialStack == null) "" else initialStack.toLong().toString(),
 							onValueChange = { onUpdatePlayerStack(state.currentActionSeat, it) },
 							label = stringResource(Res.string.player_stack),
 							keyboardType = KeyboardType.Number,
@@ -280,7 +294,7 @@ internal fun PlayerActionArea(
 							)
 						}
 					}
-				} else if (initialStack > 0) {
+				} else if (currentStack != null) {
 					Text(
 						text = state.formatAmount(currentStack),
 						style = HandyTheme.typography.bold14,
@@ -313,9 +327,12 @@ internal fun PlayerActionArea(
 				preflopPresets = preflopPresets,
 				postflopPresets = postflopPresets,
 				minRaiseAmount = state.minRaiseAmount,
-				maxAmount = currentStack + (state.players[state.currentActionSeat]?.currentBet ?: 0.0),
+				maxAmount = if (currentStack != null) {
+					currentStack + (state.players[state.currentActionSeat]?.currentBet ?: 0.0)
+				} else {
+					0.0
+				},
 				lastBetAmount = lastBet,
-				showAmountWarning = state.showAmountWarning,
 				useBbUnit = state.useBbUnit,
 			)
 		} else {
@@ -383,7 +400,10 @@ private fun StreetStepContentPreflopPreview() {
 				currentStep = RecordStep.PREFLOP,
 				buttonSeat = 1,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
-				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+				players = RecordPlayers.create(playerCount = 6, defaultStack = 50000.0)
+					.update(
+						3,
+					) { copy(cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES))) },
 				currentActionSeat = 4, // UTG
 				streets = HandStreets(
 					preflop = PreflopStreet(
@@ -423,7 +443,10 @@ private fun StreetStepContentFlopPreview() {
 				currentStep = RecordStep.FLOP,
 				buttonSeat = 1,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
-				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+				players = RecordPlayers.create(playerCount = 6, defaultStack = 50000.0)
+					.update(
+						3,
+					) { copy(cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES))) },
 				currentActionSeat = 2, // SB
 				streets = HandStreets(
 					preflop = PreflopStreet(),
@@ -506,7 +529,10 @@ private fun StreetStepContentOpenerSelectionPreview() {
 				currentStep = RecordStep.PREFLOP,
 				buttonSeat = 1,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
-				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+				players = RecordPlayers.create(playerCount = 6, defaultStack = 50000.0)
+					.update(
+						3,
+					) { copy(cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES))) },
 				currentActionSeat = null,
 				streets = HandStreets(
 					preflop = PreflopStreet(),

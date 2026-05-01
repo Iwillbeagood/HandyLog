@@ -12,11 +12,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -31,6 +29,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
+import com.hand.log.utils.imeWindowInsets
+import com.hand.log.utils.isKeyboardVisible
 import com.hand.log.designsystem.component.HandySwitch
 import com.hand.log.designsystem.component.HandyTopAppbar
 import com.hand.log.designsystem.component.RegularButton
@@ -47,7 +47,6 @@ import com.hand.log.domain.model.Suit
 import com.hand.log.record.component.SetupStepContent
 import com.hand.log.record.component.ShowdownStepContent
 import com.hand.log.record.component.StreetStepContent
-import com.hand.log.record.component.StreetStepEditContent
 import com.hand.log.record.contract.RecordHandState
 import com.hand.log.record.contract.RecordStep
 import com.hand.log.record.contract.localizedLabel
@@ -63,7 +62,6 @@ import handylog.core.res.generated.resources.*
 @Composable
 internal fun RecordHandScreen(
 	state: RecordHandState.Recording,
-	editingActionIndex: Int? = null,
 	onBack: () -> Unit,
 	onSelectHeroCard: () -> Unit,
 	onSelectAllBoardCards: () -> Unit,
@@ -78,8 +76,6 @@ internal fun RecordHandScreen(
 	onUpdatePlayerStack: (Int, String) -> Unit,
 	onConfirmAction: () -> Unit,
 	onRemoveLastAction: () -> Unit,
-	onEditAction: (Int) -> Unit,
-	onResumeRecording: () -> Unit = {},
 	onNextStep: () -> Unit,
 	onPreviousStep: () -> Unit,
 	onNavigateToStep: (RecordStep) -> Unit,
@@ -91,7 +87,10 @@ internal fun RecordHandScreen(
 ) {
 	val colors = HandyTheme.colorScheme
 
+	val keyboardVisible = isKeyboardVisible()
+
 	BaseScaffold(
+		applyNavigationBarsPadding = !keyboardVisible,
 		containerColor = colors.background,
 		topBar = {
 			Row(
@@ -101,11 +100,7 @@ internal fun RecordHandScreen(
 				verticalAlignment = Alignment.CenterVertically,
 			) {
 				HandyTopAppbar(
-					title = if (state.isEditing) {
-						stringResource(Res.string.record_title_edit)
-					} else {
-						stringResource(Res.string.record_title)
-					},
+					title = stringResource(Res.string.record_title),
 					onBackEvent = {
 						if (state.currentStep == RecordStep.SETUP) {
 							onBack()
@@ -126,18 +121,13 @@ internal fun RecordHandScreen(
 		bottomBar = {
 			val isSetup = state.currentStep == RecordStep.SETUP
 			val isShowdown = state.currentStep == RecordStep.SHOWDOWN
-			val isOpenerSelection = state.currentStep == RecordStep.PREFLOP &&
-				state.streets.getActions(Street.PREFLOP).isEmpty() &&
-				state.currentActionSeat == null
-			val isStreetCompleted = !isSetup && !isShowdown && !isOpenerSelection &&
-				state.currentActionSeat == null && state.isEditing
-			if (isSetup || isShowdown || isStreetCompleted) {
+			if (isSetup || isShowdown) {
 				BottomNavigationBar(
 					currentStep = state.currentStep,
 					canProceed = if (isSetup) state.canProceedFromSetup else true,
 					onNext = onNextStep,
 					onSave = onSave,
-					modifier = Modifier.windowInsetsPadding(WindowInsets.ime),
+					modifier = Modifier.windowInsetsPadding(imeWindowInsets()),
 				)
 			}
 		},
@@ -169,7 +159,7 @@ internal fun RecordHandScreen(
 				modifier = Modifier
 					.fillMaxSize()
 					.verticalScroll(scrollState)
-					.windowInsetsPadding(WindowInsets.ime)
+					.windowInsetsPadding(imeWindowInsets())
 					.padding(horizontal = 16.dp, vertical = 8.dp),
 				verticalArrangement = Arrangement.spacedBy(16.dp),
 			) {
@@ -187,28 +177,18 @@ internal fun RecordHandScreen(
 					}
 
 					RecordStep.PREFLOP, RecordStep.FLOP, RecordStep.TURN, RecordStep.RIVER -> {
-						if (state.isEditing) {
-							StreetStepEditContent(
-								state = state,
-								editingActionIndex = editingActionIndex,
-								onSelectBoardCard = onSelectBoardCard,
-								onEditAction = onEditAction,
-								onResumeRecording = onResumeRecording,
-							)
-						} else {
-							StreetStepContent(
-								state = state,
-								onSelectBoardCard = onSelectBoardCard,
-								onSelectActionSeat = onSelectActionSeat,
-								onSelectActionType = onSelectActionType,
-								onUpdateActionAmount = onUpdateActionAmount,
-								onUpdatePlayerStack = onUpdatePlayerStack,
-								onConfirmAction = onConfirmAction,
-								onRemoveLastAction = onRemoveLastAction,
-								preflopPresets = state.preflopPresets,
-								postflopPresets = state.postflopPresets,
-							)
-						}
+						StreetStepContent(
+							state = state,
+							onSelectBoardCard = onSelectBoardCard,
+							onSelectActionSeat = onSelectActionSeat,
+							onSelectActionType = onSelectActionType,
+							onUpdateActionAmount = onUpdateActionAmount,
+							onUpdatePlayerStack = onUpdatePlayerStack,
+							onConfirmAction = onConfirmAction,
+							onRemoveLastAction = onRemoveLastAction,
+							preflopPresets = state.actionPresets.preflopPresets,
+							postflopPresets = state.actionPresets.postflopPresets,
+						)
 					}
 
 					RecordStep.SHOWDOWN -> {
@@ -348,7 +328,6 @@ private fun RecordHandScreenPreview() {
 			onUpdatePlayerStack = { _, _ -> },
 			onConfirmAction = {},
 			onRemoveLastAction = {},
-			onEditAction = {},
 			onNextStep = {},
 			onPreviousStep = {},
 			onNavigateToStep = {},
@@ -378,12 +357,10 @@ private fun RecordHandScreenTournamentPreview() {
 				players = create(
 					playerCount = 9,
 					defaultStack = 10000.0,
-				),
+				).update(3) {
+					copy(cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)))
+				},
 				blinds = Blinds(sb = 50.0, bb = 100.0),
-				heroHand = PocketCards(
-					Card(Rank.ACE, Suit.SPADES),
-					Card(Rank.KING, Suit.SPADES),
-				),
 			),
 			onBack = {},
 			onSelectHeroCard = {},
@@ -399,7 +376,6 @@ private fun RecordHandScreenTournamentPreview() {
 			onUpdatePlayerStack = { _, _ -> },
 			onConfirmAction = {},
 			onRemoveLastAction = {},
-			onEditAction = {},
 			onNextStep = {},
 			onPreviousStep = {},
 			onNavigateToStep = {},

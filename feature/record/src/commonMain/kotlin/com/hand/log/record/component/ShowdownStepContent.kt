@@ -19,7 +19,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.HandySectionLabel
-import com.hand.log.designsystem.component.HandyTextField
 import com.hand.log.designsystem.component.VerticalSpacer
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
@@ -34,6 +33,8 @@ import com.hand.log.domain.model.Street
 import com.hand.log.domain.model.Suit
 import com.hand.log.record.contract.RecordHandState
 import com.hand.log.record.contract.RecordStep
+import com.hand.log.domain.model.HandRanking
+import com.hand.log.domain.model.HeroResultType
 import com.hand.log.domain.model.FlopStreet
 import com.hand.log.domain.model.PreflopStreet
 import com.hand.log.domain.model.RiverStreet
@@ -42,9 +43,9 @@ import com.hand.log.ui.localizedLabel
 import com.hand.log.domain.model.TurnStreet
 import com.hand.log.record.model.RecordPlayer
 import com.hand.log.record.model.RecordPlayers
-import com.hand.log.record.model.RecordShowdown
 import com.hand.log.domain.model.HandStreets
 import com.hand.log.record.model.PlayerStatus
+import com.hand.log.ui.MemoField
 import com.hand.log.ui.poker.CardSize
 import com.hand.log.ui.poker.HoleCards
 import com.hand.log.ui.poker.OutcomeBadge
@@ -130,7 +131,7 @@ internal fun ShowdownStepContent(
 			VerticalSpacer(8.dp)
 		}
 
-		// 결과 (자동 계산)
+		// 결과 (자동 계산) — HandRecord.resolvedHeroResultType과 동일 로직
 		if (hasResults) {
 			val heroSeat = state.table?.heroSeat
 			val heroResult = state.heroResult
@@ -142,24 +143,23 @@ internal fun ShowdownStepContent(
 			VerticalSpacer(8.dp)
 			HandySectionLabel(stringResource(Res.string.showdown_result))
 
-			val isSplitResult = heroShowdownResult?.isSplit == true
-			val resultText = if (state.isFoldWin) {
-				stringResource(Res.string.showdown_result_fold_win)
-			} else {
-				val ranking = heroShowdownResult?.ranking?.localizedLabel() ?: ""
-				when {
-					isSplitResult -> stringResource(Res.string.showdown_result_split, ranking)
-					isWin -> stringResource(Res.string.showdown_result_win, ranking)
-					else -> stringResource(Res.string.showdown_result_lose, ranking)
-				}
+			val resultType = when {
+				state.isFoldWin && isWin -> HeroResultType.FOLD_WIN
+				state.isFoldWin -> HeroResultType.FOLD_LOSE
+				heroShowdownResult?.isSplit == true -> HeroResultType.SHOWDOWN_SPLIT
+				isWin -> HeroResultType.SHOWDOWN_WIN
+				else -> HeroResultType.SHOWDOWN_LOSE
 			}
+			val ranking = heroShowdownResult?.ranking
+				?.takeIf { it != HandRanking.WIN_BY_FOLD }
+				?.localizedLabel() ?: ""
 			Text(
-				text = resultText,
+				text = resultType.localizedLabel(ranking),
 				style = HandyTheme.typography.bold20,
-				color = when {
-					isSplitResult -> colors.split
-					isWin -> colors.primary
-					else -> colors.error
+				color = when (resultType) {
+					HeroResultType.SHOWDOWN_SPLIT -> colors.split
+					HeroResultType.FOLD_WIN, HeroResultType.SHOWDOWN_WIN -> colors.primary
+					HeroResultType.FOLD_LOSE, HeroResultType.SHOWDOWN_LOSE -> colors.error
 				},
 			)
 
@@ -192,7 +192,7 @@ internal fun ShowdownStepContent(
 		}
 
 		VerticalSpacer(12.dp)
-		HandyTextField(
+		MemoField(
 			value = state.memo,
 			onValueChange = onUpdateMemo,
 			label = stringResource(Res.string.showdown_memo),
@@ -214,8 +214,8 @@ private fun ShowdownPlayerCard(
 	val colors = HandyTheme.colorScheme
 	val posName = state.positionName(seat)
 	val isHero = seat == state.table?.heroSeat
-	val hand = if (isHero) state.heroHand else state.showdown[seat]
-	val isUnknown = !isHero && state.showdown.isUnknown(seat)
+	val hand = if (isHero) state.heroHand else state.players[seat]?.cards
+	val isUnknown = !isHero && state.players[seat]?.isCardsUnknown == true
 	// 사이드팟에서 이긴 경우도 반영
 	val wonAnyPot = state.potResults.any { it.winnerSeat == seat }
 	val isSplit = result?.isSplit == true && !isUnknown
@@ -223,8 +223,8 @@ private fun ShowdownPlayerCard(
 	val isLoser = (result != null && !isWinner && !isSplit && !isFolded) || isUnknown
 	val player = state.players[seat]
 	val currentStack = state.getPlayerStack(seat)
-	val initialStack = player?.initialStack ?: 0.0
-	val isEliminated = result != null && initialStack > 0 && currentStack <= 0.0
+	val initialStack = player?.initialStack
+	val isEliminated = result != null && initialStack != null && initialStack > 0 && currentStack != null && currentStack <= 0.0
 
 	Box {
 		Row(
@@ -307,7 +307,7 @@ private fun ShowdownPlayerCard(
 					)
 				}
 
-				if (result != null && currentStack > 0) {
+				if (result != null && currentStack != null && currentStack > 0) {
 					Text(
 						text = state.formatAmount(currentStack),
 						style = HandyTheme.typography.regular10.nonScaledSp,
@@ -354,12 +354,14 @@ private fun ShowdownStepContentPreview() {
 					heroSeat = 3,
 					createdAt = 0L,
 				),
-				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
-				players = RecordPlayers.create(playerCount = 6, defaultStack = 50000.0),
+				players = RecordPlayers.create(playerCount = 6, defaultStack = 50000.0)
+					.update(
+						3,
+					) { copy(cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES))) }
+					.update(1) {
+						copy(cards = PocketCards(Card(Rank.QUEEN, Suit.HEARTS), Card(Rank.JACK, Suit.HEARTS)))
+					},
 				currentStep = RecordStep.SHOWDOWN,
-				showdown = RecordShowdown(
-					seat1 = PocketCards(Card(Rank.QUEEN, Suit.HEARTS), Card(Rank.JACK, Suit.HEARTS)),
-				),
 			),
 			onSelectSingleBoardCard = { _, _ -> },
 			onSelectHeroCard = {},
@@ -387,46 +389,46 @@ private fun ShowdownStepContentResultPreview() {
 					heroSeat = 3,
 					createdAt = 0L,
 				),
-				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 				players = RecordPlayers(
-					player1 = RecordPlayer(
-						seat = 1,
-						stack = 0.0,
-						initialStack = 50000.0,
-						status = PlayerStatus.ALL_IN,
-
-					),
-					player2 = RecordPlayer(
-						seat = 2,
-						stack = 49500.0,
-						initialStack = 50000.0,
-						status = PlayerStatus.FOLDED,
-
-					),
-					player3 = RecordPlayer(
-						seat = 3,
-						stack = 0.0,
-						initialStack = 50000.0,
-						status = PlayerStatus.ALL_IN,
-
-					),
-					player4 = RecordPlayer(
-						seat = 4,
-						stack = 50000.0,
-						initialStack = 50000.0,
-						status = PlayerStatus.FOLDED,
-					),
-					player5 = RecordPlayer(
-						seat = 5,
-						stack = 50000.0,
-						initialStack = 50000.0,
-						status = PlayerStatus.FOLDED,
-					),
-					player6 = RecordPlayer(
-						seat = 6,
-						stack = 50000.0,
-						initialStack = 50000.0,
-						status = PlayerStatus.FOLDED,
+					mapOf(
+						1 to RecordPlayer(
+							seat = 1,
+							cards = PocketCards(Card(Rank.QUEEN, Suit.HEARTS), Card(Rank.JACK, Suit.HEARTS)),
+							stack = 0.0,
+							initialStack = 50000.0,
+							status = PlayerStatus.ALL_IN,
+						),
+						2 to RecordPlayer(
+							seat = 2,
+							stack = 49500.0,
+							initialStack = 50000.0,
+							status = PlayerStatus.FOLDED,
+						),
+						3 to RecordPlayer(
+							seat = 3,
+							cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+							stack = 0.0,
+							initialStack = 50000.0,
+							status = PlayerStatus.ALL_IN,
+						),
+						4 to RecordPlayer(
+							seat = 4,
+							stack = 50000.0,
+							initialStack = 50000.0,
+							status = PlayerStatus.FOLDED,
+						),
+						5 to RecordPlayer(
+							seat = 5,
+							stack = 50000.0,
+							initialStack = 50000.0,
+							status = PlayerStatus.FOLDED,
+						),
+						6 to RecordPlayer(
+							seat = 6,
+							stack = 50000.0,
+							initialStack = 50000.0,
+							status = PlayerStatus.FOLDED,
+						),
 					),
 				),
 				currentStep = RecordStep.SHOWDOWN,
@@ -439,9 +441,6 @@ private fun ShowdownStepContentResultPreview() {
 					),
 					turn = TurnStreet(card = Card(Rank.KING, Suit.HEARTS)),
 					river = RiverStreet(card = Card(Rank.TWO, Suit.CLUBS)),
-				),
-				showdown = RecordShowdown(
-					seat1 = PocketCards(Card(Rank.QUEEN, Suit.HEARTS), Card(Rank.JACK, Suit.HEARTS)),
 				),
 				memo = "탑투페어로 올인 콜",
 			),

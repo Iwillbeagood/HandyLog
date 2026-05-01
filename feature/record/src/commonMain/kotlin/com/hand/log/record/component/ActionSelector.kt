@@ -1,6 +1,5 @@
 package com.hand.log.record.component
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -51,7 +50,6 @@ internal fun ActionSelector(
 	minRaiseAmount: Double = 0.0,
 	maxAmount: Double = 0.0,
 	lastBetAmount: Double = 0.0,
-	showAmountWarning: Boolean = false,
 	useBbUnit: Boolean = false,
 	modifier: Modifier = Modifier,
 ) {
@@ -112,22 +110,6 @@ internal fun ActionSelector(
 					null
 				},
 			)
-			AnimatedVisibility(visible = showAmountWarning) {
-				val displayMax = if (useBbUnit && bbAmount > 0) {
-					val bbCount = maxAmount / bbAmount
-					val rounded = (bbCount * 10).toLong() / 10.0
-					if (rounded == rounded.toLong().toDouble()) "${rounded.toLong()}BB" else "${rounded}BB"
-				} else {
-					maxAmount.toLong().toString()
-				}
-				Text(
-					text = stringResource(Res.string.record_stack_warning, displayMax),
-					style = HandyTheme.typography.regular10,
-					color = colors.error,
-					modifier = Modifier.padding(top = 4.dp),
-				)
-			}
-
 			VerticalSpacer(8.dp)
 			Row(
 				horizontalArrangement = Arrangement.spacedBy(8.dp),
