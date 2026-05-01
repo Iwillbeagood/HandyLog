@@ -7,6 +7,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.navigation.interop.LocalMainActionInterop
 import com.hand.log.playersetup.PlayerSetupSheet
+import com.hand.log.table.component.HeroSeatSwapSheet
 import com.hand.log.table.component.PlayerPositionSetupSheet
 import com.hand.log.table.component.TableBalanceSheet
 import com.hand.log.table.contract.TableEffect
@@ -47,6 +48,7 @@ internal fun TableRoute(
 		onPlayerPositionsConfirmed = viewModel::savePlayerPositions,
 		onPositionSetupDismiss = viewModel::dismissPositionSetup,
 		onBalanceConfirmed = viewModel::applyTableBalance,
+		onSwapHeroSeat = viewModel::swapHeroSeat,
 	)
 
 	LaunchedEffect(Unit) {
@@ -74,6 +76,7 @@ private fun TableModalContent(
 	onPlayerPositionsConfirmed: (Set<Int>) -> Unit,
 	onPositionSetupDismiss: () -> Unit,
 	onBalanceConfirmed: (heroSeat: Int, otherSeats: Set<Int>) -> Unit,
+	onSwapHeroSeat: (Int) -> Unit,
 ) {
 	when (modalEffect) {
 		TableModalEffect.Idle -> {}
@@ -87,6 +90,15 @@ private fun TableModalContent(
 				maxSeat = modalEffect.maxPlayers,
 				onSaved = onPlayerSaved,
 				onDeleted = onPlayerDeleted,
+				onDismiss = onDismiss,
+			)
+		}
+
+		is TableModalEffect.ShowHeroSeatSwap -> {
+			HeroSeatSwapSheet(
+				maxPlayers = modalEffect.maxPlayers,
+				heroSeat = modalEffect.heroSeat,
+				onSeatSelected = onSwapHeroSeat,
 				onDismiss = onDismiss,
 			)
 		}

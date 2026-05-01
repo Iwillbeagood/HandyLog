@@ -82,11 +82,13 @@ internal class TableViewModel(
 	val effect: SharedFlow<TableEffect> get() = _effect.asSharedFlow()
 
 	fun onPlayerSaved(isEditMode: Boolean) {
+		dismissModal()
 		val res = if (isEditMode) Res.string.table_detail_player_updated else Res.string.table_detail_player_added
 		viewModelScope.launch { _effect.emit(TableEffect.ShowToast(res)) }
 	}
 
 	fun onPlayerDeleted() {
+		dismissModal()
 		viewModelScope.launch {
 			_effect.emit(TableEffect.ShowToast(Res.string.table_detail_player_deleted))
 		}
@@ -95,14 +97,50 @@ internal class TableViewModel(
 	fun showPlayerSetup(seat: Int) {
 		val current = state.value as? TableState.TableData ?: return
 		val table = current.table
-		_modalEffect.update {
-			TableModalEffect.ShowPlayerSetup(
-				tableId = table.id,
-				initialSeat = seat,
-				player = table.players.find { it.seat == seat },
-				occupiedSeats = table.players.map { it.seat }.toSet(),
-				maxPlayers = table.maxPlayers,
-			)
+		if (seat == table.heroSeat) {
+			_modalEffect.update {
+				TableModalEffect.ShowHeroSeatSwap(
+					maxPlayers = table.maxPlayers,
+					heroSeat = table.heroSeat,
+				)
+			}
+		} else {
+			_modalEffect.update {
+				TableModalEffect.ShowPlayerSetup(
+					tableId = table.id,
+					initialSeat = seat,
+					player = table.players.find { it.seat == seat },
+					occupiedSeats = table.players.map { it.seat }.toSet(),
+					maxPlayers = table.maxPlayers,
+				)
+			}
+		}
+	}
+
+	fun swapHeroSeat(targetSeat: Int) {
+		val current = state.value as? TableState.TableData ?: return
+		val table = current.table
+		val heroSeat = table.heroSeat
+		if (targetSeat == heroSeat) return
+
+		dismissModal()
+		viewModelScope.launch {
+			val heroPlayer = table.players.find { it.seat == heroSeat }
+			val targetPlayer = table.players.find { it.seat == targetSeat }
+
+			// id 기반 UPDATE만 사용 (delete 후 update하면 레코드 유실됨)
+			if (heroPlayer != null && targetPlayer != null) {
+				tableRepository.upsertPlayer(table.id, heroPlayer.copy(seat = -1))
+				tableRepository.upsertPlayer(table.id, targetPlayer.copy(seat = heroSeat))
+				tableRepository.upsertPlayer(table.id, heroPlayer.copy(seat = targetSeat))
+			} else if (targetPlayer != null) {
+				tableRepository.upsertPlayer(table.id, targetPlayer.copy(seat = heroSeat))
+			} else if (heroPlayer != null) {
+				tableRepository.upsertPlayer(table.id, heroPlayer.copy(seat = targetSeat))
+			}
+
+			tableRepository.updateTableInfo(table.copy(heroSeat = targetSeat))
+			_effect.emit(TableEffect.ShowToast(Res.string.table_detail_table_updated))
 		}
 	}
 
@@ -145,6 +183,7 @@ internal class TableViewModel(
 
 	fun dismissPositionSetup() {
 		val current = state.value as? TableState.TableData ?: return
+		dismissModal()
 		viewModelScope.launch {
 			markPositionSetupShownUseCase(current.table)
 		}
@@ -152,6 +191,7 @@ internal class TableViewModel(
 
 	fun savePlayerPositions(seats: Set<Int>) {
 		val current = state.value as? TableState.TableData ?: return
+		dismissModal()
 		viewModelScope.launch {
 			savePlayerPositionsUseCase(current.table, seats)
 			_effect.emit(TableEffect.ShowToast(Res.string.table_detail_table_updated))

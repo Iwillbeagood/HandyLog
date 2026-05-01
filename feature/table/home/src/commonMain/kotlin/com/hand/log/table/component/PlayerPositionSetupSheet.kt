@@ -50,7 +50,7 @@ internal fun PlayerPositionSetupSheet(
 		onDismissRequest = onDismiss,
 		title = stringResource(Res.string.player_position_setup_title),
 		confirmText = stringResource(Res.string.btn_confirm),
-		onConfirm = { onConfirm(selectedSeats.value) },
+		onConfirm = { onConfirm(selectedSeats.value + heroSeat) },
 		confirmEnabled = selectedSeats.value.isNotEmpty(),
 		subText = stringResource(Res.string.player_position_setup_skip),
 		onSub = onDismiss,
@@ -129,7 +129,8 @@ private fun PlayerPositionSetupContent(
 					)
 					.then(
 						if (!isHero) {
-							Modifier.clickable {
+							val isFull = totalSelected >= targetCount
+							Modifier.clickable(enabled = isSelected || !isFull) {
 								selectedSeats.value = if (isSelected) {
 									selectedSeats.value - seat
 								} else {

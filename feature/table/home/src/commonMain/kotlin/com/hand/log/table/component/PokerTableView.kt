@@ -226,10 +226,7 @@ private fun SeatView(
 	Column(
 		modifier = modifier
 			.clip(RoundedCornerShape(4.dp))
-			.clickableSingle(
-				onClick = onClick,
-				enabled = !isHero,
-			),
+			.clickableSingle(onClick = onClick),
 		horizontalAlignment = Alignment.CenterHorizontally,
 		verticalArrangement = Arrangement.Center,
 	) {

@@ -21,6 +21,12 @@ internal sealed interface TableModalEffect {
 	) : TableModalEffect
 
 	@Immutable
+	data class ShowHeroSeatSwap(
+		val maxPlayers: Int,
+		val heroSeat: Int,
+	) : TableModalEffect
+
+	@Immutable
 	data class ShowTableEdit(
 		val table: PokerTable,
 	) : TableModalEffect

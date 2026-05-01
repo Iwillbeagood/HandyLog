@@ -36,6 +36,7 @@ import com.hand.log.domain.model.HandRecord
 import com.hand.log.domain.model.HandStreets
 import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.PreflopStreet
+import com.hand.log.domain.model.HandPlayer
 import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.RiverStreet
 import com.hand.log.domain.model.Street
@@ -307,7 +308,6 @@ private fun PlayerHandsScreenPreview() {
 						tableId = "t1",
 						createdAt = 1710000000000L,
 						blinds = Blinds(sb = 500.0, bb = 1000.0),
-						heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 						heroSeat = 3,
 						buttonSeat = 1,
 						streets = HandStreets(
@@ -325,6 +325,13 @@ private fun PlayerHandsScreenPreview() {
 							turn = TurnStreet(card = Card(Rank.KING, Suit.HEARTS)),
 							river = RiverStreet(card = Card(Rank.TWO, Suit.CLUBS)),
 						),
+						players = listOf(
+							HandPlayer(
+								seat = 3,
+								cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+								isHero = true,
+							),
+						),
 						result = 15000.0,
 						memo = "탑투페어로 올인 콜",
 					),
@@ -333,7 +340,6 @@ private fun PlayerHandsScreenPreview() {
 						tableId = "t1",
 						createdAt = 1709900000000L,
 						blinds = Blinds(sb = 500.0, bb = 1000.0),
-						heroHand = PocketCards(Card(Rank.QUEEN, Suit.HEARTS), Card(Rank.JACK, Suit.HEARTS)),
 						heroSeat = 5,
 						buttonSeat = 3,
 						streets = HandStreets(
@@ -344,6 +350,13 @@ private fun PlayerHandsScreenPreview() {
 								),
 							),
 						),
+						players = listOf(
+							HandPlayer(
+								seat = 5,
+								cards = PocketCards(Card(Rank.QUEEN, Suit.HEARTS), Card(Rank.JACK, Suit.HEARTS)),
+								isHero = true,
+							),
+						),
 						result = -8500.0,
 						memo = "블러프 캐치 실패",
 					),
@@ -352,7 +365,6 @@ private fun PlayerHandsScreenPreview() {
 						tableId = "t2",
 						createdAt = 1709800000000L,
 						blinds = Blinds(sb = 1000.0, bb = 2000.0),
-						heroHand = PocketCards(Card(Rank.JACK, Suit.SPADES), Card(Rank.TEN, Suit.SPADES)),
 						heroSeat = 2,
 						buttonSeat = 6,
 						streets = HandStreets(
@@ -365,6 +377,13 @@ private fun PlayerHandsScreenPreview() {
 								card1 = Card(Rank.JACK, Suit.HEARTS),
 								card2 = Card(Rank.NINE, Suit.DIAMONDS),
 								card3 = Card(Rank.EIGHT, Suit.CLUBS),
+							),
+						),
+						players = listOf(
+							HandPlayer(
+								seat = 2,
+								cards = PocketCards(Card(Rank.JACK, Suit.SPADES), Card(Rank.TEN, Suit.SPADES)),
+								isHero = true,
 							),
 						),
 						result = 25000.0,

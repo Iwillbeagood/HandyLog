@@ -28,6 +28,7 @@ import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.GameType
 import com.hand.log.domain.model.HandRecord
 import com.hand.log.domain.model.HandWithTable
+import com.hand.log.domain.model.HandPlayer
 import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.model.Rank
@@ -225,8 +226,6 @@ private fun HomeHandCardPreview() {
 					tableId = "1",
 					createdAt = 1710000000000L,
 					blinds = Blinds(sb = 500.0, bb = 1000.0),
-					heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
-					heroStack = 62000.0,
 					buttonSeat = 1,
 					streets = HandStreets(
 						flop = FlopStreet(
@@ -236,6 +235,14 @@ private fun HomeHandCardPreview() {
 						),
 						turn = TurnStreet(card = Card(Rank.TEN, Suit.SPADES)),
 						river = RiverStreet(card = Card(Rank.TWO, Suit.HEARTS)),
+					),
+					players = listOf(
+						HandPlayer(
+							seat = 5,
+							cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+							initialStack = 62000.0,
+							isHero = true,
+						),
 					),
 					result = 15000.0,
 				),

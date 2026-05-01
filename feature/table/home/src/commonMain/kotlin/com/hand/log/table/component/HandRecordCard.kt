@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.Card
+import com.hand.log.domain.model.HandPlayer
 import com.hand.log.domain.model.HandRecord
 import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.Street
@@ -190,8 +191,15 @@ private fun HandRecordCardPreview() {
 				tableId = "1",
 				createdAt = 1710000000000L,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
-				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
-				heroStack = 62000.0,
+				heroSeat = 3,
+				players = listOf(
+					HandPlayer(
+						seat = 3,
+						cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+						initialStack = 62000.0,
+						isHero = true,
+					),
+				),
 				buttonSeat = 1,
 				streets = HandStreets(
 					flop = FlopStreet(
@@ -225,8 +233,15 @@ private fun HandRecordCardNegativePreview() {
 				tableId = "1",
 				createdAt = 1709900000000L,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
-				heroHand = PocketCards(Card(Rank.JACK, Suit.HEARTS), Card(Rank.TEN, Suit.HEARTS)),
-				heroStack = 50000.0,
+				heroSeat = 3,
+				players = listOf(
+					HandPlayer(
+						seat = 3,
+						cards = PocketCards(Card(Rank.JACK, Suit.HEARTS), Card(Rank.TEN, Suit.HEARTS)),
+						initialStack = 50000.0,
+						isHero = true,
+					),
+				),
 				buttonSeat = 3,
 				result = -8500.0,
 			),
