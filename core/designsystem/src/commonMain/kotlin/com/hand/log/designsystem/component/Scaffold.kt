@@ -28,6 +28,7 @@ fun BaseScaffold(
 	modifier: Modifier = Modifier,
 	statusBarColor: Color = HandyTheme.colorScheme.background,
 	contentPadding: PaddingValues = PaddingValues(0.dp),
+	applyNavigationBarsPadding: Boolean = true,
 	topBar: @Composable () -> Unit = {},
 	bottomBar: @Composable () -> Unit = {},
 	snackbarHost: @Composable () -> Unit = {},
@@ -55,7 +56,7 @@ fun BaseScaffold(
 		contentColor = contentColor,
 		contentWindowInsets = WindowInsets(0.dp),
 		modifier = modifier
-			.navigationBarsPadding(),
+			.then(if (applyNavigationBarsPadding) Modifier.navigationBarsPadding() else Modifier),
 	) {
 		Column(
 			modifier = Modifier

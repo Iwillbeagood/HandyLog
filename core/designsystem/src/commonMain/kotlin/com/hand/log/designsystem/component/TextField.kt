@@ -51,6 +51,7 @@ fun HandyTextField(
 	label: String = "",
 	leadingIcon: DrawableResource? = null,
 	keyboardType: KeyboardType = KeyboardType.Text,
+	minLines: Int = 1,
 	onDone: (() -> Unit)? = null,
 ) {
 	val colors = HandyTheme.colorScheme
@@ -75,7 +76,8 @@ fun HandyTextField(
 			onValueChange = onValueChange,
 			modifier = innerModifier,
 			textStyle = typography.regular14.copy(color = colors.textPrimary),
-			singleLine = true,
+			singleLine = minLines == 1,
+			minLines = minLines,
 			cursorBrush = SolidColor(colors.primary),
 			visualTransformation = visualTransformation,
 			keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = ImeAction.Done),

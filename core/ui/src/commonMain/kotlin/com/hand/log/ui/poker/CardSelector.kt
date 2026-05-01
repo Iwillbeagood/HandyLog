@@ -28,6 +28,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import com.hand.log.designsystem.component.RegularButton
 import com.hand.log.designsystem.component.modal.SheetDragBlocker
 import com.hand.log.designsystem.theme.HandyTheme
 import org.jetbrains.compose.resources.painterResource
@@ -46,12 +47,15 @@ fun CardSelectorSheet(
 	onDismiss: () -> Unit,
 	onUnknownSelected: (() -> Unit)? = null,
 	heroHand: PocketCards? = null,
+	minCards: Int = maxCards,
+	boardPreview: Boolean = false,
 	modifier: Modifier = Modifier,
 ) {
 	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 	val colors = HandyTheme.colorScheme
 	val pickedCards = remember(title, maxCards) { mutableStateListOf<Card>() }
 	val allUsedCards = selectedCards + pickedCards
+	val showConfirmButton = minCards < maxCards
 
 	ModalBottomSheet(
 		onDismissRequest = onDismiss,
@@ -80,7 +84,7 @@ fun CardSelectorSheet(
 				Text(
 					text = "${pickedCards.size} / $maxCards",
 					style = HandyTheme.typography.medium14,
-					color = if (pickedCards.size == maxCards) colors.primary else colors.textSecondary,
+					color = if (pickedCards.size >= minCards) colors.primary else colors.textSecondary,
 				)
 			}
 
@@ -96,8 +100,14 @@ fun CardSelectorSheet(
 				}
 			}
 
-			// Selected cards preview
-			if (pickedCards.isNotEmpty()) {
+			// Board cards preview (Flop | Turn | River)
+			if (boardPreview) {
+				BoardCardsPreview(
+					pickedCards = pickedCards,
+					modifier = Modifier.padding(bottom = 12.dp),
+				)
+			} else if (pickedCards.isNotEmpty()) {
+				// Selected cards preview (기존 동작)
 				Row(
 					horizontalArrangement = Arrangement.spacedBy(8.dp),
 					modifier = Modifier.padding(bottom = 12.dp),
@@ -139,14 +149,71 @@ fun CardSelectorSheet(
 					suit = suit,
 					usedCards = allUsedCards,
 					onCardSelected = { card ->
-						pickedCards.add(card)
-						if (pickedCards.size >= maxCards) {
-							onCardsSelected(pickedCards.toList())
+						if (pickedCards.size < maxCards) {
+							pickedCards.add(card)
+							if (pickedCards.size >= maxCards) {
+								onCardsSelected(pickedCards.toList())
+							}
 						}
 					},
 				)
 			}
+
+			// 선택완료 버튼 (항상 하단에 표시, minCards 미만이면 disabled)
+			if (showConfirmButton) {
+				RegularButton(
+					onClick = { onCardsSelected(pickedCards.toList()) },
+					enabled = pickedCards.size >= minCards,
+					modifier = Modifier.padding(top = 8.dp),
+				)
+			}
 		}
+	}
+}
+
+@Composable
+fun BoardCardsPreview(
+	pickedCards: List<Card>,
+	modifier: Modifier = Modifier,
+) {
+	val colors = HandyTheme.colorScheme
+	Row(
+		horizontalArrangement = Arrangement.spacedBy(4.dp),
+		verticalAlignment = Alignment.CenterVertically,
+		modifier = modifier,
+	) {
+		// Flop (3 slots)
+		(0 until 3).forEach { index ->
+			PlayingCard(
+				card = pickedCards.getOrNull(index),
+				size = CardSize.MD,
+				faceDown = pickedCards.getOrNull(index) == null,
+			)
+		}
+		// Turn separator + slot
+		Text(
+			text = "|",
+			style = HandyTheme.typography.regular14,
+			color = colors.textSecondary,
+			modifier = Modifier.padding(horizontal = 2.dp),
+		)
+		PlayingCard(
+			card = pickedCards.getOrNull(3),
+			size = CardSize.MD,
+			faceDown = pickedCards.getOrNull(3) == null,
+		)
+		// River separator + slot
+		Text(
+			text = "|",
+			style = HandyTheme.typography.regular14,
+			color = colors.textSecondary,
+			modifier = Modifier.padding(horizontal = 2.dp),
+		)
+		PlayingCard(
+			card = pickedCards.getOrNull(4),
+			size = CardSize.MD,
+			faceDown = pickedCards.getOrNull(4) == null,
+		)
 	}
 }
 

@@ -18,8 +18,9 @@ import platform.UIKit.UIWindowScene
 import platform.UIKit.popoverPresentationController
 
 actual class ShareManager {
-	actual fun shareText(text: String) {
+	actual fun shareText(text: String): Boolean {
 		UIPasteboard.generalPasteboard.string = text
+		return true
 	}
 
 	@OptIn(ExperimentalForeignApi::class)

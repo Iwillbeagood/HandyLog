@@ -7,13 +7,12 @@ import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSNotificationName
 
 @Composable
-actual fun StatusBarEffect(isDarkTheme: Boolean, backgroundColor: Color) {
-	LaunchedEffect(isDarkTheme, backgroundColor) {
+actual fun NavigationBarEffect(backgroundColor: Color) {
+	LaunchedEffect(backgroundColor) {
 		NSNotificationCenter.defaultCenter.postNotificationName(
-			aName = "UpdateStatusBarStyle" as NSNotificationName,
+			aName = "UpdateNavigationBarStyle" as NSNotificationName,
 			`object` = null,
 			userInfo = mapOf(
-				"isDarkTheme" to isDarkTheme,
 				"red" to backgroundColor.red.toDouble(),
 				"green" to backgroundColor.green.toDouble(),
 				"blue" to backgroundColor.blue.toDouble(),

@@ -66,11 +66,11 @@
 	<string name="player_setup_edit_title">%1$s번 자리 플레이어 수정</string>
 	<string name="player_setup_seat">좌석 선택</string>
 	<string name="player_setup_clear_seat">자리 비우기</string>
+	<string name="player_setup_swap_hero">이 좌석을 히어로 좌석으로 변경</string>
 	<string name="player_setup_name_required">즐겨찾기에 저장하려면 이름을 입력하세요</string>
 
 	<!-- Record Hand -->
 	<string name="record_title">핸드 기록</string>
-	<string name="record_title_edit">핸드 기록 (수정)</string>
 	<string name="record_save_error">저장 중 오류가 발생했습니다</string>
 	<string name="record_table_settings">테이블 설정</string>
 	<string name="record_hero_card">히어로 카드</string>
@@ -79,9 +79,6 @@
 	<string name="record_hero_stack">히어로 스택</string>
 	<string name="record_select_opener">오프너를 선택하세요</string>
 	<string name="record_all_actions_complete">모든 플레이어 액션 완료</string>
-	<string name="record_edit_action_log">기록된 액션</string>
-	<string name="record_edit_action_modify">액션 수정</string>
-	<string name="record_resume_recording">이어서 기록</string>
 	<string name="record_amount_label">금액 (최소 %1$s)</string>
 	<string name="record_stack_warning">스택(%1$s)을 초과하면 올인으로 처리됩니다</string>
 
@@ -101,6 +98,7 @@
 	<string name="showdown_result_lose">%1$s(으)로 패배</string>
 	<string name="showdown_result_split">%1$s(으)로 스플릿</string>
 	<string name="showdown_result_fold_win">폴드 승리</string>
+	<string name="showdown_result_fold_lose">폴드 패배</string>
 	<string name="showdown_memo">메모</string>
 	<string name="result_mark_player">마킹</string>
 
@@ -205,6 +203,9 @@
 	<string name="table_balance_hero_seat">HERO 좌석: %1$d번</string>
 	<string name="table_balance_seat_select_desc">좌석을 선택하세요 (%1$d / %2$d)</string>
 
+	<string name="hero_seat_swap_title">히어로 좌석 변경</string>
+	<string name="hero_seat_swap_desc">이동할 좌석을 선택하세요</string>
+
 	<!-- Misc -->
 	<string name="table_balance">테이블 밸런싱</string>
 	<string name="table_default_name">테이블</string>
@@ -251,6 +252,7 @@
 	<string name="ranking_two_pair">투페어</string>
 	<string name="ranking_one_pair">원페어</string>
 	<string name="ranking_high_card">하이카드</string>
+	<string name="ranking_fold">폴드</string>
 
 	<!-- Hand Record Card -->
 	<string name="hand_record_later">나중 기록</string>

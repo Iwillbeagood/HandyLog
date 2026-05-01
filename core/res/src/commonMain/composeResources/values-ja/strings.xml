@@ -11,6 +11,7 @@
 	<string name="btn_add">追加</string>
 	<string name="btn_reset">リセット</string>
 	<string name="btn_next">次へ</string>
+	<string name="btn_complete">完了</string>
 	<string name="btn_close">閉じる</string>
 	<string name="btn_undo">元に戻す</string>
 	<string name="btn_clear">クリア</string>
@@ -63,11 +64,11 @@
 	<string name="player_setup_edit_title">Seat %1$s プレイヤー編集</string>
 	<string name="player_setup_seat">席選択</string>
 	<string name="player_setup_clear_seat">席を空ける</string>
+	<string name="player_setup_swap_hero">この席をヒーロー席に変更</string>
 	<string name="player_setup_name_required">お気に入りに保存するには名前を入力してください</string>
 
 	<!-- Record Hand -->
 	<string name="record_title">ハンド記録</string>
-	<string name="record_title_edit">ハンド記録 (編集)</string>
 	<string name="record_save_error">保存中にエラーが発生しました</string>
 	<string name="record_table_settings">テーブル設定</string>
 	<string name="record_hero_card">ヒーローカード</string>
@@ -76,9 +77,6 @@
 	<string name="record_hero_stack">ヒーロースタック</string>
 	<string name="record_select_opener">オープナーを選択してください</string>
 	<string name="record_all_actions_complete">全プレイヤーのアクション完了</string>
-	<string name="record_edit_action_log">記録されたアクション</string>
-	<string name="record_edit_action_modify">アクション修正</string>
-	<string name="record_resume_recording">続けて記録</string>
 	<string name="record_amount_label">金額（最小 %s）</string>
 	<string name="record_stack_warning">スタック（%s）を超えるとオールインとして処理されます</string>
 
@@ -98,6 +96,7 @@
 	<string name="showdown_result_lose">%1$sで敗北</string>
 	<string name="showdown_result_split">%1$sでスプリット</string>
 	<string name="showdown_result_fold_win">フォールド勝利</string>
+	<string name="showdown_result_fold_lose">フォールド敗北</string>
 	<string name="showdown_memo">メモ</string>
 	<string name="result_mark_player">マーク</string>
 
@@ -180,4 +179,6 @@
 	<string name="table_balance">テーブルバランス</string>
 	<string name="table_balance_player_count">プレイヤー数: %1$d / %2$d</string>
 	<string name="table_balance_hero_seat">HERO席: %1$d番</string>
+	<string name="hero_seat_swap_title">ヒーロー席変更</string>
+	<string name="hero_seat_swap_desc">移動先の席を選択してください</string>
 </resources>

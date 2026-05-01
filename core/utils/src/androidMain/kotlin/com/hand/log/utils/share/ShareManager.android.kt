@@ -13,13 +13,14 @@ import androidx.core.content.FileProvider
 import java.io.File
 
 actual class ShareManager(private val context: Context) {
-	actual fun shareText(text: String) {
+	actual fun shareText(text: String): Boolean {
 		val intent = Intent(Intent.ACTION_SEND).apply {
 			type = "text/plain"
 			putExtra(Intent.EXTRA_TEXT, text)
 			flags += Intent.FLAG_ACTIVITY_NEW_TASK
 		}
 		context.startActivity(Intent.createChooser(intent, null))
+		return false
 	}
 
 	actual fun shareImage(imageBytes: ByteArray, fileName: String) {

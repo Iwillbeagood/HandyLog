@@ -5,6 +5,7 @@ import com.hand.log.domain.model.Action
 import com.hand.log.domain.model.ActionType
 import com.hand.log.domain.model.GameType
 import com.hand.log.domain.model.HandRanking
+import com.hand.log.domain.model.HeroResultType
 import com.hand.log.domain.model.PlayerTendency
 import com.hand.log.domain.model.Street
 import com.hand.log.domain.model.ThemeMode
@@ -76,6 +77,21 @@ fun ThemeMode.localizedDesc(): String = when (this) {
 }
 
 @Composable
+fun HeroResultType.localizedLabel(ranking: String = ""): String = when {
+	this == HeroResultType.FOLD_WIN -> stringResource(Res.string.showdown_result_fold_win)
+	this == HeroResultType.FOLD_LOSE -> stringResource(Res.string.showdown_result_fold_lose)
+	ranking.isEmpty() && this == HeroResultType.SHOWDOWN_WIN -> stringResource(
+		Res.string.showdown_result_fold_win,
+	)
+	ranking.isEmpty() && this == HeroResultType.SHOWDOWN_LOSE -> stringResource(
+		Res.string.showdown_result_fold_lose,
+	)
+	this == HeroResultType.SHOWDOWN_SPLIT -> stringResource(Res.string.showdown_result_split, ranking)
+	this == HeroResultType.SHOWDOWN_WIN -> stringResource(Res.string.showdown_result_win, ranking)
+	else -> stringResource(Res.string.showdown_result_lose, ranking)
+}
+
+@Composable
 fun HandRanking.localizedLabel(): String = when (this) {
 	HandRanking.ROYAL_FLUSH -> stringResource(Res.string.ranking_royal_flush)
 	HandRanking.STRAIGHT_FLUSH -> stringResource(Res.string.ranking_straight_flush)
@@ -87,4 +103,5 @@ fun HandRanking.localizedLabel(): String = when (this) {
 	HandRanking.TWO_PAIR -> stringResource(Res.string.ranking_two_pair)
 	HandRanking.ONE_PAIR -> stringResource(Res.string.ranking_one_pair)
 	HandRanking.HIGH_CARD -> stringResource(Res.string.ranking_high_card)
+	HandRanking.WIN_BY_FOLD -> stringResource(Res.string.ranking_fold)
 }

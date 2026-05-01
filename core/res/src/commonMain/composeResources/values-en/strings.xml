@@ -11,6 +11,7 @@
 	<string name="btn_add">Add</string>
 	<string name="btn_reset">Reset</string>
 	<string name="btn_next">Next</string>
+	<string name="btn_complete">Done</string>
 	<string name="btn_close">Close</string>
 	<string name="btn_undo">Undo</string>
 	<string name="btn_clear">Clear</string>
@@ -63,11 +64,11 @@
 	<string name="player_setup_edit_title">Edit Seat %1$s Player</string>
 	<string name="player_setup_seat">Seat</string>
 	<string name="player_setup_clear_seat">Clear Seat</string>
+	<string name="player_setup_swap_hero">Set as Hero Seat</string>
 	<string name="player_setup_name_required">Enter a name to save to favorites</string>
 
 	<!-- Record Hand -->
 	<string name="record_title">Record Hand</string>
-	<string name="record_title_edit">Record Hand (Edit)</string>
 	<string name="record_save_error">Error saving hand</string>
 	<string name="record_table_settings">Table Settings</string>
 	<string name="record_hero_card">Hero Cards</string>
@@ -76,9 +77,6 @@
 	<string name="record_hero_stack">Hero Stack</string>
 	<string name="record_select_opener">Select the opener</string>
 	<string name="record_all_actions_complete">All actions complete</string>
-	<string name="record_edit_action_log">Recorded Actions</string>
-	<string name="record_edit_action_modify">Edit Actions</string>
-	<string name="record_resume_recording">Resume Recording</string>
 	<string name="record_amount_label">Amount (min %s)</string>
 	<string name="record_stack_warning">Exceeding stack (%s) will be treated as all-in</string>
 
@@ -98,6 +96,7 @@
 	<string name="showdown_result_lose">Lose with %1$s</string>
 	<string name="showdown_result_split">Split with %1$s</string>
 	<string name="showdown_result_fold_win">Fold Win</string>
+	<string name="showdown_result_fold_lose">Fold Loss</string>
 	<string name="showdown_memo">Memo</string>
 	<string name="result_mark_player">Mark</string>
 
@@ -180,4 +179,6 @@
 	<string name="table_balance">Table Balance</string>
 	<string name="table_balance_player_count">Players: %1$d / %2$d</string>
 	<string name="table_balance_hero_seat">HERO Seat: #%1$d</string>
+	<string name="hero_seat_swap_title">Change Hero Seat</string>
+	<string name="hero_seat_swap_desc">Select the seat to move to</string>
 </resources>

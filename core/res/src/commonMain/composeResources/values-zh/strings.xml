@@ -11,6 +11,7 @@
 	<string name="btn_add">添加</string>
 	<string name="btn_reset">重置</string>
 	<string name="btn_next">下一步</string>
+	<string name="btn_complete">完成</string>
 	<string name="btn_close">关闭</string>
 	<string name="btn_undo">撤销</string>
 	<string name="btn_clear">清除</string>
@@ -63,11 +64,11 @@
 	<string name="player_setup_edit_title">Seat %1$s 编辑玩家</string>
 	<string name="player_setup_seat">选择座位</string>
 	<string name="player_setup_clear_seat">清空座位</string>
+	<string name="player_setup_swap_hero">将此座位设为主角座位</string>
 	<string name="player_setup_name_required">请输入名称以保存到收藏</string>
 
 	<!-- Record Hand -->
 	<string name="record_title">记录手牌</string>
-	<string name="record_title_edit">记录手牌 (编辑)</string>
 	<string name="record_save_error">保存时发生错误</string>
 	<string name="record_table_settings">桌子设置</string>
 	<string name="record_hero_card">主角手牌</string>
@@ -76,9 +77,6 @@
 	<string name="record_hero_stack">主角筹码</string>
 	<string name="record_select_opener">选择开局者</string>
 	<string name="record_all_actions_complete">所有玩家行动完毕</string>
-	<string name="record_edit_action_log">已记录的行动</string>
-	<string name="record_edit_action_modify">修改行动</string>
-	<string name="record_resume_recording">继续记录</string>
 	<string name="record_amount_label">金额（最小 %s）</string>
 	<string name="record_stack_warning">超过筹码（%s）将被视为全押</string>
 
@@ -98,6 +96,7 @@
 	<string name="showdown_result_lose">以%1$s落败</string>
 	<string name="showdown_result_split">以%1$s平分</string>
 	<string name="showdown_result_fold_win">弃牌获胜</string>
+	<string name="showdown_result_fold_lose">弃牌落败</string>
 	<string name="showdown_memo">备注</string>
 	<string name="result_mark_player">标记</string>
 
@@ -180,4 +179,6 @@
 	<string name="table_balance">桌面平衡</string>
 	<string name="table_balance_player_count">玩家数: %1$d / %2$d</string>
 	<string name="table_balance_hero_seat">HERO座位: %1$d号</string>
+	<string name="hero_seat_swap_title">更改主角座位</string>
+	<string name="hero_seat_swap_desc">选择要移动到的座位</string>
 </resources>
