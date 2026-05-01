@@ -5,10 +5,8 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.hand.log.domain.model.Blinds
+import com.hand.log.domain.model.HandPlayer
 import com.hand.log.domain.model.HandStreets
-import com.hand.log.domain.model.PocketCards
-import com.hand.log.domain.model.ShowdownEntry
-import com.hand.log.domain.model.ShowdownResult
 
 @Entity(
 	tableName = "hand_records",
@@ -27,13 +25,10 @@ data class HandRecordEntity(
 	val tableId: String,
 	val createdAt: Long,
 	val blinds: Blinds? = null,
-	val heroHand: PocketCards? = null,
 	val heroSeat: Int = 0,
-	val heroStack: Double = 0.0,
 	val buttonSeat: Int = 1,
 	val streets: HandStreets = HandStreets(),
-	val showdown: List<ShowdownEntry> = emptyList(),
-	val showdownResults: List<ShowdownResult> = emptyList(),
+	val players: List<HandPlayer> = emptyList(),
 	val result: Double? = null,
 	val memo: String? = null,
 )

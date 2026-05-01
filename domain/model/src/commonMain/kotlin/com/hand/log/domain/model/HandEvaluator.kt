@@ -17,6 +17,7 @@ enum class HandRanking {
 	TWO_PAIR,
 	ONE_PAIR,
 	HIGH_CARD,
+	WIN_BY_FOLD,
 }
 
 /**

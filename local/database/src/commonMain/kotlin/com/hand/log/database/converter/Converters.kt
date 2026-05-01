@@ -4,10 +4,9 @@ import androidx.room.TypeConverter
 import com.hand.log.domain.model.ActionType
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.GameType
+import com.hand.log.domain.model.HandPlayer
 import com.hand.log.domain.model.HandStreets
 import com.hand.log.domain.model.PocketCards
-import com.hand.log.domain.model.ShowdownEntry
-import com.hand.log.domain.model.ShowdownResult
 import com.hand.log.domain.model.PlayerTendency
 import com.hand.log.domain.model.Street
 import kotlinx.datetime.LocalDate
@@ -21,7 +20,6 @@ class Converters {
 
 	@TypeConverter
 	fun toGameType(value: String): GameType {
-		// 이전 enum 형태 ("TOURNAMENT", "CASH") 호환
 		return when (value) {
 			"TOURNAMENT" -> GameType.Tournament()
 			"CASH" -> GameType.Cash(sb = 0.0, bb = 0.0)
@@ -72,14 +70,8 @@ class Converters {
 	fun toHandStreets(value: String): HandStreets = json.decodeFromString(HandStreets.serializer(), value)
 
 	@TypeConverter
-	fun fromShowdown(value: List<ShowdownEntry>): String = json.encodeToString(value)
+	fun fromHandPlayers(value: List<HandPlayer>): String = json.encodeToString(value)
 
 	@TypeConverter
-	fun toShowdown(value: String): List<ShowdownEntry> = json.decodeFromString(value)
-
-	@TypeConverter
-	fun fromShowdownResults(value: List<ShowdownResult>): String = json.encodeToString(value)
-
-	@TypeConverter
-	fun toShowdownResults(value: String): List<ShowdownResult> = json.decodeFromString(value)
+	fun toHandPlayers(value: String): List<HandPlayer> = json.decodeFromString(value)
 }

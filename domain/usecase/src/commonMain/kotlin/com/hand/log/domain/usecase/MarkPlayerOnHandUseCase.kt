@@ -16,6 +16,13 @@ class MarkPlayerOnHandUseCase(
 		savedPlayerRepository.savePlayer(player)
 		val saved = savedPlayerRepository.getPlayerByName(player.name) ?: return
 		val hand = handRecordRepository.getHandById(handId) ?: return
+
+		// players 리스트 업데이트
+		val updatedPlayers = hand.players.map { p ->
+			if (p.seat == seat) p.copy(savedPlayerId = saved.id, playerName = saved.name) else p
+		}
+
+		// Action의 playerName/savedPlayerId도 업데이트 (하위 호환)
 		val updatedPreflop = hand.streets.preflop.copy(
 			actions = hand.streets.preflop.actions.map { action ->
 				if (action.playerSeat == seat) {
@@ -25,7 +32,9 @@ class MarkPlayerOnHandUseCase(
 				}
 			},
 		)
+
 		val updatedHand = hand.copy(
+			players = updatedPlayers,
 			streets = hand.streets.copy(preflop = updatedPreflop),
 		)
 		handRecordRepository.saveHand(updatedHand)

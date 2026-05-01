@@ -9,9 +9,11 @@ class SavePlayerPositionsUseCase(
 ) {
 
 	suspend operator fun invoke(table: PokerTable, selectedSeats: Set<Int>) {
+		// 히어로 좌석을 반드시 포함
+		val allSeats = selectedSeats + table.heroSeat
 		val currentSeats = table.players.map { it.seat }.toSet()
-		val seatsToAdd = selectedSeats - currentSeats
-		val seatsToRemove = currentSeats - selectedSeats - setOf(table.heroSeat)
+		val seatsToAdd = allSeats - currentSeats
+		val seatsToRemove = currentSeats - allSeats
 
 		if (!table.hasShownPositionSetup) {
 			pokerTableRepository.updateTableInfo(table.copy(hasShownPositionSetup = true))

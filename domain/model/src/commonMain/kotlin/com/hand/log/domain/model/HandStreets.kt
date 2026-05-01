@@ -108,6 +108,14 @@ data class HandStreets(
 		Street.RIVER -> copy(river = (river ?: RiverStreet()).copy(card = cards.firstOrNull()))
 	}
 
+	/** 모든 스트릿의 액션만 제거하고 보드 카드는 보존 */
+	fun clearActions(): HandStreets = copy(
+		preflop = preflop.copy(actions = emptyList()),
+		flop = flop?.copy(actions = emptyList()),
+		turn = turn?.copy(actions = emptyList()),
+		river = river?.copy(actions = emptyList()),
+	)
+
 	/** 해당 스트릿 이후의 모든 스트릿 데이터 제거 */
 	fun clearAfter(street: Street): HandStreets = when (street) {
 		Street.PREFLOP -> copy(flop = null, turn = null, river = null)

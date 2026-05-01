@@ -220,6 +220,29 @@ class HandEvaluatorTest {
 	}
 
 	@Test
+	fun `1명만 쇼다운 시 자동 승리`() {
+		val board = listOf(
+			card(Rank.ACE, Suit.HEARTS),
+			card(Rank.KING, Suit.DIAMONDS),
+			card(Rank.QUEEN, Suit.CLUBS),
+			card(Rank.JACK, Suit.SPADES),
+			card(Rank.TWO, Suit.HEARTS),
+		)
+
+		val players = listOf(
+			ShowdownEntry(
+				seat = 1,
+				cards = PocketCards(card(Rank.TEN, Suit.HEARTS), card(Rank.NINE, Suit.HEARTS)),
+			),
+		)
+
+		val results = HandEvaluator.calculateShowdown(board, players)
+		assertEquals(1, results.size)
+		assertTrue(results.first().isWinner)
+		assertEquals(HandRanking.STRAIGHT, results.first().ranking)
+	}
+
+	@Test
 	fun `풀하우스가 플러시를 이긴다`() {
 		val hand1 = HandEvaluator.evaluateBest(
 			listOf(
