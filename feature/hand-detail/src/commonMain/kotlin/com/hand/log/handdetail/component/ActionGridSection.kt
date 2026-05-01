@@ -27,6 +27,7 @@ import com.hand.log.domain.model.ActionType
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.FlopStreet
+import com.hand.log.domain.model.HandPlayer
 import com.hand.log.domain.model.HandRecord
 import com.hand.log.domain.model.HandStreets
 import com.hand.log.domain.model.PocketCards
@@ -256,9 +257,7 @@ private fun ActionGridSectionPreview() {
 				tableId = "t1",
 				createdAt = 0L,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
-				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 				heroSeat = 3,
-				heroStack = 50000.0,
 				buttonSeat = 1,
 				streets = HandStreets(
 					preflop = PreflopStreet(
@@ -323,6 +322,14 @@ private fun ActionGridSectionPreview() {
 						),
 					),
 					river = RiverStreet(card = Card(Rank.TWO, Suit.CLUBS)),
+				),
+				players = listOf(
+					HandPlayer(
+						seat = 3,
+						cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+						initialStack = 50000.0,
+						isHero = true,
+					),
 				),
 				result = 49000.0,
 			),

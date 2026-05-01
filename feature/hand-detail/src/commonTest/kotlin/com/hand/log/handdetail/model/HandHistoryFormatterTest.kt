@@ -5,6 +5,7 @@ import com.hand.log.domain.model.ActionType
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.FlopStreet
+import com.hand.log.domain.model.HandPlayer
 import com.hand.log.domain.model.HandRecord
 import com.hand.log.domain.model.HandStreets
 import com.hand.log.domain.model.PocketCards
@@ -27,6 +28,39 @@ class HandHistoryFormatterTest {
 		board,
 		e,
 	)
+
+	/** showdown entries + results -> HandPlayer list */
+	private fun players(
+		heroSeat: Int,
+		heroStack: Double,
+		heroCards: PocketCards,
+		entries: List<ShowdownEntry>,
+		board: List<Card>,
+	): List<HandPlayer> {
+		val results = if (board.size == 5 && entries.size >= 2) sd(board, entries) else emptyList()
+		return entries.map { entry ->
+			val result = results.find { it.seat == entry.seat }
+			HandPlayer(
+				seat = entry.seat,
+				cards = entry.cards,
+				initialStack = if (entry.seat == heroSeat) heroStack else null,
+				ranking = result?.ranking,
+				bestCards = result?.bestCards ?: emptyList(),
+				outcome = result?.outcome,
+				isHero = entry.seat == heroSeat,
+			)
+		}
+	}
+
+	/** hero-only (no showdown) */
+	private fun heroPlayer(
+		seat: Int,
+		stack: Double,
+		cards: PocketCards,
+	): List<HandPlayer> = listOf(
+		HandPlayer(seat = seat, cards = cards, initialStack = stack, isHero = true),
+	)
+
 	private fun assertFmt(hand: HandRecord, expected: String) =
 		assertEquals(expected.trimIndent().trim(), HandHistoryFormatter.format(hand).trim())
 
@@ -47,7 +81,7 @@ class HandHistoryFormatterTest {
 			)
 		assertFmt(
 			HandRecord(
-				id = "h1", tableId = "t1", createdAt = 0L, blinds = ante, heroHand = e[0].cards, heroSeat = 5, heroStack = 50000.0, buttonSeat = 4,
+				id = "h1", tableId = "t1", createdAt = 0L, blinds = ante, heroSeat = 5, buttonSeat = 4,
 				streets = HandStreets(
 					preflop = PreflopStreet(
 						listOf(
@@ -63,7 +97,14 @@ class HandHistoryFormatterTest {
 					turn = TurnStreet(board[3]),
 					river = RiverStreet(board[4]),
 				),
-				showdown = e, showdownResults = sd(board, e), result = 49000.0,
+				players = players(
+					heroSeat = 5,
+					heroStack = 50000.0,
+					heroCards = e[0].cards,
+					entries = e,
+					board = board,
+				),
+				result = 49000.0,
 			),
 			"""
             [Stacks]
@@ -113,7 +154,7 @@ class HandHistoryFormatterTest {
 			)
 		assertFmt(
 			HandRecord(
-				id = "h2", tableId = "t1", createdAt = 0L, blinds = ante, heroHand = e[0].cards, heroSeat = 5, heroStack = 40000.0, buttonSeat = 4,
+				id = "h2", tableId = "t1", createdAt = 0L, blinds = ante, heroSeat = 5, buttonSeat = 4,
 				streets = HandStreets(
 					preflop = PreflopStreet(
 						listOf(
@@ -129,7 +170,14 @@ class HandHistoryFormatterTest {
 					turn = TurnStreet(board[3]),
 					river = RiverStreet(board[4]),
 				),
-				showdown = e, showdownResults = sd(board, e), result = 0.0,
+				players = players(
+					heroSeat = 5,
+					heroStack = 40000.0,
+					heroCards = e[0].cards,
+					entries = e,
+					board = board,
+				),
+				result = 0.0,
 			),
 			"""
             [Stacks]
@@ -180,7 +228,7 @@ class HandHistoryFormatterTest {
 			)
 		assertFmt(
 			HandRecord(
-				id = "h3", tableId = "t1", createdAt = 0L, blinds = ante, heroHand = e[0].cards, heroSeat = 4, heroStack = 25000.0, buttonSeat = 1,
+				id = "h3", tableId = "t1", createdAt = 0L, blinds = ante, heroSeat = 4, buttonSeat = 1,
 				streets = HandStreets(
 					preflop = PreflopStreet(
 						listOf(
@@ -240,7 +288,14 @@ class HandHistoryFormatterTest {
 					turn = TurnStreet(board[3]),
 					river = RiverStreet(board[4]),
 				),
-				showdown = e, showdownResults = sd(board, e), result = 41000.0,
+				players = players(
+					heroSeat = 4,
+					heroStack = 25000.0,
+					heroCards = e[0].cards,
+					entries = e,
+					board = board,
+				),
+				result = 41000.0,
 			),
 			"""
             [Stacks]
@@ -288,11 +343,7 @@ class HandHistoryFormatterTest {
 		assertFmt(
 			HandRecord(
 				id = "h4", tableId = "t1", createdAt = 0L, blinds = ante,
-				heroHand = p(
-					c(Rank.ACE, Suit.SPADES),
-					c(Rank.ACE, Suit.HEARTS),
-				),
-				heroSeat = 4, heroStack = 50000.0, buttonSeat = 1,
+				heroSeat = 4, buttonSeat = 1,
 				streets = HandStreets(
 					preflop = PreflopStreet(
 						listOf(
@@ -351,6 +402,11 @@ class HandHistoryFormatterTest {
 						),
 					),
 				),
+				players = heroPlayer(
+					seat = 4,
+					stack = 50000.0,
+					cards = p(c(Rank.ACE, Suit.SPADES), c(Rank.ACE, Suit.HEARTS)),
+				),
 				result = 13000.0,
 			),
 			"""
@@ -394,7 +450,7 @@ class HandHistoryFormatterTest {
 			)
 		assertFmt(
 			HandRecord(
-				id = "h6", tableId = "t1", createdAt = 0L, blinds = noAnte, heroHand = e[0].cards, heroSeat = 1, heroStack = 50000.0, buttonSeat = 1,
+				id = "h6", tableId = "t1", createdAt = 0L, blinds = noAnte, heroSeat = 1, buttonSeat = 1,
 				streets = HandStreets(
 					preflop = PreflopStreet(
 						listOf(
@@ -406,7 +462,14 @@ class HandHistoryFormatterTest {
 					turn = TurnStreet(board[3]),
 					river = RiverStreet(board[4]),
 				),
-				showdown = e, showdownResults = sd(board, e), result = 0.0,
+				players = players(
+					heroSeat = 1,
+					heroStack = 50000.0,
+					heroCards = e[0].cards,
+					entries = e,
+					board = board,
+				),
+				result = 0.0,
 			),
 			"""
             [Stacks]
@@ -459,7 +522,7 @@ class HandHistoryFormatterTest {
 			)
 		assertFmt(
 			HandRecord(
-				id = "e1", tableId = "t1", createdAt = 0L, blinds = ante, heroHand = e[0].cards, heroSeat = 4, heroStack = 100000.0, buttonSeat = 1,
+				id = "e1", tableId = "t1", createdAt = 0L, blinds = ante, heroSeat = 4, buttonSeat = 1,
 				streets = HandStreets(
 					preflop = PreflopStreet(
 						listOf(
@@ -496,7 +559,14 @@ class HandHistoryFormatterTest {
 					),
 					river = RiverStreet(board[4]),
 				),
-				showdown = e, showdownResults = sd(board, e), result = 80000.0,
+				players = players(
+					heroSeat = 4,
+					heroStack = 100000.0,
+					heroCards = e[0].cards,
+					entries = e,
+					board = board,
+				),
+				result = 80000.0,
 			),
 			"""
 		[Stacks]
@@ -566,7 +636,7 @@ class HandHistoryFormatterTest {
 			)
 		assertFmt(
 			HandRecord(
-				id = "e2", tableId = "t1", createdAt = 0L, blinds = ante, heroHand = e[0].cards, heroSeat = 5, heroStack = 50000.0, buttonSeat = 4,
+				id = "e2", tableId = "t1", createdAt = 0L, blinds = ante, heroSeat = 5, buttonSeat = 4,
 				streets = HandStreets(
 					preflop = PreflopStreet(
 						listOf(
@@ -582,7 +652,14 @@ class HandHistoryFormatterTest {
 					turn = TurnStreet(board[3]),
 					river = RiverStreet(board[4]),
 				),
-				showdown = e, showdownResults = sd(board, e), result = 29000.0,
+				players = players(
+					heroSeat = 5,
+					heroStack = 50000.0,
+					heroCards = e[0].cards,
+					entries = e,
+					board = board,
+				),
+				result = 29000.0,
 			),
 			"""
 		[Stacks]
@@ -633,7 +710,7 @@ class HandHistoryFormatterTest {
 			)
 		assertFmt(
 			HandRecord(
-				id = "e3", tableId = "t1", createdAt = 0L, blinds = ante, heroHand = e[0].cards, heroSeat = 4, heroStack = 100000.0, buttonSeat = 1,
+				id = "e3", tableId = "t1", createdAt = 0L, blinds = ante, heroSeat = 4, buttonSeat = 1,
 				streets = HandStreets(
 					preflop = PreflopStreet(
 						listOf(
@@ -695,7 +772,14 @@ class HandHistoryFormatterTest {
 					turn = TurnStreet(board[3]),
 					river = RiverStreet(board[4]),
 				),
-				showdown = e, showdownResults = sd(board, e), result = 30000.0,
+				players = players(
+					heroSeat = 4,
+					heroStack = 100000.0,
+					heroCards = e[0].cards,
+					entries = e,
+					board = board,
+				),
+				result = 30000.0,
 			),
 			"""
 		[Stacks]
@@ -756,7 +840,7 @@ class HandHistoryFormatterTest {
 			)
 		assertFmt(
 			HandRecord(
-				id = "e4", tableId = "t1", createdAt = 0L, blinds = ante, heroHand = e[0].cards, heroSeat = 4, heroStack = 100000.0, buttonSeat = 1,
+				id = "e4", tableId = "t1", createdAt = 0L, blinds = ante, heroSeat = 4, buttonSeat = 1,
 				streets = HandStreets(
 					preflop = PreflopStreet(
 						listOf(
@@ -817,7 +901,14 @@ class HandHistoryFormatterTest {
 					turn = TurnStreet(board[3]),
 					river = RiverStreet(board[4]),
 				),
-				showdown = e, showdownResults = sd(board, e), result = 0.0,
+				players = players(
+					heroSeat = 4,
+					heroStack = 100000.0,
+					heroCards = e[0].cards,
+					entries = e,
+					board = board,
+				),
+				result = 0.0,
 			),
 			"""
 		[Stacks]
@@ -879,7 +970,7 @@ class HandHistoryFormatterTest {
 		assertFmt(
 			HandRecord(
 				id = "e10", tableId = "t1", createdAt = 0L, blinds = ante,
-				heroHand = e[0].cards, heroSeat = 4, heroStack = 100000.0, buttonSeat = 1,
+				heroSeat = 4, buttonSeat = 1,
 				streets = HandStreets(
 					preflop = PreflopStreet(
 						listOf(
@@ -900,7 +991,14 @@ class HandHistoryFormatterTest {
 					turn = TurnStreet(board[3]),
 					river = RiverStreet(board[4]),
 				),
-				showdown = e, showdownResults = sd(board, e), result = 56250.0,
+				players = players(
+					heroSeat = 4,
+					heroStack = 100000.0,
+					heroCards = e[0].cards,
+					entries = e,
+					board = board,
+				),
+				result = 56250.0,
 			),
 			"""
 		[Stacks]
@@ -948,11 +1046,7 @@ class HandHistoryFormatterTest {
 		assertFmt(
 			HandRecord(
 				id = "e5", tableId = "t1", createdAt = 0L, blinds = ante,
-				heroHand = p(
-					c(Rank.ACE, Suit.SPADES),
-					c(Rank.KING, Suit.HEARTS),
-				),
-				heroSeat = 5, heroStack = 50000.0, buttonSeat = 4,
+				heroSeat = 5, buttonSeat = 4,
 				streets = HandStreets(
 					preflop = PreflopStreet(
 						listOf(
@@ -964,6 +1058,11 @@ class HandHistoryFormatterTest {
 							Action(6, ActionType.FOLD),
 						),
 					),
+				),
+				players = heroPlayer(
+					seat = 5,
+					stack = 50000.0,
+					cards = p(c(Rank.ACE, Suit.SPADES), c(Rank.KING, Suit.HEARTS)),
 				),
 				result = 2500.0,
 			),
@@ -987,11 +1086,7 @@ class HandHistoryFormatterTest {
 		assertFmt(
 			HandRecord(
 				id = "e6", tableId = "t1", createdAt = 0L, blinds = ante,
-				heroHand = p(
-					c(Rank.SEVEN, Suit.HEARTS),
-					c(Rank.TWO, Suit.HEARTS),
-				),
-				heroSeat = 5, heroStack = 50000.0, buttonSeat = 4,
+				heroSeat = 5, buttonSeat = 4,
 				streets = HandStreets(
 					preflop = PreflopStreet(
 						listOf(
@@ -1017,6 +1112,11 @@ class HandHistoryFormatterTest {
 						c(Rank.THREE, Suit.DIAMONDS),
 						listOf(Action(5, ActionType.ALL_IN, 49000.0, 49000.0), Action(6, ActionType.FOLD)),
 					),
+				),
+				players = heroPlayer(
+					seat = 5,
+					stack = 50000.0,
+					cards = p(c(Rank.SEVEN, Suit.HEARTS), c(Rank.TWO, Suit.HEARTS)),
 				),
 				result = 2000.0,
 			),
@@ -1068,7 +1168,7 @@ class HandHistoryFormatterTest {
 			)
 		assertFmt(
 			HandRecord(
-				id = "e7", tableId = "t1", createdAt = 0L, blinds = ante, heroHand = e[0].cards, heroSeat = 4, heroStack = 50000.0, buttonSeat = 1,
+				id = "e7", tableId = "t1", createdAt = 0L, blinds = ante, heroSeat = 4, buttonSeat = 1,
 				streets = HandStreets(
 					preflop = PreflopStreet(
 						listOf(
@@ -1129,7 +1229,14 @@ class HandHistoryFormatterTest {
 						listOf(Action(4, ActionType.CHECK), Action(5, ActionType.CHECK)),
 					),
 				),
-				showdown = e, showdownResults = sd(board, e), result = 42500.0,
+				players = players(
+					heroSeat = 4,
+					heroStack = 50000.0,
+					heroCards = e[0].cards,
+					entries = e,
+					board = board,
+				),
+				result = 42500.0,
 			),
 			"""
 		[Stacks]
@@ -1190,7 +1297,7 @@ class HandHistoryFormatterTest {
 			)
 		assertFmt(
 			HandRecord(
-				id = "e8", tableId = "t1", createdAt = 0L, blinds = ante, heroHand = e[0].cards, heroSeat = 1, heroStack = 50000.0, buttonSeat = 1,
+				id = "e8", tableId = "t1", createdAt = 0L, blinds = ante, heroSeat = 1, buttonSeat = 1,
 				streets = HandStreets(
 					preflop = PreflopStreet(
 						listOf(
@@ -1214,7 +1321,14 @@ class HandHistoryFormatterTest {
 						listOf(Action(2, ActionType.CHECK), Action(1, ActionType.CHECK)),
 					),
 				),
-				showdown = e, showdownResults = sd(board, e), result = 7000.0,
+				players = players(
+					heroSeat = 1,
+					heroStack = 50000.0,
+					heroCards = e[0].cards,
+					entries = e,
+					board = board,
+				),
+				result = 7000.0,
 			),
 			"""
 		[Stacks]
@@ -1271,7 +1385,7 @@ class HandHistoryFormatterTest {
 			)
 		assertFmt(
 			HandRecord(
-				id = "e9", tableId = "t1", createdAt = 0L, blinds = ante, heroHand = e[0].cards, heroSeat = 1, heroStack = 30000.0, buttonSeat = 1,
+				id = "e9", tableId = "t1", createdAt = 0L, blinds = ante, heroSeat = 1, buttonSeat = 1,
 				streets = HandStreets(
 					preflop = PreflopStreet(
 						listOf(
@@ -1283,7 +1397,14 @@ class HandHistoryFormatterTest {
 					turn = TurnStreet(board[3]),
 					river = RiverStreet(board[4]),
 				),
-				showdown = e, showdownResults = sd(board, e), result = 29000.0,
+				players = players(
+					heroSeat = 1,
+					heroStack = 30000.0,
+					heroCards = e[0].cards,
+					entries = e,
+					board = board,
+				),
+				result = 29000.0,
 			),
 			"""
 		[Stacks]

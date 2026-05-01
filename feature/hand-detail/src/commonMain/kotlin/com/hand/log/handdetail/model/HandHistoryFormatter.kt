@@ -18,6 +18,7 @@ import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.FlopStreet
 import com.hand.log.domain.model.HandRecord
 import com.hand.log.domain.model.HandStreets
+import com.hand.log.domain.model.HandPlayer
 import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.PreflopStreet
 import com.hand.log.domain.model.Rank
@@ -49,7 +50,7 @@ object HandHistoryFormatter {
 			val isHero = seat == heroSeat
 			val stack = hand.getInitialStack(seat)
 			if (stack != null) {
-				val bbStack = formatBb(stack, bb)
+				val bbStack = if (stack == 0.0) "??BB" else formatBb(stack, bb)
 				val heroCards = if (isHero) {
 					hand.heroHand?.let { " ${formatCard(it.card1)}${formatCard(it.card2)}" } ?: ""
 				} else {
@@ -236,10 +237,14 @@ object HandHistoryFormatter {
 			appendLine()
 		}
 
-		// --- Result ---
+		// --- Result (팟에 참여한 플레이어만) ---
+		appendLine("[Result]")
 		val finalStacks = hand.getFinalStacks(HandEvaluator::calculateShowdown)
+		val participatedSeats = allSeats.filter {
+			it !in preflopFoldedSeats || it in preflopSeatsWithNonFoldAction
+		}
 
-		hand.allSeats.filter { hand.getInitialStack(it) != null }.forEach { seat ->
+		participatedSeats.forEach { seat ->
 			val finalStack = finalStacks[seat] ?: return@forEach
 			val posName = hand.getPositionName(seat)
 			val isHero = seat == heroSeat
@@ -441,14 +446,30 @@ object HandHistoryFormatter {
 @ThemePreviews
 @Composable
 private fun HandHistoryFormatterPreview() {
+	val boardCards = listOf(
+		Card(Rank.ACE, Suit.HEARTS),
+		Card(Rank.TEN, Suit.DIAMONDS),
+		Card(Rank.SEVEN, Suit.CLUBS),
+		Card(Rank.KING, Suit.HEARTS),
+		Card(Rank.TWO, Suit.CLUBS),
+	)
+	val showdownEntries = listOf(
+		ShowdownEntry(
+			seat = 3,
+			cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+		),
+		ShowdownEntry(
+			seat = 6,
+			cards = PocketCards(Card(Rank.ACE, Suit.HEARTS), Card(Rank.TEN, Suit.HEARTS)),
+		),
+	)
+	val results = HandEvaluator.calculateShowdown(boardCards, showdownEntries)
 	val hand = HandRecord(
 		id = "h1",
 		tableId = "t1",
 		createdAt = 0L,
 		blinds = Blinds(sb = 500.0, bb = 1000.0),
-		heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 		heroSeat = 3,
-		heroStack = 50000.0,
 		buttonSeat = 1,
 		streets = HandStreets(
 			preflop = PreflopStreet(
@@ -518,33 +539,22 @@ private fun HandHistoryFormatterPreview() {
 				card = Card(Rank.TWO, Suit.CLUBS),
 			),
 		),
-		showdown = listOf(
-			ShowdownEntry(
+		players = listOf(
+			HandPlayer(
 				seat = 3,
 				cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+				initialStack = 50000.0,
+				ranking = results.find { it.seat == 3 }?.ranking,
+				bestCards = results.find { it.seat == 3 }?.bestCards ?: emptyList(),
+				outcome = results.find { it.seat == 3 }?.outcome,
+				isHero = true,
 			),
-			ShowdownEntry(
+			HandPlayer(
 				seat = 6,
 				cards = PocketCards(Card(Rank.ACE, Suit.HEARTS), Card(Rank.TEN, Suit.HEARTS)),
-			),
-		),
-		showdownResults = HandEvaluator.calculateShowdown(
-			boardCards = listOf(
-				Card(Rank.ACE, Suit.HEARTS),
-				Card(Rank.TEN, Suit.DIAMONDS),
-				Card(Rank.SEVEN, Suit.CLUBS),
-				Card(Rank.KING, Suit.HEARTS),
-				Card(Rank.TWO, Suit.CLUBS),
-			),
-			playerHands = listOf(
-				ShowdownEntry(
-					seat = 3,
-					cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
-				),
-				ShowdownEntry(
-					seat = 6,
-					cards = PocketCards(Card(Rank.ACE, Suit.HEARTS), Card(Rank.TEN, Suit.HEARTS)),
-				),
+				ranking = results.find { it.seat == 6 }?.ranking,
+				bestCards = results.find { it.seat == 6 }?.bestCards ?: emptyList(),
+				outcome = results.find { it.seat == 6 }?.outcome,
 			),
 		),
 		result = 49000.0,

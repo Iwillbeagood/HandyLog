@@ -2,6 +2,7 @@ package com.hand.log.handdetail.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,6 +46,7 @@ internal fun ShowdownPlayerRow(
 	playerName: String? = null,
 	isMarked: Boolean = false,
 	onMarkClick: (() -> Unit)? = null,
+	onCardClick: (() -> Unit)? = null,
 ) {
 	val colors = HandyTheme.colorScheme
 	val isLoser = (result != null && !isWinner && !isSplit) || isCardUnknown
@@ -126,6 +128,7 @@ internal fun ShowdownPlayerRow(
 		HoleCards(
 			cards = entry.cards,
 			isUnknown = isCardUnknown,
+			modifier = if (onCardClick != null) Modifier.clickable { onCardClick() } else Modifier,
 		)
 	}
 }

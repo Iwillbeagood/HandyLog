@@ -44,8 +44,8 @@ import com.hand.log.domain.model.HandStreets
 import com.hand.log.domain.model.PreflopStreet
 import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.RiverStreet
+import com.hand.log.domain.model.HandPlayer
 import com.hand.log.domain.model.PocketCards
-import com.hand.log.domain.model.ShowdownEntry
 import com.hand.log.domain.model.Suit
 import com.hand.log.domain.model.TurnStreet
 import com.hand.log.ui.poker.formatAmountFull
@@ -293,9 +293,7 @@ private fun HandDetailTableViewPreview() {
 				tableId = "t1",
 				createdAt = 0L,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
-				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 				heroSeat = 3,
-				heroStack = 50000.0,
 				buttonSeat = 1,
 				streets = HandStreets(
 					preflop = PreflopStreet(
@@ -332,12 +330,14 @@ private fun HandDetailTableViewPreview() {
 					turn = TurnStreet(card = Card(Rank.KING, Suit.HEARTS)),
 					river = RiverStreet(card = Card(Rank.TWO, Suit.CLUBS)),
 				),
-				showdown = listOf(
-					ShowdownEntry(
+				players = listOf(
+					HandPlayer(
 						seat = 3,
 						cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+						initialStack = 50000.0,
+						isHero = true,
 					),
-					ShowdownEntry(
+					HandPlayer(
 						seat = 6,
 						cards = PocketCards(Card(Rank.QUEEN, Suit.HEARTS), Card(Rank.JACK, Suit.HEARTS)),
 					),

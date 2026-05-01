@@ -26,12 +26,14 @@ import com.hand.log.domain.model.FlopStreet
 import com.hand.log.domain.model.HandStreets
 import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.PreflopStreet
+import com.hand.log.domain.model.HandPlayer
 import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.RiverStreet
 import com.hand.log.domain.model.Suit
 import com.hand.log.domain.model.TurnStreet
 import com.hand.log.handdetail.component.ActionGridSection
 import com.hand.log.handdetail.component.HandDetailTableView
+import com.hand.log.handdetail.component.MemoSection
 import com.hand.log.handdetail.component.ResultSection
 
 @Composable
@@ -39,10 +41,11 @@ internal fun HandDetailContent(
 	hand: HandRecord,
 	useBbUnit: Boolean,
 	memo: String,
-	onMemoChange: (String) -> Unit,
-	onMemoSave: () -> Unit,
+	onMemoClick: () -> Unit,
 	graphicsLayer: GraphicsLayer,
 	onMarkPlayer: (Int) -> Unit = {},
+	onEditHeroHand: () -> Unit = {},
+	onEditShowdownHand: (Int) -> Unit = {},
 	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme
@@ -73,10 +76,14 @@ internal fun HandDetailContent(
 
 		ResultSection(
 			hand = hand,
-			memo = memo,
-			onMemoChange = onMemoChange,
-			onMemoSave = onMemoSave,
 			onMarkPlayer = onMarkPlayer,
+			onEditHeroHand = onEditHeroHand,
+			onEditShowdownHand = onEditShowdownHand,
+		)
+
+		MemoSection(
+			memo = memo,
+			onClick = onMemoClick,
 		)
 		VerticalSpacer(32.dp)
 	}
@@ -91,9 +98,7 @@ private fun HandDetailContentPreview() {
 		tableId = "t1",
 		createdAt = 0L,
 		blinds = Blinds(sb = 500.0, bb = 1000.0),
-		heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 		heroSeat = 3,
-		heroStack = 50000.0,
 		buttonSeat = 1,
 		streets = HandStreets(
 			preflop = PreflopStreet(
@@ -152,6 +157,14 @@ private fun HandDetailContentPreview() {
 			),
 			river = RiverStreet(card = Card(Rank.TWO, Suit.CLUBS)),
 		),
+		players = listOf(
+			HandPlayer(
+				seat = 3,
+				cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+				initialStack = 50000.0,
+				isHero = true,
+			),
+		),
 		result = 49000.0,
 		memo = "탑투페어로 체크레이즈 → 올인 콜",
 	)
@@ -160,8 +173,7 @@ private fun HandDetailContentPreview() {
 			hand = hand,
 			useBbUnit = false,
 			memo = hand.memo.orEmpty(),
-			onMemoChange = {},
-			onMemoSave = {},
+			onMemoClick = {},
 			graphicsLayer = rememberGraphicsLayer(),
 		)
 	}

@@ -18,7 +18,6 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun HandDetailTopBarEndContent(
-	onEdit: () -> Unit,
 	onShowDeleteConfirm: () -> Unit,
 	onShareText: () -> Unit,
 	onShareImage: () -> Unit,
@@ -27,31 +26,11 @@ internal fun HandDetailTopBarEndContent(
 	val colors = HandyTheme.colorScheme
 
 	Row {
-		Box {
-			var showEditMenu by remember { mutableStateOf(false) }
-
-			TopAppbarIcon(
-				icon = Res.drawable.pencil,
-				onClick = { showEditMenu = true },
-			)
-
-			HandyPopupMenu(
-				expanded = showEditMenu,
-				onDismissRequest = { showEditMenu = false },
-				items = listOf(
-					HandyMenuItem(
-						icon = Res.drawable.pencil,
-						text = stringResource(Res.string.btn_edit),
-						onClick = onEdit,
-					),
-					HandyMenuItem(
-						icon = Res.drawable.delete,
-						text = stringResource(Res.string.btn_delete),
-						onClick = onShowDeleteConfirm,
-					),
-				),
-			)
-		}
+		TopAppbarIcon(
+			icon = Res.drawable.delete,
+			tint = colors.error,
+			onClick = onShowDeleteConfirm,
+		)
 		Box {
 			var showShareMenu by remember { mutableStateOf(false) }
 
@@ -91,7 +70,6 @@ internal fun HandDetailTopBarEndContent(
 private fun HandDetailTopBarEndContentPreview() {
 	ThemePreview {
 		HandDetailTopBarEndContent(
-			onEdit = {},
 			onShowDeleteConfirm = {},
 			onShareText = {},
 			onShareImage = {},

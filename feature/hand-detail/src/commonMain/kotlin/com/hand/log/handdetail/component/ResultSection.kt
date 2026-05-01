@@ -11,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.hand.log.designsystem.component.HandyTextField
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
@@ -20,28 +19,29 @@ import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.FlopStreet
 import com.hand.log.domain.model.HandRanking
 import com.hand.log.domain.model.HandRecord
+import com.hand.log.domain.model.HeroResultType
 import com.hand.log.domain.model.HandStreets
 import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.PreflopStreet
 import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.RiverStreet
+import com.hand.log.domain.model.HandPlayer
 import com.hand.log.domain.model.ShowdownEntry
 import com.hand.log.domain.model.ShowdownOutcome
 import com.hand.log.domain.model.ShowdownResult
 import com.hand.log.domain.model.Suit
 import com.hand.log.domain.model.TurnStreet
+import com.hand.log.ui.localizedLabel
 import handylog.core.res.generated.resources.Res
-import handylog.core.res.generated.resources.showdown_memo
-import handylog.core.res.generated.resources.showdown_result
+import handylog.core.res.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun ResultSection(
 	hand: HandRecord,
-	memo: String,
-	onMemoChange: (String) -> Unit,
-	onMemoSave: () -> Unit,
 	onMarkPlayer: (Int) -> Unit = {},
+	onEditHeroHand: () -> Unit = {},
+	onEditShowdownHand: (Int) -> Unit = {},
 ) {
 	val colors = HandyTheme.colorScheme
 
@@ -59,35 +59,79 @@ internal fun ResultSection(
 			color = colors.textPrimary,
 		)
 
+		// 결과 텍스트 — HandRecord.resolvedHeroResultType 기반
+		val resultType = hand.resolvedHeroResultType
+		val ranking = hand.heroRanking?.localizedLabel() ?: ""
+		Text(
+			text = resultType.localizedLabel(ranking),
+			style = HandyTheme.typography.bold20,
+			color = when (resultType) {
+				HeroResultType.SHOWDOWN_SPLIT -> colors.split
+				HeroResultType.FOLD_WIN, HeroResultType.SHOWDOWN_WIN -> colors.primary
+				HeroResultType.FOLD_LOSE, HeroResultType.SHOWDOWN_LOSE -> colors.error
+			},
+		)
+
 		if (hand.isFoldWin) {
 			val winnerSeat = hand.winnerSeats.firstOrNull()
 			if (winnerSeat != null) {
-				val isHero = winnerSeat == hand.heroSeat
+				val isHeroWinner = winnerSeat == hand.heroSeat
+
+				// 히어로가 승자가 아닌 경우에도 히어로 핸드 표시
+				if (!isHeroWinner) {
+					ShowdownPlayerRow(
+						positionName = hand.getPositionName(hand.heroSeat),
+						entry = hand.heroShowdownEntry ?: ShowdownEntry(
+							seat = hand.heroSeat,
+							cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.ACE, Suit.SPADES)),
+						),
+						result = ShowdownResult(
+							seat = hand.heroSeat,
+							ranking = HandRanking.WIN_BY_FOLD,
+							outcome = ShowdownOutcome.LOSE,
+						),
+						isHero = true,
+						isCardUnknown = hand.heroHand == null,
+						onCardClick = onEditHeroHand,
+					)
+				}
+
 				ShowdownPlayerRow(
 					positionName = hand.getPositionName(winnerSeat),
-					entry = hand.heroShowdownEntry ?: ShowdownEntry(
-						seat = winnerSeat,
-						cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.ACE, Suit.SPADES)),
-					),
+					entry = if (isHeroWinner) {
+						hand.heroShowdownEntry ?: ShowdownEntry(
+							seat = winnerSeat,
+							cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.ACE, Suit.SPADES)),
+						)
+					} else {
+						ShowdownEntry(
+							seat = winnerSeat,
+							cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.ACE, Suit.SPADES)),
+						)
+					},
 					result = ShowdownResult(
 						seat = winnerSeat,
-						ranking = HandRanking.HIGH_CARD,
+						ranking = HandRanking.WIN_BY_FOLD,
 						outcome = ShowdownOutcome.WIN,
 					),
-					isHero = isHero,
-					isCardUnknown = !isHero || hand.heroHand == null,
+					isHero = isHeroWinner,
+					isCardUnknown = !isHeroWinner || hand.heroHand == null,
+					onCardClick = if (isHeroWinner) onEditHeroHand else null,
 				)
 			}
 		} else {
-			// 히어로
-			hand.heroShowdownEntry?.let { entry ->
-				ShowdownPlayerRow(
-					positionName = hand.getPositionName(hand.heroSeat),
-					entry = entry,
-					result = hand.getShowdownResult(hand.heroSeat),
-					isHero = true,
-				)
-			}
+			// 히어로 (핸드가 없어도 항상 표시)
+			ShowdownPlayerRow(
+				positionName = hand.getPositionName(hand.heroSeat),
+				entry = hand.heroShowdownEntry ?: ShowdownEntry(
+					seat = hand.heroSeat,
+					cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.ACE, Suit.SPADES)),
+				),
+				result = hand.getShowdownResult(hand.heroSeat),
+				isHero = true,
+				isCardUnknown = hand.heroHand == null,
+				onCardClick = onEditHeroHand,
+			)
 
 			// 카드 공개 플레이어
 			hand.showdown.filter { it.seat != hand.heroSeat }.forEach { entry ->
@@ -103,6 +147,7 @@ internal fun ResultSection(
 					} else {
 						null
 					},
+					onCardClick = { onEditShowdownHand(entry.seat) },
 				)
 			}
 
@@ -124,17 +169,11 @@ internal fun ResultSection(
 					} else {
 						null
 					},
+					onCardClick = { onEditShowdownHand(seat) },
 				)
 			}
 		}
 
-		// 메모
-		HandyTextField(
-			value = memo,
-			onValueChange = onMemoChange,
-			label = stringResource(Res.string.showdown_memo),
-			onDone = onMemoSave,
-		)
 	}
 }
 
@@ -143,17 +182,12 @@ internal fun ResultSection(
 private fun ResultSectionWinPreview() {
 	ThemePreview {
 		ResultSection(
-			memo = "탑투페어로 체크레이즈 → 올인 콜, 상대 QJo",
-			onMemoChange = {},
-			onMemoSave = {},
 			hand = HandRecord(
 				id = "h1",
 				tableId = "t1",
 				createdAt = 0L,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
-				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 				heroSeat = 3,
-				heroStack = 50000.0,
 				buttonSeat = 1,
 				streets = HandStreets(
 					preflop = PreflopStreet(),
@@ -165,12 +199,14 @@ private fun ResultSectionWinPreview() {
 					turn = TurnStreet(card = Card(Rank.KING, Suit.HEARTS)),
 					river = RiverStreet(card = Card(Rank.TWO, Suit.CLUBS)),
 				),
-				showdown = listOf(
-					ShowdownEntry(
+				players = listOf(
+					HandPlayer(
 						seat = 3,
 						cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+						initialStack = 50000.0,
+						isHero = true,
 					),
-					ShowdownEntry(
+					HandPlayer(
 						seat = 1,
 						cards = PocketCards(Card(Rank.QUEEN, Suit.HEARTS), Card(Rank.JACK, Suit.HEARTS)),
 					),
@@ -187,17 +223,12 @@ private fun ResultSectionWinPreview() {
 private fun ResultSectionSplitPreview() {
 	ThemePreview {
 		ResultSection(
-			memo = "AK vs AK 스플릿",
-			onMemoChange = {},
-			onMemoSave = {},
 			hand = HandRecord(
 				id = "h3",
 				tableId = "t1",
 				createdAt = 0L,
 				blinds = Blinds(sb = 500.0, bb = 1000.0),
-				heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.HEARTS)),
 				heroSeat = 3,
-				heroStack = 50000.0,
 				buttonSeat = 1,
 				streets = HandStreets(
 					preflop = PreflopStreet(),
@@ -209,19 +240,21 @@ private fun ResultSectionSplitPreview() {
 					turn = TurnStreet(card = Card(Rank.KING, Suit.DIAMONDS)),
 					river = RiverStreet(card = Card(Rank.TWO, Suit.CLUBS)),
 				),
-				showdown = listOf(
-					ShowdownEntry(
+				players = listOf(
+					HandPlayer(
 						seat = 3,
 						cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.HEARTS)),
+						initialStack = 50000.0,
+						ranking = HandRanking.TWO_PAIR,
+						outcome = ShowdownOutcome.SPLIT,
+						isHero = true,
 					),
-					ShowdownEntry(
+					HandPlayer(
 						seat = 1,
 						cards = PocketCards(Card(Rank.ACE, Suit.DIAMONDS), Card(Rank.KING, Suit.CLUBS)),
+						ranking = HandRanking.TWO_PAIR,
+						outcome = ShowdownOutcome.SPLIT,
 					),
-				),
-				showdownResults = listOf(
-					ShowdownResult(seat = 3, ranking = HandRanking.TWO_PAIR, outcome = ShowdownOutcome.SPLIT),
-					ShowdownResult(seat = 1, ranking = HandRanking.TWO_PAIR, outcome = ShowdownOutcome.SPLIT),
 				),
 				result = 0.0,
 				memo = "AK vs AK 스플릿",
@@ -235,16 +268,15 @@ private fun ResultSectionSplitPreview() {
 private fun ResultSectionLosePreview() {
 	ThemePreview {
 		ResultSection(
-			memo = "블러프 캐치 실패",
-			onMemoChange = {},
-			onMemoSave = {},
 			hand = HandRecord(
 				id = "h2",
 				tableId = "t1",
 				createdAt = 0L,
 				heroSeat = 3,
-				heroStack = 50000.0,
 				buttonSeat = 1,
+				players = listOf(
+					HandPlayer(seat = 3, initialStack = 50000.0, isHero = true),
+				),
 				result = -25000.0,
 				memo = "블러프 캐치 실패",
 			),

@@ -6,8 +6,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.designsystem.component.modal.DefaultDialog
+import com.hand.log.domain.model.Card
+import com.hand.log.handdetail.component.MemoEditSheet
+import com.hand.log.ui.poker.CardSelectorSheet
 import com.hand.log.handdetail.contract.HandDetailEffect
 import com.hand.log.handdetail.contract.HandDetailModalEffect
+import com.hand.log.handdetail.contract.HandDetailState
 import com.hand.log.domain.model.SavedPlayer
 import com.hand.log.domain.model.etc.ToastDurationType
 import com.hand.log.playersedit.PlayerEditSheet
@@ -32,34 +36,38 @@ internal fun HandDetailRoute(
 	val shareManager = rememberShareManager()
 	val graphicsLayer = rememberGraphicsLayer()
 
-	val success = state as? com.hand.log.handdetail.contract.HandDetailState.Success
-	LaunchedEffect(success?.hand?.memo) {
-		success?.hand?.memo?.let { viewModel.initMemo(it) }
+	val loaded = state as? HandDetailState.Detail
+	LaunchedEffect(loaded?.hand?.memo) {
+		loaded?.hand?.memo?.let { viewModel.initMemo(it) }
 	}
 
 	HandDetailScreen(
 		state = state,
 		onToggleBbUnit = viewModel::toggleBbUnit,
-		onBack = {
-			viewModel.saveMemo()
-			navAction.popBackStack()
-		},
-		onEdit = { /* TODO */ },
+		onBack = navAction::popBackStack,
 		onShowDeleteConfirm = viewModel::showDeleteConfirm,
 		onShareText = viewModel::shareText,
 		onShareImage = viewModel::shareImage,
 		onDownloadImage = viewModel::downloadImage,
 		onMarkPlayer = viewModel::showPlayerMark,
+		onEditHeroHand = viewModel::editHeroHand,
+		onEditShowdownHand = viewModel::editShowdownHand,
 		memo = memo,
-		onMemoChange = viewModel::updateMemo,
-		onMemoSave = viewModel::saveMemo,
+		onMemoClick = viewModel::showMemoEdit,
 		graphicsLayer = graphicsLayer,
 	)
 
 	HandDetailModalContent(
 		modalEffect = modalEffect,
+		memo = memo,
+		onMemoChange = viewModel::updateMemo,
+		onMemoSave = {
+			viewModel.saveMemo()
+			viewModel.dismissModal()
+		},
 		onConfirmDelete = viewModel::confirmDelete,
 		onSaveAndMarkPlayer = viewModel::saveAndMarkPlayer,
+		onCardsSelected = viewModel::onCardsSelected,
 		onDismiss = viewModel::dismissModal,
 	)
 
@@ -68,7 +76,13 @@ internal fun HandDetailRoute(
 			when (effect) {
 				is HandDetailEffect.HandDeleted -> navAction.popBackStack()
 				is HandDetailEffect.ShareText -> {
-					shareManager.shareText(effect.text)
+					val copied = shareManager.shareText(effect.text)
+					if (copied) {
+						mainAction.onShowToast(
+							getString(Res.string.clipboard_copied),
+							ToastDurationType.SHORT,
+						)
+					}
 				}
 				is HandDetailEffect.ShareImage -> {
 					val bitmap = graphicsLayer.toImageBitmap()
@@ -95,12 +109,24 @@ internal fun HandDetailRoute(
 @Composable
 private fun HandDetailModalContent(
 	modalEffect: HandDetailModalEffect,
+	memo: String,
+	onMemoChange: (String) -> Unit,
+	onMemoSave: () -> Unit,
 	onConfirmDelete: () -> Unit,
 	onSaveAndMarkPlayer: (SavedPlayer, Int) -> Unit,
+	onCardsSelected: (List<Card>) -> Unit,
 	onDismiss: () -> Unit,
 ) {
 	when (modalEffect) {
 		HandDetailModalEffect.Idle -> {}
+		HandDetailModalEffect.EditMemo -> {
+			MemoEditSheet(
+				memo = memo,
+				onMemoChange = onMemoChange,
+				onConfirm = onMemoSave,
+				onDismiss = onDismiss,
+			)
+		}
 		HandDetailModalEffect.ConfirmDelete -> {
 			DefaultDialog(
 				title = stringResource(Res.string.hand_detail_delete_title),
@@ -114,6 +140,27 @@ private fun HandDetailModalContent(
 			PlayerEditSheet(
 				player = null,
 				onSave = { player -> onSaveAndMarkPlayer(player, modalEffect.seat) },
+				onDismiss = onDismiss,
+			)
+		}
+		is HandDetailModalEffect.EditHeroHand -> {
+			CardSelectorSheet(
+				title = stringResource(Res.string.card_selector_hero),
+				maxCards = 2,
+				selectedCards = modalEffect.selectedCards,
+				onCardsSelected = onCardsSelected,
+				onDismiss = onDismiss,
+			)
+		}
+		is HandDetailModalEffect.EditShowdownHand -> {
+			CardSelectorSheet(
+				title = stringResource(
+					Res.string.card_selector_showdown,
+					modalEffect.positionName,
+				),
+				maxCards = 2,
+				selectedCards = modalEffect.selectedCards,
+				onCardsSelected = onCardsSelected,
 				onDismiss = onDismiss,
 			)
 		}

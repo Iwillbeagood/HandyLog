@@ -2,6 +2,9 @@ package com.hand.log.handdetail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hand.log.domain.model.Card
+import com.hand.log.domain.model.HandRecord
+import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.SavedPlayer
 import com.hand.log.domain.repository.HandRecordRepository
 import com.hand.log.domain.usecase.MarkPlayerOnHandUseCase
@@ -38,7 +41,7 @@ internal class HandDetailViewModel(
 		useBbUnit,
 	) { hand, bbUnit ->
 		if (hand != null) {
-			HandDetailState.Success(hand = hand, useBbUnit = bbUnit)
+			HandDetailState.Detail(hand = hand, useBbUnit = bbUnit)
 		} else {
 			HandDetailState.Error
 		}
@@ -57,10 +60,10 @@ internal class HandDetailViewModel(
 	}
 
 	fun confirmDelete() {
-		val success = state.value as? HandDetailState.Success ?: return
+		val loaded = (state.value as? HandDetailState.Detail) ?: return
 		dismissModal()
 		viewModelScope.launch {
-			handRecordRepository.deleteHand(success.hand.id) {
+			handRecordRepository.deleteHand(loaded.hand.id) {
 				viewModelScope.launch {
 					_effect.emit(HandDetailEffect.HandDeleted)
 				}
@@ -69,9 +72,9 @@ internal class HandDetailViewModel(
 	}
 
 	fun onPlayerClick(seat: Int) {
-		val success = state.value as? HandDetailState.Success ?: return
+		val loaded = (state.value as? HandDetailState.Detail) ?: return
 		viewModelScope.launch {
-			_effect.emit(HandDetailEffect.NavigateToPlayers(success.hand.tableId, seat))
+			_effect.emit(HandDetailEffect.NavigateToPlayers(loaded.hand.tableId, seat))
 		}
 	}
 
@@ -80,11 +83,68 @@ internal class HandDetailViewModel(
 	}
 
 	fun saveAndMarkPlayer(player: SavedPlayer, seat: Int) {
-		val success = state.value as? HandDetailState.Success ?: return
+		val loaded = (state.value as? HandDetailState.Detail) ?: return
 		dismissModal()
 		viewModelScope.launch {
-			markPlayerOnHandUseCase(player, success.hand.id, seat)
+			markPlayerOnHandUseCase(player, loaded.hand.id, seat)
 		}
+	}
+
+	private fun HandRecord.usedCards(): Set<Card> = buildSet {
+		heroHand?.let {
+			add(it.card1)
+			add(it.card2)
+		}
+		addAll(streets.boardCards)
+		showdown.forEach {
+			add(it.card1)
+			add(it.card2)
+		}
+	}
+
+	fun editHeroHand() {
+		val loaded = (state.value as? HandDetailState.Detail) ?: return
+		val heroCards = loaded.hand.heroHand?.let { setOf(it.card1, it.card2) } ?: emptySet()
+		val usedCards = loaded.hand.usedCards() - heroCards
+		_modalEffect.value = HandDetailModalEffect.EditHeroHand(selectedCards = usedCards)
+	}
+
+	fun editShowdownHand(seat: Int) {
+		val loaded = (state.value as? HandDetailState.Detail) ?: return
+		val existingEntry = loaded.hand.showdown.find { it.seat == seat }
+		val existingCards = existingEntry?.cards?.let { setOf(it.card1, it.card2) } ?: emptySet()
+		val usedCards = loaded.hand.usedCards() - existingCards
+		val positionName = loaded.hand.getPositionName(seat)
+		_modalEffect.value = HandDetailModalEffect.EditShowdownHand(
+			seat = seat,
+			positionName = positionName,
+			selectedCards = usedCards,
+		)
+	}
+
+	fun onCardsSelected(cards: List<Card>) {
+		val loaded = (state.value as? HandDetailState.Detail) ?: return
+		val modal = _modalEffect.value
+		dismissModal()
+		if (cards.size < 2) return
+
+		val newHand = PocketCards(cards[0], cards[1])
+		viewModelScope.launch {
+			val seat = when (modal) {
+				is HandDetailModalEffect.EditHeroHand -> loaded.hand.heroSeat
+				is HandDetailModalEffect.EditShowdownHand -> modal.seat
+				else -> return@launch
+			}
+			val updatedPlayers = loaded.hand.players.map { p ->
+				if (p.seat == seat) p.copy(cards = newHand) else p
+			}
+			val updated = loaded.hand.copy(players = updatedPlayers)
+			handRecordRepository.saveHand(updated)
+		}
+	}
+
+	fun showMemoEdit() {
+		_modalEffect.value = HandDetailModalEffect.EditMemo
 	}
 
 	fun dismissModal() {
@@ -107,34 +167,34 @@ internal class HandDetailViewModel(
 	}
 
 	fun saveMemo() {
-		val success = state.value as? HandDetailState.Success ?: return
+		val loaded = (state.value as? HandDetailState.Detail) ?: return
 		val text = _memo.value
-		if (text == (success.hand.memo.orEmpty())) return
+		if (text == (loaded.hand.memo.orEmpty())) return
 		viewModelScope.launch {
-			val updated = success.hand.copy(memo = text.ifBlank { null })
+			val updated = loaded.hand.copy(memo = text.ifBlank { null })
 			handRecordRepository.saveHand(updated)
 		}
 	}
 
 	fun shareText() {
-		val success = state.value as? HandDetailState.Success ?: return
-		val text = HandHistoryFormatter.format(success.hand)
+		val loaded = (state.value as? HandDetailState.Detail) ?: return
+		val text = HandHistoryFormatter.format(loaded.hand)
 		viewModelScope.launch {
 			_effect.emit(HandDetailEffect.ShareText(text))
 		}
 	}
 
 	fun shareImage() {
-		val success = state.value as? HandDetailState.Success ?: return
+		val loaded = (state.value as? HandDetailState.Detail) ?: return
 		viewModelScope.launch {
-			_effect.emit(HandDetailEffect.ShareImage("hand_${success.hand.id}.png"))
+			_effect.emit(HandDetailEffect.ShareImage("hand_${loaded.hand.id}.png"))
 		}
 	}
 
 	fun downloadImage() {
-		val success = state.value as? HandDetailState.Success ?: return
+		val loaded = (state.value as? HandDetailState.Detail) ?: return
 		viewModelScope.launch {
-			_effect.emit(HandDetailEffect.DownloadImage("hand_${success.hand.id}.png"))
+			_effect.emit(HandDetailEffect.DownloadImage("hand_${loaded.hand.id}.png"))
 		}
 	}
 }

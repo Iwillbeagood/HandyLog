@@ -30,7 +30,7 @@ import com.hand.log.domain.model.PreflopStreet
 import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.RiverStreet
 import com.hand.log.domain.model.PocketCards
-import com.hand.log.domain.model.ShowdownEntry
+import com.hand.log.domain.model.HandPlayer
 import com.hand.log.domain.model.Suit
 import com.hand.log.domain.model.TurnStreet
 import com.hand.log.handdetail.contract.HandDetailState
@@ -41,18 +41,18 @@ internal fun HandDetailScreen(
 	state: HandDetailState,
 	onToggleBbUnit: () -> Unit,
 	onBack: () -> Unit,
-	onEdit: () -> Unit,
 	onShowDeleteConfirm: () -> Unit,
 	onShareText: () -> Unit,
 	onShareImage: () -> Unit,
 	onDownloadImage: () -> Unit,
 	onMarkPlayer: (Int) -> Unit = {},
+	onEditHeroHand: () -> Unit = {},
+	onEditShowdownHand: (Int) -> Unit = {},
 	memo: String = "",
-	onMemoChange: (String) -> Unit = {},
-	onMemoSave: () -> Unit = {},
+	onMemoClick: () -> Unit = {},
 	graphicsLayer: GraphicsLayer = rememberGraphicsLayer(),
 ) {
-	val success = state as? HandDetailState.Success
+	val loaded = state as? HandDetailState.Detail
 	val colors = HandyTheme.colorScheme
 
 	BaseScaffold(
@@ -70,7 +70,7 @@ internal fun HandDetailScreen(
 						horizontalArrangement = Arrangement.End,
 					) {
 						HandySwitch(
-							checked = success?.useBbUnit ?: false,
+							checked = loaded?.useBbUnit ?: false,
 							text = "BB",
 							onCheckedChange = { onToggleBbUnit() },
 						)
@@ -78,7 +78,6 @@ internal fun HandDetailScreen(
 				},
 				endContent = {
 					HandDetailTopBarEndContent(
-						onEdit = onEdit,
 						onShowDeleteConfirm = onShowDeleteConfirm,
 						onShareText = onShareText,
 						onShareImage = onShareImage,
@@ -88,16 +87,17 @@ internal fun HandDetailScreen(
 			)
 		},
 	) {
-		FadeAnimatedVisibility(success != null) {
-			if (success != null) {
+		FadeAnimatedVisibility(loaded != null) {
+			if (loaded != null) {
 				HandDetailContent(
-					hand = success.hand,
-					useBbUnit = success.useBbUnit,
+					hand = loaded.hand,
+					useBbUnit = loaded.useBbUnit,
 					memo = memo,
-					onMemoChange = onMemoChange,
-					onMemoSave = onMemoSave,
+					onMemoClick = onMemoClick,
 					graphicsLayer = graphicsLayer,
 					onMarkPlayer = onMarkPlayer,
+					onEditHeroHand = onEditHeroHand,
+					onEditShowdownHand = onEditShowdownHand,
 				)
 			}
 		}
@@ -112,9 +112,7 @@ private fun HandDetailScreenPreview() {
 		tableId = "t1",
 		createdAt = 1710000000000L,
 		blinds = Blinds(sb = 500.0, bb = 1000.0),
-		heroHand = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
 		heroSeat = 3,
-		heroStack = 50000.0,
 		buttonSeat = 1,
 		streets = HandStreets(
 			preflop = PreflopStreet(
@@ -152,12 +150,14 @@ private fun HandDetailScreenPreview() {
 				card = Card(Rank.TWO, Suit.CLUBS),
 			),
 		),
-		showdown = listOf(
-			ShowdownEntry(
+		players = listOf(
+			HandPlayer(
 				seat = 3,
 				cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES)),
+				initialStack = 50000.0,
+				isHero = true,
 			),
-			ShowdownEntry(
+			HandPlayer(
 				seat = 4,
 				cards = PocketCards(Card(Rank.ACE, Suit.HEARTS), Card(Rank.TEN, Suit.HEARTS)),
 			),
@@ -167,12 +167,11 @@ private fun HandDetailScreenPreview() {
 	)
 	ThemePreview {
 		HandDetailScreen(
-			state = HandDetailState.Success(
+			state = HandDetailState.Detail(
 				hand = hand,
 			),
 			onToggleBbUnit = {},
 			onBack = {},
-			onEdit = {},
 			onShowDeleteConfirm = {},
 			onShareText = {},
 			onShareImage = {},
