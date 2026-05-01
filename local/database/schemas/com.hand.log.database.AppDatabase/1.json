@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "0321c684ac5b963728aa3b34ff10ec10",
+    "identityHash": "7a1b634a1393d5d2d8a6653e7e544373",
     "entities": [
       {
         "tableName": "poker_tables",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `date` TEXT NOT NULL, `location` TEXT, `gameType` TEXT NOT NULL, `maxPlayers` INTEGER NOT NULL, `heroSeat` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `date` TEXT NOT NULL, `location` TEXT, `gameType` TEXT NOT NULL, `maxPlayers` INTEGER NOT NULL, `heroSeat` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `hasShownPositionSetup` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -46,6 +46,12 @@
           {
             "fieldPath": "createdAt",
             "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hasShownPositionSetup",
+            "columnName": "hasShownPositionSetup",
             "affinity": "INTEGER",
             "notNull": true
           }
@@ -133,7 +139,7 @@
       },
       {
         "tableName": "hand_records",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `tableId` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `blinds` TEXT, `heroHand` TEXT, `heroSeat` INTEGER NOT NULL, `heroStack` REAL NOT NULL, `buttonSeat` INTEGER NOT NULL, `streets` TEXT NOT NULL, `showdown` TEXT NOT NULL, `showdownResults` TEXT NOT NULL, `result` REAL, `memo` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`tableId`) REFERENCES `poker_tables`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `tableId` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `blinds` TEXT, `heroSeat` INTEGER NOT NULL, `buttonSeat` INTEGER NOT NULL, `streets` TEXT NOT NULL, `players` TEXT NOT NULL, `result` REAL, `memo` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`tableId`) REFERENCES `poker_tables`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -159,20 +165,9 @@
             "affinity": "TEXT"
           },
           {
-            "fieldPath": "heroHand",
-            "columnName": "heroHand",
-            "affinity": "TEXT"
-          },
-          {
             "fieldPath": "heroSeat",
             "columnName": "heroSeat",
             "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "heroStack",
-            "columnName": "heroStack",
-            "affinity": "REAL",
             "notNull": true
           },
           {
@@ -188,14 +183,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "showdown",
-            "columnName": "showdown",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "showdownResults",
-            "columnName": "showdownResults",
+            "fieldPath": "players",
+            "columnName": "players",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -284,7 +273,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0321c684ac5b963728aa3b34ff10ec10')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7a1b634a1393d5d2d8a6653e7e544373')"
     ]
   }
 }
