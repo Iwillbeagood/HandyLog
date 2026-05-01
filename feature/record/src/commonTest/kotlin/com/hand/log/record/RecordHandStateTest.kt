@@ -18,6 +18,7 @@ import com.hand.log.record.contract.RecordStep
 import com.hand.log.record.model.PlayerStatus
 import com.hand.log.record.model.RecordPlayer
 import com.hand.log.record.model.RecordPlayers
+import com.hand.log.domain.model.HandRanking
 import com.hand.log.domain.model.HandStreets
 import com.hand.log.domain.model.ShowdownOutcome
 import kotlinx.datetime.LocalDate
@@ -117,11 +118,13 @@ class RecordHandStateTest {
 	fun `올인 플레이어가 없으면 사이드 팟 없음`() {
 		val state = makeState(
 			playerCount = 3,
-			players = RecordPlayers(mapOf(
-				1 to RecordPlayer(seat = 1, initialStack = 50000.0),
-				2 to RecordPlayer(seat = 2, initialStack = 50000.0),
-				3 to RecordPlayer(seat = 3, initialStack = 50000.0),
-			)),
+			players = RecordPlayers(
+				mapOf(
+					1 to RecordPlayer(seat = 1, initialStack = 50000.0),
+					2 to RecordPlayer(seat = 2, initialStack = 50000.0),
+					3 to RecordPlayer(seat = 3, initialStack = 50000.0),
+				),
+			),
 		)
 		assertTrue(state.sidePots.isEmpty())
 	}
@@ -1114,22 +1117,18 @@ class RecordHandStateTest {
 				),
 			),
 		)
-		assertTrue(state.isFoldWin)
+		// 1명만 남았으므로 폴드 승리 상황
+		assertEquals(1, state.remainingSeats.size)
 
 		val results = state.showdownResults
 		// 승자(seat 1)는 WIN
 		val winnerResult = results.find { it.seat == 1 }
 		assertEquals(ShowdownOutcome.WIN, winnerResult?.outcome)
+		assertEquals(HandRanking.WIN_BY_FOLD, winnerResult?.ranking)
 
-		// 폴드한 플레이어(seat 2, 3)는 LOSE이고 ranking이 HIGH_CARD가 아니어야 함
-		// → 폴드 패배임을 구분할 수 있어야 한다
+		// 폴드한 플레이어(seat 2, 3)는 LOSE + WIN_BY_FOLD
 		val loserResult = results.find { it.seat == 2 }
 		assertEquals(ShowdownOutcome.LOSE, loserResult?.outcome)
-		// 현재 버그: ranking = HIGH_CARD → "하이카드(으)로 패배" 표시됨
-		// 기대: 폴드 패배를 구분할 수 있는 결과
-		assertTrue(
-			state.isFoldWin,
-			"폴드 승리 상황에서 패배자의 결과에 폴드 패배 여부를 알 수 있어야 한다",
-		)
+		assertEquals(HandRanking.WIN_BY_FOLD, loserResult?.ranking)
 	}
 }

@@ -238,14 +238,23 @@ object HandHistoryFormatter {
 		}
 
 		// --- Result (팟에 참여한 플레이어만) ---
-		appendLine("[Result]")
 		val finalStacks = hand.getFinalStacks(HandEvaluator::calculateShowdown)
+		val heroInitialStack = hand.getInitialStack(heroSeat)
+		val heroFinalStack = finalStacks[heroSeat]
+		if (heroInitialStack != null && heroFinalStack != null) {
+			val heroProfit = heroFinalStack - heroInitialStack
+			val sign = if (heroProfit >= 0) "+" else ""
+			appendLine("[Result] $sign${formatBb(heroProfit, bb)}")
+		} else {
+			appendLine("[Result]")
+		}
 		val participatedSeats = allSeats.filter {
 			it !in preflopFoldedSeats || it in preflopSeatsWithNonFoldAction
 		}
 
 		participatedSeats.forEach { seat ->
 			val finalStack = finalStacks[seat] ?: return@forEach
+			val initialStack = hand.getInitialStack(seat) ?: return@forEach
 			val posName = hand.getPositionName(seat)
 			val isHero = seat == heroSeat
 			val prefix = if (isHero) "Hero ($posName)" else posName

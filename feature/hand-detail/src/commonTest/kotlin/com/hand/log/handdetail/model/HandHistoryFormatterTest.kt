@@ -952,7 +952,7 @@ class HandHistoryFormatterTest {
 	}
 
 	@Test
-	fun `스플릿 + 사이드팟 - AK vs AK vs QQ (UTG+1 50BB, MP 80BB)`() {
+	fun `스플릿 + 사이드팟 - AK vs AK vs QQ UTG1 50BB MP 80BB`() {
 		val board =
 			listOf(
 				c(Rank.ACE, Suit.DIAMONDS),
