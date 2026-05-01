@@ -30,6 +30,7 @@ import com.hand.log.settings.betsize.di.featureSettingsBetSizeModule
 import com.hand.log.settings.main.di.featureSettingsMainModule
 import com.hand.log.table.di.featureTableModule
 import com.hand.log.tableedit.di.featureTableEditModule
+import com.hand.log.utils.NavigationBarEffect
 import com.hand.log.utils.StatusBarEffect
 import com.hand.log.utils.toast.ToastManager
 import org.koin.compose.koinInject
@@ -65,6 +66,9 @@ internal fun App() {
 			StatusBarEffect(
 				isDarkTheme = darkTheme,
 				backgroundColor = HandyTheme.colorScheme.background,
+			)
+			NavigationBarEffect(
+				backgroundColor = HandyTheme.colorScheme.card,
 			)
 
 			MainScreen()
