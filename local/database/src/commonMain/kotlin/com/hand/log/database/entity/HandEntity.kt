@@ -30,5 +30,6 @@ data class HandRecordEntity(
 	val streets: HandStreets = HandStreets(),
 	val players: List<HandPlayer> = emptyList(),
 	val result: Double? = null,
+	val resultLabel: String? = null,
 	val memo: String? = null,
 )

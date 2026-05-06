@@ -15,6 +15,9 @@ import com.hand.log.domain.model.GameType.Tournament
 import com.hand.log.domain.model.HandPlayer
 import com.hand.log.domain.model.HandRecord
 import com.hand.log.domain.model.HandStreets
+import com.hand.log.ui.stringRes
+import com.hand.log.ui.resultStringRes
+import org.jetbrains.compose.resources.getString
 import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.model.Street
@@ -418,9 +421,12 @@ internal class RecordHandViewModel(
 		val streetActions = current.streets.getActions(current.currentStreet)
 		val streetMaxBet = streetActions.maxOfOrNull { it.amount ?: 0.0 } ?: 0.0
 
+		val isUnlimited = player.initialStack == null
+
 		// 1) 액션 타입 & 금액 결정
 		val (resolvedType, amount) = resolveAction(
 			type = type,
+			isUnlimited = isUnlimited,
 			effectiveStack = effectiveStack,
 			streetMaxBet = if (streetMaxBet > 0.0) streetMaxBet else current.blinds?.bb ?: 0.0,
 			raiseTarget = current.parseInputToChip(current.currentActionAmount),
@@ -499,12 +505,12 @@ internal class RecordHandViewModel(
 	 */
 	private fun resolveAction(
 		type: ActionType,
+		isUnlimited: Boolean,
 		effectiveStack: Double,
 		streetMaxBet: Double,
 		raiseTarget: Double,
 		minRaise: Double,
 	): Pair<ActionType, Double?>? {
-		val isUnlimited = effectiveStack == 0.0
 		return when (type) {
 			ActionType.FOLD, ActionType.CHECK -> type to null
 
@@ -514,7 +520,11 @@ internal class RecordHandViewModel(
 				ActionType.CALL to streetMaxBet
 			}
 
-			ActionType.ALL_IN -> ActionType.ALL_IN to effectiveStack
+			ActionType.ALL_IN -> if (isUnlimited) {
+				ActionType.ALL_IN to streetMaxBet
+			} else {
+				ActionType.ALL_IN to effectiveStack
+			}
 
 			ActionType.BET, ActionType.RAISE -> when {
 				raiseTarget < minRaise -> null
@@ -910,7 +920,8 @@ internal class RecordHandViewModel(
 					)
 				}
 
-				val handRecord = HandRecord(
+				val resultValue = current.resolvedShowdown?.heroResult ?: current.heroResult
+				val tempRecord = HandRecord(
 					id = "",
 					tableId = current.tableId,
 					createdAt = 0L,
@@ -919,7 +930,11 @@ internal class RecordHandViewModel(
 					buttonSeat = current.buttonSeat,
 					streets = current.streets,
 					players = handPlayers,
-					result = current.resolvedShowdown?.heroResult ?: current.heroResult,
+					result = resultValue,
+				)
+				val resultLabel = buildResultLabel(tempRecord)
+				val handRecord = tempRecord.copy(
+					resultLabel = resultLabel,
 					memo = current.memo.ifBlank { null },
 				)
 
@@ -933,6 +948,14 @@ internal class RecordHandViewModel(
 				_effect.emit(RecordHandEffect.SaveError)
 			}
 		}
+	}
+
+	private suspend fun buildResultLabel(hand: HandRecord): String {
+		val resultType = hand.resolvedHeroResultType
+		val ranking = hand.heroRanking?.takeIf { it != HandRanking.WIN_BY_FOLD }
+		val rankingStr = ranking?.let { getString(it.stringRes()) } ?: ""
+		val resultRes = resultType.resultStringRes(rankingStr.isNotEmpty())
+		return if (rankingStr.isNotEmpty()) getString(resultRes, rankingStr) else getString(resultRes)
 	}
 
 	// ──────────────────────────────────────────────

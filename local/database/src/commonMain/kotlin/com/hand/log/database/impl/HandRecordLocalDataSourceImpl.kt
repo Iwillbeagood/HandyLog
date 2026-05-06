@@ -56,6 +56,7 @@ internal class HandRecordLocalDataSourceImpl(
 		streets = streets,
 		players = players,
 		result = result,
+		resultLabel = resultLabel,
 		memo = memo,
 	)
 
@@ -74,6 +75,7 @@ internal class HandRecordLocalDataSourceImpl(
 		streets = streets,
 		players = players,
 		result = result,
+		resultLabel = resultLabel,
 		memo = memo,
 	)
 }
