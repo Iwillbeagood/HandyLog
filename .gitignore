@@ -160,3 +160,6 @@ docs/*.md
 
 !/gradle/wrapper/gradle-wrapper.jar
 poker-table-tracker-main/
+
+# Pencil design files
+*.pen
