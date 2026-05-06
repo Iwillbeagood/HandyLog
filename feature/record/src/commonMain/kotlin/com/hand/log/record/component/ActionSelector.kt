@@ -24,7 +24,7 @@ import com.hand.log.designsystem.component.RegularButton
 import com.hand.log.designsystem.component.VerticalSpacer
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.ActionType
-import com.hand.log.ui.localizedLabel
+import com.hand.log.ui.stringRes
 import com.hand.log.ui.poker.actionColor
 import com.hand.log.domain.model.Street
 import com.hand.log.designsystem.etc.ThemePreview
@@ -76,7 +76,7 @@ internal fun ActionSelector(
 						.padding(horizontal = 16.dp, vertical = 10.dp),
 				) {
 					Text(
-						text = actionType.localizedLabel(),
+						text = stringResource(actionType.stringRes()),
 						style = HandyTheme.typography.bold14,
 						color = if (isSelected) actionColors.content else colors.textSecondary,
 					)

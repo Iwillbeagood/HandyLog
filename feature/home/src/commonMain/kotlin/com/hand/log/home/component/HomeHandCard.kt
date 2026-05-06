@@ -38,7 +38,8 @@ import com.hand.log.domain.model.FlopStreet
 import com.hand.log.domain.model.HandStreets
 import com.hand.log.domain.model.TurnStreet
 import com.hand.log.domain.model.RiverStreet
-import com.hand.log.ui.localizedLabel
+import com.hand.log.ui.stringRes
+import org.jetbrains.compose.resources.stringResource
 import com.hand.log.ui.poker.CardSize
 import com.hand.log.ui.poker.PlayingCard
 import com.hand.log.ui.poker.formatWithComma
@@ -102,7 +103,7 @@ internal fun HomeHandCard(
 						modifier = Modifier.size(12.dp),
 					)
 					Text(
-						text = table.gameType.localizedLabel(),
+						text = stringResource(table.gameType.stringRes()),
 						style = HandyTheme.typography.bold12,
 						color = badgeColor,
 					)

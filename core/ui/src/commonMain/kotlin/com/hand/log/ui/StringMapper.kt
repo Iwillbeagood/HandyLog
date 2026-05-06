@@ -1,7 +1,5 @@
 package com.hand.log.ui
 
-import androidx.compose.runtime.Composable
-import com.hand.log.domain.model.Action
 import com.hand.log.domain.model.ActionType
 import com.hand.log.domain.model.GameType
 import com.hand.log.domain.model.HandRanking
@@ -11,97 +9,72 @@ import com.hand.log.domain.model.Street
 import com.hand.log.domain.model.ThemeMode
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.*
-import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.StringResource
 
-@Composable
-fun ActionType.localizedLabel(): String = when (this) {
-	ActionType.FOLD -> stringResource(Res.string.action_fold)
-	ActionType.CHECK -> stringResource(Res.string.action_check)
-	ActionType.CALL -> stringResource(Res.string.action_call)
-	ActionType.BET -> stringResource(Res.string.action_bet)
-	ActionType.RAISE -> stringResource(Res.string.action_raise)
-	ActionType.ALL_IN -> stringResource(Res.string.action_all_in)
+fun ActionType.stringRes(): StringResource = when (this) {
+	ActionType.FOLD -> Res.string.action_fold
+	ActionType.CHECK -> Res.string.action_check
+	ActionType.CALL -> Res.string.action_call
+	ActionType.BET -> Res.string.action_bet
+	ActionType.RAISE -> Res.string.action_raise
+	ActionType.ALL_IN -> Res.string.action_all_in
 }
 
-/** Action의 betLevel 기반 로컬라이즈된 라벨 */
-@Composable
-fun Action.localizedLabel(): String = when {
-	type == ActionType.ALL_IN -> stringResource(Res.string.action_all_in)
-	type == ActionType.FOLD -> stringResource(Res.string.action_fold)
-	type == ActionType.CHECK -> stringResource(Res.string.action_check)
-	type == ActionType.CALL -> stringResource(Res.string.action_call)
-	betLevel <= 0 -> type.localizedLabel()
-	betLevel == 1 -> stringResource(Res.string.action_bet)
-	betLevel == 2 -> stringResource(Res.string.action_raise)
-	else -> stringResource(Res.string.action_n_bet, betLevel)
+fun Street.stringRes(): StringResource = when (this) {
+	Street.PREFLOP -> Res.string.step_preflop
+	Street.FLOP -> Res.string.step_flop
+	Street.TURN -> Res.string.step_turn
+	Street.RIVER -> Res.string.step_river
 }
 
-@Composable
-fun Street.localizedLabel(): String = when (this) {
-	Street.PREFLOP -> stringResource(Res.string.step_preflop)
-	Street.FLOP -> stringResource(Res.string.step_flop)
-	Street.TURN -> stringResource(Res.string.step_turn)
-	Street.RIVER -> stringResource(Res.string.step_river)
+fun GameType.stringRes(): StringResource = when (this) {
+	is GameType.Cash -> Res.string.game_type_cash
+	is GameType.Tournament -> Res.string.game_type_tournament
 }
 
-@Composable
-fun GameType.localizedLabel(): String = when (this) {
-	is GameType.Cash -> stringResource(Res.string.game_type_cash)
-	is GameType.Tournament -> stringResource(Res.string.game_type_tournament)
+fun PlayerTendency.stringRes(): StringResource = when (this) {
+	PlayerTendency.TIGHT_AGGRESSIVE -> Res.string.tendency_tight_aggressive
+	PlayerTendency.TIGHT_PASSIVE -> Res.string.tendency_tight_passive
+	PlayerTendency.LOOSE_AGGRESSIVE -> Res.string.tendency_loose_aggressive
+	PlayerTendency.LOOSE_PASSIVE -> Res.string.tendency_loose_passive
+	PlayerTendency.SHARK -> Res.string.tendency_shark
+	PlayerTendency.REGULAR -> Res.string.tendency_regular
+	PlayerTendency.FISH -> Res.string.tendency_fish
+	PlayerTendency.UNKNOWN -> Res.string.tendency_unknown
 }
 
-@Composable
-fun PlayerTendency.localizedLabel(): String = when (this) {
-	PlayerTendency.TIGHT_AGGRESSIVE -> stringResource(Res.string.tendency_tight_aggressive)
-	PlayerTendency.TIGHT_PASSIVE -> stringResource(Res.string.tendency_tight_passive)
-	PlayerTendency.LOOSE_AGGRESSIVE -> stringResource(Res.string.tendency_loose_aggressive)
-	PlayerTendency.LOOSE_PASSIVE -> stringResource(Res.string.tendency_loose_passive)
-	PlayerTendency.SHARK -> stringResource(Res.string.tendency_shark)
-	PlayerTendency.REGULAR -> stringResource(Res.string.tendency_regular)
-	PlayerTendency.FISH -> stringResource(Res.string.tendency_fish)
-	PlayerTendency.UNKNOWN -> stringResource(Res.string.tendency_unknown)
+fun ThemeMode.stringRes(): StringResource = when (this) {
+	ThemeMode.AUTO -> Res.string.theme_auto
+	ThemeMode.LIGHT -> Res.string.theme_light
+	ThemeMode.DARK -> Res.string.theme_dark
 }
 
-@Composable
-fun ThemeMode.localizedLabel(): String = when (this) {
-	ThemeMode.AUTO -> stringResource(Res.string.theme_auto)
-	ThemeMode.LIGHT -> stringResource(Res.string.theme_light)
-	ThemeMode.DARK -> stringResource(Res.string.theme_dark)
+fun ThemeMode.descStringRes(): StringResource = when (this) {
+	ThemeMode.AUTO -> Res.string.theme_auto_desc
+	ThemeMode.LIGHT -> Res.string.theme_light_desc
+	ThemeMode.DARK -> Res.string.theme_dark_desc
 }
 
-@Composable
-fun ThemeMode.localizedDesc(): String = when (this) {
-	ThemeMode.AUTO -> stringResource(Res.string.theme_auto_desc)
-	ThemeMode.LIGHT -> stringResource(Res.string.theme_light_desc)
-	ThemeMode.DARK -> stringResource(Res.string.theme_dark_desc)
+fun HandRanking.stringRes(): StringResource = when (this) {
+	HandRanking.ROYAL_FLUSH -> Res.string.ranking_royal_flush
+	HandRanking.STRAIGHT_FLUSH -> Res.string.ranking_straight_flush
+	HandRanking.FOUR_OF_A_KIND -> Res.string.ranking_four_of_a_kind
+	HandRanking.FULL_HOUSE -> Res.string.ranking_full_house
+	HandRanking.FLUSH -> Res.string.ranking_flush
+	HandRanking.STRAIGHT -> Res.string.ranking_straight
+	HandRanking.THREE_OF_A_KIND -> Res.string.ranking_three_of_a_kind
+	HandRanking.TWO_PAIR -> Res.string.ranking_two_pair
+	HandRanking.ONE_PAIR -> Res.string.ranking_one_pair
+	HandRanking.HIGH_CARD -> Res.string.ranking_high_card
+	HandRanking.WIN_BY_FOLD -> Res.string.ranking_fold
 }
 
-@Composable
-fun HeroResultType.localizedLabel(ranking: String = ""): String = when {
-	this == HeroResultType.FOLD_WIN -> stringResource(Res.string.showdown_result_fold_win)
-	this == HeroResultType.FOLD_LOSE -> stringResource(Res.string.showdown_result_fold_lose)
-	ranking.isEmpty() && this == HeroResultType.SHOWDOWN_WIN -> stringResource(
-		Res.string.showdown_result_fold_win,
-	)
-	ranking.isEmpty() && this == HeroResultType.SHOWDOWN_LOSE -> stringResource(
-		Res.string.showdown_result_fold_lose,
-	)
-	this == HeroResultType.SHOWDOWN_SPLIT -> stringResource(Res.string.showdown_result_split, ranking)
-	this == HeroResultType.SHOWDOWN_WIN -> stringResource(Res.string.showdown_result_win, ranking)
-	else -> stringResource(Res.string.showdown_result_lose, ranking)
-}
-
-@Composable
-fun HandRanking.localizedLabel(): String = when (this) {
-	HandRanking.ROYAL_FLUSH -> stringResource(Res.string.ranking_royal_flush)
-	HandRanking.STRAIGHT_FLUSH -> stringResource(Res.string.ranking_straight_flush)
-	HandRanking.FOUR_OF_A_KIND -> stringResource(Res.string.ranking_four_of_a_kind)
-	HandRanking.FULL_HOUSE -> stringResource(Res.string.ranking_full_house)
-	HandRanking.FLUSH -> stringResource(Res.string.ranking_flush)
-	HandRanking.STRAIGHT -> stringResource(Res.string.ranking_straight)
-	HandRanking.THREE_OF_A_KIND -> stringResource(Res.string.ranking_three_of_a_kind)
-	HandRanking.TWO_PAIR -> stringResource(Res.string.ranking_two_pair)
-	HandRanking.ONE_PAIR -> stringResource(Res.string.ranking_one_pair)
-	HandRanking.HIGH_CARD -> stringResource(Res.string.ranking_high_card)
-	HandRanking.WIN_BY_FOLD -> stringResource(Res.string.ranking_fold)
+fun HeroResultType.resultStringRes(hasRanking: Boolean): StringResource = when {
+	this == HeroResultType.FOLD_WIN -> Res.string.showdown_result_fold_win
+	this == HeroResultType.FOLD_LOSE -> Res.string.showdown_result_fold_lose
+	!hasRanking && this == HeroResultType.SHOWDOWN_WIN -> Res.string.showdown_result_fold_win
+	!hasRanking && this == HeroResultType.SHOWDOWN_LOSE -> Res.string.showdown_result_fold_lose
+	this == HeroResultType.SHOWDOWN_SPLIT -> Res.string.showdown_result_split
+	this == HeroResultType.SHOWDOWN_WIN -> Res.string.showdown_result_win
+	else -> Res.string.showdown_result_lose
 }

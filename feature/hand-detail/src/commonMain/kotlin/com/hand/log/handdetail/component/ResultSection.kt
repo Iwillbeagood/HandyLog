@@ -31,7 +31,8 @@ import com.hand.log.domain.model.ShowdownOutcome
 import com.hand.log.domain.model.ShowdownResult
 import com.hand.log.domain.model.Suit
 import com.hand.log.domain.model.TurnStreet
-import com.hand.log.ui.localizedLabel
+import com.hand.log.ui.stringRes
+import com.hand.log.ui.resultStringRes
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
@@ -61,9 +62,17 @@ internal fun ResultSection(
 
 		// 결과 텍스트 — HandRecord.resolvedHeroResultType 기반
 		val resultType = hand.resolvedHeroResultType
-		val ranking = hand.heroRanking?.localizedLabel() ?: ""
+		val ranking = hand.heroRanking?.let { stringResource(it.stringRes()) } ?: ""
+		val resultRes = resultType.resultStringRes(ranking.isNotEmpty())
 		Text(
-			text = resultType.localizedLabel(ranking),
+			text = if (ranking.isNotEmpty()) {
+				stringResource(
+					resultRes,
+					ranking,
+				)
+			} else {
+				stringResource(resultRes)
+			},
 			style = HandyTheme.typography.bold20,
 			color = when (resultType) {
 				HeroResultType.SHOWDOWN_SPLIT -> colors.split

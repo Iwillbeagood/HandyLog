@@ -41,7 +41,7 @@ import com.hand.log.designsystem.etc.clickableSingle
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Player
 import com.hand.log.domain.model.PlayerTendency
-import com.hand.log.ui.localizedLabel
+import com.hand.log.ui.stringRes
 import com.hand.log.domain.model.SavedPlayer
 import com.hand.log.playersetup.contract.PlayerSetupEffect
 import com.hand.log.playersetup.contract.PlayerSetupState
@@ -218,7 +218,7 @@ fun PlayerSetupContent(
 							.padding(horizontal = 12.dp, vertical = 6.dp),
 					) {
 						Text(
-							text = tendency.localizedLabel(),
+							text = stringResource(tendency.stringRes()),
 							style = HandyTheme.typography.medium12,
 							color = if (isSelected) colors.onPrimary else colors.textSecondary,
 						)

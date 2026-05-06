@@ -49,7 +49,7 @@ import com.hand.log.record.component.ShowdownStepContent
 import com.hand.log.record.component.StreetStepContent
 import com.hand.log.record.contract.RecordHandState
 import com.hand.log.record.contract.RecordStep
-import com.hand.log.record.contract.localizedLabel
+import com.hand.log.record.contract.displayName
 import kotlinx.datetime.LocalDate
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
@@ -260,7 +260,7 @@ private fun StepIndicator(
 				}
 				Spacer(modifier = Modifier.height(4.dp))
 				Text(
-					text = step.localizedLabel(),
+					text = step.displayName(),
 					style = HandyTheme.typography.regular12,
 					color = if (isCurrent) colors.textPrimary else colors.textSecondary,
 					textAlign = TextAlign.Center,

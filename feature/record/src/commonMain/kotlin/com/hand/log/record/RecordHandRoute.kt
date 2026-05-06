@@ -25,7 +25,7 @@ import com.hand.log.record.contract.RecordHandEffect
 import com.hand.log.record.contract.RecordHandModalEffect
 import com.hand.log.record.contract.RecordHandState
 import com.hand.log.record.contract.RecordStep
-import com.hand.log.ui.localizedLabel
+import com.hand.log.ui.stringRes
 import com.hand.log.tableedit.TableEditSheet
 import com.hand.log.ui.poker.CardSelectorSheet
 
@@ -156,11 +156,11 @@ private fun RecordHandModalContent(
 				is CardSelectorTarget.AllBoardCards -> stringResource(Res.string.board_cards)
 				is CardSelectorTarget.BoardCard -> stringResource(
 					Res.string.card_selector_board,
-					target.street.localizedLabel(),
+					stringResource(target.street.stringRes()),
 				)
 				is CardSelectorTarget.SingleBoardCard -> stringResource(
 					Res.string.card_selector_board_change,
-					target.street.localizedLabel(),
+					stringResource(target.street.stringRes()),
 				)
 				is CardSelectorTarget.ShowdownCard -> stringResource(
 					Res.string.card_selector_showdown,

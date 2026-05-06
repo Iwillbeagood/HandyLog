@@ -39,7 +39,8 @@ import com.hand.log.domain.model.FlopStreet
 import com.hand.log.domain.model.PreflopStreet
 import com.hand.log.domain.model.RiverStreet
 import com.hand.log.domain.model.ShowdownResult
-import com.hand.log.ui.localizedLabel
+import com.hand.log.ui.stringRes
+import com.hand.log.ui.resultStringRes
 import com.hand.log.domain.model.TurnStreet
 import com.hand.log.record.model.RecordPlayer
 import com.hand.log.record.model.RecordPlayers
@@ -131,7 +132,6 @@ internal fun ShowdownStepContent(
 			VerticalSpacer(8.dp)
 		}
 
-		// 결과 (자동 계산) — HandRecord.resolvedHeroResultType과 동일 로직
 		if (hasResults) {
 			val heroSeat = state.table?.heroSeat
 			val heroResult = state.heroResult
@@ -152,9 +152,17 @@ internal fun ShowdownStepContent(
 			}
 			val ranking = heroShowdownResult?.ranking
 				?.takeIf { it != HandRanking.WIN_BY_FOLD }
-				?.localizedLabel() ?: ""
+				?.let { stringResource(it.stringRes()) } ?: ""
+			val resultRes = resultType.resultStringRes(ranking.isNotEmpty())
 			Text(
-				text = resultType.localizedLabel(ranking),
+				text = if (ranking.isNotEmpty()) {
+					stringResource(
+						resultRes,
+						ranking,
+					)
+				} else {
+					stringResource(resultRes)
+				},
 				style = HandyTheme.typography.bold20,
 				color = when (resultType) {
 					HeroResultType.SHOWDOWN_SPLIT -> colors.split
@@ -295,7 +303,7 @@ private fun ShowdownPlayerCard(
 
 				if (result != null && !state.isFoldWin) {
 					Text(
-						text = result.ranking.localizedLabel(),
+						text = stringResource(result.ranking.stringRes()),
 						style = HandyTheme.typography.regular12,
 						color = outcomeColor(result?.outcome),
 					)

@@ -31,8 +31,8 @@ import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.ThemeMode
-import com.hand.log.ui.localizedLabel
-import com.hand.log.ui.localizedDesc
+import com.hand.log.ui.stringRes
+import com.hand.log.ui.descStringRes
 import com.hand.log.settings.main.contract.AppSettings
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.monitor
@@ -133,12 +133,12 @@ private fun ThemeSection(
 
 					Column(modifier = Modifier.weight(1f)) {
 						Text(
-							text = mode.localizedLabel(),
+							text = stringResource(mode.stringRes()),
 							style = HandyTheme.typography.medium14,
 							color = if (isSelected) colors.primary else colors.textPrimary,
 						)
 						Text(
-							text = mode.localizedDesc(),
+							text = stringResource(mode.descStringRes()),
 							style = HandyTheme.typography.regular12,
 							color = colors.textSecondary,
 						)

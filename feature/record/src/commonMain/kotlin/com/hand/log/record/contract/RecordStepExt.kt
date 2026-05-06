@@ -6,7 +6,7 @@ import handylog.core.res.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-internal fun RecordStep.localizedLabel(): String = when (this) {
+internal fun RecordStep.displayName(): String = when (this) {
 	RecordStep.SETUP -> stringResource(Res.string.step_setup)
 	RecordStep.PREFLOP -> stringResource(Res.string.step_preflop)
 	RecordStep.FLOP -> stringResource(Res.string.step_flop)

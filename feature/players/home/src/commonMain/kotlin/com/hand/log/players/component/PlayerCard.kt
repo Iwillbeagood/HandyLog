@@ -18,7 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.shape.CircleShape
 import com.hand.log.designsystem.component.HandyIconButton
-import com.hand.log.ui.localizedLabel
+import com.hand.log.ui.stringRes
 import com.hand.log.designsystem.etc.clickableSingle
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
@@ -121,7 +121,7 @@ private fun TendencyBadge(tendency: PlayerTendency) {
 	val color = tendency.tendencyColor()
 
 	Text(
-		text = tendency.localizedLabel(),
+		text = stringResource(tendency.stringRes()),
 		style = HandyTheme.typography.bold10,
 		color = color,
 		modifier = Modifier

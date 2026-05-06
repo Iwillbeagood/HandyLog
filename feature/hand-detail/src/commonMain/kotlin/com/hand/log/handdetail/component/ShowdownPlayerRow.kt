@@ -26,7 +26,8 @@ import com.hand.log.domain.model.ShowdownEntry
 import com.hand.log.domain.model.ShowdownOutcome
 import com.hand.log.domain.model.ShowdownResult
 import com.hand.log.domain.model.Suit
-import com.hand.log.ui.localizedLabel
+import com.hand.log.ui.stringRes
+import org.jetbrains.compose.resources.stringResource
 import com.hand.log.ui.poker.CardSize
 import com.hand.log.ui.poker.HoleCards
 import com.hand.log.ui.poker.OutcomeBadge
@@ -108,7 +109,7 @@ internal fun ShowdownPlayerRow(
 			}
 			if (result != null) {
 				Text(
-					text = result.ranking.localizedLabel(),
+					text = stringResource(result.ranking.stringRes()),
 					style = HandyTheme.typography.regular12,
 					color = outcomeColor(outcome),
 				)

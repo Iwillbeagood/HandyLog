@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Icon
 import com.hand.log.designsystem.component.ScaleInAnimation
 import com.hand.log.designsystem.component.VerticalSpacer
-import com.hand.log.ui.localizedLabel
+import com.hand.log.ui.stringRes
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.designsystem.theme.nonScaledSp
 import com.hand.log.domain.model.Action
@@ -447,7 +447,11 @@ private fun ActionSeatView(
 
 				if (action != null) {
 					Text(
-						text = action.localizedLabel(),
+						text = if (action.betLevel >= 2) {
+							stringResource(Res.string.action_n_bet, action.betLevel)
+						} else {
+							stringResource(action.type.stringRes())
+						},
 						style = HandyTheme.typography.bold8.nonScaledSp,
 						color = (actionColor ?: colors.textSecondary).copy(alpha = textAlpha),
 						maxLines = 1,

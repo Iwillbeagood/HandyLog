@@ -23,7 +23,7 @@ import com.hand.log.designsystem.component.VerticalSpacer
 import com.hand.log.designsystem.component.modal.HandyBottomSheet
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.PlayerTendency
-import com.hand.log.ui.localizedLabel
+import com.hand.log.ui.stringRes
 import com.hand.log.domain.model.SavedPlayer
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.*
@@ -127,7 +127,7 @@ private fun PlayerEditFields(
 					.padding(horizontal = 12.dp, vertical = 6.dp),
 			) {
 				Text(
-					text = t.localizedLabel(),
+					text = stringResource(t.stringRes()),
 					style = HandyTheme.typography.medium12,
 					color = if (isSelected) colors.onPrimary else colors.textSecondary,
 				)

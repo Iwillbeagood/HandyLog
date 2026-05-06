@@ -22,7 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.GameType
-import com.hand.log.ui.localizedLabel
+import com.hand.log.ui.stringRes
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.model.TableListItem
 import handylog.core.res.generated.resources.Res
@@ -89,7 +89,7 @@ internal fun TableCard(
 						modifier = Modifier.size(12.dp),
 					)
 					Text(
-						text = table.gameType.localizedLabel(),
+						text = stringResource(table.gameType.stringRes()),
 						style = HandyTheme.typography.bold12,
 						color = badgeColor,
 					)
