@@ -14,22 +14,42 @@ import platform.UIKit.UIScreen
 import platform.UIKit.UIView
 import platform.UIKit.UIViewAnimationOptionCurveEaseOut
 import platform.UIKit.UIWindow
+import platform.UIKit.UIWindowLevelAlert
 import platform.UIKit.UIWindowScene
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
 
 actual open class ToastManager actual constructor() {
+	private var toastWindow: UIWindow? = null
+
 	@OptIn(ExperimentalForeignApi::class)
 	actual fun showToast(message: String, toastDurationType: ToastDurationType) {
+		dispatch_async(dispatch_get_main_queue()) {
+			showToastInternal(message, toastDurationType)
+		}
+	}
 
+	@OptIn(ExperimentalForeignApi::class)
+	private fun showToastInternal(message: String, toastDurationType: ToastDurationType) {
 		val (displayDuration, fadeDuration) = when (toastDurationType) {
 			ToastDurationType.SHORT -> 1.5 to 0.5
 			ToastDurationType.LONG -> 3.0 to 0.8
 		}
 
-		val keyWindow = findKeyWindow() ?: return
-		val rootView = keyWindow.rootViewController?.view ?: return
+		val windowScene = findWindowScene() ?: return
 
 		val screenWidth = UIScreen.mainScreen.bounds.useContents { size.width }
 		val screenHeight = UIScreen.mainScreen.bounds.useContents { size.height }
+
+		// 기존 토스트 윈도우 정리
+		toastWindow?.setHidden(true)
+		toastWindow = null
+
+		// 토스트 전용 윈도우 생성 (다른 UI 변화에 영향 받지 않음)
+		val window = UIWindow(windowScene = windowScene)
+		window.windowLevel = UIWindowLevelAlert + 1.0
+		window.setUserInteractionEnabled(false)
+		window.backgroundColor = UIColor.clearColor
 
 		val toastLabel = UILabel(
 			frame = CGRectMake(0.0, 0.0, screenWidth - 60, 40.0),
@@ -43,7 +63,10 @@ actual open class ToastManager actual constructor() {
 		toastLabel.alpha = 1.0
 		toastLabel.layer.cornerRadius = 20.0
 		toastLabel.clipsToBounds = true
-		rootView.addSubview(toastLabel)
+
+		window.addSubview(toastLabel)
+		window.setHidden(false)
+		toastWindow = window
 
 		UIView.animateWithDuration(
 			duration = fadeDuration,
@@ -52,24 +75,22 @@ actual open class ToastManager actual constructor() {
 			animations = {
 				toastLabel.alpha = 0.0
 			},
-			completion = {
-				if (it) {
-					toastLabel.removeFromSuperview()
+			completion = { finished ->
+				if (finished) {
+					window.setHidden(true)
+					if (toastWindow == window) {
+						toastWindow = null
+					}
 				}
 			},
 		)
 	}
 
-	private fun findKeyWindow(): UIWindow? {
+	private fun findWindowScene(): UIWindowScene? {
 		val scenes = UIApplication.sharedApplication.connectedScenes
 		for (scene in scenes) {
 			if (scene is UIWindowScene) {
-				for (window in scene.windows) {
-					if ((window as? UIWindow)?.isKeyWindow() == true) {
-						return window as UIWindow
-					}
-				}
-				return scene.windows.firstOrNull() as? UIWindow
+				return scene
 			}
 		}
 		return null

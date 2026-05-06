@@ -17,8 +17,3 @@ internal sealed interface HomeState {
 		val hands: List<HandWithTable> = emptyList(),
 	) : HomeState
 }
-
-internal enum class HomeTab {
-	TABLE,
-	HAND,
-}

@@ -31,4 +31,10 @@ internal class AppSettingsLocalDataSourceImpl(
 
 	override suspend fun setSkipStepBackWarning(skip: Boolean) =
 		appSettingsDataSource.setSkipStepBackWarning(skip)
+
+	override fun observeHomeTab(): Flow<String> =
+		appSettingsDataSource.observeHomeTab()
+
+	override suspend fun setHomeTab(tab: String) =
+		appSettingsDataSource.setHomeTab(tab)
 }

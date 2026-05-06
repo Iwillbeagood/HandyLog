@@ -3,20 +3,20 @@ package com.hand.log.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hand.log.domain.model.PokerTable
+import com.hand.log.domain.repository.AppSettingsRepository
 import com.hand.log.domain.repository.PokerTableRepository
 import com.hand.log.domain.usecase.ObserveAllHandsWithTableUseCase
 import com.hand.log.domain.usecase.ObserveTableListItemsUseCase
 import com.hand.log.home.contract.HomeEffect
 import com.hand.log.home.contract.HomeModalEffect
 import com.hand.log.home.contract.HomeState
-import com.hand.log.home.contract.HomeTab
+import com.hand.log.domain.model.etc.HomeTab
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -24,12 +24,17 @@ import kotlinx.coroutines.launch
 
 internal class HomeViewModel(
 	private val pokerTableRepository: PokerTableRepository,
+	private val appSettingsRepository: AppSettingsRepository,
 	observeTableListItems: ObserveTableListItemsUseCase,
 	observeAllHandsWithTable: ObserveAllHandsWithTableUseCase,
 ) : ViewModel() {
 
-	private val _selectedTab = MutableStateFlow(HomeTab.TABLE)
-	val selectedTab: StateFlow<HomeTab> get() = _selectedTab.asStateFlow()
+	val selectedTab: StateFlow<HomeTab> = appSettingsRepository.observeHomeTab()
+		.stateIn(
+			scope = viewModelScope,
+			started = SharingStarted.WhileSubscribed(5_000),
+			initialValue = HomeTab.TABLE,
+		)
 
 	val homeState: StateFlow<HomeState> = combine(
 		observeTableListItems(),
@@ -49,7 +54,9 @@ internal class HomeViewModel(
 	val homeEffect: SharedFlow<HomeEffect> get() = _homeEffect.asSharedFlow()
 
 	fun selectTab(tab: HomeTab) {
-		_selectedTab.value = tab
+		viewModelScope.launch {
+			appSettingsRepository.setHomeTab(tab)
+		}
 	}
 
 	fun showTableEditSheet() {

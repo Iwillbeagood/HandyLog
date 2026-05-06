@@ -16,6 +16,7 @@ class AppSettingsDataSource(
 		val BET_SIZE_PRESETS = stringPreferencesKey("bet_size_presets")
 		val POT_PERCENT_PRESETS = stringPreferencesKey("pot_percent_presets")
 		val SKIP_STEP_BACK_WARNING = booleanPreferencesKey("skip_step_back_warning")
+		val HOME_TAB = stringPreferencesKey("home_tab")
 	}
 
 	fun observeThemeMode(): Flow<String> = dataStore.data.map { prefs ->
@@ -57,6 +58,16 @@ class AppSettingsDataSource(
 	suspend fun setSkipStepBackWarning(skip: Boolean) {
 		dataStore.edit { prefs ->
 			prefs[SKIP_STEP_BACK_WARNING] = skip
+		}
+	}
+
+	fun observeHomeTab(): Flow<String> = dataStore.data.map { prefs ->
+		prefs[HOME_TAB] ?: "table"
+	}
+
+	suspend fun setHomeTab(tab: String) {
+		dataStore.edit { prefs ->
+			prefs[HOME_TAB] = tab
 		}
 	}
 }

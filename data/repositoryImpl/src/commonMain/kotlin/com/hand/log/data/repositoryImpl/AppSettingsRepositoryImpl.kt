@@ -2,6 +2,7 @@ package com.hand.log.data.repositoryImpl
 
 import com.hand.log.data.datasoure.local.AppSettingsLocalDataSource
 import com.hand.log.domain.model.ThemeMode
+import com.hand.log.domain.model.etc.HomeTab
 import com.hand.log.domain.repository.AppSettingsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -35,4 +36,12 @@ internal class AppSettingsRepositoryImpl(
 
 	override suspend fun setSkipStepBackWarning(skip: Boolean) =
 		localDataSource.setSkipStepBackWarning(skip)
+
+	override fun observeHomeTab(): Flow<HomeTab> =
+		localDataSource.observeHomeTab().map { str ->
+			HomeTab.entries.find { it.name.lowercase() == str } ?: HomeTab.TABLE
+		}
+
+	override suspend fun setHomeTab(tab: HomeTab) =
+		localDataSource.setHomeTab(tab.name.lowercase())
 }

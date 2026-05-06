@@ -34,7 +34,7 @@ import com.hand.log.home.component.EmptyState
 import com.hand.log.home.component.HomeHandCard
 import com.hand.log.home.component.TableCard
 import com.hand.log.home.contract.HomeState
-import com.hand.log.home.contract.HomeTab
+import com.hand.log.domain.model.etc.HomeTab
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.*
 import kotlinx.datetime.LocalDate

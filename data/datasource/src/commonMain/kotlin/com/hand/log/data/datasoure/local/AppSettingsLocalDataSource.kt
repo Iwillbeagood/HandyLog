@@ -11,4 +11,6 @@ interface AppSettingsLocalDataSource {
 	suspend fun setPotPercentPresets(presets: List<Int>)
 	fun observeSkipStepBackWarning(): Flow<Boolean>
 	suspend fun setSkipStepBackWarning(skip: Boolean)
+	fun observeHomeTab(): Flow<String>
+	suspend fun setHomeTab(tab: String)
 }
