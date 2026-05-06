@@ -28,7 +28,6 @@ internal fun HandDetailTopBarEndContent(
 	Row {
 		TopAppbarIcon(
 			icon = Res.drawable.delete,
-			tint = colors.error,
 			onClick = onShowDeleteConfirm,
 		)
 		Box {

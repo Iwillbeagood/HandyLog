@@ -115,6 +115,8 @@
 	<string name="hand_detail_text_shared">텍스트가 공유되었습니다</string>
 	<string name="hand_detail_download_image">이미지 다운로드</string>
 	<string name="hand_detail_image_downloaded">이미지가 저장되었습니다</string>
+	<string name="hand_detail_image_share_failed">이미지 공유에 실패했습니다</string>
+	<string name="hand_detail_image_save_failed">이미지 저장에 실패했습니다</string>
 	<string name="hand_detail_delete_title">핸드 삭제</string>
 	<string name="hand_detail_delete_description">이 핸드 기록을 삭제하시겠습니까?</string>
 	<string name="hand_detail_image_shared">이미지가 공유되었습니다</string>

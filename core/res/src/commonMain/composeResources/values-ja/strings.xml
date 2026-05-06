@@ -112,6 +112,8 @@
 	<string name="hand_detail_share_image">画像で共有</string>
 	<string name="hand_detail_text_shared">テキストを共有しました</string>
 	<string name="hand_detail_image_shared">画像を共有しました</string>
+	<string name="hand_detail_image_share_failed">画像の共有に失敗しました</string>
+	<string name="hand_detail_image_save_failed">画像の保存に失敗しました</string>
 
 
 	<!-- Action Types -->

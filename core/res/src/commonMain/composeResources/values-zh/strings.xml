@@ -112,6 +112,8 @@
 	<string name="hand_detail_share_image">分享图片</string>
 	<string name="hand_detail_text_shared">文本已分享</string>
 	<string name="hand_detail_image_shared">图片已分享</string>
+	<string name="hand_detail_image_share_failed">图片分享失败</string>
+	<string name="hand_detail_image_save_failed">图片保存失败</string>
 
 
 	<!-- Action Types -->

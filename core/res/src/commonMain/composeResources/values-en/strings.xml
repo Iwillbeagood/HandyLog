@@ -112,6 +112,8 @@
 	<string name="hand_detail_share_image">Share as Image</string>
 	<string name="hand_detail_text_shared">Text shared</string>
 	<string name="hand_detail_image_shared">Image shared</string>
+	<string name="hand_detail_image_share_failed">Failed to share image</string>
+	<string name="hand_detail_image_save_failed">Failed to save image</string>
 
 
 	<!-- Action Types -->

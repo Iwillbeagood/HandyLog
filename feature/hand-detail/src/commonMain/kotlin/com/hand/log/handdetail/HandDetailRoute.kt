@@ -19,6 +19,8 @@ import com.hand.log.navigation.interop.LocalMainActionInterop
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.utils.share.rememberShareManager
 import com.hand.log.utils.share.toPngBytes
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.*
 import org.jetbrains.compose.resources.getString
@@ -80,23 +82,43 @@ internal fun HandDetailRoute(
 					if (copied) {
 						mainAction.onShowToast(
 							getString(Res.string.clipboard_copied),
-							ToastDurationType.SHORT,
+							ToastDurationType.LONG,
 						)
 					}
 				}
 				is HandDetailEffect.ShareImage -> {
-					val bitmap = graphicsLayer.toImageBitmap()
-					val bytes = bitmap.toPngBytes()
-					shareManager.shareImage(bytes, effect.fileName)
+					try {
+						val bitmap = graphicsLayer.toImageBitmap()
+						val bytes = withContext(Dispatchers.Default) {
+							bitmap.toPngBytes()
+						}
+						shareManager.shareImage(bytes, effect.fileName)
+					} catch (e: Throwable) {
+						e.printStackTrace()
+						mainAction.onShowToast(
+							getString(Res.string.hand_detail_image_share_failed),
+							ToastDurationType.SHORT,
+						)
+					}
 				}
 				is HandDetailEffect.DownloadImage -> {
-					val bitmap = graphicsLayer.toImageBitmap()
-					val bytes = bitmap.toPngBytes()
-					shareManager.saveImage(bytes, effect.fileName)
-					mainAction.onShowToast(
-						getString(Res.string.hand_detail_image_downloaded),
-						ToastDurationType.SHORT,
-					)
+					try {
+						val bitmap = graphicsLayer.toImageBitmap()
+						val bytes = withContext(Dispatchers.Default) {
+							bitmap.toPngBytes()
+						}
+						shareManager.saveImage(bytes, effect.fileName)
+						mainAction.onShowToast(
+							getString(Res.string.hand_detail_image_downloaded),
+							ToastDurationType.SHORT,
+						)
+					} catch (e: Throwable) {
+						e.printStackTrace()
+						mainAction.onShowToast(
+							getString(Res.string.hand_detail_image_save_failed),
+							ToastDurationType.SHORT,
+						)
+					}
 				}
 				is HandDetailEffect.NavigateToPlayers -> {
 					navAction.navigateToTableDetail(effect.tableId)

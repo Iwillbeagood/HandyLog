@@ -56,7 +56,6 @@ internal fun HandDetailScreen(
 	val colors = HandyTheme.colorScheme
 
 	BaseScaffold(
-		containerColor = colors.background,
 		topBar = {
 			HandyTopAppbar(
 				title = stringResource(Res.string.hand_detail_title),

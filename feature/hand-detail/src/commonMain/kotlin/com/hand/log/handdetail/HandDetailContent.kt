@@ -56,6 +56,7 @@ internal fun HandDetailContent(
 			.background(colors.background)
 			.drawWithContent {
 				graphicsLayer.record {
+					drawRect(colors.background)
 					this@drawWithContent.drawContent()
 				}
 				drawLayer(graphicsLayer)
