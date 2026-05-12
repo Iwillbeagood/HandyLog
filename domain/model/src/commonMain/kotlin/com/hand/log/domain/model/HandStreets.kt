@@ -136,18 +136,4 @@ data class HandStreets(
 			(turn?.actions?.let { streetTotal(it) } ?: 0.0) +
 			(river?.actions?.let { streetTotal(it) } ?: 0.0)
 	}
-
-	fun totalInvestedPerSeat(): Map<Int, Double> {
-		val result = mutableMapOf<Int, Double>()
-		fun addStreet(actions: List<Action>) {
-			actions.groupBy { it.playerSeat }.forEach { (seat, seatActions) ->
-				result[seat] = (result[seat] ?: 0.0) + (seatActions.last().amount ?: 0.0)
-			}
-		}
-		addStreet(preflop.actions)
-		flop?.actions?.let { addStreet(it) }
-		turn?.actions?.let { addStreet(it) }
-		river?.actions?.let { addStreet(it) }
-		return result
-	}
 }
