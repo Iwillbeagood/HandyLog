@@ -2,15 +2,12 @@ package com.hand.log.record.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,7 +45,6 @@ internal fun ActionSelector(
 	preflopPresets: List<Double> = listOf(2.0, 2.5, 3.0, 4.0, 5.0),
 	postflopPresets: List<Int> = listOf(33, 50, 75, 100),
 	minRaiseAmount: Double = 0.0,
-	maxAmount: Double = 0.0,
 	lastBetAmount: Double = 0.0,
 	useBbUnit: Boolean = false,
 	modifier: Modifier = Modifier,
@@ -111,100 +107,33 @@ internal fun ActionSelector(
 				},
 			)
 			VerticalSpacer(8.dp)
-			Row(
-				horizontalArrangement = Arrangement.spacedBy(8.dp),
-				modifier = Modifier.horizontalScroll(rememberScrollState()),
-			) {
-				val isRaiseOrBet = selectedAction == ActionType.RAISE || selectedAction == ActionType.BET
-				if (isRaiseOrBet && lastBetAmount > 0) {
-					// 이전 베팅 배수 프리셋 (x2, x3, x3.5, x4)
-					val raiseMultipliers = listOf(2.0, 3.0, 3.5, 4.0)
-					raiseMultipliers.forEach { multiplier ->
-						val chipAmount = lastBetAmount * multiplier
-						val presetAmount = if (useBbUnit && bbAmount > 0) {
-							val bbCount = chipAmount / bbAmount
-							val rounded = (bbCount * 10).toLong() / 10.0
-							if (rounded == rounded.toLong().toDouble()) {
-								rounded.toLong().toString()
-							} else {
-								rounded.toString()
-							}
-						} else {
-							chipAmount.toLong().toString()
-						}
-						val label = if (multiplier % 1.0 == 0.0) {
-							"x${multiplier.toInt()}"
-						} else {
-							"x$multiplier"
-						}
-						RegularButton(
-							text = label,
-							onClick = { onUpdateAmount(presetAmount) },
-							containerColor = colors.muted,
-							contentColor = colors.textPrimary,
-							textStyle = HandyTheme.typography.medium14,
-							borderStroke = 8.dp,
-							verticalPadding = 8.dp,
-							horizontalPadding = 16.dp,
-						)
-					}
-				} else if (currentStreet == Street.PREFLOP) {
-					if (bbAmount > 0) {
-						preflopPresets.forEach { multiplier ->
-							val presetAmount = if (useBbUnit) {
-								val rounded = (multiplier * 10).toLong() / 10.0
-								if (rounded == rounded.toLong().toDouble()) {
-									rounded.toLong().toString()
-								} else {
-									rounded.toString()
-								}
-							} else {
-								(bbAmount * multiplier).toLong().toString()
-							}
-							val label = if (multiplier % 1.0 == 0.0) {
-								"${multiplier.toInt()}BB"
-							} else {
-								"${multiplier}BB"
-							}
-							RegularButton(
-								text = label,
-								onClick = { onUpdateAmount(presetAmount) },
-								containerColor = colors.muted,
-								contentColor = colors.textPrimary,
-								textStyle = HandyTheme.typography.medium14,
-								borderStroke = 8.dp,
-								verticalPadding = 8.dp,
-								horizontalPadding = 16.dp,
-							)
-						}
-					}
-				} else {
-					if (currentPot > 0) {
-						postflopPresets.forEach { percent ->
-							val chipAmount = currentPot * percent / 100
-							val presetAmount = if (useBbUnit && bbAmount > 0) {
-								val bbCount = chipAmount / bbAmount
-								val rounded = (bbCount * 10).toLong() / 10.0
-								if (rounded == rounded.toLong().toDouble()) {
-									rounded.toLong().toString()
-								} else {
-									rounded.toString()
-								}
-							} else {
-								chipAmount.toLong().toString()
-							}
-							RegularButton(
-								text = "$percent%",
-								onClick = { onUpdateAmount(presetAmount) },
-								containerColor = colors.muted,
-								contentColor = colors.textPrimary,
-								textStyle = HandyTheme.typography.medium14,
-								borderStroke = 8.dp,
-								verticalPadding = 8.dp,
-								horizontalPadding = 16.dp,
-							)
-						}
-					}
+
+			val isRaiseOrBet = selectedAction == ActionType.RAISE || selectedAction == ActionType.BET
+			if (isRaiseOrBet && lastBetAmount > 0) {
+				RaiseMultiplierPresetRow(
+					lastBetAmount = lastBetAmount,
+					bbAmount = bbAmount,
+					useBbUnit = useBbUnit,
+					onUpdateAmount = onUpdateAmount,
+				)
+			} else if (currentStreet == Street.PREFLOP) {
+				if (bbAmount > 0) {
+					PreflopBBPresetRow(
+						preflopPresets = preflopPresets,
+						bbAmount = bbAmount,
+						useBbUnit = useBbUnit,
+						onUpdateAmount = onUpdateAmount,
+					)
+				}
+			} else {
+				if (currentPot > 0) {
+					PostflopPotPresetRow(
+						postflopPresets = postflopPresets,
+						currentPot = currentPot,
+						bbAmount = bbAmount,
+						useBbUnit = useBbUnit,
+						onUpdateAmount = onUpdateAmount,
+					)
 				}
 			}
 

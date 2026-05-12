@@ -5,7 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.*
@@ -14,7 +13,6 @@ import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.compose.ui.focus.FocusRequester
-import com.hand.log.domain.model.ActionType
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.record.component.StepBackConfirmDialog
@@ -64,25 +62,21 @@ internal fun RecordHandRoute(
 		onBackCompleted = handleBack,
 	)
 
-	val heroStackFocusRequester = remember { FocusRequester() }
+	val bbFocusRequester = remember { FocusRequester() }
 
 	RecordHandContent(
 		state = state,
-		modalEffect = modalEffect,
 		viewModel = viewModel,
 		onBack = handleBack,
-		heroStackFocusRequester = heroStackFocusRequester,
+		bbFocusRequester = bbFocusRequester,
 	)
 
 	RecordHandModalContent(
 		modalEffect = modalEffect,
-		state = state,
 		onCardsSelected = viewModel::onCardsSelected,
 		onSetShowdownUnknown = viewModel::setShowdownUnknown,
 		onTableSaved = viewModel::onTableSaved,
 		onConfirmStepBack = viewModel::confirmStepBack,
-		onSelectActionType = viewModel::selectActionType,
-		onUpdateActionAmount = viewModel::updateActionAmount,
 		onDismiss = viewModel::dismissModal,
 	)
 
@@ -91,7 +85,7 @@ internal fun RecordHandRoute(
 			when (effect) {
 				is RecordHandEffect.SaveSuccess -> navAction.popBackStack()
 				is RecordHandEffect.SaveError -> mainAction.onShowToast(Res.string.record_save_error)
-				is RecordHandEffect.FocusHeroStack -> heroStackFocusRequester.requestFocus()
+				is RecordHandEffect.FocusBb -> bbFocusRequester.requestFocus()
 			}
 		}
 	}
@@ -100,10 +94,9 @@ internal fun RecordHandRoute(
 @Composable
 private fun RecordHandContent(
 	state: RecordHandState,
-	modalEffect: RecordHandModalEffect,
 	viewModel: RecordHandViewModel,
 	onBack: () -> Unit,
-	heroStackFocusRequester: FocusRequester = FocusRequester(),
+	bbFocusRequester: FocusRequester = FocusRequester(),
 ) {
 	if (state is RecordHandState.Recording) {
 		RecordHandScreen(
@@ -115,7 +108,8 @@ private fun RecordHandContent(
 			onSelectSingleBoardCard = viewModel::selectSingleBoardCard,
 			onUpdateHeroStack = viewModel::updateHeroStack,
 			onUpdateButtonSeat = viewModel::updateButtonSeat,
-			onUpdateBlinds = viewModel::updateBlinds,
+			onUpdateBb = viewModel::updateBb,
+			onUpdateSb = viewModel::updateSb,
 			onSelectActionSeat = viewModel::selectActionSeat,
 			onSelectActionType = viewModel::selectActionType,
 			onUpdateActionAmount = viewModel::updateActionAmount,
@@ -129,7 +123,7 @@ private fun RecordHandContent(
 			onUpdateMemo = viewModel::updateMemo,
 			onToggleBbUnit = viewModel::toggleBbUnit,
 			onSave = viewModel::saveHand,
-			heroStackFocusRequester = heroStackFocusRequester,
+			bbFocusRequester = bbFocusRequester,
 		)
 	}
 }
@@ -137,13 +131,10 @@ private fun RecordHandContent(
 @Composable
 private fun RecordHandModalContent(
 	modalEffect: RecordHandModalEffect,
-	state: RecordHandState?,
 	onCardsSelected: (List<Card>) -> Unit,
 	onSetShowdownUnknown: (Int) -> Unit,
 	onTableSaved: (PokerTable) -> Unit,
-	onConfirmStepBack: (RecordStep, Boolean) -> Unit,
-	onSelectActionType: (ActionType) -> Unit,
-	onUpdateActionAmount: (String) -> Unit,
+	onConfirmStepBack: (RecordStep, Boolean, Boolean) -> Unit,
 	onDismiss: () -> Unit,
 ) {
 	when (modalEffect) {
@@ -179,7 +170,7 @@ private fun RecordHandModalContent(
 				} else {
 					null
 				},
-				heroHand = if (isAllBoard) null else modalEffect.heroHand,
+				initialCards = modalEffect.initialCards,
 				minCards = if (isAllBoard) 3 else modalEffect.target.maxCards,
 				boardPreview = isAllBoard,
 			)
@@ -196,7 +187,9 @@ private fun RecordHandModalContent(
 		is RecordHandModalEffect.ConfirmStepBack -> {
 			StepBackConfirmDialog(
 				targetStep = modalEffect.targetStep,
-				onConfirm = onConfirmStepBack,
+				onConfirm = { step, skipWarning ->
+					onConfirmStepBack(step, skipWarning, modalEffect.undoLastAction)
+				},
 				onDismiss = onDismiss,
 			)
 		}

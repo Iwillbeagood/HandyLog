@@ -108,52 +108,53 @@ internal class RecordHandViewModel(
 
 	fun selectHeroCard() {
 		val current = recording ?: return
-		val heroCardSet = current.heroHand?.let { setOf(it.card1, it.card2) } ?: emptySet()
+		val heroCards = current.heroHand?.let { listOf(it.card1, it.card2) } ?: emptyList()
 		showCardSelector(
 			target = CardSelectorTarget.HeroCard(maxCards = 2),
-			usedCards = current.selectedCards - heroCardSet,
+			usedCards = current.selectedCards - heroCards.toSet(),
+			initialCards = heroCards,
 		)
 	}
 
 	fun selectAllBoardCards() {
 		val current = recording ?: return
-		val existingBoardCards = current.streets.boardCards.toSet()
+		val existingBoardCards = current.streets.boardCards
 		showCardSelector(
 			target = CardSelectorTarget.AllBoardCards(),
-			usedCards = current.selectedCards - existingBoardCards,
+			usedCards = current.selectedCards - existingBoardCards.toSet(),
+			initialCards = existingBoardCards,
 		)
 	}
 
 	fun selectBoardCard(street: Street) {
 		val current = recording ?: return
-		val existingCards = current.streets.getCards(street).toSet()
+		val existingCards = current.streets.getCards(street)
 		showCardSelector(
 			target = CardSelectorTarget.BoardCard(street, maxCards = if (street == Street.FLOP) 3 else 1),
-			usedCards = current.selectedCards - existingCards,
+			usedCards = current.selectedCards - existingCards.toSet(),
+			initialCards = existingCards,
 		)
 	}
 
 	fun selectSingleBoardCard(street: Street, cardIndex: Int) {
 		val current = recording ?: return
 		val existingCard = current.streets.getCards(street).getOrNull(cardIndex)
-		val usedCards = if (existingCard != null) {
-			current.selectedCards - setOf(existingCard)
-		} else {
-			current.selectedCards
-		}
+		val existingCards = listOfNotNull(existingCard)
 		showCardSelector(
 			target = CardSelectorTarget.SingleBoardCard(street, cardIndex),
-			usedCards = usedCards,
+			usedCards = current.selectedCards - existingCards.toSet(),
+			initialCards = existingCards,
 		)
 	}
 
 	fun selectShowdownCard(seat: Int) {
 		val current = recording ?: return
-		val existingCards = current.players[seat]?.cards?.let { setOf(it.card1, it.card2) } ?: emptySet()
+		val existingCards = current.players[seat]?.cards?.let { listOf(it.card1, it.card2) } ?: emptyList()
 		val isAllIn = seat in current.players.allInSeats
 		showCardSelector(
 			target = CardSelectorTarget.ShowdownCard(seat, positionName = current.positionName(seat)),
-			usedCards = current.selectedCards - existingCards,
+			usedCards = current.selectedCards - existingCards.toSet(),
+			initialCards = existingCards,
 			allowUnknown = !isAllIn,
 		)
 	}
@@ -161,6 +162,7 @@ internal class RecordHandViewModel(
 	private fun showCardSelector(
 		target: CardSelectorTarget,
 		usedCards: Set<Card>,
+		initialCards: List<Card> = emptyList(),
 		allowUnknown: Boolean = true,
 	) {
 		val isBoardSelector = target is CardSelectorTarget.AllBoardCards ||
@@ -169,6 +171,7 @@ internal class RecordHandViewModel(
 		_modalEffect.value = RecordHandModalEffect.ShowCardSelector(
 			target = target,
 			selectedCards = usedCards,
+			initialCards = initialCards,
 			allowUnknown = allowUnknown,
 			heroHand = if (isBoardSelector) recording?.heroHand else null,
 		)
@@ -203,7 +206,6 @@ internal class RecordHandViewModel(
 					if (riverCard.isNotEmpty()) updated = updated.setCards(Street.RIVER, riverCard)
 					copy(streets = updated)
 				}
-				viewModelScope.launch { _effect.emit(RecordHandEffect.FocusHeroStack) }
 			}
 
 			is CardSelectorTarget.BoardCard -> {
@@ -295,6 +297,16 @@ internal class RecordHandViewModel(
 
 	fun updateButtonSeat(seat: Int) {
 		updateRecording { copy(buttonSeat = seat) }
+	}
+
+	fun updateBb(bb: String) {
+		val newBb = bb.toLongOrNull() ?: 0L
+		val newSb = newBb / 2
+		updateBlinds(newSb.toString(), bb)
+	}
+
+	fun updateSb(sb: String) {
+		updateBlinds(sb, recording?.bbText.orEmpty())
 	}
 
 	fun updateBlinds(sb: String, bb: String) {
@@ -607,15 +619,11 @@ internal class RecordHandViewModel(
 
 			// 프리플랍 진입 시 SB/BB 스택 차감
 			if (stepped.currentStreet == Street.PREFLOP) {
-				val seats = occupiedSeats
-				val btnIdx = seats.indexOf(buttonSeat)
-				val sbSeat = if (btnIdx >= 0 && seats.size >= 2) seats[(btnIdx + 1) % seats.size] else 0
-				val bbSeat = if (btnIdx >= 0 && seats.size >= 3) seats[(btnIdx + 2) % seats.size] else 0
 				val sb = blinds?.sb ?: 0.0
 				val bb = blinds?.bb ?: 0.0
 
 				if (sb > 0) {
-					updatedPlayers = updatedPlayers.update(sbSeat) {
+					updatedPlayers = updatedPlayers.update(stepped.sbSeat) {
 						if (initialStack == null) {
 							copy(currentBet = sb)
 						} else {
@@ -625,7 +633,7 @@ internal class RecordHandViewModel(
 				}
 				if (bb > 0) {
 					val ante = if (blinds?.isBigBlindAnte == true) bb else 0.0
-					updatedPlayers = updatedPlayers.update(bbSeat) {
+					updatedPlayers = updatedPlayers.update(stepped.bbSeat) {
 						if (initialStack == null) {
 							copy(currentBet = bb)
 						} else {
@@ -663,7 +671,7 @@ internal class RecordHandViewModel(
 		if (current.currentStep == RecordStep.SETUP) return
 
 		val targetStep = current.findLastActiveStep()
-		requestStepBack(targetStep)
+		requestStepBack(targetStep, undoLastAction = true)
 	}
 
 	fun navigateToStep(step: RecordStep) {
@@ -672,28 +680,28 @@ internal class RecordHandViewModel(
 		requestStepBack(step)
 	}
 
-	private fun requestStepBack(targetStep: RecordStep) {
+	private fun requestStepBack(targetStep: RecordStep, undoLastAction: Boolean = false) {
 		viewModelScope.launch {
 			val skip = appSettingsRepository.observeSkipStepBackWarning().first()
 			if (skip) {
-				executeStepBack(targetStep)
+				executeStepBack(targetStep, undoLastAction)
 			} else {
-				_modalEffect.value = RecordHandModalEffect.ConfirmStepBack(targetStep)
+				_modalEffect.value = RecordHandModalEffect.ConfirmStepBack(targetStep, undoLastAction)
 			}
 		}
 	}
 
-	fun confirmStepBack(targetStep: RecordStep, skipWarning: Boolean) {
+	fun confirmStepBack(targetStep: RecordStep, skipWarning: Boolean, undoLastAction: Boolean = false) {
 		if (skipWarning) {
 			viewModelScope.launch {
 				appSettingsRepository.setSkipStepBackWarning(true)
 			}
 		}
-		executeStepBack(targetStep)
+		executeStepBack(targetStep, undoLastAction)
 		dismissModal()
 	}
 
-	private fun executeStepBack(targetStep: RecordStep) {
+	private fun executeStepBack(targetStep: RecordStep, undoLastAction: Boolean = false) {
 		updateRecording {
 			val targetStreet = when (targetStep) {
 				RecordStep.SETUP, RecordStep.PREFLOP -> Street.PREFLOP
@@ -730,17 +738,30 @@ internal class RecordHandViewModel(
 			val lastAction = updated.streets.getActions(updated.currentStreet).lastOrNull()
 			updated.copy(currentActionSeat = lastAction?.playerSeat)
 		}
+
+		if (undoLastAction) removeLastAction()
 	}
 
 	private fun RecordHandState.Recording.restorePlayersFromStreets(
 		streets: HandStreets,
 		targetStreet: Street,
 	): RecordPlayers {
-		// 각 플레이어의 마지막 액션 기준으로 상태 복원
-		val actions = streets.getActions(targetStreet)
+		// 타겟 스트릿까지의 모든 스트릿에서 각 플레이어의 마지막 액션을 찾음
+		val streetsUpTo = Street.entries.filter { it.ordinal <= targetStreet.ordinal }
 		val lastActionBySeat = mutableMapOf<Int, Action>()
-		actions.forEach { action ->
-			lastActionBySeat[action.playerSeat] = action
+		val lastActionStreetBySeat = mutableMapOf<Int, Street>()
+		streetsUpTo.forEach { street ->
+			streets.getActions(street).forEach { action ->
+				lastActionBySeat[action.playerSeat] = action
+				lastActionStreetBySeat[action.playerSeat] = street
+			}
+		}
+
+		// 타겟 스트릿의 액션 (currentBet 계산용)
+		val targetActions = streets.getActions(targetStreet)
+		val lastTargetActionBySeat = mutableMapOf<Int, Action>()
+		targetActions.forEach { action ->
+			lastTargetActionBySeat[action.playerSeat] = action
 		}
 
 		var restored = players
@@ -748,11 +769,14 @@ internal class RecordHandViewModel(
 		allSeats.forEach { seat ->
 			val player = players[seat] ?: return@forEach
 			val lastAction = lastActionBySeat[seat]
+			val lastActionStreet = lastActionStreetBySeat[seat]
 			if (lastAction != null) {
+				// 타겟 스트릿의 currentBet: 해당 스트릿에서 액션한 경우만 베팅액 유지
+				val currentBet = lastTargetActionBySeat[seat]?.amount ?: 0.0
 				restored = restored.update(seat) {
 					copy(
 						stack = lastAction.stackAfter ?: player.stack,
-						currentBet = lastAction.amount ?: 0.0,
+						currentBet = currentBet,
 						status = when (lastAction.type) {
 							ActionType.FOLD -> PlayerStatus.FOLDED
 							ActionType.ALL_IN -> PlayerStatus.ALL_IN
@@ -761,7 +785,7 @@ internal class RecordHandViewModel(
 					)
 				}
 			} else {
-				// 해당 스트릿에서 액션이 없는 플레이어는 초기 상태로
+				// 어떤 스트릿에서도 액션이 없는 플레이어는 초기 상태로
 				val blindCost = getBlindCost(seat)
 				restored = restored.update(seat) {
 					copy(
@@ -967,57 +991,7 @@ internal class RecordHandViewModel(
 		val results = current.showdownResults
 		if (results.isEmpty()) return
 
-		val boardCards = current.streets.boardCards
-		val investments = buildMap {
-			for (seat in current.occupiedSeats) {
-				val player = current.players[seat] ?: continue
-				val initial = player.initialStack ?: continue
-				val invested = initial - player.stack
-				if (invested > 0) put(seat, invested)
-			}
-		}
-
-		// 쇼다운 엔트리 (카드 공개된 플레이어만)
-		val entries = current.showdownEntries.filter { current.players[it.seat]?.isCardsUnknown != true }
-
-		// 각 팟 레벨별로 eligible 플레이어끼리 핸드 비교
-		val sortedInvestments = investments.entries.sortedBy { it.value }
-		var previousLevel = 0.0
-		val winnings = mutableMapOf<Int, Double>()
-
-		for ((_, invested) in sortedInvestments) {
-			val diff = invested - previousLevel
-			if (diff <= 0) continue
-
-			val eligibleSeats = investments.filter { it.value >= invested }.keys
-			val potForLevel = diff * eligibleSeats.size
-
-			// eligible 플레이어끼리만 핸드 비교
-			val eligibleEntries = entries.filter { it.seat in eligibleSeats }
-			val potWinners = if (eligibleEntries.size >= 2 && boardCards.size == 5) {
-				val potResults = HandEvaluator.calculateShowdown(boardCards, eligibleEntries)
-				potResults.filter { it.isWinner || it.isSplit }
-			} else if (eligibleEntries.size == 1) {
-				// 1명만 eligible → 자동 승리
-				listOf(eligibleEntries.first()).map {
-					ShowdownResult(seat = it.seat, ranking = HandRanking.HIGH_CARD, outcome = ShowdownOutcome.WIN)
-				}
-			} else {
-				emptyList()
-			}
-
-			if (potWinners.isNotEmpty()) {
-				val share = potForLevel / potWinners.size
-				potWinners.forEach { winner ->
-					winnings[winner.seat] = (winnings[winner.seat] ?: 0.0) + share
-				}
-			} else if (eligibleSeats.size == 1) {
-				// uncalled bet 반환
-				val sole = eligibleSeats.first()
-				winnings[sole] = (winnings[sole] ?: 0.0) + potForLevel
-			}
-			previousLevel = invested
-		}
+		val winnings = calculateWinnings(current)
 
 		updateRecording {
 			var updated = this
@@ -1047,33 +1021,7 @@ internal class RecordHandViewModel(
 		state: RecordHandState.Recording,
 		currentSeat: Int,
 		lastAggressor: Int?,
-	): Int? {
-		val fullOrder = if (state.currentStreet == Street.PREFLOP) {
-			state.preflopActionOrder
-		} else {
-			state.postflopActionOrder
-		}
-		val activeSeats = state.actionOrder.toSet()
-		if (activeSeats.isEmpty()) return null
-
-		val currentIdx = fullOrder.indexOf(currentSeat)
-		if (currentIdx < 0) return null
-
-		// aggressor 없으면 전원 1회씩 액션 완료 시 종료
-		if (lastAggressor == null) {
-			val actedSeats = state.streets.getActions(state.currentStreet).map { it.playerSeat }.toSet()
-			if (activeSeats.all { it in actedSeats }) return null
-		}
-
-		for (i in 1..fullOrder.size) {
-			val candidate = fullOrder[(currentIdx + i) % fullOrder.size]
-			if (candidate !in activeSeats) continue
-			if (lastAggressor != null && candidate == lastAggressor) return null
-			return candidate
-		}
-
-		return null
-	}
+	): Int? = getNextActionSeat(state, currentSeat, lastAggressor, state.actionOrder.toSet())
 
 	private fun updateRecording(block: RecordHandState.Recording.() -> RecordHandState.Recording) {
 		_state.update { state ->
@@ -1081,4 +1029,98 @@ internal class RecordHandViewModel(
 		}
 	}
 
+}
+
+internal fun getNextActionSeat(
+	state: RecordHandState.Recording,
+	currentSeat: Int,
+	lastAggressor: Int?,
+	activeSeats: Set<Int>,
+): Int? {
+	val fullOrder = if (state.currentStreet == Street.PREFLOP) {
+		state.preflopActionOrder
+	} else {
+		state.postflopActionOrder
+	}
+	if (activeSeats.isEmpty()) return null
+
+	val currentIdx = fullOrder.indexOf(currentSeat)
+	if (currentIdx < 0) return null
+
+	// aggressor 없으면 전원 1회씩 액션 완료 시 종료
+	if (lastAggressor == null) {
+		val actedSeats = state.streets.getActions(state.currentStreet).map { it.playerSeat }.toSet()
+		if (activeSeats.all { it in actedSeats }) return null
+	}
+
+	for (i in 1..fullOrder.size) {
+		val candidate = fullOrder[(currentIdx + i) % fullOrder.size]
+		// 올인한 어그레서에 도달하면 라운드 종료 (activeSeats 체크 전에 판단)
+		if (lastAggressor != null && candidate == lastAggressor) return null
+		if (candidate !in activeSeats) continue
+		return candidate
+	}
+
+	return null
+}
+
+internal fun calculateWinnings(state: RecordHandState.Recording): Map<Int, Double> {
+	val boardCards = state.streets.boardCards
+	val anteAmount = if (state.blinds?.isBigBlindAnte == true) (state.blinds?.bb ?: 0.0) else 0.0
+	val investments = buildMap {
+		for (seat in state.occupiedSeats) {
+			val player = state.players[seat] ?: continue
+			val initial = player.initialStack ?: continue
+			var invested = initial - player.stack
+			// BBA 앤티는 BB의 개인 투자에서 분리 (sidePots과 동일 패턴)
+			if (seat == state.bbSeat && anteAmount > 0) {
+				invested -= anteAmount
+			}
+			if (invested > 0) put(seat, invested)
+		}
+	}
+
+	val entries = state.showdownEntries.filter { state.players[it.seat]?.isCardsUnknown != true }
+
+	val sortedInvestments = investments.entries.sortedBy { it.value }
+	var previousLevel = 0.0
+	val winnings = mutableMapOf<Int, Double>()
+	var isFirstLevel = true
+
+	for ((_, invested) in sortedInvestments) {
+		val diff = invested - previousLevel
+		if (diff <= 0) continue
+
+		val eligibleSeats = investments.filter { it.value >= invested }.keys
+		var potForLevel = diff * eligibleSeats.size
+		if (isFirstLevel && anteAmount > 0) {
+			potForLevel += anteAmount
+			isFirstLevel = false
+		}
+
+		val eligibleEntries = entries.filter { it.seat in eligibleSeats }
+		val potWinners = if (eligibleEntries.size >= 2 && boardCards.size == 5) {
+			val potResults = HandEvaluator.calculateShowdown(boardCards, eligibleEntries)
+			potResults.filter { it.isWinner || it.isSplit }
+		} else if (eligibleEntries.size == 1) {
+			listOf(eligibleEntries.first()).map {
+				ShowdownResult(seat = it.seat, ranking = HandRanking.HIGH_CARD, outcome = ShowdownOutcome.WIN)
+			}
+		} else {
+			emptyList()
+		}
+
+		if (potWinners.isNotEmpty()) {
+			val share = potForLevel / potWinners.size
+			potWinners.forEach { winner ->
+				winnings[winner.seat] = (winnings[winner.seat] ?: 0.0) + share
+			}
+		} else if (eligibleSeats.size == 1) {
+			val sole = eligibleSeats.first()
+			winnings[sole] = (winnings[sole] ?: 0.0) + potForLevel
+		}
+		previousLevel = invested
+	}
+
+	return winnings
 }

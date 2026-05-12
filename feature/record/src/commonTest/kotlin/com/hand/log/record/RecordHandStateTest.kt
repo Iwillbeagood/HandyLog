@@ -20,7 +20,9 @@ import com.hand.log.record.model.RecordPlayer
 import com.hand.log.record.model.RecordPlayers
 import com.hand.log.domain.model.HandRanking
 import com.hand.log.domain.model.HandStreets
+import com.hand.log.domain.model.RiverStreet
 import com.hand.log.domain.model.ShowdownOutcome
+import com.hand.log.domain.model.TurnStreet
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -1130,5 +1132,290 @@ class RecordHandStateTest {
 		val loserResult = results.find { it.seat == 2 }
 		assertEquals(ShowdownOutcome.LOSE, loserResult?.outcome)
 		assertEquals(HandRanking.WIN_BY_FOLD, loserResult?.ranking)
+	}
+
+	// ===== 다음 액션 좌석 결정 =====
+
+	@Test
+	fun `헤즈업 숏스택 올인 후 콜하면 라운드 종료`() {
+		// BTN(seat1, 100K) vs BB(seat2, 20K)
+		// BB 올인 → BTN 콜 → 라운드 종료되어야 함
+		val state = makeState(
+			playerCount = 2,
+			heroSeat = 1,
+			buttonSeat = 1,
+			bb = 1000.0,
+			sb = 500.0,
+			currentStep = RecordStep.PREFLOP,
+			players = RecordPlayers(
+				mapOf(
+					1 to RecordPlayer(seat = 1, stack = 80000.0, initialStack = 100000.0),
+					2 to RecordPlayer(
+						seat = 2,
+						stack = 0.0,
+						initialStack = 20000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+				),
+			),
+			streets = HandStreets(
+				preflop = PreflopStreet(
+					actions = listOf(
+						Action(playerSeat = 2, type = ActionType.ALL_IN, amount = 20000.0),
+						Action(playerSeat = 1, type = ActionType.CALL, amount = 20000.0),
+					),
+				),
+			),
+		)
+		// BB(seat2)가 올인 어그레서, BTN(seat1)이 콜한 상태
+		// activeSeats = seat1만 (seat2는 올인으로 제외)
+		val activeSeats = state.actionOrder.toSet()
+		val nextSeat = getNextActionSeat(
+			state = state,
+			currentSeat = 1,
+			lastAggressor = 2,
+			activeSeats = activeSeats,
+		)
+		// 올인한 어그레서(seat2)에 도달 → 라운드 종료 (null)
+		assertEquals(null, nextSeat)
+	}
+
+	@Test
+	fun `3인 숏스택 올인 후 나머지 콜하면 라운드 종료`() {
+		// BTN(seat1, 100K), SB(seat2, 15K 올인), BB(seat3, 100K)
+		// SB 올인 → BB 콜 → BTN 콜 → 라운드 종료
+		val state = makeState(
+			playerCount = 3,
+			heroSeat = 1,
+			buttonSeat = 1,
+			bb = 1000.0,
+			sb = 500.0,
+			currentStep = RecordStep.PREFLOP,
+			players = RecordPlayers(
+				mapOf(
+					1 to RecordPlayer(seat = 1, stack = 85000.0, initialStack = 100000.0),
+					2 to RecordPlayer(
+						seat = 2,
+						stack = 0.0,
+						initialStack = 15000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					3 to RecordPlayer(seat = 3, stack = 85000.0, initialStack = 100000.0),
+				),
+			),
+			streets = HandStreets(
+				preflop = PreflopStreet(
+					actions = listOf(
+						Action(playerSeat = 2, type = ActionType.ALL_IN, amount = 15000.0),
+						Action(playerSeat = 3, type = ActionType.CALL, amount = 15000.0),
+						Action(playerSeat = 1, type = ActionType.CALL, amount = 15000.0),
+					),
+				),
+			),
+		)
+		val activeSeats = state.actionOrder.toSet()
+		val nextSeat = getNextActionSeat(
+			state = state,
+			currentSeat = 1,
+			lastAggressor = 2,
+			activeSeats = activeSeats,
+		)
+		assertEquals(null, nextSeat)
+	}
+
+	@Test
+	fun `올인 어그레서가 아직 응답 안 한 플레이어 있으면 계속`() {
+		// 3인: BTN(seat1) 오픈, SB(seat2, 숏스택) 올인, BB(seat3)는 아직 미응답
+		val state = makeState(
+			playerCount = 3,
+			heroSeat = 3,
+			buttonSeat = 1,
+			bb = 1000.0,
+			sb = 500.0,
+			currentStep = RecordStep.PREFLOP,
+			players = RecordPlayers(
+				mapOf(
+					1 to RecordPlayer(seat = 1, stack = 85000.0, initialStack = 100000.0),
+					2 to RecordPlayer(
+						seat = 2,
+						stack = 0.0,
+						initialStack = 15000.0,
+						status = PlayerStatus.ALL_IN,
+					),
+					3 to RecordPlayer(seat = 3, stack = 100000.0, initialStack = 100000.0),
+				),
+			),
+			streets = HandStreets(
+				preflop = PreflopStreet(
+					actions = listOf(
+						Action(playerSeat = 1, type = ActionType.RAISE, amount = 2500.0),
+						Action(playerSeat = 2, type = ActionType.ALL_IN, amount = 15000.0),
+					),
+				),
+			),
+		)
+		val activeSeats = state.actionOrder.toSet()
+		// SB(seat2) 올인 후 → 다음은 BB(seat3)
+		val nextSeat = getNextActionSeat(
+			state = state,
+			currentSeat = 2,
+			lastAggressor = 2,
+			activeSeats = activeSeats,
+		)
+		assertEquals(3, nextSeat)
+	}
+
+	// ===== 헤즈업 블라인드 좌석 =====
+
+	@Test
+	fun `헤즈업에서 BTN은 SB이다`() {
+		val state = makeState(playerCount = 2, heroSeat = 2, buttonSeat = 1)
+		assertEquals(1, state.sbSeat)
+	}
+
+	@Test
+	fun `헤즈업에서 BTN 반대편은 BB이다`() {
+		val state = makeState(playerCount = 2, heroSeat = 2, buttonSeat = 1)
+		assertEquals(2, state.bbSeat)
+	}
+
+	@Test
+	fun `3인 이상에서 SB는 BTN 다음 좌석`() {
+		val state = makeState(playerCount = 3, buttonSeat = 1)
+		assertEquals(2, state.sbSeat)
+		assertEquals(3, state.bbSeat)
+	}
+
+	// ===== BBA 스플릿 팟 - 최종 스택 검증 =====
+
+	@Test
+	fun `BBA 헤즈업 스플릿 시 BB의 블라인드 비용에 앤티 포함`() {
+		// BTN(seat1) = SB, BB(seat2) = BB + Ante
+		val state = makeState(
+			playerCount = 2,
+			heroSeat = 1,
+			buttonSeat = 1,
+			bb = 4000.0,
+			sb = 2000.0,
+			isBigBlindAnte = true,
+		)
+		// BTN은 SB만 부담
+		assertEquals(2000.0, state.getBlindCost(1))
+		// BB는 BB + Ante(=BB) 부담
+		assertEquals(8000.0, state.getBlindCost(2))
+	}
+
+	@Test
+	fun `BBA 3인 SB폴드 후 스플릿 - BTN 103K BB 199K`() {
+		// BTN(seat1, 100K), SB(seat2, 50K 폴드), BB(seat3, 200K)
+		// BB=4000, SB=2000, BBA=true
+		// SB 폴드 → BTN 콜 → BB 체크 → 스플릿
+		// 동일한 포켓으로 보드 5장까지 진행하여 스플릿 유도
+		val state = makeState(
+			playerCount = 3,
+			heroSeat = 3,
+			buttonSeat = 1,
+			bb = 4000.0,
+			sb = 2000.0,
+			isBigBlindAnte = true,
+			currentStep = RecordStep.SHOWDOWN,
+			players = RecordPlayers(
+				mapOf(
+					1 to RecordPlayer(
+						seat = 1,
+						stack = 96000.0,
+						initialStack = 100000.0,
+						cards = PocketCards(Card(Rank.TWO, Suit.HEARTS), Card(Rank.THREE, Suit.HEARTS)),
+					),
+					2 to RecordPlayer(
+						seat = 2,
+						stack = 48000.0,
+						initialStack = 50000.0,
+						status = PlayerStatus.FOLDED,
+					),
+					3 to RecordPlayer(
+						seat = 3,
+						stack = 192000.0,
+						initialStack = 200000.0,
+						cards = PocketCards(Card(Rank.TWO, Suit.DIAMONDS), Card(Rank.THREE, Suit.DIAMONDS)),
+					),
+				),
+			),
+			streets = HandStreets(
+				preflop = PreflopStreet(
+					actions = listOf(
+						Action(playerSeat = 2, type = ActionType.FOLD),
+						Action(playerSeat = 1, type = ActionType.CALL, amount = 4000.0),
+						Action(playerSeat = 3, type = ActionType.CHECK),
+					),
+				),
+				flop = FlopStreet(
+					card1 = Card(Rank.ACE, Suit.CLUBS),
+					card2 = Card(Rank.KING, Suit.CLUBS),
+					card3 = Card(Rank.QUEEN, Suit.CLUBS),
+				),
+				turn = TurnStreet(card = Card(Rank.JACK, Suit.CLUBS)),
+				river = RiverStreet(card = Card(Rank.TEN, Suit.CLUBS)),
+			),
+		)
+		// 보드에 A-K-Q-J-T 스트레이트 → 양쪽 모두 보드 핸드로 스플릿
+		val winnings = calculateWinnings(state)
+		// BTN: 96000 + winnings = 103000
+		assertEquals(103000.0, 96000.0 + (winnings[1] ?: 0.0))
+		// BB: 192000 + winnings = 199000
+		assertEquals(199000.0, 192000.0 + (winnings[3] ?: 0.0))
+	}
+
+	@Test
+	fun `BBA 헤즈업 스플릿 - BTN 102K BB 198K`() {
+		// BTN(seat1, 100K) = SB, BB(seat2, 200K)
+		// BB=4000, SB=2000, BBA=true
+		// BTN 콜 → BB 체크 → 스플릿
+		val state = makeState(
+			playerCount = 2,
+			heroSeat = 2,
+			buttonSeat = 1,
+			bb = 4000.0,
+			sb = 2000.0,
+			isBigBlindAnte = true,
+			currentStep = RecordStep.SHOWDOWN,
+			players = RecordPlayers(
+				mapOf(
+					1 to RecordPlayer(
+						seat = 1,
+						stack = 96000.0,
+						initialStack = 100000.0,
+						cards = PocketCards(Card(Rank.TWO, Suit.HEARTS), Card(Rank.THREE, Suit.HEARTS)),
+					),
+					2 to RecordPlayer(
+						seat = 2,
+						stack = 192000.0,
+						initialStack = 200000.0,
+						cards = PocketCards(Card(Rank.TWO, Suit.DIAMONDS), Card(Rank.THREE, Suit.DIAMONDS)),
+					),
+				),
+			),
+			streets = HandStreets(
+				preflop = PreflopStreet(
+					actions = listOf(
+						Action(playerSeat = 1, type = ActionType.CALL, amount = 4000.0),
+						Action(playerSeat = 2, type = ActionType.CHECK),
+					),
+				),
+				flop = FlopStreet(
+					card1 = Card(Rank.ACE, Suit.CLUBS),
+					card2 = Card(Rank.KING, Suit.CLUBS),
+					card3 = Card(Rank.QUEEN, Suit.CLUBS),
+				),
+				turn = TurnStreet(card = Card(Rank.JACK, Suit.CLUBS)),
+				river = RiverStreet(card = Card(Rank.TEN, Suit.CLUBS)),
+			),
+		)
+		// 팟 = BTN(4000) + BB(4000+ante4000) = 12000 → 스플릿 6000씩
+		val winnings = calculateWinnings(state)
+		// BTN: 96000 + 6000 = 102000
+		assertEquals(102000.0, 96000.0 + (winnings[1] ?: 0.0))
+		// BB: 192000 + 6000 = 198000
+		assertEquals(198000.0, 192000.0 + (winnings[2] ?: 0.0))
 	}
 }

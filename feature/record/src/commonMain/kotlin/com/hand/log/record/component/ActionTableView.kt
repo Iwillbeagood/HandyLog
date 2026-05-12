@@ -76,7 +76,7 @@ internal fun ActionTableView(
 	val colors = HandyTheme.colorScheme
 	val seats = state.occupiedSeats
 	val maxPlayers = state.table?.maxPlayers ?: return
-	if (seats.isEmpty()) return
+	if (maxPlayers <= 0 || seats.isEmpty()) return
 	val actions = state.streets.getActions(state.currentStreet)
 
 	val seatActions = mutableMapOf<Int, Action>()
@@ -89,7 +89,7 @@ internal fun ActionTableView(
 	BoxWithConstraints(
 		modifier = modifier
 			.padding(horizontal = 8.dp)
-			.aspectRatio(1.3f),
+			.aspectRatio(1.8f),
 	) {
 		val density = LocalDensity.current
 		val containerWidthPx = with(density) { maxWidth.toPx() }
@@ -447,7 +447,7 @@ private fun ActionSeatView(
 
 				if (action != null) {
 					Text(
-						text = if (action.betLevel >= 2) {
+						text = if (action.betLevel >= 3) {
 							stringResource(Res.string.action_n_bet, action.betLevel)
 						} else {
 							stringResource(action.type.stringRes())
@@ -500,6 +500,7 @@ private fun ActionTableViewAllElementsPreview() {
 					date = LocalDate(2026, 3, 14),
 					gameType = GameType.Tournament(isBigBlindAnte = true),
 					heroSeat = 3,
+					maxPlayers = 9,
 					createdAt = 0L,
 				),
 				players = RecordPlayers(
@@ -594,8 +595,7 @@ private fun ActionTableView9MaxFlopPreview() {
 				),
 			),
 			modifier = Modifier
-				.fillMaxWidth()
-				.padding(16.dp),
+				.fillMaxWidth(),
 		)
 	}
 }

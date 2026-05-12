@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.Alignment
@@ -69,7 +68,8 @@ internal fun RecordHandScreen(
 	onSelectSingleBoardCard: (Street, Int) -> Unit,
 	onUpdateHeroStack: (String) -> Unit,
 	onUpdateButtonSeat: (Int) -> Unit,
-	onUpdateBlinds: (String, String) -> Unit,
+	onUpdateBb: (String) -> Unit,
+	onUpdateSb: (String) -> Unit,
 	onSelectActionSeat: (Int) -> Unit,
 	onSelectActionType: (ActionType) -> Unit,
 	onUpdateActionAmount: (String) -> Unit,
@@ -83,7 +83,7 @@ internal fun RecordHandScreen(
 	onUpdateMemo: (String) -> Unit,
 	onToggleBbUnit: () -> Unit,
 	onSave: () -> Unit,
-	heroStackFocusRequester: FocusRequester = remember { FocusRequester() },
+	bbFocusRequester: FocusRequester = remember { FocusRequester() },
 ) {
 	val colors = HandyTheme.colorScheme
 
@@ -171,8 +171,9 @@ internal fun RecordHandScreen(
 							onSelectBoardCards = onSelectAllBoardCards,
 							onUpdateHeroStack = onUpdateHeroStack,
 							onUpdateButtonSeat = onUpdateButtonSeat,
-							onUpdateBlinds = onUpdateBlinds,
-							heroStackFocusRequester = heroStackFocusRequester,
+							onUpdateBb = onUpdateBb,
+							onUpdateSb = onUpdateSb,
+							bbFocusRequester = bbFocusRequester,
 						)
 					}
 
@@ -321,7 +322,8 @@ private fun RecordHandScreenPreview() {
 			onSelectSingleBoardCard = { _, _ -> },
 			onUpdateHeroStack = {},
 			onUpdateButtonSeat = {},
-			onUpdateBlinds = { _, _ -> },
+			onUpdateBb = {},
+			onUpdateSb = {},
 			onSelectActionSeat = {},
 			onSelectActionType = {},
 			onUpdateActionAmount = {},
@@ -369,7 +371,8 @@ private fun RecordHandScreenTournamentPreview() {
 			onSelectSingleBoardCard = { _, _ -> },
 			onUpdateHeroStack = {},
 			onUpdateButtonSeat = {},
-			onUpdateBlinds = { _, _ -> },
+			onUpdateBb = {},
+			onUpdateSb = {},
 			onSelectActionSeat = {},
 			onSelectActionType = {},
 			onUpdateActionAmount = {},

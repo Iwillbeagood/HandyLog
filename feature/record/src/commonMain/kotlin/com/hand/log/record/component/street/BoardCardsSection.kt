@@ -1,4 +1,4 @@
-package com.hand.log.record.component
+package com.hand.log.record.component.street
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

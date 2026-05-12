@@ -106,6 +106,24 @@ internal sealed interface RecordHandState {
 			return seats[(baseIdx + offset) % seats.size]
 		}
 
+		/** 헤즈업(2인): BTN = SB, 3인 이상: BTN 다음 좌석 = SB */
+		val sbSeat: Int
+			get() {
+				val seats = occupiedSeats
+				val btnIdx = seats.indexOf(buttonSeat)
+				if (btnIdx < 0 || seats.size < 2) return 0
+				return if (seats.size == 2) seats[btnIdx] else seatAtOffset(btnIdx, 1)
+			}
+
+		/** 헤즈업(2인): BTN 반대편 = BB, 3인 이상: BTN+2 좌석 = BB */
+		val bbSeat: Int
+			get() {
+				val seats = occupiedSeats
+				val btnIdx = seats.indexOf(buttonSeat)
+				if (btnIdx < 0 || seats.size < 2) return 0
+				return seatAtOffset(btnIdx, if (seats.size == 2) 1 else 2)
+			}
+
 		val heroResult: Double
 			get() {
 				val heroSeat = table?.heroSeat ?: return 0.0
@@ -116,11 +134,6 @@ internal sealed interface RecordHandState {
 		fun getPlayerStack(seat: Int): Double? = players.getStack(seat)
 
 		fun getBlindCost(seat: Int): Double {
-			val seats = occupiedSeats
-			val btnIdx = seats.indexOf(buttonSeat)
-			if (btnIdx < 0 || seats.size < 2) return 0.0
-			val sbSeat = seatAtOffset(btnIdx, 1)
-			val bbSeat = seatAtOffset(btnIdx, 2)
 			val sb = blinds?.sb ?: 0.0
 			val bb = blinds?.bb ?: 0.0
 			return when (seat) {
@@ -240,13 +253,9 @@ internal sealed interface RecordHandState {
 
 		val currentPot: Double
 			get() {
-				val seats = occupiedSeats
-				val btnIdx = seats.indexOf(buttonSeat)
 				val actionsPot = streets.totalActionAmount()
 				val sb = blinds?.sb ?: 0.0
 				val bb = blinds?.bb ?: 0.0
-				val sbSeat = if (btnIdx >= 0 && seats.size >= 2) seatAtOffset(btnIdx, 1) else 0
-				val bbSeat = if (btnIdx >= 0 && seats.size >= 3) seatAtOffset(btnIdx, 2) else 0
 				val preflopActions = streets.getActions(Street.PREFLOP)
 				val sbInPot = preflopActions.filter { it.playerSeat == sbSeat }.lastOrNull()?.amount ?: 0.0
 				val bbInPot = preflopActions.filter { it.playerSeat == bbSeat }.lastOrNull()?.amount ?: 0.0
@@ -310,11 +319,9 @@ internal sealed interface RecordHandState {
 		val sidePots: List<Double>
 			get() {
 				val seats = occupiedSeats
-				val btnIdx = seats.indexOf(buttonSeat)
 				val allInSeats = players.allInSeats
 				if (allInSeats.isEmpty()) return emptyList()
 
-				val bbSeat = if (btnIdx >= 0 && seats.size >= 3) seatAtOffset(btnIdx, 2) else 0
 				val anteAmount = if (blinds?.isBigBlindAnte == true) (blinds?.bb ?: 0.0) else 0.0
 
 				val investments = mutableMapOf<Int, Double>()

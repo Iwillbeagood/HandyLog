@@ -47,8 +47,9 @@ internal fun SetupStepContent(
 	onSelectBoardCards: () -> Unit,
 	onUpdateHeroStack: (String) -> Unit,
 	onUpdateButtonSeat: (Int) -> Unit,
-	onUpdateBlinds: (String, String) -> Unit,
-	heroStackFocusRequester: FocusRequester = FocusRequester(),
+	onUpdateBb: (String) -> Unit,
+	onUpdateSb: (String) -> Unit,
+	bbFocusRequester: FocusRequester = FocusRequester(),
 ) {
 	val colors = HandyTheme.colorScheme
 
@@ -57,7 +58,7 @@ internal fun SetupStepContent(
 		Row(
 			horizontalArrangement = Arrangement.spacedBy(8.dp),
 			verticalAlignment = Alignment.CenterVertically,
-			modifier = Modifier.clickable { onSelectHeroCard() },
+			modifier = Modifier.clickable(onClick = onSelectHeroCard),
 		) {
 			HeroCardAnimated(
 				card = state.heroHand?.card1,
@@ -73,16 +74,7 @@ internal fun SetupStepContent(
 		HandySectionLabel(stringResource(Res.string.board_cards))
 		BoardCardsPreview(
 			pickedCards = state.streets.boardCards,
-			modifier = Modifier.clickable { onSelectBoardCards() },
-		)
-
-		VerticalSpacer(16.dp)
-		HandyTextField(
-			value = if (state.heroInitialStack == 0.0) "" else state.heroInitialStack.toLong().toString(),
-			onValueChange = onUpdateHeroStack,
-			label = stringResource(Res.string.record_hero_stack),
-			keyboardType = KeyboardType.Number,
-			modifier = Modifier.focusRequester(heroStackFocusRequester),
+			modifier = Modifier.clickable(onClick = onSelectBoardCards),
 		)
 
 		VerticalSpacer(16.dp)
@@ -106,24 +98,36 @@ internal fun SetupStepContent(
 			) {
 				HandyTextField(
 					value = state.bbText,
-					onValueChange = { newBb ->
-						val newSb = (newBb.toLongOrNull() ?: 0L) / 2
-						onUpdateBlinds(newSb.toString(), newBb)
-					},
+					onValueChange = onUpdateBb,
 					label = "BB",
-					modifier = Modifier.weight(1f),
+					modifier = Modifier.weight(1f).focusRequester(bbFocusRequester),
 					keyboardType = KeyboardType.Number,
 				)
 				HandyTextField(
 					value = state.sbText,
-					onValueChange = { newSb ->
-						onUpdateBlinds(newSb, state.bbText)
-					},
+					onValueChange = onUpdateSb,
 					label = "SB",
 					modifier = Modifier.weight(1f),
 					keyboardType = KeyboardType.Number,
 				)
 			}
+		}
+
+		VerticalSpacer(16.dp)
+		HandyTextField(
+			value = if (state.heroInitialStack == 0.0) "" else state.heroInitialStack.toLong().toString(),
+			onValueChange = onUpdateHeroStack,
+			label = stringResource(Res.string.record_hero_stack),
+			keyboardType = KeyboardType.Number,
+		)
+
+		val bbAmount = state.blinds?.bb ?: 0.0
+		if (bbAmount > 0) {
+			VerticalSpacer(8.dp)
+			StackPresetRow(
+				bbAmount = bbAmount,
+				onUpdateStack = onUpdateHeroStack,
+			)
 		}
 	}
 }
@@ -177,7 +181,8 @@ private fun SetupStepContentEmptyPreview() {
 			onSelectBoardCards = {},
 			onUpdateHeroStack = {},
 			onUpdateButtonSeat = {},
-			onUpdateBlinds = { _, _ -> },
+			onUpdateBb = {},
+			onUpdateSb = {},
 		)
 	}
 }
@@ -207,7 +212,8 @@ private fun SetupStepContentFilledPreview() {
 			onSelectBoardCards = {},
 			onUpdateHeroStack = {},
 			onUpdateButtonSeat = {},
-			onUpdateBlinds = { _, _ -> },
+			onUpdateBb = {},
+			onUpdateSb = {},
 		)
 	}
 }
@@ -237,7 +243,8 @@ private fun SetupStepContentTournamentPreview() {
 			onSelectBoardCards = {},
 			onUpdateHeroStack = {},
 			onUpdateButtonSeat = {},
-			onUpdateBlinds = { _, _ -> },
+			onUpdateBb = {},
+			onUpdateSb = {},
 		)
 	}
 }
