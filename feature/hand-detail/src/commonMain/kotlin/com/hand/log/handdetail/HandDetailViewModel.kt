@@ -144,31 +144,18 @@ internal class HandDetailViewModel(
 	}
 
 	fun showMemoEdit() {
-		_modalEffect.value = HandDetailModalEffect.EditMemo
+		val loaded = (state.value as? HandDetailState.Detail) ?: return
+		_modalEffect.value = HandDetailModalEffect.EditMemo(
+			currentMemo = loaded.hand.memo.orEmpty(),
+		)
 	}
 
 	fun dismissModal() {
 		_modalEffect.value = HandDetailModalEffect.Idle
 	}
 
-	private var memoInitialized = false
-	private val _memo = MutableStateFlow("")
-	val memo: StateFlow<String> get() = _memo
-
-	fun initMemo(value: String) {
-		if (!memoInitialized) {
-			memoInitialized = true
-			_memo.value = value
-		}
-	}
-
-	fun updateMemo(text: String) {
-		_memo.value = text
-	}
-
-	fun saveMemo() {
+	fun saveMemo(text: String) {
 		val loaded = (state.value as? HandDetailState.Detail) ?: return
-		val text = _memo.value
 		if (text == (loaded.hand.memo.orEmpty())) return
 		viewModelScope.launch {
 			val updated = loaded.hand.copy(memo = text.ifBlank { null })

@@ -11,7 +11,6 @@ import com.hand.log.handdetail.component.MemoEditSheet
 import com.hand.log.ui.poker.CardSelectorSheet
 import com.hand.log.handdetail.contract.HandDetailEffect
 import com.hand.log.handdetail.contract.HandDetailModalEffect
-import com.hand.log.handdetail.contract.HandDetailState
 import com.hand.log.domain.model.SavedPlayer
 import com.hand.log.domain.model.etc.ToastDurationType
 import com.hand.log.playersedit.PlayerEditSheet
@@ -32,16 +31,10 @@ internal fun HandDetailRoute(
 ) {
 	val state by viewModel.state.collectAsStateWithLifecycle()
 	val modalEffect by viewModel.modalEffect.collectAsStateWithLifecycle()
-	val memo by viewModel.memo.collectAsStateWithLifecycle()
 	val navAction = LocalNavigateActionInterop.current
 	val mainAction = LocalMainActionInterop.current
 	val shareManager = rememberShareManager()
 	val graphicsLayer = rememberGraphicsLayer()
-
-	val loaded = state as? HandDetailState.Detail
-	LaunchedEffect(loaded?.hand?.memo) {
-		loaded?.hand?.memo?.let { viewModel.initMemo(it) }
-	}
 
 	HandDetailScreen(
 		state = state,
@@ -54,17 +47,14 @@ internal fun HandDetailRoute(
 		onMarkPlayer = viewModel::showPlayerMark,
 		onEditHeroHand = viewModel::editHeroHand,
 		onEditShowdownHand = viewModel::editShowdownHand,
-		memo = memo,
 		onMemoClick = viewModel::showMemoEdit,
 		graphicsLayer = graphicsLayer,
 	)
 
 	HandDetailModalContent(
 		modalEffect = modalEffect,
-		memo = memo,
-		onMemoChange = viewModel::updateMemo,
-		onMemoSave = {
-			viewModel.saveMemo()
+		onMemoSave = { text ->
+			viewModel.saveMemo(text)
 			viewModel.dismissModal()
 		},
 		onConfirmDelete = viewModel::confirmDelete,
@@ -131,9 +121,7 @@ internal fun HandDetailRoute(
 @Composable
 private fun HandDetailModalContent(
 	modalEffect: HandDetailModalEffect,
-	memo: String,
-	onMemoChange: (String) -> Unit,
-	onMemoSave: () -> Unit,
+	onMemoSave: (String) -> Unit,
 	onConfirmDelete: () -> Unit,
 	onSaveAndMarkPlayer: (SavedPlayer, Int) -> Unit,
 	onCardsSelected: (List<Card>) -> Unit,
@@ -141,11 +129,10 @@ private fun HandDetailModalContent(
 ) {
 	when (modalEffect) {
 		HandDetailModalEffect.Idle -> {}
-		HandDetailModalEffect.EditMemo -> {
+		is HandDetailModalEffect.EditMemo -> {
 			MemoEditSheet(
-				memo = memo,
-				onMemoChange = onMemoChange,
-				onConfirm = onMemoSave,
+				initialMemo = modalEffect.currentMemo,
+				onSave = onMemoSave,
 				onDismiss = onDismiss,
 			)
 		}

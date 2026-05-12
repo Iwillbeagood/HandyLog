@@ -16,7 +16,6 @@ import com.hand.log.designsystem.component.HandySwitch
 import com.hand.log.designsystem.component.HandyTopAppbar
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
-import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.handdetail.component.HandDetailTopBarEndContent
 import org.jetbrains.compose.resources.stringResource
 import com.hand.log.domain.model.Action
@@ -48,12 +47,10 @@ internal fun HandDetailScreen(
 	onMarkPlayer: (Int) -> Unit = {},
 	onEditHeroHand: () -> Unit = {},
 	onEditShowdownHand: (Int) -> Unit = {},
-	memo: String = "",
 	onMemoClick: () -> Unit = {},
 	graphicsLayer: GraphicsLayer = rememberGraphicsLayer(),
 ) {
 	val loaded = state as? HandDetailState.Detail
-	val colors = HandyTheme.colorScheme
 
 	BaseScaffold(
 		topBar = {
@@ -91,7 +88,6 @@ internal fun HandDetailScreen(
 				HandDetailContent(
 					hand = loaded.hand,
 					useBbUnit = loaded.useBbUnit,
-					memo = memo,
 					onMemoClick = onMemoClick,
 					graphicsLayer = graphicsLayer,
 					onMarkPlayer = onMarkPlayer,

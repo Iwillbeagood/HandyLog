@@ -1,6 +1,10 @@
 package com.hand.log.handdetail.component
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.hand.log.designsystem.component.modal.HandyBottomSheet
 import com.hand.log.ui.MemoField
@@ -11,22 +15,23 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun MemoEditSheet(
-	memo: String,
-	onMemoChange: (String) -> Unit,
-	onConfirm: () -> Unit,
+	initialMemo: String,
+	onSave: (String) -> Unit,
 	onDismiss: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
+	var memo by remember { mutableStateOf(initialMemo) }
+
 	HandyBottomSheet(
 		onDismissRequest = onDismiss,
 		title = stringResource(Res.string.showdown_memo),
 		confirmText = stringResource(Res.string.btn_complete),
-		onConfirm = onConfirm,
+		onConfirm = { onSave(memo) },
 		modifier = modifier,
 	) {
 		MemoField(
 			value = memo,
-			onValueChange = onMemoChange,
+			onValueChange = { memo = it },
 			label = stringResource(Res.string.showdown_memo),
 		)
 	}

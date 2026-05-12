@@ -40,7 +40,6 @@ import com.hand.log.handdetail.component.ResultSection
 internal fun HandDetailContent(
 	hand: HandRecord,
 	useBbUnit: Boolean,
-	memo: String,
 	onMemoClick: () -> Unit,
 	graphicsLayer: GraphicsLayer,
 	onMarkPlayer: (Int) -> Unit = {},
@@ -83,7 +82,7 @@ internal fun HandDetailContent(
 		)
 
 		MemoSection(
-			memo = memo,
+			memo = hand.memo.orEmpty(),
 			onClick = onMemoClick,
 		)
 		VerticalSpacer(32.dp)
@@ -173,7 +172,6 @@ private fun HandDetailContentPreview() {
 		HandDetailContent(
 			hand = hand,
 			useBbUnit = false,
-			memo = hand.memo.orEmpty(),
 			onMemoClick = {},
 			graphicsLayer = rememberGraphicsLayer(),
 		)

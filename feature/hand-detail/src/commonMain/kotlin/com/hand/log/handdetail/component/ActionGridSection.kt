@@ -48,7 +48,6 @@ internal fun ActionGridSection(
 ) {
 	val colors = HandyTheme.colorScheme
 	val bb = hand.bbAmount
-	val playerCount = hand.playerCount
 
 	// 스트릿별 데이터 준비 (프리플랍 폴드 제외)
 	val preflopActions = hand.streets.preflop.actions.filter { it.type != ActionType.FOLD }
@@ -152,7 +151,7 @@ internal fun ActionGridSection(
 							val action = street.actions[rowIndex]
 							val pos = hand.getPositionName(action.playerSeat)
 							val isHero = action.playerSeat == hand.heroSeat
-							val prefix = if (isHero) "Hero" else pos
+							val prefix = if (isHero) "$pos (HERO)" else pos
 							formatActionCell(prefix, action, bb, useBbUnit)
 						}
 						else -> null
@@ -163,12 +162,6 @@ internal fun ActionGridSection(
 					} else {
 						null
 					}
-					val isHeroAction = if (street.name != "Blinds" && rowIndex < street.actions.size) {
-						street.actions[rowIndex].playerSeat == hand.heroSeat
-					} else {
-						false
-					}
-
 					val cellModifier = if (street.name == "Blinds") {
 						Modifier.width(blindsWidth)
 					} else {
@@ -178,7 +171,6 @@ internal fun ActionGridSection(
 					ActionCell(
 						text = cellContent,
 						actionType = actionType,
-						isHero = isHeroAction,
 						modifier = cellModifier,
 					)
 				}
@@ -191,12 +183,10 @@ internal fun ActionGridSection(
 private fun ActionCell(
 	text: String?,
 	actionType: ActionType?,
-	isHero: Boolean,
 	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme
 	val textColor = when {
-		isHero -> colors.gold
 		actionType != null -> actionType.indicatorColor()
 		else -> colors.textSecondary
 	}
@@ -234,13 +224,7 @@ private fun formatActionCell(prefix: String, action: Action, bb: Double, useBbUn
 		ActionType.CALL -> "$prefix\nCall $amount"
 		ActionType.BET -> "$prefix\nBet $amount"
 		ActionType.RAISE -> {
-			val label = when (action.betLevel) {
-				2 -> "Raise"
-				3 -> "3-Bet"
-				4 -> "4-Bet"
-				5 -> "5-Bet"
-				else -> "Raise"
-			}
+			val label = if (action.betLevel <= 2) "Raise" else "${action.betLevel}-Bet"
 			"$prefix\n$label $amount"
 		}
 		ActionType.ALL_IN -> "$prefix\nAll-in $amount"

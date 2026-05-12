@@ -49,6 +49,7 @@ import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.Suit
 import com.hand.log.domain.model.TurnStreet
 import com.hand.log.ui.poker.formatAmountFull
+import com.hand.log.ui.poker.formatWithComma
 import androidx.compose.ui.unit.Dp
 import com.hand.log.ui.poker.CardSize
 import com.hand.log.ui.poker.PlayingCard
@@ -114,11 +115,19 @@ internal fun HandDetailTableView(
 				.border(2.dp, colors.feltLight, RoundedCornerShape(40)),
 			contentAlignment = Alignment.Center,
 		) {
-			// 보드 카드
-			if (boardCards.isNotEmpty()) {
-				Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-					boardCards.forEach { card ->
-						PlayingCard(card = card, size = boardCardSize)
+			Column(
+				horizontalAlignment = Alignment.CenterHorizontally,
+				verticalArrangement = Arrangement.spacedBy(2.dp),
+			) {
+				// 블라인드 정보
+				BlindsLabel(blinds = hand.blinds)
+
+				// 보드 카드
+				if (boardCards.isNotEmpty()) {
+					Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+						boardCards.forEach { card ->
+							PlayingCard(card = card, size = boardCardSize)
+						}
 					}
 				}
 			}
@@ -347,6 +356,33 @@ private fun HandDetailTableViewPreview() {
 			useBbUnit = true,
 			modifier = Modifier.padding(16.dp),
 		)
+	}
+}
+
+@Composable
+private fun BlindsLabel(
+	blinds: Blinds?,
+	modifier: Modifier = Modifier,
+) {
+	if (blinds == null) return
+	val colors = HandyTheme.colorScheme
+
+	Column(
+		horizontalAlignment = Alignment.CenterHorizontally,
+		modifier = modifier,
+	) {
+		Text(
+			text = "SB: ${formatWithComma(blinds.sb.toLong())} / BB: ${formatWithComma(blinds.bb.toLong())}",
+			style = HandyTheme.typography.regular8.nonScaledSp,
+			color = colors.gold.copy(alpha = 0.7f),
+		)
+		if (blinds.isBigBlindAnte) {
+			Text(
+				text = "Ante: ${formatWithComma(blinds.bb.toLong())}",
+				style = HandyTheme.typography.regular8.nonScaledSp,
+				color = Color.White.copy(alpha = 0.7f),
+			)
+		}
 	}
 }
 

@@ -17,7 +17,7 @@ internal sealed interface HandDetailModalEffect {
 	data class ShowPlayerMark(val seat: Int) : HandDetailModalEffect
 
 	@Immutable
-	data object EditMemo : HandDetailModalEffect
+	data class EditMemo(val currentMemo: String) : HandDetailModalEffect
 
 	@Immutable
 	data class EditHeroHand(val selectedCards: Set<Card>) : HandDetailModalEffect
