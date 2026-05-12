@@ -42,7 +42,7 @@ fun PositionBadge(
 	isHero: Boolean = false,
 	showMarkButton: Boolean = false,
 	onMarkClick: (() -> Unit)? = null,
-	circleSize: Dp = 28.dp,
+	circleSize: Dp = 36.dp,
 	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme

@@ -37,8 +37,8 @@ fun ActionType.indicatorColor(): Color {
 	return when (this) {
 		ActionType.FOLD -> colors.textSecondary.copy(alpha = 0.4f)
 		ActionType.CHECK -> colors.textPrimary
-		ActionType.CALL -> colors.primary
-		ActionType.BET -> colors.gold
+		ActionType.CALL -> colors.gold
+		ActionType.BET -> colors.accent
 		ActionType.RAISE -> colors.accent
 		ActionType.ALL_IN -> colors.error
 	}

@@ -21,14 +21,19 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.DrawableResource
@@ -61,6 +66,13 @@ fun HandyTextField(
 	val isFocused by interactionSource.collectIsFocusedAsState()
 	val borderColor = if (isFocused) colors.primary else colors.inputBorder
 
+	var textFieldValue by remember { mutableStateOf(TextFieldValue(value, TextRange(value.length))) }
+	LaunchedEffect(value) {
+		if (textFieldValue.text != value) {
+			textFieldValue = TextFieldValue(text = value, selection = TextRange(value.length))
+		}
+	}
+
 	val visualTransformation = if (keyboardType == KeyboardType.Number) {
 		amountVisualTransformation()
 	} else {
@@ -72,8 +84,11 @@ fun HandyTextField(
 			text = label,
 		)
 		BasicTextField(
-			value = value,
-			onValueChange = onValueChange,
+			value = textFieldValue,
+			onValueChange = { newValue ->
+				textFieldValue = newValue
+				onValueChange(newValue.text)
+			},
 			modifier = innerModifier,
 			textStyle = typography.regular14.copy(color = colors.textPrimary),
 			singleLine = minLines == 1,
@@ -107,7 +122,7 @@ fun HandyTextField(
 						Spacer(modifier = Modifier.width(8.dp))
 					}
 					Box(modifier = Modifier.weight(1f)) {
-						if (value.isEmpty()) {
+						if (textFieldValue.text.isEmpty()) {
 							Text(
 								text = label,
 								style = typography.regular14,
@@ -117,7 +132,7 @@ fun HandyTextField(
 						innerTextField()
 					}
 
-					if (isFocused && value.isNotEmpty()) {
+					if (isFocused && textFieldValue.text.isNotEmpty()) {
 						Spacer(modifier = Modifier.width(8.dp))
 						ScaleInAnimation {
 							Icon(
@@ -126,7 +141,10 @@ fun HandyTextField(
 								modifier = Modifier
 									.size(18.dp)
 									.clip(CircleShape)
-									.clickable { onValueChange("") }
+									.clickable {
+										textFieldValue = TextFieldValue()
+										onValueChange("")
+									}
 									.padding(2.dp),
 								tint = colors.textSecondary,
 							)

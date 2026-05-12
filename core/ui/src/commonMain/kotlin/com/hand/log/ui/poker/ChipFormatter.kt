@@ -38,11 +38,10 @@ fun formatAmountFull(amount: Double, useBbUnit: Boolean = false, bb: Double = 0.
  * BB 수를 문자열로 변환 (예: "2BB", "3.5BB")
  */
 fun formatBbCount(bbCount: Double): String {
-	val rounded2 = (bbCount * 100).toLong() / 100.0
+	val rounded1 = (bbCount * 10).toLong() / 10.0
 	return when {
-		rounded2 == rounded2.toLong().toDouble() -> "${rounded2.toLong()}BB"
-		rounded2 * 10 == (rounded2 * 10).toLong().toDouble() -> "${(rounded2 * 10).toLong() / 10.0}BB"
-		else -> "${rounded2}BB"
+		rounded1 == rounded1.toLong().toDouble() -> "${rounded1.toLong()}BB"
+		else -> "${rounded1}BB"
 	}
 }
 

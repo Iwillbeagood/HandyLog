@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Card
-import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.Suit
 import handylog.core.res.generated.resources.Res
@@ -68,7 +67,6 @@ fun PlayingCard(
 		modifier = modifier
 			.size(size.width, size.height)
 			.clip(shape)
-			.background(colors.card)
 			.then(
 				if (selected) {
 					Modifier.border(2.dp, colors.primary, shape)
@@ -83,14 +81,14 @@ fun PlayingCard(
 	) {
 		when {
 			faceDown -> CardBack(size)
-			card != null -> CardFace(card, size)
+			card != null -> CardFace(card, size, selected)
 			else -> CardEmpty(size)
 		}
 	}
 }
 
 @Composable
-private fun CardFace(card: Card, size: CardSize) {
+private fun CardFace(card: Card, size: CardSize, selected: Boolean = false) {
 	val colors = HandyTheme.colorScheme
 	val suitColor = when (card.suit) {
 		Suit.HEARTS, Suit.DIAMONDS -> colors.suitRed
@@ -100,7 +98,7 @@ private fun CardFace(card: Card, size: CardSize) {
 	Column(
 		modifier = Modifier
 			.size(size.width, size.height)
-			.background(colors.card),
+			.background(if (selected) colors.primary.copy(alpha = 0.2f) else colors.card),
 		horizontalAlignment = Alignment.CenterHorizontally,
 		verticalArrangement = Arrangement.spacedBy(size.spacing, Alignment.CenterVertically),
 	) {
@@ -198,38 +196,6 @@ private fun PlayingCardStatesPreview() {
 			PlayingCard(card = Card(Rank.TEN, Suit.HEARTS), size = CardSize.LG, selected = true)
 			PlayingCard(card = null, size = CardSize.LG, faceDown = true)
 			PlayingCard(card = null, size = CardSize.LG)
-		}
-	}
-}
-
-/**
- * 2장의 포켓 카드를 표시.
- * - pocketCards != null → 카드 공개
- * - isUnknown = true → 미공개 (? 표시)
- * - 둘 다 아니면 → 뒷면 표시
- */
-@Composable
-fun PlayingPocketCards(
-	pocketCards: PocketCards?,
-	size: CardSize = CardSize.SM,
-	isUnknown: Boolean = false,
-	spacing: Dp = 4.dp,
-	modifier: Modifier = Modifier,
-) {
-	Row(
-		horizontalArrangement = Arrangement.spacedBy(spacing),
-		verticalAlignment = Alignment.CenterVertically,
-		modifier = modifier,
-	) {
-		if (isUnknown) {
-			PlayingCard(card = null, size = size)
-			PlayingCard(card = null, size = size)
-		} else if (pocketCards != null) {
-			PlayingCard(card = pocketCards.card1, size = size)
-			PlayingCard(card = pocketCards.card2, size = size)
-		} else {
-			PlayingCard(card = null, size = size, faceDown = true)
-			PlayingCard(card = null, size = size, faceDown = true)
 		}
 	}
 }

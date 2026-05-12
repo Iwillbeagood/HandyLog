@@ -30,10 +30,11 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.RegularButton
 import com.hand.log.designsystem.component.modal.SheetDragBlocker
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
 import org.jetbrains.compose.resources.painterResource
 import com.hand.log.domain.model.Card
-import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.Suit
 
@@ -46,15 +47,15 @@ fun CardSelectorSheet(
 	onCardsSelected: (List<Card>) -> Unit,
 	onDismiss: () -> Unit,
 	onUnknownSelected: (() -> Unit)? = null,
-	heroHand: PocketCards? = null,
+	initialCards: List<Card> = emptyList(),
 	minCards: Int = maxCards,
 	boardPreview: Boolean = false,
 	modifier: Modifier = Modifier,
 ) {
 	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 	val colors = HandyTheme.colorScheme
-	val pickedCards = remember(title, maxCards) { mutableStateListOf<Card>() }
-	val allUsedCards = selectedCards + pickedCards
+	val pickedCards =
+		remember(title, maxCards) { mutableStateListOf<Card>().apply { addAll(initialCards) } }
 	val showConfirmButton = minCards < maxCards
 
 	ModalBottomSheet(
@@ -88,22 +89,11 @@ fun CardSelectorSheet(
 				)
 			}
 
-			// Hero hand preview
-			if (heroHand != null) {
-				Row(
-					horizontalArrangement = Arrangement.spacedBy(8.dp),
-					verticalAlignment = Alignment.CenterVertically,
-					modifier = Modifier.padding(bottom = 12.dp),
-				) {
-					PlayingCard(card = heroHand.card1, size = CardSize.MD)
-					PlayingCard(card = heroHand.card2, size = CardSize.MD)
-				}
-			}
-
 			// Board cards preview (Flop | Turn | River)
 			if (boardPreview) {
 				BoardCardsPreview(
 					pickedCards = pickedCards,
+					onCardDeselected = { index -> pickedCards.removeAt(index) },
 					modifier = Modifier.padding(bottom = 12.dp),
 				)
 			} else if (pickedCards.isNotEmpty()) {
@@ -116,6 +106,7 @@ fun CardSelectorSheet(
 						PlayingCard(
 							card = card,
 							size = CardSize.MD,
+							onClick = { pickedCards.remove(card) },
 						)
 					}
 				}
@@ -147,7 +138,8 @@ fun CardSelectorSheet(
 			Suit.entries.forEach { suit ->
 				SuitSection(
 					suit = suit,
-					usedCards = allUsedCards,
+					disabledCards = selectedCards,
+					pickedCards = pickedCards.toSet(),
 					onCardSelected = { card ->
 						if (pickedCards.size < maxCards) {
 							pickedCards.add(card)
@@ -156,6 +148,7 @@ fun CardSelectorSheet(
 							}
 						}
 					},
+					onCardDeselected = { card -> pickedCards.remove(card) },
 				)
 			}
 
@@ -174,6 +167,7 @@ fun CardSelectorSheet(
 @Composable
 fun BoardCardsPreview(
 	pickedCards: List<Card>,
+	onCardDeselected: ((Int) -> Unit)? = null,
 	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme
@@ -184,10 +178,16 @@ fun BoardCardsPreview(
 	) {
 		// Flop (3 slots)
 		(0 until 3).forEach { index ->
+			val card = pickedCards.getOrNull(index)
 			PlayingCard(
-				card = pickedCards.getOrNull(index),
+				card = card,
 				size = CardSize.MD,
-				faceDown = pickedCards.getOrNull(index) == null,
+				faceDown = card == null,
+				onClick = if (card != null && onCardDeselected != null) {
+					{ onCardDeselected(index) }
+				} else {
+					null
+				},
 			)
 		}
 		// Turn separator + slot
@@ -197,10 +197,16 @@ fun BoardCardsPreview(
 			color = colors.textSecondary,
 			modifier = Modifier.padding(horizontal = 2.dp),
 		)
+		val turnCard = pickedCards.getOrNull(3)
 		PlayingCard(
-			card = pickedCards.getOrNull(3),
+			card = turnCard,
 			size = CardSize.MD,
-			faceDown = pickedCards.getOrNull(3) == null,
+			faceDown = turnCard == null,
+			onClick = if (turnCard != null && onCardDeselected != null) {
+				{ onCardDeselected(3) }
+			} else {
+				null
+			},
 		)
 		// River separator + slot
 		Text(
@@ -209,10 +215,16 @@ fun BoardCardsPreview(
 			color = colors.textSecondary,
 			modifier = Modifier.padding(horizontal = 2.dp),
 		)
+		val riverCard = pickedCards.getOrNull(4)
 		PlayingCard(
-			card = pickedCards.getOrNull(4),
+			card = riverCard,
 			size = CardSize.MD,
-			faceDown = pickedCards.getOrNull(4) == null,
+			faceDown = riverCard == null,
+			onClick = if (riverCard != null && onCardDeselected != null) {
+				{ onCardDeselected(4) }
+			} else {
+				null
+			},
 		)
 	}
 }
@@ -220,8 +232,10 @@ fun BoardCardsPreview(
 @Composable
 private fun SuitSection(
 	suit: Suit,
-	usedCards: Set<Card>,
+	disabledCards: Set<Card>,
+	pickedCards: Set<Card>,
 	onCardSelected: (Card) -> Unit,
+	onCardDeselected: (Card) -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
 	val suitColor = when (suit) {
@@ -247,21 +261,56 @@ private fun SuitSection(
 	) {
 		items(Rank.entries) { rank ->
 			val card = Card(rank, suit)
-			val isUsed = card in usedCards
+			val isPicked = card in pickedCards
+			val isDisabled = card in disabledCards
 
-			if (isUsed) {
-				PlayingCard(
+			when {
+				isPicked -> PlayingCard(
+					card = card,
+					size = CardSize.SM,
+					selected = true,
+					onClick = { onCardDeselected(card) },
+				)
+				isDisabled -> PlayingCard(
 					card = card,
 					size = CardSize.SM,
 					modifier = Modifier.alpha(0.3f),
 				)
-			} else {
-				PlayingCard(
+				else -> PlayingCard(
 					card = card,
 					size = CardSize.SM,
 					onClick = { onCardSelected(card) },
 				)
 			}
+		}
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun SuitSectionPreview() {
+	val disabledCards = setOf(
+		Card(Rank.ACE, Suit.SPADES),
+		Card(Rank.KING, Suit.SPADES),
+	)
+	val pickedCards = setOf(
+		Card(Rank.QUEEN, Suit.SPADES),
+		Card(Rank.JACK, Suit.SPADES),
+	)
+
+	ThemePreview {
+		Column(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(16.dp),
+		) {
+			SuitSection(
+				suit = Suit.SPADES,
+				disabledCards = disabledCards,
+				pickedCards = pickedCards,
+				onCardSelected = {},
+				onCardDeselected = {},
+			)
 		}
 	}
 }
