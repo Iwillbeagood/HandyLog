@@ -5,6 +5,8 @@ plugins {
 	alias(libs.plugins.compose.hotReload)
 	alias(libs.plugins.base.kotlin.multiplatform)
 	alias(libs.plugins.base.compose.multiplatform)
+	alias(libs.plugins.google.services)
+	alias(libs.plugins.firebase.perf.plugin)
 }
 
 kotlin {
@@ -24,6 +26,7 @@ kotlin {
 		androidMain.dependencies {
 			implementation(libs.androidx.activity.compose)
 			implementation(projects.local.datastore)
+			implementation(libs.firebase.perf)
 		}
 		commonMain.dependencies {
 			implementation(projects.feature.main)
