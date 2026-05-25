@@ -89,7 +89,7 @@ internal fun ActionTableView(
 	BoxWithConstraints(
 		modifier = modifier
 			.padding(horizontal = 8.dp)
-			.aspectRatio(1.8f),
+			.aspectRatio(1.6f),
 	) {
 		val density = LocalDensity.current
 		val containerWidthPx = with(density) { maxWidth.toPx() }
@@ -98,7 +98,7 @@ internal fun ActionTableView(
 		Box(
 			modifier = Modifier
 				.fillMaxWidth(0.75f)
-				.aspectRatio(1.8f)
+				.aspectRatio(1.6f)
 				.align(Alignment.Center)
 				.clip(RoundedCornerShape(40))
 				.background(colors.felt)
@@ -114,7 +114,11 @@ internal fun ActionTableView(
 			) {
 				if (state.blinds != null) {
 					Text(
-						text = "SB: ${state.blinds.sb.toLong()} / BB: ${state.blinds.bb.toLong()}",
+						text = "${stringResource(
+							Res.string.label_sb,
+						)}: ${state.blinds.sb.toLong()} / ${stringResource(
+							Res.string.label_bb,
+						)}: ${state.blinds.bb.toLong()}",
 						style = HandyTheme.typography.regular8.nonScaledSp,
 						color = colors.gold.copy(alpha = 0.7f),
 					)
@@ -261,8 +265,8 @@ internal fun ActionTableView(
 			val hasBetAction = totalBet > 0 && action?.type != ActionType.FOLD
 			val chipLabel = when {
 				isBtn -> "D"
-				isPreflop && !hasBetAction && seat == sbSeat -> "SB"
-				isPreflop && !hasBetAction && seat == bbSeat -> "BB"
+				isPreflop && !hasBetAction && seat == sbSeat -> stringResource(Res.string.label_sb)
+				isPreflop && !hasBetAction && seat == bbSeat -> stringResource(Res.string.label_bb)
 				else -> null
 			}
 			val chipColor = when {
@@ -331,7 +335,9 @@ internal fun ActionTableView(
 				}
 			}
 
-			val isBlindChipShown = chipLabel == "SB" || chipLabel == "BB"
+			val sbLabel = stringResource(Res.string.label_sb)
+			val bbLabel = stringResource(Res.string.label_bb)
+			val isBlindChipShown = chipLabel == sbLabel || chipLabel == bbLabel
 			if (hasBetAction && !isAllIn && !isBlindChipShown) {
 				val bx = centerX + (tableRadiusX - chipHalf - chipGapPx) * cosA - chipHalf
 				val by = centerY + (tableRadiusY - chipHalf - chipGapPx) * sinA - chipHalf

@@ -18,6 +18,8 @@ import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.handdetail.component.HandDetailTopBarEndContent
 import org.jetbrains.compose.resources.stringResource
+import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.label_bb
 import com.hand.log.domain.model.Action
 import com.hand.log.domain.model.ActionType
 import com.hand.log.domain.model.Blinds
@@ -67,7 +69,7 @@ internal fun HandDetailScreen(
 					) {
 						HandySwitch(
 							checked = loaded?.useBbUnit ?: false,
-							text = "BB",
+							text = stringResource(Res.string.label_bb),
 							onCheckedChange = { onToggleBbUnit() },
 						)
 					}

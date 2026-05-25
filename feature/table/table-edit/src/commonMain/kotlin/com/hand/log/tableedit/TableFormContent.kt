@@ -222,14 +222,14 @@ private fun CashBlindsSection(
 			HandyTextField(
 				value = sbText,
 				onValueChange = onSbChange,
-				label = "SB",
+				label = stringResource(Res.string.label_sb),
 				modifier = Modifier.weight(1f),
 				keyboardType = KeyboardType.Number,
 			)
 			HandyTextField(
 				value = bbText,
 				onValueChange = onBbChange,
-				label = "BB",
+				label = stringResource(Res.string.label_bb),
 				modifier = Modifier.weight(1f),
 				keyboardType = KeyboardType.Number,
 			)

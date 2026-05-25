@@ -8,51 +8,66 @@ import androidx.compose.ui.text.input.VisualTransformation
 /**
  * 금액 형식으로 변환하는 VisualTransformation
  * 형식: 1,000,000 (천 단위 콤마)
+ * 소수점이 포함된 경우 정수 부분만 콤마 적용
  */
 fun amountVisualTransformation(): VisualTransformation = VisualTransformation { text ->
-	val raw = text.text.filter { it.isDigit() }
+	val originalText = text.text
+	val dotIndex = originalText.indexOf('.')
 
-	if (raw.isEmpty()) {
+	val intPart = if (dotIndex >= 0) originalText.substring(0, dotIndex) else originalText
+	val decPart = if (dotIndex >= 0) originalText.substring(dotIndex) else ""
+
+	val rawInt = intPart.filter { it.isDigit() }
+
+	if (rawInt.isEmpty() && decPart.isEmpty()) {
 		return@VisualTransformation TransformedText(text, OffsetMapping.Identity)
 	}
 
-	val formatted = buildString {
-		raw.reversed().forEachIndexed { index, char ->
-			if (index > 0 && index % 3 == 0) {
-				append(',')
+	val formattedInt = if (rawInt.isEmpty()) {
+		""
+	} else {
+		buildString {
+			rawInt.reversed().forEachIndexed { index, char ->
+				if (index > 0 && index % 3 == 0) {
+					append(',')
+				}
+				append(char)
 			}
-			append(char)
-		}
-	}.reversed()
+		}.reversed()
+	}
+
+	val formatted = formattedInt + decPart
+	val totalCommas = if (rawInt.length > 1) (rawInt.length - 1) / 3 else 0
 
 	val offsetMapping = object : OffsetMapping {
 		override fun originalToTransformed(offset: Int): Int {
 			if (offset == 0) return 0
-
-			val commasBeforeOffset = (raw.length - offset) / 3
-			val totalCommas = (raw.length - 1) / 3
-
-			return offset + (totalCommas - commasBeforeOffset)
+			if (dotIndex >= 0 && offset > dotIndex) {
+				return offset + totalCommas
+			}
+			val digitsBeforeOffset = intPart.substring(0, offset.coerceAtMost(intPart.length))
+				.count { it.isDigit() }
+			if (digitsBeforeOffset == 0) return 0
+			val commasBefore = if (digitsBeforeOffset > 0) {
+				val remaining = rawInt.length - digitsBeforeOffset
+				(rawInt.length - 1) / 3 - (if (remaining > 0) (remaining - 1) / 3 else 0)
+			} else {
+				0
+			}
+			return offset + commasBefore
 		}
 
 		override fun transformedToOriginal(offset: Int): Int {
 			if (offset == 0) return 0
-
-			var currentPos = 0
-
-			raw.reversed().forEachIndexed { index, _ ->
-				if (index > 0 && index % 3 == 0) {
-					currentPos++
-				}
-				currentPos++
-
-				if (currentPos >= offset) {
-					val originalPos = raw.length - index
-					return originalPos
-				}
+			val intFormatLen = formattedInt.length
+			if (offset > intFormatLen) {
+				return offset - totalCommas
 			}
-
-			return raw.length
+			var commas = 0
+			for (i in 0 until offset.coerceAtMost(formatted.length)) {
+				if (formatted[i] == ',') commas++
+			}
+			return offset - commas
 		}
 	}
 

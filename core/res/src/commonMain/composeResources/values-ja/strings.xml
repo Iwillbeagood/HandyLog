@@ -133,7 +133,7 @@
 	<string name="player_add">プレイヤー追加</string>
 	<string name="player_edit">プレイヤー編集</string>
 	<string name="player_name">名前</string>
-	<string name="player_stack">スタック</string>
+	<string name="player_stack">スタック (省略可能)</string>
 	<string name="record_skip_stack">スキップ</string>
 	<string name="player_tendency">傾向</string>
 	<string name="player_tendency_none">なし</string>

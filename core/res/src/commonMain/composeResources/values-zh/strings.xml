@@ -133,7 +133,7 @@
 	<string name="player_add">添加玩家</string>
 	<string name="player_edit">编辑玩家</string>
 	<string name="player_name">姓名</string>
-	<string name="player_stack">筹码</string>
+	<string name="player_stack">筹码 (可省略)</string>
 	<string name="record_skip_stack">跳过</string>
 	<string name="player_tendency">倾向</string>
 	<string name="player_tendency_none">无</string>

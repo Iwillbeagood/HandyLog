@@ -111,7 +111,7 @@ internal fun RecordHandScreen(
 					endContent = {
 						HandySwitch(
 							checked = state.useBbUnit,
-							text = "BB",
+							text = stringResource(Res.string.label_bb),
 							onCheckedChange = { onToggleBbUnit() },
 						)
 					},

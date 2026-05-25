@@ -47,6 +47,7 @@ internal fun ActionSelector(
 	minRaiseAmount: Double = 0.0,
 	lastBetAmount: Double = 0.0,
 	useBbUnit: Boolean = false,
+	playerStack: Double? = null,
 	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme
@@ -87,20 +88,22 @@ internal fun ActionSelector(
 		if (needsAmount) {
 			VerticalSpacer(12.dp)
 
-			val displayMinRaise = if (useBbUnit && bbAmount > 0) {
-				val bbCount = minRaiseAmount / bbAmount
-				val rounded = (bbCount * 10).toLong() / 10.0
-				if (rounded == rounded.toLong().toDouble()) "${rounded.toLong()}BB" else "${rounded}BB"
+			val displayMinRaise = minRaiseAmount.toLong().toString()
+
+			val chipAmount = if (currentAmount.isNotBlank()) {
+				val parsed = currentAmount.toDoubleOrNull() ?: 0.0
+				if (useBbUnit && bbAmount > 0) parsed * bbAmount else parsed
 			} else {
-				minRaiseAmount.toLong().toString()
+				0.0
 			}
+			val exceedsStack = playerStack != null && chipAmount > playerStack
 
 			HandyTextField(
 				value = currentAmount,
 				onValueChange = onUpdateAmount,
 				label = stringResource(Res.string.record_amount_label, displayMinRaise),
 				keyboardType = KeyboardType.Number,
-				onDone = if (selectedAction == ActionType.BET || selectedAction == ActionType.RAISE) {
+				onDone = if ((selectedAction == ActionType.BET || selectedAction == ActionType.RAISE) && !exceedsStack) {
 					onConfirmAction
 				} else {
 					null
@@ -109,32 +112,18 @@ internal fun ActionSelector(
 			VerticalSpacer(8.dp)
 
 			val isRaiseOrBet = selectedAction == ActionType.RAISE || selectedAction == ActionType.BET
-			if (isRaiseOrBet && lastBetAmount > 0) {
-				RaiseMultiplierPresetRow(
-					lastBetAmount = lastBetAmount,
-					bbAmount = bbAmount,
-					useBbUnit = useBbUnit,
-					onUpdateAmount = onUpdateAmount,
+			val presets = when {
+				isRaiseOrBet && lastBetAmount > 0 -> raiseMultiplierPresets(lastBetAmount, bbAmount, useBbUnit)
+				currentStreet == Street.PREFLOP && bbAmount > 0 -> preflopBBPresets(
+					preflopPresets,
+					bbAmount,
+					useBbUnit,
 				)
-			} else if (currentStreet == Street.PREFLOP) {
-				if (bbAmount > 0) {
-					PreflopBBPresetRow(
-						preflopPresets = preflopPresets,
-						bbAmount = bbAmount,
-						useBbUnit = useBbUnit,
-						onUpdateAmount = onUpdateAmount,
-					)
-				}
-			} else {
-				if (currentPot > 0) {
-					PostflopPotPresetRow(
-						postflopPresets = postflopPresets,
-						currentPot = currentPot,
-						bbAmount = bbAmount,
-						useBbUnit = useBbUnit,
-						onUpdateAmount = onUpdateAmount,
-					)
-				}
+				currentPot > 0 -> postflopPotPresets(postflopPresets, currentPot, bbAmount, useBbUnit)
+				else -> emptyList()
+			}
+			if (presets.isNotEmpty()) {
+				PresetRow(presets = presets, onSelect = onUpdateAmount)
 			}
 
 			if (selectedAction == ActionType.BET || selectedAction == ActionType.RAISE) {
@@ -142,6 +131,7 @@ internal fun ActionSelector(
 				RegularButton(
 					text = stringResource(Res.string.btn_confirm),
 					onClick = onConfirmAction,
+					enabled = !exceedsStack,
 				)
 			}
 		}

@@ -30,7 +30,10 @@ import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.designsystem.theme.nonScaledSp
 import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.label_bb
+import handylog.core.res.generated.resources.label_sb
 import handylog.core.res.generated.resources.spade_filled
+import org.jetbrains.compose.resources.stringResource
 import handylog.core.res.generated.resources.trophy
 import org.jetbrains.compose.resources.painterResource
 import androidx.compose.material3.Icon
@@ -372,7 +375,11 @@ private fun BlindsLabel(
 		modifier = modifier,
 	) {
 		Text(
-			text = "SB: ${formatWithComma(blinds.sb.toLong())} / BB: ${formatWithComma(blinds.bb.toLong())}",
+			text = "${stringResource(
+				Res.string.label_sb,
+			)}: ${formatWithComma(
+				blinds.sb.toLong(),
+			)} / ${stringResource(Res.string.label_bb)}: ${formatWithComma(blinds.bb.toLong())}",
 			style = HandyTheme.typography.regular8.nonScaledSp,
 			color = colors.gold.copy(alpha = 0.7f),
 		)

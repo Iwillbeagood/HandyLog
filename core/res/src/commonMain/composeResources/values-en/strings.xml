@@ -133,7 +133,7 @@
 	<string name="player_add">Add Player</string>
 	<string name="player_edit">Edit Player</string>
 	<string name="player_name">Name</string>
-	<string name="player_stack">Stack</string>
+	<string name="player_stack">Stack (optional)</string>
 	<string name="record_skip_stack">Skip</string>
 	<string name="player_tendency">Tendency</string>
 	<string name="player_tendency_none">None</string>

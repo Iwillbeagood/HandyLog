@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import com.hand.log.designsystem.component.HandySectionLabel
 import com.hand.log.designsystem.component.VerticalSpacer
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
@@ -39,6 +40,7 @@ import com.hand.log.record.contract.RecordStep
 import com.hand.log.record.model.RecordPlayers
 import com.hand.log.record.model.calculateLastRaiseTo
 import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.record_action
 import handylog.core.res.generated.resources.record_all_actions_complete
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
@@ -97,16 +99,7 @@ internal fun PlayerActionArea(
 						)
 					}
 				}
-				if (state.currentStreet == Street.PREFLOP) {
-					PlayerStackInput(
-						initialStack = initialStack,
-						blindCost = blindCost,
-						bbAmount = state.blinds?.bb ?: 0.0,
-						posName = posName,
-						onValueChange = { onUpdatePlayerStack(state.currentActionSeat, it) },
-						modifier = Modifier.weight(1f),
-					)
-				} else if (currentStack != null) {
+				if (state.currentStreet != Street.PREFLOP && currentStack != null) {
 					Text(
 						text = state.formatAmount(currentStack),
 						style = HandyTheme.typography.bold14,
@@ -115,7 +108,19 @@ internal fun PlayerActionArea(
 				}
 			}
 
+			if (state.currentStreet == Street.PREFLOP) {
+				VerticalSpacer(8.dp)
+				PlayerStackInput(
+					initialStack = initialStack,
+					blindCost = blindCost,
+					bbAmount = state.blinds?.bb ?: 0.0,
+					posName = posName,
+					onValueChange = { onUpdatePlayerStack(state.currentActionSeat, it) },
+				)
+			}
+
 			VerticalSpacer(12.dp)
+			HandySectionLabel(stringResource(Res.string.record_action))
 			val streetActions = state.streets.getActions(state.currentStreet)
 			val lastBet = calculateLastRaiseTo(
 				streetActions = streetActions,
@@ -138,6 +143,7 @@ internal fun PlayerActionArea(
 				minRaiseAmount = state.minRaiseAmount,
 				lastBetAmount = lastBet,
 				useBbUnit = state.useBbUnit,
+				playerStack = currentStack,
 			)
 		} else {
 			Box(

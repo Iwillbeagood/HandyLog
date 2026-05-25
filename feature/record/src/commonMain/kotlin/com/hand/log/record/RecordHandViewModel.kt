@@ -400,6 +400,7 @@ internal class RecordHandViewModel(
 				currentActionSeat = seat,
 				currentActionType = null,
 				currentActionAmount = "",
+				currentActionChipAmount = null,
 			)
 		}
 	}
@@ -412,14 +413,16 @@ internal class RecordHandViewModel(
 
 	fun updateActionAmount(amount: String) {
 		updateRecording {
-			val seat = currentActionSeat ?: return@updateRecording copy(currentActionAmount = amount)
-			val player = players[seat] ?: return@updateRecording copy(currentActionAmount = amount)
+			val seat = currentActionSeat
+				?: return@updateRecording copy(currentActionAmount = amount, currentActionChipAmount = null)
+			val player = players[seat]
+				?: return@updateRecording copy(currentActionAmount = amount, currentActionChipAmount = null)
 			val effectiveStack = player.stack + player.currentBet
 			if (effectiveStack > 0) {
 				val chipAmount = parseInputToChip(amount)
 				if (chipAmount > effectiveStack) return@updateRecording this
 			}
-			copy(currentActionAmount = amount)
+			copy(currentActionAmount = amount, currentActionChipAmount = null)
 		}
 	}
 
@@ -503,6 +506,7 @@ internal class RecordHandViewModel(
 				currentActionSeat = nextSeat,
 				currentActionType = null,
 				currentActionAmount = "",
+				currentActionChipAmount = null,
 				lastAggressorSeat = newAggressor,
 			)
 		}
@@ -611,6 +615,7 @@ internal class RecordHandViewModel(
 					currentActionSeat = null,
 					currentActionType = null,
 					currentActionAmount = "",
+					currentActionChipAmount = null,
 				)
 			}
 
@@ -648,6 +653,7 @@ internal class RecordHandViewModel(
 				players = updatedPlayers,
 				currentActionType = null,
 				currentActionAmount = "",
+				currentActionChipAmount = null,
 				lastAggressorSeat = null,
 			)
 			// 프리플랍 진입 시에는 오프너 선택을 위해 currentActionSeat을 null로
@@ -733,6 +739,7 @@ internal class RecordHandViewModel(
 				players = clearedPlayers,
 				currentActionType = null,
 				currentActionAmount = "",
+				currentActionChipAmount = null,
 				lastAggressorSeat = null,
 			)
 			val lastAction = updated.streets.getActions(updated.currentStreet).lastOrNull()
@@ -842,6 +849,7 @@ internal class RecordHandViewModel(
 					currentActionSeat = null,
 					currentActionType = null,
 					currentActionAmount = "",
+					currentActionChipAmount = null,
 					players = updatedPlayers,
 				)
 				updated.copy(
@@ -868,6 +876,7 @@ internal class RecordHandViewModel(
 					currentActionSeat = null,
 					currentActionType = null,
 					currentActionAmount = "",
+					currentActionChipAmount = null,
 					players = updatedPlayers,
 				)
 			}
@@ -892,15 +901,17 @@ internal class RecordHandViewModel(
 	fun toggleBbUnit() {
 		updateRecording {
 			val newUseBb = !useBbUnit
-			val convertedAmount = if (currentActionAmount.isNotBlank()) {
-				val chipAmount = parseInputToChip(currentActionAmount)
-				// 새 모드 기준으로 변환
-				val newState = copy(useBbUnit = newUseBb)
-				newState.chipToInput(chipAmount)
-			} else {
-				currentActionAmount
+			if (currentActionAmount.isBlank()) {
+				return@updateRecording copy(useBbUnit = newUseBb)
 			}
-			copy(useBbUnit = newUseBb, currentActionAmount = convertedAmount)
+			val chipAmount = currentActionChipAmount ?: parseInputToChip(currentActionAmount)
+			val newState = copy(useBbUnit = newUseBb)
+			val convertedAmount = newState.chipToInput(chipAmount)
+			copy(
+				useBbUnit = newUseBb,
+				currentActionAmount = convertedAmount,
+				currentActionChipAmount = chipAmount,
+			)
 		}
 	}
 

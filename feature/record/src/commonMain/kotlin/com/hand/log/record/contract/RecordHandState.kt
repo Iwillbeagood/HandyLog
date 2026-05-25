@@ -40,6 +40,7 @@ internal sealed interface RecordHandState {
 		val currentActionSeat: Int? = null,
 		val currentActionType: ActionType? = null,
 		val currentActionAmount: String = "",
+		val currentActionChipAmount: Double? = null,
 		val lastAggressorSeat: Int? = null,
 		// Showdown
 		val resolvedShowdown: ResolvedShowdown? = null,
@@ -231,7 +232,7 @@ internal sealed interface RecordHandState {
 			if (chip == 0.0) return ""
 			if (!useBbUnit) return chip.toLong().toString()
 			val bbCount = chipToBb(chip)
-			val rounded = (bbCount * 10).toLong() / 10.0
+			val rounded = (bbCount * 100).toLong() / 100.0
 			return if (rounded == rounded.toLong().toDouble()) {
 				rounded.toLong().toString()
 			} else {

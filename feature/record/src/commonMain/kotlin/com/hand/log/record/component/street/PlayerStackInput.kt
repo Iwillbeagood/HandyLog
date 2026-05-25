@@ -9,7 +9,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.HandyTextField
 import com.hand.log.designsystem.component.VerticalSpacer
-import com.hand.log.record.component.StackPresetRow
+import com.hand.log.record.component.PresetRow
+import com.hand.log.record.component.stackPresets
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
@@ -36,6 +37,7 @@ internal fun PlayerStackInput(
 			keyboardType = KeyboardType.Number,
 		)
 		if (blindCost > 0) {
+			VerticalSpacer(8.dp)
 			Text(
 				text = "-${blindCost.toLong()} ($posName)",
 				style = HandyTheme.typography.regular10,
@@ -45,9 +47,9 @@ internal fun PlayerStackInput(
 		}
 		if (bbAmount > 0) {
 			VerticalSpacer(8.dp)
-			StackPresetRow(
-				bbAmount = bbAmount,
-				onUpdateStack = onValueChange,
+			PresetRow(
+				presets = stackPresets(bbAmount),
+				onSelect = onValueChange,
 			)
 		}
 	}

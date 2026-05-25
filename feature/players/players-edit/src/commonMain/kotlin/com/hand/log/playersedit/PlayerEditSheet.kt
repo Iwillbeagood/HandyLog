@@ -18,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.HandySectionLabel
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.component.HandyTextField
 import com.hand.log.designsystem.component.VerticalSpacer
 import com.hand.log.designsystem.component.modal.HandyBottomSheet
@@ -25,6 +27,7 @@ import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.PlayerTendency
 import com.hand.log.ui.stringRes
 import com.hand.log.domain.model.SavedPlayer
+import com.hand.log.ui.MemoField
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
@@ -136,9 +139,39 @@ private fun PlayerEditFields(
 	}
 
 	VerticalSpacer(12.dp)
-	HandyTextField(
+	MemoField(
 		value = memo,
 		onValueChange = onMemoChange,
 		label = stringResource(Res.string.player_memo),
 	)
+}
+
+@ThemePreviews
+@Composable
+private fun PlayerEditFieldsPreview() {
+	ThemePreview {
+		PlayerEditFields(
+			name = "Fish",
+			onNameChange = {},
+			tendency = PlayerTendency.FISH,
+			onTendencySelect = {},
+			memo = "Always calls",
+			onMemoChange = {},
+		)
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun PlayerEditFieldsEmptyPreview() {
+	ThemePreview {
+		PlayerEditFields(
+			name = "",
+			onNameChange = {},
+			tendency = null,
+			onTendencySelect = {},
+			memo = "",
+			onMemoChange = {},
+		)
+	}
 }

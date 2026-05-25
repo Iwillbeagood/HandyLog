@@ -99,18 +99,23 @@ internal fun SetupStepContent(
 				HandyTextField(
 					value = state.bbText,
 					onValueChange = onUpdateBb,
-					label = "BB",
+					label = stringResource(Res.string.label_bb),
 					modifier = Modifier.weight(1f).focusRequester(bbFocusRequester),
 					keyboardType = KeyboardType.Number,
 				)
 				HandyTextField(
 					value = state.sbText,
 					onValueChange = onUpdateSb,
-					label = "SB",
+					label = stringResource(Res.string.label_sb),
 					modifier = Modifier.weight(1f),
 					keyboardType = KeyboardType.Number,
 				)
 			}
+			VerticalSpacer(8.dp)
+			PresetRow(
+				presets = blindsIncrementPresets(state.bbText.toLongOrNull() ?: 0L),
+				onSelect = onUpdateBb,
+			)
 		}
 
 		VerticalSpacer(16.dp)
@@ -124,9 +129,9 @@ internal fun SetupStepContent(
 		val bbAmount = state.blinds?.bb ?: 0.0
 		if (bbAmount > 0) {
 			VerticalSpacer(8.dp)
-			StackPresetRow(
-				bbAmount = bbAmount,
-				onUpdateStack = onUpdateHeroStack,
+			PresetRow(
+				presets = stackPresets(bbAmount),
+				onSelect = onUpdateHeroStack,
 			)
 		}
 	}
