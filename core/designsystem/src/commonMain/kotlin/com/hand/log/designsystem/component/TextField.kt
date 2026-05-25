@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -29,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
@@ -61,6 +63,8 @@ fun HandyTextField(
 ) {
 	val colors = HandyTheme.colorScheme
 	val typography = HandyTheme.typography
+	val density = LocalDensity.current
+	val minLineHeight = with(density) { typography.regular14.lineHeight.toDp() }
 	val focusManager = LocalFocusManager.current
 	val interactionSource = remember { MutableInteractionSource() }
 	val isFocused by interactionSource.collectIsFocusedAsState()
@@ -70,6 +74,11 @@ fun HandyTextField(
 	LaunchedEffect(value) {
 		if (textFieldValue.text != value) {
 			textFieldValue = TextFieldValue(text = value, selection = TextRange(value.length))
+		}
+	}
+	LaunchedEffect(isFocused) {
+		if (isFocused) {
+			textFieldValue = textFieldValue.copy(selection = TextRange(textFieldValue.text.length))
 		}
 	}
 
@@ -121,7 +130,7 @@ fun HandyTextField(
 						)
 						Spacer(modifier = Modifier.width(8.dp))
 					}
-					Box(modifier = Modifier.weight(1f)) {
+					Box(modifier = Modifier.weight(1f).defaultMinSize(minHeight = minLineHeight)) {
 						if (textFieldValue.text.isEmpty()) {
 							Text(
 								text = label,
