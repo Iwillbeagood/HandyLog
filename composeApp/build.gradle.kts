@@ -7,6 +7,7 @@ plugins {
 	alias(libs.plugins.base.compose.multiplatform)
 	alias(libs.plugins.google.services)
 	alias(libs.plugins.firebase.perf.plugin)
+	alias(libs.plugins.firebase.crashlytics.plugin)
 }
 
 kotlin {
@@ -27,6 +28,7 @@ kotlin {
 			implementation(libs.androidx.activity.compose)
 			implementation(projects.local.datastore)
 			implementation(libs.firebase.perf)
+			implementation(libs.firebase.crashlytics)
 		}
 		commonMain.dependencies {
 			implementation(projects.feature.main)

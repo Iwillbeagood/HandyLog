@@ -48,6 +48,8 @@ firebaseCore = "21.1.1"
 firebaseMessaging = "25.0.0"
 firebasePerf = "21.0.4"
 firebasePerfPlugin = "1.4.2"
+firebaseCrashlytics = "19.4.3"
+firebaseCrashlyticsPlugin = "3.0.3"
 
 detekt = "1.23.7"
 ktlint = "12.2.0"
@@ -132,6 +134,7 @@ accompanist-permission = { group = "com.google.accompanist", name = "accompanist
 firebase-core = { group = "com.google.firebase", name = "firebase-core", version.ref = "firebaseCore" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging", version.ref = "firebaseMessaging" }
 firebase-perf = { group = "com.google.firebase", name = "firebase-perf", version.ref = "firebasePerf" }
+firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics", version.ref = "firebaseCrashlytics" }
 
 detektFormatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 
@@ -148,6 +151,7 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 compose-hotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleService" }
 firebase-perf-plugin = { id = "com.google.firebase.firebase-perf", version.ref = "firebasePerfPlugin" }
+firebase-crashlytics-plugin = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 wire = { id = "com.squareup.wire", version.ref = "wire" }
 room = { id = "androidx.room", version.ref = "room" }
