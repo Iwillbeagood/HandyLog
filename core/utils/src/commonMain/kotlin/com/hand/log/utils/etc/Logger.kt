@@ -6,6 +6,7 @@ object Logger {
 	private const val MAX_LOG_LENGTH = 3000
 
 	fun e(msg: String) = logChunked(msg) { AppLogger.e(TAG, it) }
+	fun e(msg: String, throwable: Throwable) = logChunked(msg) { AppLogger.e(TAG, it, throwable) }
 	fun w(msg: String) = logChunked("[WARN] $msg") { AppLogger.d(TAG, it) }
 	fun i(msg: String) = logChunked(msg) { AppLogger.i(TAG, it) }
 	fun d(msg: String) = logChunked(msg) { AppLogger.d(TAG, it) }

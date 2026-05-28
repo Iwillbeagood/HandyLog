@@ -18,6 +18,7 @@ import com.hand.log.navigation.interop.LocalMainActionInterop
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.utils.share.rememberShareManager
 import com.hand.log.utils.share.toPngBytes
+import com.hand.log.utils.etc.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import handylog.core.res.generated.resources.Res
@@ -84,7 +85,7 @@ internal fun HandDetailRoute(
 						}
 						shareManager.shareImage(bytes, effect.fileName)
 					} catch (e: Throwable) {
-						e.printStackTrace()
+						Logger.e("shareImage: failed", e)
 						mainAction.onShowToast(
 							getString(Res.string.hand_detail_image_share_failed),
 							ToastDurationType.SHORT,
@@ -103,7 +104,7 @@ internal fun HandDetailRoute(
 							ToastDurationType.SHORT,
 						)
 					} catch (e: Throwable) {
-						e.printStackTrace()
+						Logger.e("saveImage: failed", e)
 						mainAction.onShowToast(
 							getString(Res.string.hand_detail_image_save_failed),
 							ToastDurationType.SHORT,

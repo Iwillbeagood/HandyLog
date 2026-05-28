@@ -14,6 +14,7 @@ import com.hand.log.table.contract.TableEffect
 import com.hand.log.table.contract.TableModalEffect
 import com.hand.log.designsystem.component.modal.DefaultDialog
 import com.hand.log.tableedit.TableEditSheet
+import com.hand.log.ui.ProPaywallSheet
 import org.jetbrains.compose.resources.stringResource
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.*
@@ -136,6 +137,13 @@ private fun TableModalContent(
 				playerCount = modalEffect.playerCount,
 				onConfirm = onPlayerPositionsConfirmed,
 				onDismiss = onPositionSetupDismiss,
+			)
+		}
+
+		is TableModalEffect.ShowPaywall -> {
+			ProPaywallSheet(
+				feature = modalEffect.feature,
+				onDismiss = onDismiss,
 			)
 		}
 	}

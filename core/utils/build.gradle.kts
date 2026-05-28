@@ -14,6 +14,7 @@ kotlin {
 		}
 		androidMain.dependencies {
 			implementation(libs.androidx.core.ktx)
+			implementation(libs.firebase.crashlytics)
 		}
 		commonTest.dependencies {
 			implementation(libs.kotlin.test)

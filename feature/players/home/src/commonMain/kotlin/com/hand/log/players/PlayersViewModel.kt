@@ -2,8 +2,10 @@ package com.hand.log.players
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hand.log.domain.model.ProFeature
 import com.hand.log.domain.model.SavedPlayer
 import com.hand.log.domain.repository.SavedPlayerRepository
+import com.hand.log.domain.usecase.CheckFeatureLimitUseCase
 import com.hand.log.players.contract.PlayersModalEffect
 import com.hand.log.players.contract.PlayersState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +18,7 @@ import kotlinx.coroutines.launch
 
 internal class PlayersViewModel(
 	private val savedPlayerRepository: SavedPlayerRepository,
+	private val checkFeatureLimit: CheckFeatureLimitUseCase,
 ) : ViewModel() {
 
 	val state: StateFlow<PlayersState> = savedPlayerRepository.observeAllPlayers()
@@ -36,8 +39,12 @@ internal class PlayersViewModel(
 	}
 
 	fun showAddPlayer() {
-		_modalEffect.update {
-			PlayersModalEffect.ShowAddPlayer
+		viewModelScope.launch {
+			if (checkFeatureLimit.canSavePlayer()) {
+				_modalEffect.update { PlayersModalEffect.ShowAddPlayer }
+			} else {
+				_modalEffect.update { PlayersModalEffect.ShowPaywall(ProFeature.UNLIMITED_PLAYERS) }
+			}
 		}
 	}
 

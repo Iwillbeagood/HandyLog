@@ -11,6 +11,7 @@ import com.hand.log.home.contract.HomeModalEffect
 import com.hand.log.navigation.interop.LocalMainActionInterop
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.tableedit.TableEditSheet
+import com.hand.log.ui.ProPaywallSheet
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.*
 
@@ -67,6 +68,12 @@ private fun HomeModalContent(
 		HomeModalEffect.TableEditSheet -> {
 			TableEditSheet(
 				onSaved = { table, _ -> onTableSaved(table) },
+				onDismiss = onDismissRequest,
+			)
+		}
+		is HomeModalEffect.ShowPaywall -> {
+			ProPaywallSheet(
+				feature = homeModalEffect.feature,
 				onDismiss = onDismissRequest,
 			)
 		}

@@ -3,8 +3,10 @@ package com.hand.log.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hand.log.domain.model.PokerTable
+import com.hand.log.domain.model.ProFeature
 import com.hand.log.domain.repository.AppSettingsRepository
 import com.hand.log.domain.repository.PokerTableRepository
+import com.hand.log.domain.usecase.CheckFeatureLimitUseCase
 import com.hand.log.domain.usecase.ObserveAllHandsWithTableUseCase
 import com.hand.log.domain.usecase.ObserveTableListItemsUseCase
 import com.hand.log.home.contract.HomeEffect
@@ -25,6 +27,7 @@ import kotlinx.coroutines.launch
 internal class HomeViewModel(
 	private val pokerTableRepository: PokerTableRepository,
 	private val appSettingsRepository: AppSettingsRepository,
+	private val checkFeatureLimit: CheckFeatureLimitUseCase,
 	observeTableListItems: ObserveTableListItemsUseCase,
 	observeAllHandsWithTable: ObserveAllHandsWithTableUseCase,
 ) : ViewModel() {
@@ -60,7 +63,13 @@ internal class HomeViewModel(
 	}
 
 	fun showTableEditSheet() {
-		_homeModalEffect.update { HomeModalEffect.TableEditSheet }
+		viewModelScope.launch {
+			if (checkFeatureLimit.canCreateTable()) {
+				_homeModalEffect.update { HomeModalEffect.TableEditSheet }
+			} else {
+				_homeModalEffect.update { HomeModalEffect.ShowPaywall(ProFeature.UNLIMITED_TABLES) }
+			}
+		}
 	}
 
 	fun onTableSaved(table: PokerTable) {

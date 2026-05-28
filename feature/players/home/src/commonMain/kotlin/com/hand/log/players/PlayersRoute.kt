@@ -8,6 +8,7 @@ import com.hand.log.domain.model.SavedPlayer
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.players.component.PlayerEditSheet
 import com.hand.log.players.contract.PlayersModalEffect
+import com.hand.log.ui.ProPaywallSheet
 
 @Composable
 internal fun PlayersRoute(
@@ -65,6 +66,13 @@ private fun PlayersModalContent(
 			PlayerEditSheet(
 				player = null,
 				onSave = onSavePlayer,
+				onDismiss = onDismiss,
+			)
+		}
+
+		is PlayersModalEffect.ShowPaywall -> {
+			ProPaywallSheet(
+				feature = modalEffect.feature,
 				onDismiss = onDismiss,
 			)
 		}

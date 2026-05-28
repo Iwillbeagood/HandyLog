@@ -31,6 +31,7 @@ kotlin {
 			implementation(libs.firebase.crashlytics)
 		}
 		commonMain.dependencies {
+			implementation(projects.core.common)
 			implementation(projects.feature.main)
 			implementation(projects.feature.home)
 			implementation(projects.feature.table.home)
@@ -70,6 +71,22 @@ android {
 		versionCode = 1
 		versionName = "1.0"
 	}
+	buildFeatures {
+		buildConfig = true
+	}
+	flavorDimensions += "tier"
+	productFlavors {
+		create("free") {
+			dimension = "tier"
+			applicationId = "com.hand.log"
+			buildConfigField("Boolean", "IS_PRO", "false")
+		}
+		create("paid") {
+			dimension = "tier"
+			applicationId = "com.hand.log.pro"
+			buildConfigField("Boolean", "IS_PRO", "true")
+		}
+	}
 	buildTypes {
 		getByName("release") {
 			isMinifyEnabled = true
@@ -79,6 +96,18 @@ android {
 				"proguard-rules.pro",
 			)
 		}
+	}
+}
+
+afterEvaluate {
+	tasks.matching { it.name.contains("Paid") && it.name.contains("GoogleServices") }.configureEach {
+		enabled = false
+	}
+	tasks.matching { it.name.contains("Paid") && it.name.contains("Crashlytics") }.configureEach {
+		enabled = false
+	}
+	tasks.matching { it.name.contains("Paid") && it.name.contains("FirebasePerf") }.configureEach {
+		enabled = false
 	}
 }
 

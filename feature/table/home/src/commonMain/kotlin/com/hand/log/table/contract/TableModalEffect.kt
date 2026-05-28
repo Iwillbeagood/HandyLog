@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.hand.log.domain.model.Player
 import com.hand.log.domain.model.PokerTable
+import com.hand.log.domain.model.ProFeature
 
 @Stable
 internal sealed interface TableModalEffect {
@@ -46,4 +47,7 @@ internal sealed interface TableModalEffect {
 		val heroSeat: Int,
 		val playerCount: Int = 0,
 	) : TableModalEffect
+
+	@Immutable
+	data class ShowPaywall(val feature: ProFeature) : TableModalEffect
 }

@@ -979,7 +979,7 @@ internal class RecordHandViewModel(
 				Logger.d("saveHand: success")
 				_effect.emit(RecordHandEffect.SaveSuccess)
 			} catch (e: Exception) {
-				Logger.e("saveHand: failed - ${e.message}")
+				Logger.e("saveHand: failed - ${e.message}", e)
 				_effect.emit(RecordHandEffect.SaveError)
 			}
 		}

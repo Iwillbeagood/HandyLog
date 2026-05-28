@@ -2,9 +2,11 @@ package com.hand.log.table
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hand.log.domain.model.ProFeature
 import com.hand.log.domain.repository.HandRecordRepository
 import com.hand.log.domain.repository.PokerTableRepository
 import com.hand.log.domain.usecase.ApplyTableBalanceUseCase
+import com.hand.log.domain.usecase.CheckFeatureLimitUseCase
 import com.hand.log.domain.usecase.MarkPositionSetupShownUseCase
 import com.hand.log.domain.usecase.SavePlayerPositionsUseCase
 import com.hand.log.table.contract.TableEffect
@@ -33,6 +35,7 @@ import kotlinx.coroutines.launch
 internal class TableViewModel(
 	private val tableId: String,
 	private val tableRepository: PokerTableRepository,
+	private val checkFeatureLimit: CheckFeatureLimitUseCase,
 	private val savePlayerPositionsUseCase: SavePlayerPositionsUseCase,
 	private val applyTableBalanceUseCase: ApplyTableBalanceUseCase,
 	private val markPositionSetupShownUseCase: MarkPositionSetupShownUseCase,
@@ -172,7 +175,11 @@ internal class TableViewModel(
 	fun navigateToRecordHand() {
 		val current = state.value as? TableState.TableData ?: return
 		viewModelScope.launch {
-			_effect.emit(TableEffect.NavigateToRecordHand(current.table.id))
+			if (checkFeatureLimit.canRecordHand(tableId)) {
+				_effect.emit(TableEffect.NavigateToRecordHand(current.table.id))
+			} else {
+				_modalEffect.update { TableModalEffect.ShowPaywall(ProFeature.UNLIMITED_HANDS) }
+			}
 		}
 	}
 
