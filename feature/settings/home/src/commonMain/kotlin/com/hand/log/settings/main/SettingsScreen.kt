@@ -25,8 +25,9 @@ import com.hand.log.designsystem.component.BaseScaffold
 import com.hand.log.designsystem.component.HandyHorizontalDivider
 import com.hand.log.designsystem.component.HandySectionLabel
 import com.hand.log.designsystem.component.HandyTopAppbar
+import com.hand.log.designsystem.component.SettingsCard
+import com.hand.log.designsystem.component.SettingsNavigationItem
 import com.hand.log.designsystem.component.TopAppbarType
-import com.hand.log.designsystem.component.VerticalSpacer
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
@@ -45,8 +46,10 @@ import handylog.core.res.generated.resources.*
 @Composable
 internal fun SettingsScreen(
 	settings: AppSettings,
+	isProBuild: Boolean,
 	onThemeChange: (ThemeMode) -> Unit,
 	onNavigateToBetSize: () -> Unit,
+	onUpgradeClick: () -> Unit,
 	onContactClick: () -> Unit,
 ) {
 	BaseScaffold {
@@ -66,6 +69,12 @@ internal fun SettingsScreen(
 					.padding(horizontal = 16.dp, vertical = 20.dp),
 				verticalArrangement = Arrangement.spacedBy(24.dp),
 			) {
+				// 플랜 섹션
+				PlanSection(
+					isProBuild = isProBuild,
+					onUpgradeClick = onUpgradeClick,
+				)
+
 				// 테마 섹션
 				ThemeSection(
 					currentTheme = settings.themeMode,
@@ -74,7 +83,6 @@ internal fun SettingsScreen(
 
 				// 게임 설정 섹션
 				BetSizeNavigationItem(
-					presets = settings.betSizePresets,
 					onClick = onNavigateToBetSize,
 				)
 
@@ -97,7 +105,6 @@ private fun ThemeSection(
 
 	Column {
 		HandySectionLabel(stringResource(Res.string.settings_theme))
-		VerticalSpacer(8.dp)
 		Column(
 			modifier = Modifier
 				.fillMaxWidth()
@@ -164,36 +171,13 @@ private fun ThemeSection(
 
 @Composable
 private fun BetSizeNavigationItem(
-	presets: List<Double>,
 	onClick: () -> Unit,
 ) {
-	val colors = HandyTheme.colorScheme
-
-	Column {
-		HandySectionLabel(stringResource(Res.string.settings_game))
-		VerticalSpacer(8.dp)
-		Row(
-			modifier = Modifier
-				.fillMaxWidth()
-				.clip(RoundedCornerShape(12.dp))
-				.background(colors.card)
-				.clickable(onClick = onClick)
-				.padding(16.dp),
-			verticalAlignment = Alignment.CenterVertically,
-			horizontalArrangement = Arrangement.SpaceBetween,
-		) {
-			Text(
-				text = stringResource(Res.string.settings_bet_size_preset),
-				style = HandyTheme.typography.medium14,
-				color = colors.textPrimary,
-			)
-			Icon(
-				painter = painterResource(Res.drawable.chevron_right),
-				contentDescription = null,
-				tint = colors.textSecondary,
-				modifier = Modifier.size(16.dp),
-			)
-		}
+	HandySectionLabel(stringResource(Res.string.settings_game)) {
+		SettingsNavigationItem(
+			title = stringResource(Res.string.settings_bet_size_preset),
+			onClick = onClick,
+		)
 	}
 }
 
@@ -201,31 +185,33 @@ private fun BetSizeNavigationItem(
 private fun ContactNavigationItem(
 	onClick: () -> Unit,
 ) {
-	val colors = HandyTheme.colorScheme
+	HandySectionLabel(stringResource(Res.string.settings_support)) {
+		SettingsNavigationItem(
+			title = stringResource(Res.string.settings_contact),
+			onClick = onClick,
+		)
+	}
+}
 
-	Column {
-		HandySectionLabel(stringResource(Res.string.settings_support))
-		VerticalSpacer(8.dp)
-		Row(
-			modifier = Modifier
-				.fillMaxWidth()
-				.clip(RoundedCornerShape(12.dp))
-				.background(colors.card)
-				.clickable(onClick = onClick)
-				.padding(16.dp),
-			verticalAlignment = Alignment.CenterVertically,
-			horizontalArrangement = Arrangement.SpaceBetween,
-		) {
-			Text(
-				text = stringResource(Res.string.settings_contact),
-				style = HandyTheme.typography.medium14,
-				color = colors.textPrimary,
-			)
-			Icon(
-				painter = painterResource(Res.drawable.chevron_right),
-				contentDescription = null,
-				tint = colors.textSecondary,
-				modifier = Modifier.size(16.dp),
+@Composable
+private fun PlanSection(
+	isProBuild: Boolean,
+	onUpgradeClick: () -> Unit,
+) {
+	HandySectionLabel(stringResource(Res.string.settings_plan)) {
+		if (isProBuild) {
+			SettingsCard {
+				Text(
+					text = stringResource(Res.string.settings_plan_pro),
+					style = HandyTheme.typography.medium14,
+					color = HandyTheme.colorScheme.primary,
+				)
+			}
+		} else {
+			SettingsNavigationItem(
+				title = stringResource(Res.string.settings_plan_free),
+				subtitle = stringResource(Res.string.settings_plan_upgrade),
+				onClick = onUpgradeClick,
 			)
 		}
 	}
@@ -233,19 +219,8 @@ private fun ContactNavigationItem(
 
 @Composable
 private fun AppInfoSection() {
-	val colors = HandyTheme.colorScheme
-
-	Column {
-		HandySectionLabel(stringResource(Res.string.settings_app_info))
-		VerticalSpacer(8.dp)
-		Column(
-			modifier = Modifier
-				.fillMaxWidth()
-				.clip(RoundedCornerShape(12.dp))
-				.background(colors.card)
-				.padding(16.dp),
-			verticalArrangement = Arrangement.spacedBy(8.dp),
-		) {
+	HandySectionLabel(stringResource(Res.string.settings_app_info)) {
+		SettingsCard {
 			Row(
 				modifier = Modifier.fillMaxWidth(),
 				horizontalArrangement = Arrangement.SpaceBetween,
@@ -253,12 +228,12 @@ private fun AppInfoSection() {
 				Text(
 					text = stringResource(Res.string.settings_version),
 					style = HandyTheme.typography.regular14,
-					color = colors.textSecondary,
+					color = HandyTheme.colorScheme.textSecondary,
 				)
 				Text(
 					text = "1.0.0",
 					style = HandyTheme.typography.medium14,
-					color = colors.textPrimary,
+					color = HandyTheme.colorScheme.textPrimary,
 				)
 			}
 		}
@@ -271,8 +246,10 @@ private fun SettingsScreenPreview() {
 	ThemePreview {
 		SettingsScreen(
 			settings = AppSettings(),
+			isProBuild = false,
 			onThemeChange = {},
 			onNavigateToBetSize = {},
+			onUpgradeClick = {},
 			onContactClick = {},
 		)
 	}
