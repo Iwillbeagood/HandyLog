@@ -75,4 +75,5 @@ include(
     ":feature:hand-detail",
     ":feature:settings:home",
     ":feature:settings:betsize",
+    ":feature:settings:upgrade",
 )

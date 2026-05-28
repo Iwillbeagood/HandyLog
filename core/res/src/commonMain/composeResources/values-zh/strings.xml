@@ -183,4 +183,34 @@
 	<string name="table_balance_hero_seat">HERO座位: %1$d号</string>
 	<string name="hero_seat_swap_title">更改主角座位</string>
 	<string name="hero_seat_swap_desc">选择要移动到的座位</string>
+
+	<!-- Pro -->
+	<string name="settings_plan">当前方案</string>
+	<string name="settings_plan_free">Free</string>
+	<string name="settings_plan_pro">Pro</string>
+	<string name="settings_plan_upgrade">升级到Pro版</string>
+
+	<!-- Pro Paywall -->
+	<string name="pro_paywall_title">Pro功能</string>
+	<string name="pro_paywall_confirm">确认</string>
+	<string name="pro_paywall_tables">免费版最多可创建%1$d个桌子。\n升级Pro版可无限使用。</string>
+	<string name="pro_paywall_hands">免费版每桌最多可记录%1$d手牌。\n升级Pro版可无限使用。</string>
+	<string name="pro_paywall_players">免费版最多可标记%1$d名玩家。\n升级Pro版可无限使用。</string>
+	<string name="pro_paywall_presets">自定义投注预设是Pro功能。\n升级Pro版可自由编辑。</string>
+
+	<!-- Pro Upgrade -->
+	<string name="upgrade_title">Pro版</string>
+	<string name="upgrade_hero_title">HandyLog Pro</string>
+	<string name="upgrade_hero_desc">无限制自由使用</string>
+	<string name="upgrade_header_feature">功能</string>
+	<string name="upgrade_header_free">Free</string>
+	<string name="upgrade_header_pro">Pro</string>
+	<string name="upgrade_tables">牌桌</string>
+	<string name="upgrade_hands">手牌记录</string>
+	<string name="upgrade_players">玩家标记</string>
+	<string name="upgrade_presets">预设编辑</string>
+	<string name="upgrade_free_limit">最多%1$d个</string>
+	<string name="upgrade_unlimited">无限</string>
+	<string name="upgrade_download">下载Pro版</string>
+	<string name="upgrade_store_note">从Google Play或App Store下载</string>
 </resources>

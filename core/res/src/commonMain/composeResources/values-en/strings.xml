@@ -183,4 +183,34 @@
 	<string name="table_balance_hero_seat">HERO Seat: #%1$d</string>
 	<string name="hero_seat_swap_title">Change Hero Seat</string>
 	<string name="hero_seat_swap_desc">Select the seat to move to</string>
+
+	<!-- Pro -->
+	<string name="settings_plan">Current Plan</string>
+	<string name="settings_plan_free">Free</string>
+	<string name="settings_plan_pro">Pro</string>
+	<string name="settings_plan_upgrade">Upgrade to Pro</string>
+
+	<!-- Pro Paywall -->
+	<string name="pro_paywall_title">Pro Feature</string>
+	<string name="pro_paywall_confirm">OK</string>
+	<string name="pro_paywall_tables">Free version allows up to %1$d tables.\nUpgrade to Pro for unlimited tables.</string>
+	<string name="pro_paywall_hands">Free version allows up to %1$d hands per table.\nUpgrade to Pro for unlimited hands.</string>
+	<string name="pro_paywall_players">Free version allows up to %1$d marked players.\nUpgrade to Pro for unlimited players.</string>
+	<string name="pro_paywall_presets">Customizing bet presets is a Pro feature.\nUpgrade to Pro to edit freely.</string>
+
+	<!-- Pro Upgrade -->
+	<string name="upgrade_title">Pro Version</string>
+	<string name="upgrade_hero_title">HandyLog Pro</string>
+	<string name="upgrade_hero_desc">Use without any limits</string>
+	<string name="upgrade_header_feature">Feature</string>
+	<string name="upgrade_header_free">Free</string>
+	<string name="upgrade_header_pro">Pro</string>
+	<string name="upgrade_tables">Tables</string>
+	<string name="upgrade_hands">Hands</string>
+	<string name="upgrade_players">Players</string>
+	<string name="upgrade_presets">Presets</string>
+	<string name="upgrade_free_limit">Up to %1$d</string>
+	<string name="upgrade_unlimited">Unlimited</string>
+	<string name="upgrade_download">Download Pro</string>
+	<string name="upgrade_store_note">Download from Google Play or App Store</string>
 </resources>

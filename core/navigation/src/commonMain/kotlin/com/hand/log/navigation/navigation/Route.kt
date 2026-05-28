@@ -34,3 +34,6 @@ data class PlayerHands(val savedPlayerId: String, val playerName: String) : Rout
 
 @Serializable
 data object BetSizeSettings : Route
+
+@Serializable
+data object ProUpgrade : Route

@@ -16,4 +16,5 @@ interface NavigateActionInterop {
 	fun navigateToPlayerHands(savedPlayerId: String, playerName: String)
 	fun navigateToPlayersWithAdd()
 	fun navigateToBetSizeSettings()
+	fun navigateToProUpgrade()
 }

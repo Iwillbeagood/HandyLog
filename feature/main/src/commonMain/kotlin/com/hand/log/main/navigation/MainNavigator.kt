@@ -5,6 +5,7 @@ import com.hand.log.navigation.navigation.LaunchMode
 import com.hand.log.navigation.navigation.MainTabRoute
 import com.hand.log.navigation.navigation.BetSizeSettings
 import com.hand.log.navigation.navigation.HandDetail
+import com.hand.log.navigation.navigation.ProUpgrade
 import com.hand.log.navigation.navigation.PlayerHands
 import com.hand.log.navigation.navigation.RecordHand
 import com.hand.log.navigation.navigation.Route
@@ -52,6 +53,10 @@ internal class MainNavigator {
 
 		override fun navigateToBetSizeSettings() {
 			navigate(BetSizeSettings)
+		}
+
+		override fun navigateToProUpgrade() {
+			navigate(ProUpgrade)
 		}
 	}
 

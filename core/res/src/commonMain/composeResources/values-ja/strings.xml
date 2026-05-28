@@ -183,4 +183,34 @@
 	<string name="table_balance_hero_seat">HERO席: %1$d番</string>
 	<string name="hero_seat_swap_title">ヒーロー席変更</string>
 	<string name="hero_seat_swap_desc">移動先の席を選択してください</string>
+
+	<!-- Pro -->
+	<string name="settings_plan">利用中のプラン</string>
+	<string name="settings_plan_free">Free</string>
+	<string name="settings_plan_pro">Pro</string>
+	<string name="settings_plan_upgrade">Pro版にアップグレード</string>
+
+	<!-- Pro Paywall -->
+	<string name="pro_paywall_title">Pro機能</string>
+	<string name="pro_paywall_confirm">確認</string>
+	<string name="pro_paywall_tables">無料版ではテーブルを最大%1$d個まで作成できます。\nPro版で無制限にご利用ください。</string>
+	<string name="pro_paywall_hands">無料版ではテーブルごとにハンドを最大%1$d個まで記録できます。\nPro版で無制限にご利用ください。</string>
+	<string name="pro_paywall_players">無料版ではプレイヤーを最大%1$d人までマークできます。\nPro版で無制限にご利用ください。</string>
+	<string name="pro_paywall_presets">ベットプリセットのカスタマイズはPro機能です。\nPro版で自由に編集してください。</string>
+
+	<!-- Pro Upgrade -->
+	<string name="upgrade_title">Pro版</string>
+	<string name="upgrade_hero_title">HandyLog Pro</string>
+	<string name="upgrade_hero_desc">制限なく自由にご利用ください</string>
+	<string name="upgrade_header_feature">機能</string>
+	<string name="upgrade_header_free">Free</string>
+	<string name="upgrade_header_pro">Pro</string>
+	<string name="upgrade_tables">テーブル</string>
+	<string name="upgrade_hands">ハンド記録</string>
+	<string name="upgrade_players">プレイヤーマーク</string>
+	<string name="upgrade_presets">プリセット編集</string>
+	<string name="upgrade_free_limit">最大%1$d個</string>
+	<string name="upgrade_unlimited">無制限</string>
+	<string name="upgrade_download">Pro版ダウンロード</string>
+	<string name="upgrade_store_note">Google PlayまたはApp Storeからダウンロード</string>
 </resources>

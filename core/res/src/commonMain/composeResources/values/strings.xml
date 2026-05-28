@@ -261,4 +261,34 @@
 
 	<!-- Hand Record Card -->
 	<string name="hand_record_later">나중 기록</string>
+
+	<!-- Pro -->
+	<string name="settings_plan">이용 중인 플랜</string>
+	<string name="settings_plan_free">Free</string>
+	<string name="settings_plan_pro">Pro</string>
+	<string name="settings_plan_upgrade">Pro 버전으로 업그레이드</string>
+
+	<!-- Pro Paywall -->
+	<string name="pro_paywall_title">Pro 기능</string>
+	<string name="pro_paywall_confirm">확인</string>
+	<string name="pro_paywall_tables">무료 버전에서는 테이블을 최대 %1$d개까지 생성할 수 있습니다.\nPro 버전에서 무제한으로 이용하세요.</string>
+	<string name="pro_paywall_hands">무료 버전에서는 테이블당 핸드를 최대 %1$d개까지 기록할 수 있습니다.\nPro 버전에서 무제한으로 이용하세요.</string>
+	<string name="pro_paywall_players">무료 버전에서는 플레이어를 최대 %1$d명까지 마킹할 수 있습니다.\nPro 버전에서 무제한으로 이용하세요.</string>
+	<string name="pro_paywall_presets">베팅 프리셋 커스터마이징은 Pro 기능입니다.\nPro 버전에서 자유롭게 편집하세요.</string>
+
+	<!-- Pro Upgrade -->
+	<string name="upgrade_title">Pro 버전</string>
+	<string name="upgrade_hero_title">HandyLog Pro</string>
+	<string name="upgrade_hero_desc">모든 제한 없이 자유롭게 사용하세요</string>
+	<string name="upgrade_header_feature">기능</string>
+	<string name="upgrade_header_free">Free</string>
+	<string name="upgrade_header_pro">Pro</string>
+	<string name="upgrade_tables">테이블</string>
+	<string name="upgrade_hands">핸드 기록</string>
+	<string name="upgrade_players">플레이어 마킹</string>
+	<string name="upgrade_presets">프리셋 편집</string>
+	<string name="upgrade_free_limit">최대 %1$d개</string>
+	<string name="upgrade_unlimited">무제한</string>
+	<string name="upgrade_download">Pro 버전 다운로드</string>
+	<string name="upgrade_store_note">Google Play 또는 App Store에서 다운로드</string>
 </resources>

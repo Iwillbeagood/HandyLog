@@ -15,6 +15,7 @@ kotlin {
 			implementation(projects.feature.handDetail)
 			implementation(projects.feature.settings.home)
 			implementation(projects.feature.settings.betsize)
+			implementation(projects.feature.settings.upgrade)
 			implementation(libs.kotlinx.immutable)
 			implementation(libs.jetbrains.lifecycle.viewmodel.navigation3)
 		}
