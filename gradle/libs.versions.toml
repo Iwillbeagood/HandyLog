@@ -27,7 +27,7 @@ composeHotReload = "1.0.0-alpha11"
 
 ## Kotlin
 # https://github.com/JetBrains/kotlin
-kotlin = "2.2.21"
+kotlin = "2.4.0"
 # https://github.com/Kotlin/kotlinx.serializationw
 kotlinxSerializationJson = "1.8.1"
 # https://github.com/Kotlin/kotlinx-datetime/releases
