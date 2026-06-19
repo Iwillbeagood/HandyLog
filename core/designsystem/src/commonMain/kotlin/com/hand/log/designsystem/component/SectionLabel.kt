@@ -24,7 +24,10 @@ fun HandySectionLabel(
 			text = text,
 			style = HandyTheme.typography.regular10,
 			color = HandyTheme.colorScheme.textSecondary,
-			modifier = Modifier.padding(bottom = 6.dp),
+			modifier = Modifier.padding(
+				start = 3.dp,
+				bottom = 6.dp,
+			),
 		)
 		content?.let {
 			it()

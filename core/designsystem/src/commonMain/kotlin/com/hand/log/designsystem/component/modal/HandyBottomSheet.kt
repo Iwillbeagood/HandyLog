@@ -1,9 +1,7 @@
 package com.hand.log.designsystem.component.modal
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -17,8 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
-import com.hand.log.designsystem.component.RegularButton
 import com.hand.log.designsystem.component.VerticalSpacer
+import com.hand.log.designsystem.etc.ThemePreview
+import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
 
 /**
@@ -85,29 +84,53 @@ fun HandyBottomSheet(
 			val hasButtons = confirmText != null || subText != null
 			if (hasButtons) {
 				VerticalSpacer(20.dp)
-				Row(
-					modifier = Modifier.fillMaxWidth(),
-					horizontalArrangement = Arrangement.spacedBy(8.dp),
-				) {
-					if (subText != null) {
-						RegularButton(
-							text = subText,
-							onClick = onSub,
-							containerColor = subContainerColor,
-							contentColor = subContentColor,
-							modifier = Modifier.weight(1f),
-						)
-					}
-					if (confirmText != null) {
-						RegularButton(
-							text = confirmText,
-							onClick = onConfirm,
-							enabled = confirmEnabled,
-							modifier = Modifier.weight(1f),
-						)
-					}
-				}
+				ModalButtonRow(
+					confirmText = confirmText,
+					onConfirm = onConfirm,
+					confirmEnabled = confirmEnabled,
+					subText = subText,
+					onSub = onSub,
+					subContainerColor = subContainerColor,
+					subContentColor = subContentColor,
+				)
 			}
+		}
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun HandyBottomSheetPreview() {
+	ThemePreview {
+		HandyBottomSheet(
+			onDismissRequest = {},
+			title = "핸드 메모",
+			confirmText = "저장",
+			subText = "삭제",
+		) {
+			Text(
+				text = "BTN에서 3bet 후 상대가 콜.\n플랍 더블 배럴로 폴드 유도.",
+				style = HandyTheme.typography.regular16,
+				color = HandyTheme.colorScheme.textSecondary,
+			)
+		}
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun HandyBottomSheetConfirmOnlyPreview() {
+	ThemePreview {
+		HandyBottomSheet(
+			onDismissRequest = {},
+			title = "정렬 기준",
+			confirmText = "적용",
+		) {
+			Text(
+				text = "최신순",
+				style = HandyTheme.typography.regular16,
+				color = HandyTheme.colorScheme.textPrimary,
+			)
 		}
 	}
 }
