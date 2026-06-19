@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -51,7 +52,7 @@ internal class HomeViewModel(
 	)
 
 	private val _homeModalEffect = MutableStateFlow<HomeModalEffect>(HomeModalEffect.Idle)
-	val homeModalEffect: StateFlow<HomeModalEffect> get() = _homeModalEffect
+	val homeModalEffect: StateFlow<HomeModalEffect> = _homeModalEffect.asStateFlow()
 
 	private val _homeEffect = MutableSharedFlow<HomeEffect>()
 	val homeEffect: SharedFlow<HomeEffect> get() = _homeEffect.asSharedFlow()
