@@ -53,6 +53,7 @@ firebaseCrashlyticsPlugin = "3.0.3"
 
 detekt = "1.23.7"
 ktlint = "12.2.0"
+buildkonfig = "0.17.1"
 koin = "4.1.0"
 ktor = "3.1.3"
 wire = "5.0.0-alpha03"
@@ -159,6 +160,7 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+buildkonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildkonfig" }
 
 # Plugins defined by this project
 base-kmp-ios = { id = "base.kmp.ios", version = "unspecified" }
