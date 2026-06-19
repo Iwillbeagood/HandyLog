@@ -12,6 +12,7 @@
 	<string name="btn_reset">Reset</string>
 	<string name="btn_next">Next</string>
 	<string name="btn_complete">Done</string>
+	<string name="btn_skip">Skip</string>
 	<string name="btn_close">Close</string>
 	<string name="btn_undo">Undo</string>
 	<string name="btn_clear">Clear</string>
@@ -154,6 +155,21 @@
 	<string name="settings_preset_count">%d presets configured</string>
 	<string name="settings_support">Support</string>
 	<string name="settings_contact">Contact Us</string>
+	<string name="contact_title">Support</string>
+	<string name="contact_intro">Let us know about feature suggestions or any errors you run into. We\'ll get back to you quickly.</string>
+	<string name="contact_tab_feature">Suggestion</string>
+	<string name="contact_tab_error">Bug Report</string>
+	<string name="contact_field_title_label">Title</string>
+	<string name="contact_field_title_hint">Enter a title</string>
+	<string name="contact_field_content_label">Details</string>
+	<string name="contact_field_content_hint">Describe your suggestion or the error in detail.</string>
+	<string name="contact_field_email_label">Reply Email</string>
+	<string name="contact_field_email_hint">example@email.com</string>
+	<string name="contact_attach_label">Attach screenshot (optional)</string>
+	<string name="contact_attach_add">Add image</string>
+	<string name="contact_submit">Send</string>
+	<string name="contact_success">Your message has been received. Thank you!</string>
+	<string name="contact_error">Failed to send. Please try again later.</string>
 	<string name="settings_app_info">App Info</string>
 	<string name="settings_version">Version</string>
 

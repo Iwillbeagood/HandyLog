@@ -20,6 +20,7 @@ import com.hand.log.players.hands.navigation.playerHandsNavGraph
 import com.hand.log.players.navigation.playersNavGraph
 import com.hand.log.record.navigation.recordHandNavGraph
 import com.hand.log.settings.betsize.navigation.betSizeNavGraph
+import com.hand.log.settings.contact.navigation.contactNavGraph
 import com.hand.log.settings.main.navigation.settingsMainNavGraph
 import com.hand.log.settings.upgrade.navigation.proUpgradeNavGraph
 import com.hand.log.table.navigation.tableNavGraph
@@ -43,6 +44,7 @@ internal fun MainNavDisplay(
 		playerHandsNavGraph(paddingValues)
 		betSizeNavGraph()
 		proUpgradeNavGraph()
+		contactNavGraph()
 	}
 
 	NavDisplay(

@@ -7,6 +7,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hand.log.data.datasoure.di.networkModule
+import com.hand.log.data.datasoure.di.remoteDataSourceModule
 import com.hand.log.data.repositoryImpl.di.repositoryModule
 import com.hand.log.database.di.databaseDataSourceModule
 import com.hand.log.database.di.databaseModule
@@ -27,6 +29,7 @@ import com.hand.log.players.hands.di.featurePlayerHandsModule
 import com.hand.log.playersetup.di.featurePlayerSetupModule
 import com.hand.log.record.di.featureRecordModule
 import com.hand.log.settings.betsize.di.featureSettingsBetSizeModule
+import com.hand.log.settings.contact.di.featureSettingsContactModule
 import com.hand.log.settings.main.di.featureSettingsMainModule
 import com.hand.log.table.di.featureTableModule
 import com.hand.log.tableedit.di.featureTableEditModule
@@ -82,6 +85,8 @@ internal val appModule = module {
 		databaseDataSourceModule,
 		dataStoreModule,
 		dataStoreDataSourceModule,
+		networkModule,
+		remoteDataSourceModule,
 		repositoryModule,
 	)
 	includes(
@@ -95,6 +100,7 @@ internal val appModule = module {
 		featurePlayerSetupModule,
 		featureSettingsMainModule,
 		featureSettingsBetSizeModule,
+		featureSettingsContactModule,
 	)
 }
 

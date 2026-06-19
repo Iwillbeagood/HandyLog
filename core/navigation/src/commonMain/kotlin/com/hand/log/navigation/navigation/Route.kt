@@ -37,3 +37,6 @@ data object BetSizeSettings : Route
 
 @Serializable
 data object ProUpgrade : Route
+
+@Serializable
+data object Contact : Route

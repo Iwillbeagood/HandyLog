@@ -1,0 +1,65 @@
+package com.hand.log.settings.contact
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.hand.log.domain.model.Feedback
+import com.hand.log.domain.model.FeedbackCategory
+import com.hand.log.domain.usecase.SubmitFeedbackUseCase
+import com.hand.log.settings.contact.contract.ContactEffect
+import com.hand.log.settings.contact.contract.ContactState
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+
+internal class ContactViewModel(
+	private val submitFeedback: SubmitFeedbackUseCase,
+) : ViewModel() {
+
+	private val _state = MutableStateFlow(ContactState())
+	val state: StateFlow<ContactState> = _state.asStateFlow()
+
+	private val _effect = MutableSharedFlow<ContactEffect>()
+	val effect: SharedFlow<ContactEffect> get() = _effect.asSharedFlow()
+
+	fun selectCategory(category: FeedbackCategory) {
+		_state.update { it.copy(category = category) }
+	}
+
+	fun updateTitle(value: String) {
+		_state.update { it.copy(title = value) }
+	}
+
+	fun updateContent(value: String) {
+		_state.update { it.copy(content = value) }
+	}
+
+	fun updateEmail(value: String) {
+		_state.update { it.copy(email = value) }
+	}
+
+	fun submit() {
+		val current = _state.value
+		if (!current.canSubmit) return
+
+		_state.update { it.copy(isSubmitting = true) }
+		viewModelScope.launch {
+			val result = submitFeedback(
+				Feedback(
+					category = current.category,
+					title = current.title,
+					content = current.content,
+					email = current.email,
+				),
+			)
+			_state.update { it.copy(isSubmitting = false) }
+			_effect.emit(
+				if (result.isSuccess) ContactEffect.SubmitSuccess else ContactEffect.SubmitError,
+			)
+		}
+	}
+}

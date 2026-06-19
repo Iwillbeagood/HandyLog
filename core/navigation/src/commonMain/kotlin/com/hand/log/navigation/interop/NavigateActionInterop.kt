@@ -17,4 +17,5 @@ interface NavigateActionInterop {
 	fun navigateToPlayersWithAdd()
 	fun navigateToBetSizeSettings()
 	fun navigateToProUpgrade()
+	fun navigateToContact()
 }

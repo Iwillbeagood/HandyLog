@@ -76,4 +76,5 @@ include(
     ":feature:settings:home",
     ":feature:settings:betsize",
     ":feature:settings:upgrade",
+    ":feature:settings:contact",
 )

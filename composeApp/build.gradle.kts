@@ -43,6 +43,7 @@ kotlin {
 			implementation(projects.feature.players.hands)
 			implementation(projects.feature.settings.home)
 			implementation(projects.feature.settings.betsize)
+			implementation(projects.feature.settings.contact)
 			implementation(projects.domain.model)
 			implementation(projects.domain.repository)
 			implementation(projects.data.datasource)

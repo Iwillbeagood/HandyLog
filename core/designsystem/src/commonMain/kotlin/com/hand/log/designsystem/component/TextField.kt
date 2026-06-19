@@ -56,6 +56,7 @@ fun HandyTextField(
 	modifier: Modifier = Modifier,
 	innerModifier: Modifier = Modifier,
 	label: String = "",
+	placeholder: String = label,
 	leadingIcon: DrawableResource? = null,
 	keyboardType: KeyboardType = KeyboardType.Text,
 	minLines: Int = 1,
@@ -119,7 +120,7 @@ fun HandyTextField(
 						.background(colors.muted, RoundedCornerShape(8.dp))
 						.border(1.dp, borderColor, RoundedCornerShape(8.dp))
 						.padding(horizontal = 12.dp, vertical = 10.dp),
-					verticalAlignment = Alignment.Top,
+					verticalAlignment = Alignment.CenterVertically,
 				) {
 					if (leadingIcon != null) {
 						Icon(
@@ -133,7 +134,7 @@ fun HandyTextField(
 					Box(modifier = Modifier.weight(1f).defaultMinSize(minHeight = minLineHeight)) {
 						if (textFieldValue.text.isEmpty()) {
 							Text(
-								text = label,
+								text = placeholder,
 								style = typography.regular14,
 								color = colors.textSecondary.copy(alpha = 0.5f),
 							)

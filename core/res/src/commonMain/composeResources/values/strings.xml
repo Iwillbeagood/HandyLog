@@ -15,6 +15,7 @@
 	<string name="btn_undo">되돌리기</string>
 	<string name="btn_clear">지우기</string>
 	<string name="btn_complete">완료</string>
+	<string name="btn_skip">건너뛰기</string>
 	<string name="btn_yes">예</string>
 	<string name="btn_no">아니오</string>
 
@@ -163,6 +164,21 @@
 	<string name="settings_preset_count">%1$d개 설정됨</string>
 	<string name="settings_support">고객 지원</string>
 	<string name="settings_contact">문의하기</string>
+	<string name="contact_title">고객지원</string>
+	<string name="contact_intro">기능 제안이나 이용 중 발생한 오류를 알려주세요. 확인 후 빠르게 답변드리겠습니다.</string>
+	<string name="contact_tab_feature">건의사항</string>
+	<string name="contact_tab_error">오류 신고</string>
+	<string name="contact_field_title_label">제목</string>
+	<string name="contact_field_title_hint">제목을 입력해주세요</string>
+	<string name="contact_field_content_label">내용</string>
+	<string name="contact_field_content_hint">기능 제안이나 오류 내용을 자세히 적어주세요.</string>
+	<string name="contact_field_email_label">답변받을 이메일</string>
+	<string name="contact_field_email_hint">example@email.com</string>
+	<string name="contact_attach_label">스크린샷 첨부 (선택)</string>
+	<string name="contact_attach_add">이미지 추가</string>
+	<string name="contact_submit">문의 보내기</string>
+	<string name="contact_success">문의가 접수되었습니다. 감사합니다!</string>
+	<string name="contact_error">문의 전송에 실패했습니다. 잠시 후 다시 시도해주세요.</string>
 	<string name="settings_app_info">앱 정보</string>
 	<string name="settings_version">버전</string>
 

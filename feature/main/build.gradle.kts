@@ -16,6 +16,7 @@ kotlin {
 			implementation(projects.feature.settings.home)
 			implementation(projects.feature.settings.betsize)
 			implementation(projects.feature.settings.upgrade)
+			implementation(projects.feature.settings.contact)
 			implementation(libs.kotlinx.immutable)
 			implementation(libs.jetbrains.lifecycle.viewmodel.navigation3)
 		}
