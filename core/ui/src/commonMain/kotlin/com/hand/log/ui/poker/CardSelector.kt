@@ -28,15 +28,18 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
-import com.hand.log.designsystem.component.RegularButton
+import com.hand.log.designsystem.component.modal.ModalButtonRow
 import com.hand.log.designsystem.component.modal.SheetDragBlocker
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.Suit
+import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.btn_complete
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,11 +49,10 @@ fun CardSelectorSheet(
 	selectedCards: Set<Card>,
 	onCardsSelected: (List<Card>) -> Unit,
 	onDismiss: () -> Unit,
+	modifier: Modifier = Modifier,
 	onUnknownSelected: (() -> Unit)? = null,
 	initialCards: List<Card> = emptyList(),
 	minCards: Int = maxCards,
-	boardPreview: Boolean = false,
-	modifier: Modifier = Modifier,
 ) {
 	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 	val colors = HandyTheme.colorScheme
@@ -89,15 +91,8 @@ fun CardSelectorSheet(
 				)
 			}
 
-			// Board cards preview (Flop | Turn | River)
-			if (boardPreview) {
-				BoardCardsPreview(
-					pickedCards = pickedCards,
-					onCardDeselected = { index -> pickedCards.removeAt(index) },
-					modifier = Modifier.padding(bottom = 12.dp),
-				)
-			} else if (pickedCards.isNotEmpty()) {
-				// Selected cards preview (기존 동작)
+			// Selected cards preview
+			if (pickedCards.isNotEmpty()) {
 				Row(
 					horizontalArrangement = Arrangement.spacedBy(8.dp),
 					modifier = Modifier.padding(bottom = 12.dp),
@@ -154,9 +149,10 @@ fun CardSelectorSheet(
 
 			// 선택완료 버튼 (항상 하단에 표시, minCards 미만이면 disabled)
 			if (showConfirmButton) {
-				RegularButton(
-					onClick = { onCardsSelected(pickedCards.toList()) },
-					enabled = pickedCards.size >= minCards,
+				ModalButtonRow(
+					confirmText = stringResource(Res.string.btn_complete),
+					onConfirm = { onCardsSelected(pickedCards.toList()) },
+					confirmEnabled = pickedCards.size >= minCards,
 					modifier = Modifier.padding(top = 8.dp),
 				)
 			}
@@ -230,7 +226,7 @@ fun BoardCardsPreview(
 }
 
 @Composable
-private fun SuitSection(
+internal fun SuitSection(
 	suit: Suit,
 	disabledCards: Set<Card>,
 	pickedCards: Set<Card>,

@@ -8,7 +8,6 @@ import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.*
-import org.jetbrains.compose.resources.stringResource
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
@@ -23,8 +22,9 @@ import com.hand.log.record.contract.RecordHandEffect
 import com.hand.log.record.contract.RecordHandModalEffect
 import com.hand.log.record.contract.RecordHandState
 import com.hand.log.record.contract.RecordStep
-import com.hand.log.ui.stringRes
+import com.hand.log.record.util.title
 import com.hand.log.tableedit.TableEditSheet
+import com.hand.log.ui.poker.BoardCardSelectorSheet
 import com.hand.log.ui.poker.CardSelectorSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -141,39 +141,33 @@ private fun RecordHandModalContent(
 		RecordHandModalEffect.Idle -> {}
 
 		is RecordHandModalEffect.ShowCardSelector -> {
-			val isShowdown = modalEffect.target is CardSelectorTarget.ShowdownCard
-			val title = when (val target = modalEffect.target) {
-				is CardSelectorTarget.HeroCard -> stringResource(Res.string.card_selector_hero)
-				is CardSelectorTarget.AllBoardCards -> stringResource(Res.string.board_cards)
-				is CardSelectorTarget.BoardCard -> stringResource(
-					Res.string.card_selector_board,
-					stringResource(target.street.stringRes()),
+			val target = modalEffect.target
+			val title = target.title()
+			if (target is CardSelectorTarget.AllBoardCards) {
+				BoardCardSelectorSheet(
+					title = title,
+					selectedCards = modalEffect.selectedCards,
+					onCardsSelected = onCardsSelected,
+					onDismiss = onDismiss,
+					initialCards = modalEffect.initialCards,
+					minCards = 3,
+					maxCards = target.maxCards,
 				)
-				is CardSelectorTarget.SingleBoardCard -> stringResource(
-					Res.string.card_selector_board_change,
-					stringResource(target.street.stringRes()),
-				)
-				is CardSelectorTarget.ShowdownCard -> stringResource(
-					Res.string.card_selector_showdown,
-					target.positionName,
+			} else {
+				CardSelectorSheet(
+					title = title,
+					maxCards = target.maxCards,
+					selectedCards = modalEffect.selectedCards,
+					onCardsSelected = onCardsSelected,
+					onDismiss = onDismiss,
+					onUnknownSelected = if (target is CardSelectorTarget.ShowdownCard && modalEffect.allowUnknown) {
+						{ onSetShowdownUnknown(target.seat) }
+					} else {
+						null
+					},
+					initialCards = modalEffect.initialCards,
 				)
 			}
-			val isAllBoard = modalEffect.target is CardSelectorTarget.AllBoardCards
-			CardSelectorSheet(
-				title = title,
-				maxCards = modalEffect.target.maxCards,
-				selectedCards = modalEffect.selectedCards,
-				onCardsSelected = onCardsSelected,
-				onDismiss = onDismiss,
-				onUnknownSelected = if (isShowdown && modalEffect.allowUnknown) {
-					{ onSetShowdownUnknown(modalEffect.target.seat) }
-				} else {
-					null
-				},
-				initialCards = modalEffect.initialCards,
-				minCards = if (isAllBoard) 3 else modalEffect.target.maxCards,
-				boardPreview = isAllBoard,
-			)
 		}
 
 		is RecordHandModalEffect.ShowTableEdit -> {
