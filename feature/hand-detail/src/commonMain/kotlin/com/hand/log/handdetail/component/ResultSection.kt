@@ -105,28 +105,47 @@ internal fun ResultSection(
 					)
 				}
 
-				ShowdownPlayerRow(
-					positionName = hand.getPositionName(winnerSeat),
-					entry = if (isHeroWinner) {
-						hand.heroShowdownEntry ?: ShowdownEntry(
+				if (isHeroWinner) {
+					ShowdownPlayerRow(
+						positionName = hand.getPositionName(winnerSeat),
+						entry = hand.heroShowdownEntry ?: ShowdownEntry(
 							seat = winnerSeat,
 							cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.ACE, Suit.SPADES)),
-						)
-					} else {
-						ShowdownEntry(
+						),
+						result = ShowdownResult(
+							seat = winnerSeat,
+							ranking = HandRanking.WIN_BY_FOLD,
+							outcome = ShowdownOutcome.WIN,
+						),
+						isHero = true,
+						isCardUnknown = hand.heroHand == null,
+						onCardClick = onEditHeroHand,
+					)
+				} else {
+					val winnerEntry = hand.showdown.find { it.seat == winnerSeat }
+					ShowdownPlayerRow(
+						positionName = hand.getPositionName(winnerSeat),
+						entry = winnerEntry ?: ShowdownEntry(
 							seat = winnerSeat,
 							cards = PocketCards(Card(Rank.ACE, Suit.SPADES), Card(Rank.ACE, Suit.SPADES)),
-						)
-					},
-					result = ShowdownResult(
-						seat = winnerSeat,
-						ranking = HandRanking.WIN_BY_FOLD,
-						outcome = ShowdownOutcome.WIN,
-					),
-					isHero = isHeroWinner,
-					isCardUnknown = !isHeroWinner || hand.heroHand == null,
-					onCardClick = if (isHeroWinner) onEditHeroHand else null,
-				)
+						),
+						result = ShowdownResult(
+							seat = winnerSeat,
+							ranking = HandRanking.WIN_BY_FOLD,
+							outcome = ShowdownOutcome.WIN,
+						),
+						isHero = false,
+						isCardUnknown = winnerEntry == null,
+						playerName = hand.getPlayerName(winnerSeat),
+						isMarked = hand.isPlayerMarked(winnerSeat),
+						onMarkClick = if (!hand.isPlayerMarked(winnerSeat)) {
+							{ onMarkPlayer(winnerSeat) }
+						} else {
+							null
+						},
+						onCardClick = { onEditShowdownHand(winnerSeat) },
+					)
+				}
 			}
 		} else {
 			// 히어로 (핸드가 없어도 항상 표시)
