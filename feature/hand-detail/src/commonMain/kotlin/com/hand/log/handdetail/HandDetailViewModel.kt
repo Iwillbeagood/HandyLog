@@ -91,7 +91,7 @@ internal class HandDetailViewModel(
 	}
 
 	private fun HandRecord.usedCards(): Set<Card> = buildSet {
-		heroHand?.let {
+		heroHoleCards?.let {
 			add(it.card1)
 			add(it.card2)
 		}
@@ -104,7 +104,7 @@ internal class HandDetailViewModel(
 
 	fun editHeroHand() {
 		val loaded = (state.value as? HandDetailState.Detail) ?: return
-		val heroCards = loaded.hand.heroHand?.let { setOf(it.card1, it.card2) } ?: emptySet()
+		val heroCards = loaded.hand.heroHoleCards?.let { setOf(it.card1, it.card2) } ?: emptySet()
 		val usedCards = loaded.hand.usedCards() - heroCards
 		_modalEffect.value = HandDetailModalEffect.EditHeroHand(selectedCards = usedCards)
 	}

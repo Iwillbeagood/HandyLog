@@ -5,6 +5,7 @@ import com.hand.log.domain.model.ActionType
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.GameType
 import com.hand.log.domain.model.HandPlayer
+import com.hand.log.domain.model.HandResults
 import com.hand.log.domain.model.HandStreets
 import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.PlayerTendency
@@ -74,4 +75,12 @@ class Converters {
 
 	@TypeConverter
 	fun toHandPlayers(value: String): List<HandPlayer> = json.decodeFromString(value)
+
+	@TypeConverter
+	fun fromHandResults(value: HandResults?): String? =
+		value?.let { json.encodeToString(HandResults.serializer(), it) }
+
+	@TypeConverter
+	fun toHandResults(value: String?): HandResults? =
+		value?.let { json.decodeFromString(HandResults.serializer(), it) }
 }

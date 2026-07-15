@@ -100,7 +100,7 @@ internal fun ResultSection(
 							outcome = ShowdownOutcome.LOSE,
 						),
 						isHero = true,
-						isCardUnknown = hand.heroHand == null,
+						isCardUnknown = hand.heroHoleCards == null,
 						onCardClick = onEditHeroHand,
 					)
 				}
@@ -118,7 +118,7 @@ internal fun ResultSection(
 							outcome = ShowdownOutcome.WIN,
 						),
 						isHero = true,
-						isCardUnknown = hand.heroHand == null,
+						isCardUnknown = hand.heroHoleCards == null,
 						onCardClick = onEditHeroHand,
 					)
 				} else {
@@ -157,7 +157,7 @@ internal fun ResultSection(
 				),
 				result = hand.getShowdownResult(hand.heroSeat),
 				isHero = true,
-				isCardUnknown = hand.heroHand == null,
+				isCardUnknown = hand.heroHoleCards == null,
 				onCardClick = onEditHeroHand,
 			)
 

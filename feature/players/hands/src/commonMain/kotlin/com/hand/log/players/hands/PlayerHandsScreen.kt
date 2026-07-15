@@ -170,7 +170,7 @@ private fun HandItem(
 			}
 
 			// 히어로 카드
-			hand.heroHand?.let { pocket ->
+			hand.heroHoleCards?.let { pocket ->
 				Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
 					PlayingCard(card = pocket.card1, size = CardSize.SM)
 					PlayingCard(card = pocket.card2, size = CardSize.SM)

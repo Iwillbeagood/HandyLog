@@ -58,6 +58,7 @@ internal class HandRecordLocalDataSourceImpl(
 		result = result,
 		resultLabel = resultLabel,
 		memo = memo,
+		results = results,
 	)
 
 	private fun generateId(): String {
@@ -77,5 +78,6 @@ internal class HandRecordLocalDataSourceImpl(
 		result = result,
 		resultLabel = resultLabel,
 		memo = memo,
+		results = results,
 	)
 }

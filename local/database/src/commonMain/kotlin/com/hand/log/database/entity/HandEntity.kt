@@ -6,6 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.hand.log.domain.model.Blinds
 import com.hand.log.domain.model.HandPlayer
+import com.hand.log.domain.model.HandResults
 import com.hand.log.domain.model.HandStreets
 
 @Entity(
@@ -32,4 +33,5 @@ data class HandRecordEntity(
 	val result: Double? = null,
 	val resultLabel: String? = null,
 	val memo: String? = null,
+	val results: HandResults? = null,
 )

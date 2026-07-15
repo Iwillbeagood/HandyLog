@@ -29,6 +29,7 @@ import com.hand.log.domain.model.Suit
 import com.hand.log.domain.model.TurnStreet
 import com.hand.log.ui.poker.formatBbCount
 import com.hand.log.utils.poker.HandEvaluator
+import kotlin.math.roundToLong
 
 object HandHistoryFormatter {
 
@@ -52,7 +53,7 @@ object HandHistoryFormatter {
 			if (stack != null) {
 				val bbStack = if (stack == 0.0) "??BB" else formatBb(stack, bb)
 				val heroCards = if (isHero) {
-					hand.heroHand?.let { " ${formatCard(it.card1)}${formatCard(it.card2)}" } ?: ""
+					hand.heroHoleCards?.let { " ${formatCard(it.card1)}${formatCard(it.card2)}" } ?: ""
 				} else {
 					""
 				}
@@ -138,7 +139,7 @@ object HandHistoryFormatter {
 		}
 
 		val activePlayers = preflopActions.map { it.playerSeat }.distinct().count() - foldCount
-		val preflopPot = hand.getPotAtStreet(Street.PREFLOP)
+		val preflopPot = hand.potAt(Street.PREFLOP)
 		appendLine()
 		appendLine(
 			"→ Pot: ${formatBb(
@@ -152,7 +153,7 @@ object HandHistoryFormatter {
 		hand.streets.flop?.let { flop ->
 			appendLine("[Flop] ${flop.cards.joinToString(" ") { formatCard(it) }}")
 			formatStreetActions(hand, flop.actions, heroSeat, bb, this)
-			val flopPot = hand.getPotAtStreet(Street.FLOP)
+			val flopPot = hand.potAt(Street.FLOP)
 			val flopActive = hand.getActiveCountAt(Street.FLOP)
 			appendLine(
 				"→ Pot: ${formatBb(flopPot, bb)} (${if (flopActive > 2) "$flopActive-way" else "Heads-up"})",
@@ -164,7 +165,7 @@ object HandHistoryFormatter {
 		hand.streets.turn?.let { turn ->
 			appendLine("[Turn] ${turn.cards.joinToString(" ") { formatCard(it) }}")
 			formatStreetActions(hand, turn.actions, heroSeat, bb, this)
-			val turnPot = hand.getPotAtStreet(Street.TURN)
+			val turnPot = hand.potAt(Street.TURN)
 			appendLine("→ Pot: ${formatBb(turnPot, bb)}")
 			appendLine()
 		}
@@ -175,7 +176,7 @@ object HandHistoryFormatter {
 			if (river.actions.isNotEmpty()) {
 				formatStreetActions(hand, river.actions, heroSeat, bb, this)
 			}
-			val riverPot = hand.getPotAtStreet(Street.RIVER)
+			val riverPot = hand.potAt(Street.RIVER)
 			appendLine("→ Pot: ${formatBb(riverPot, bb)}")
 			appendLine()
 		}
@@ -194,11 +195,11 @@ object HandHistoryFormatter {
 		}
 
 		// --- Showdown ---
-		if (!hand.isFoldWin && (hand.showdown.isNotEmpty() || hand.heroHand != null)) {
+		if (!hand.isFoldWin && (hand.showdown.isNotEmpty() || hand.heroHoleCards != null)) {
 			// 사이드팟이 있으면 좌석별 팟 승패 라벨 생성
 			val seatPotOutcome: Map<Int, String> = if (hasSidePots) {
 				val allShowdownSeats = buildSet {
-					hand.heroHand?.let { add(heroSeat) }
+					hand.heroHoleCards?.let { add(heroSeat) }
 					hand.showdown.forEach { add(it.seat) }
 				}
 				allShowdownSeats.associateWith { seat -> formatPotOutcome(seat, pots) }
@@ -208,7 +209,7 @@ object HandHistoryFormatter {
 
 			appendLine("[Showdown]")
 			// 히어로
-			hand.heroHand?.let { heroCards ->
+			hand.heroHoleCards?.let { heroCards ->
 				val posName = hand.getPositionName(heroSeat)
 				val result = hand.getShowdownResult(heroSeat)
 				val ranking = result?.ranking?.name?.replace("_", " ") ?: ""
@@ -238,15 +239,29 @@ object HandHistoryFormatter {
 		}
 
 		// --- Result ---
+		val finalStacks = hand.results?.finalStacks
+			?: hand.getFinalStacks(HandEvaluator::calculateShowdown)
 		val heroInitialStack = hand.getInitialStack(heroSeat)
-		val heroFinalStack = hand.getFinalStacks(HandEvaluator::calculateShowdown)[heroSeat]
+		val heroFinalStack = finalStacks[heroSeat]
 		val resultLabelText = hand.resultLabel ?: ""
 		if (heroInitialStack != null && heroFinalStack != null) {
 			val heroProfit = heroFinalStack - heroInitialStack
 			val sign = if (heroProfit >= 0) "+" else ""
-			appendLine("[Result] $resultLabelText $sign${formatBb(heroProfit, bb)}")
+			val resultPrefix = if (resultLabelText.isNotEmpty()) "$resultLabelText " else ""
+			appendLine("[Result] $resultPrefix$sign${formatBb2(heroProfit, bb)}")
 		} else {
 			appendLine("[Result] $resultLabelText")
+		}
+
+		// Final stacks for players shown in Stacks section
+		allSeats.forEach { seat ->
+			if (seat in preflopFoldedSeats && seat !in preflopSeatsWithNonFoldAction) return@forEach
+			hand.getInitialStack(seat) ?: return@forEach
+			val finalStack = finalStacks[seat] ?: return@forEach
+			val posName = hand.getPositionName(seat)
+			val isHero = seat == heroSeat
+			val prefix = if (isHero) "Hero ($posName)" else posName
+			appendLine("$prefix: ${formatBb2(finalStack, bb)}")
 		}
 
 		hand.memo?.let { memo ->
@@ -340,7 +355,7 @@ object HandHistoryFormatter {
 	 * 1인 팟(언콜 베팅 반환)은 제외. 각 팟의 승자도 계산.
 	 */
 	private fun calculatePots(hand: HandRecord): List<PotInfo> {
-		val investments = hand.seatInvestments
+		val investments = hand.results?.seatInvestments ?: hand.seatInvestments
 		if (investments.isEmpty()) return emptyList()
 
 		val anteCost = if (hand.blinds?.isBigBlindAnte == true) (hand.blinds?.bb ?: 0.0) else 0.0
@@ -361,7 +376,7 @@ object HandHistoryFormatter {
 
 		val boardCards = hand.streets.boardCards
 		val entries = buildList {
-			hand.heroHand?.let { add(ShowdownEntry(seat = hand.heroSeat, cards = it)) }
+			hand.heroHoleCards?.let { add(ShowdownEntry(seat = hand.heroSeat, cards = it)) }
 			hand.showdown.filter { it.seat != hand.heroSeat }.forEach { add(it) }
 		}
 
@@ -426,6 +441,22 @@ object HandHistoryFormatter {
 	private fun formatBb(amount: Double, bb: Double): String {
 		if (bb <= 0) return "${amount.toLong()}"
 		return formatBbCount(amount / bb)
+	}
+
+	/**
+	 * Result 섹션의 최종 스택·손익 전용 2자리 정밀도 포맷.
+	 * 스플릿 팟에서 생기는 1/4 BB(예: 156.25BB)를 손실 없이 표시한다.
+	 * 정수·1자리 값은 [formatBb]과 동일하게 출력(불필요한 0 생략).
+	 */
+	private fun formatBb2(amount: Double, bb: Double): String {
+		if (bb <= 0) return "${amount.toLong()}"
+		val rounded = (amount / bb * 100).roundToLong() / 100.0
+		val text = if (rounded == rounded.toLong().toDouble()) {
+			"${rounded.toLong()}"
+		} else {
+			rounded.toString().trimEnd('0').trimEnd('.')
+		}
+		return "${text}BB"
 	}
 
 	private fun formatCard(card: Card): String {

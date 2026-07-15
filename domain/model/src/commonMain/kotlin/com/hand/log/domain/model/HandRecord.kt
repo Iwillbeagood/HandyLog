@@ -12,10 +12,28 @@ data class HandRecord(
 	val result: Double? = null,
 	val resultLabel: String? = null,
 	val memo: String? = null,
+	val results: HandResults? = null,
 ) {
 
-	/** 히어로의 핸드 */
-	val heroHand: PocketCards?
+	/**
+	 * Action 로그로부터 파생 결과를 계산한다. 저장 시점에 한 번 호출해 [results]에 담는다.
+	 * evaluator는 데이터 레이어가 주입한다(도메인은 평가기 구현에 의존하지 않음).
+	 */
+	fun computeResults(
+		evaluator: (List<Card>, List<ShowdownEntry>) -> List<ShowdownResult>,
+	): HandResults = HandResults(
+		potByStreet = listOf(Street.PREFLOP, Street.FLOP, Street.TURN, Street.RIVER)
+			.associateWith { getPotAtStreet(it) },
+		finalStacks = getFinalStacks(evaluator),
+		winnerSeats = winnerSeats,
+		seatInvestments = seatInvestments,
+	)
+
+	/** 저장된 스트릿별 팟을 우선 읽고, 없으면(미저장 핸드) 계산으로 폴백 */
+	fun potAt(street: Street): Double = results?.potByStreet?.get(street) ?: getPotAtStreet(street)
+
+	/** 히어로의 홀 카드 */
+	val heroHoleCards: PocketCards?
 		get() = players.find { it.isHero }?.cards
 
 	/** 히어로의 초기 스택 */

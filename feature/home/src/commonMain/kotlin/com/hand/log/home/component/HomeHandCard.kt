@@ -147,7 +147,7 @@ internal fun HomeHandCard(
 		) {
 			// Hero cards
 			Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-				val pocket = hand.heroHand
+				val pocket = hand.heroHoleCards
 				if (pocket != null) {
 					PlayingCard(card = pocket.card1, size = CardSize.SM)
 					PlayingCard(card = pocket.card2, size = CardSize.SM)

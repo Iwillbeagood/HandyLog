@@ -56,7 +56,7 @@ internal fun ActionGridSection(
 			StreetColumn(
 				"Pre-Flop",
 				preflopActions,
-				formatAmountFull(hand.getPotAtStreet(Street.PREFLOP), useBbUnit, bb),
+				formatAmountFull(hand.potAt(Street.PREFLOP), useBbUnit, bb),
 			),
 		)
 		hand.streets.flop?.let {
@@ -64,7 +64,7 @@ internal fun ActionGridSection(
 				StreetColumn(
 					"Flop",
 					it.actions,
-					formatAmountFull(hand.getPotAtStreet(Street.FLOP), useBbUnit, bb),
+					formatAmountFull(hand.potAt(Street.FLOP), useBbUnit, bb),
 				),
 			)
 		}
@@ -73,7 +73,7 @@ internal fun ActionGridSection(
 				StreetColumn(
 					"Turn",
 					it.actions,
-					formatAmountFull(hand.getPotAtStreet(Street.TURN), useBbUnit, bb),
+					formatAmountFull(hand.potAt(Street.TURN), useBbUnit, bb),
 				),
 			)
 		}
@@ -82,7 +82,7 @@ internal fun ActionGridSection(
 				StreetColumn(
 					"River",
 					it.actions,
-					formatAmountFull(hand.getPotAtStreet(Street.RIVER), useBbUnit, bb),
+					formatAmountFull(hand.potAt(Street.RIVER), useBbUnit, bb),
 				),
 			)
 		}
