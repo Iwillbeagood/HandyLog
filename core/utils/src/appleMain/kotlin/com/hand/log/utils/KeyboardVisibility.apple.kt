@@ -34,8 +34,8 @@ actual fun isKeyboardVisible(): Boolean {
 		}
 
 		onDispose {
-			center.removeObserver(showObserver!!)
-			center.removeObserver(hideObserver!!)
+			center.removeObserver(showObserver)
+			center.removeObserver(hideObserver)
 		}
 	}
 

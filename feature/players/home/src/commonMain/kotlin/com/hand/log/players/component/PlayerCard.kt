@@ -1,6 +1,7 @@
 package com.hand.log.players.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,6 +48,7 @@ internal fun PlayerCard(
 			.clip(RoundedCornerShape(12.dp))
 			.background(colors.card)
 			.clickableSingle(onClick = onClick)
+			.border(1.dp, colors.border, RoundedCornerShape(12.dp))
 			.padding(16.dp),
 		verticalAlignment = Alignment.CenterVertically,
 		horizontalArrangement = Arrangement.spacedBy(12.dp),

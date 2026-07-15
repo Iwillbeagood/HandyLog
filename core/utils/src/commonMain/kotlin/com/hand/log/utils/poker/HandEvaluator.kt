@@ -118,7 +118,7 @@ object HandEvaluator {
 		combinations(indices, 5).forEach { combo ->
 			val hand = combo.map { cards[it] }
 			val evaluated = evaluate5(hand)
-			if (best == null || evaluated < best!!) {
+			if (best == null || evaluated < best) {
 				best = evaluated
 				bestCards = hand
 			}
