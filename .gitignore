@@ -163,3 +163,7 @@ poker-table-tracker-main/
 
 # Pencil design files
 *.pen
+
+# Agent skills (mattpocock/skills) — 로컬 전용
+.agents/
+skills-lock.json
