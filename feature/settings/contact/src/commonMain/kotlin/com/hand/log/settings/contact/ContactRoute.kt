@@ -21,7 +21,6 @@ internal fun ContactRoute(
 
 	ContactScreen(
 		state = state,
-		onCategorySelect = viewModel::selectCategory,
 		onTitleChange = viewModel::updateTitle,
 		onContentChange = viewModel::updateContent,
 		onEmailChange = viewModel::updateEmail,

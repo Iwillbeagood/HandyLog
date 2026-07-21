@@ -157,8 +157,6 @@
 	<string name="settings_contact">Contact Us</string>
 	<string name="contact_title">Support</string>
 	<string name="contact_intro">Let us know about feature suggestions or any errors you run into. We\'ll get back to you quickly.</string>
-	<string name="contact_tab_feature">Suggestion</string>
-	<string name="contact_tab_error">Bug Report</string>
 	<string name="contact_field_title_label">Title</string>
 	<string name="contact_field_title_hint">Enter a title</string>
 	<string name="contact_field_content_label">Details</string>

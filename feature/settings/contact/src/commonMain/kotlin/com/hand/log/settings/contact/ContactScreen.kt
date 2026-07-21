@@ -23,14 +23,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
 import com.hand.log.designsystem.component.HandySectionLabel
-import com.hand.log.designsystem.component.HandySegmentedTab
 import com.hand.log.designsystem.component.HandyTextField
 import com.hand.log.designsystem.component.HandyTopAppbar
 import com.hand.log.designsystem.component.RegularButton
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
-import com.hand.log.domain.model.FeedbackCategory
 import com.hand.log.settings.contact.contract.ContactState
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.contact_attach_add
@@ -43,8 +41,6 @@ import handylog.core.res.generated.resources.contact_field_title_hint
 import handylog.core.res.generated.resources.contact_field_title_label
 import handylog.core.res.generated.resources.contact_intro
 import handylog.core.res.generated.resources.contact_submit
-import handylog.core.res.generated.resources.contact_tab_error
-import handylog.core.res.generated.resources.contact_tab_feature
 import handylog.core.res.generated.resources.contact_title
 import handylog.core.res.generated.resources.image
 import org.jetbrains.compose.resources.painterResource
@@ -53,7 +49,6 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun ContactScreen(
 	state: ContactState,
-	onCategorySelect: (FeedbackCategory) -> Unit,
 	onTitleChange: (String) -> Unit,
 	onContentChange: (String) -> Unit,
 	onEmailChange: (String) -> Unit,
@@ -81,13 +76,6 @@ internal fun ContactScreen(
 				text = stringResource(Res.string.contact_intro),
 				style = HandyTheme.typography.regular14,
 				color = colors.textSecondary,
-			)
-
-			HandySegmentedTab(
-				options = CATEGORIES,
-				selected = state.category,
-				onSelect = onCategorySelect,
-				label = { category -> stringResource(category.labelRes()) },
 			)
 
 			HandyTextField(
@@ -122,13 +110,6 @@ internal fun ContactScreen(
 			)
 		}
 	}
-}
-
-private val CATEGORIES = listOf(FeedbackCategory.FEATURE, FeedbackCategory.ERROR)
-
-private fun FeedbackCategory.labelRes() = when (this) {
-	FeedbackCategory.FEATURE -> Res.string.contact_tab_feature
-	FeedbackCategory.ERROR -> Res.string.contact_tab_error
 }
 
 /**
@@ -171,12 +152,10 @@ private fun ContactScreenPreview() {
 	ThemePreview {
 		ContactScreen(
 			state = ContactState(
-				category = FeedbackCategory.FEATURE,
 				title = "통계 화면에 필터를 추가해주세요",
 				content = "기간별로 필터링할 수 있으면 좋겠어요.",
 				email = "user@example.com",
 			),
-			onCategorySelect = {},
 			onTitleChange = {},
 			onContentChange = {},
 			onEmailChange = {},

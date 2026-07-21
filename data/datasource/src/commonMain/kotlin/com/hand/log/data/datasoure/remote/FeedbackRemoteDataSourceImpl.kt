@@ -6,7 +6,6 @@ import com.hand.log.common.platformName
 import com.hand.log.data.datasoure.remote.model.NotionPageRequest
 import com.hand.log.data.datasoure.remote.model.NotionParent
 import com.hand.log.domain.model.Feedback
-import com.hand.log.domain.model.FeedbackCategory
 import io.ktor.client.HttpClient
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -24,7 +23,7 @@ import kotlinx.serialization.json.putJsonObject
  * Notion API(`api.notion.com`)를 직접 호출하여 피드백 트래킹 DB 에 페이지를 생성한다.
  *
  * 필요한 Notion DB 속성(이름 일치 필수):
- * - `제목` (Title), `상태` (Select), `카테고리` (Select),
+ * - `제목` (Title), `상태` (Select),
  *   `내용` (Rich text), `연락처` (Rich text), `플랫폼` (Select)
  */
 class FeedbackRemoteDataSourceImpl(
@@ -43,7 +42,6 @@ class FeedbackRemoteDataSourceImpl(
 			properties = buildJsonObject {
 				putTitle(PROP_TITLE, feedback.title)
 				putSelect(PROP_STATUS, STATUS_NEW)
-				putSelect(PROP_CATEGORY, feedback.category.toNotionName())
 				putRichText(PROP_CONTENT, feedback.content)
 				if (feedback.email.isNotBlank()) {
 					putRichText(PROP_CONTACT, feedback.email)
@@ -58,11 +56,6 @@ class FeedbackRemoteDataSourceImpl(
 			contentType(ContentType.Application.Json)
 			setBody(request)
 		}
-	}
-
-	private fun FeedbackCategory.toNotionName(): String = when (this) {
-		FeedbackCategory.FEATURE -> CATEGORY_FEATURE
-		FeedbackCategory.ERROR -> CATEGORY_ERROR
 	}
 
 	private fun JsonObjectBuilder.putTitle(name: String, value: String) {
@@ -103,13 +96,10 @@ class FeedbackRemoteDataSourceImpl(
 
 		const val PROP_TITLE = "제목"
 		const val PROP_STATUS = "상태"
-		const val PROP_CATEGORY = "카테고리"
 		const val PROP_CONTENT = "내용"
 		const val PROP_CONTACT = "연락처"
 		const val PROP_PLATFORM = "플랫폼"
 
 		const val STATUS_NEW = "신규"
-		const val CATEGORY_FEATURE = "건의사항"
-		const val CATEGORY_ERROR = "버그"
 	}
 }

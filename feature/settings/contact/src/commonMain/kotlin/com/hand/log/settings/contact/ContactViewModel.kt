@@ -3,7 +3,6 @@ package com.hand.log.settings.contact
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hand.log.domain.model.Feedback
-import com.hand.log.domain.model.FeedbackCategory
 import com.hand.log.domain.usecase.SubmitFeedbackUseCase
 import com.hand.log.settings.contact.contract.ContactEffect
 import com.hand.log.settings.contact.contract.ContactState
@@ -26,10 +25,6 @@ internal class ContactViewModel(
 	private val _effect = MutableSharedFlow<ContactEffect>()
 	val effect: SharedFlow<ContactEffect> get() = _effect.asSharedFlow()
 
-	fun selectCategory(category: FeedbackCategory) {
-		_state.update { it.copy(category = category) }
-	}
-
 	fun updateTitle(value: String) {
 		_state.update { it.copy(title = value) }
 	}
@@ -50,7 +45,6 @@ internal class ContactViewModel(
 		viewModelScope.launch {
 			val result = submitFeedback(
 				Feedback(
-					category = current.category,
 					title = current.title,
 					content = current.content,
 					email = current.email,

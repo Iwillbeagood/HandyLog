@@ -157,8 +157,6 @@
 	<string name="settings_contact">お問い合わせ</string>
 	<string name="contact_title">サポート</string>
 	<string name="contact_intro">機能のご提案や、ご利用中に発生したエラーをお知らせください。確認後すぐに返信いたします。</string>
-	<string name="contact_tab_feature">ご要望</string>
-	<string name="contact_tab_error">不具合の報告</string>
 	<string name="contact_field_title_label">タイトル</string>
 	<string name="contact_field_title_hint">タイトルを入力してください</string>
 	<string name="contact_field_content_label">内容</string>
