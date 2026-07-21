@@ -4,7 +4,7 @@ object AppConfig {
 	var isProBuild: Boolean = false
 		private set
 
-	const val NOTION_DATABASE_ID = "d8738e2ea888417b953be52a7b06a602"
+	const val NOTION_DATABASE_ID = "3a48c719c24d8110807bc0688e0c13d2"
 
 	fun initialize(isProBuild: Boolean) {
 		this.isProBuild = isProBuild
