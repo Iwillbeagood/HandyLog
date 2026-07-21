@@ -153,14 +153,14 @@ fun TopAppbarIconButton(
 			Icon(
 				painter = painterResource(iconButton.icon),
 				contentDescription = null,
-				tint = colors.textPrimary,
+				tint = Color.White,
 				modifier = Modifier.size(14.dp),
 			)
 			iconButton.text?.let {
 				Text(
 					text = it,
 					style = HandyTheme.typography.medium14,
-					color = colors.textPrimary,
+					color = Color.White,
 				)
 			}
 		}
@@ -185,7 +185,7 @@ fun HomeLogo(title: String = "") {
 			Icon(
 				painter = painterResource(Res.drawable.spade_filled),
 				contentDescription = null,
-				tint = colors.primary,
+				tint = Color.White,
 				modifier = Modifier.size(14.dp),
 			)
 		}
