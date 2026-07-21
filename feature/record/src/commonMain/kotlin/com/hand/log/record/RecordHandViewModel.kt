@@ -242,7 +242,7 @@ internal class RecordHandViewModel(
 			updated.streets.isBoardReady(updated.currentStreet) &&
 			updated.actionOrder.isEmpty()
 		) {
-			if (updated.remainingSeats.size <= 1) goToShowdown() else nextStep()
+			if (updated.remainingSeats.size <= 1 || updated.isAllInShowdown) goToShowdown() else nextStep()
 		}
 
 		// 쇼다운 카드 선택 완료 시 승자에게 팟 분배
@@ -553,7 +553,7 @@ internal class RecordHandViewModel(
 	/** 라운드 종료 후 다음 단계 진행 */
 	private fun advanceAfterRoundEnd() {
 		val current = recording ?: return
-		if (current.remainingSeats.size <= 1) goToShowdown() else nextStep()
+		if (current.remainingSeats.size <= 1 || current.isAllInShowdown) goToShowdown() else nextStep()
 	}
 
 	fun removeLastAction() {
@@ -719,7 +719,8 @@ internal class RecordHandViewModel(
 				// SETUP으로 돌아갈 때는 보드 카드를 보존하고 액션만 제거
 				streets.clearActions()
 			} else {
-				streets.clearAfter(targetStreet)
+				// 이후 스트릿의 액션만 제거하고 미리 입력한 보드 카드는 보존
+				streets.clearActionsAfter(targetStreet)
 			}
 
 			// 남은 스트릿의 액션들로부터 플레이어 상태 복원
@@ -879,6 +880,12 @@ internal class RecordHandViewModel(
 					currentActionChipAmount = null,
 					players = updatedPlayers,
 				)
+			}
+
+			// 올인 런아웃으로 보드가 아직 다 나오지 않았다면 남은 보드 카드를 먼저 입력받는다
+			val updated = recording ?: return
+			if (updated.streets.boardCards.size < 5) {
+				selectAllBoardCards()
 			}
 		}
 	}

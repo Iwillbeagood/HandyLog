@@ -101,7 +101,7 @@ internal fun ResultSection(
 						),
 						isHero = true,
 						isCardUnknown = hand.heroHoleCards == null,
-						onCardClick = onEditHeroHand,
+						onCardClick = if (hand.heroHoleCards == null) onEditHeroHand else null,
 					)
 				}
 
@@ -119,7 +119,7 @@ internal fun ResultSection(
 						),
 						isHero = true,
 						isCardUnknown = hand.heroHoleCards == null,
-						onCardClick = onEditHeroHand,
+						onCardClick = if (hand.heroHoleCards == null) onEditHeroHand else null,
 					)
 				} else {
 					val winnerEntry = hand.showdown.find { it.seat == winnerSeat }
@@ -143,7 +143,7 @@ internal fun ResultSection(
 						} else {
 							null
 						},
-						onCardClick = { onEditShowdownHand(winnerSeat) },
+						onCardClick = if (winnerEntry == null) ({ onEditShowdownHand(winnerSeat) }) else null,
 					)
 				}
 			}
@@ -158,7 +158,7 @@ internal fun ResultSection(
 				result = hand.getShowdownResult(hand.heroSeat),
 				isHero = true,
 				isCardUnknown = hand.heroHoleCards == null,
-				onCardClick = onEditHeroHand,
+				onCardClick = if (hand.heroHoleCards == null) onEditHeroHand else null,
 			)
 
 			// 카드 공개 플레이어
@@ -175,7 +175,7 @@ internal fun ResultSection(
 					} else {
 						null
 					},
-					onCardClick = { onEditShowdownHand(entry.seat) },
+					onCardClick = null,
 				)
 			}
 

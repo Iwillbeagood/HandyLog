@@ -57,6 +57,8 @@ internal fun PreflopStepContent(
 		if (streetActions.isNotEmpty()) {
 			VerticalSpacer(8.dp)
 			UndoButton(onClick = onRemoveLastAction)
+			VerticalSpacer(12.dp)
+			ActionHistoryList(state = state)
 		}
 
 		if (!isOpenerSelection) {

@@ -61,6 +61,9 @@ internal fun PostflopStepContent(
 			UndoButton(onClick = onRemoveLastAction)
 		}
 
+		VerticalSpacer(12.dp)
+		ActionHistoryList(state = state)
+
 		VerticalSpacer(16.dp)
 
 		AnimatedVisibility(visible = boardCardsReady) {

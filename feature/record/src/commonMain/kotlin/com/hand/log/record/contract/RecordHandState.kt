@@ -156,6 +156,17 @@ internal sealed interface RecordHandState {
 		val remainingSeats: List<Int>
 			get() = occupiedSeats.filter { it !in players.foldedSeats }
 
+		/**
+		 * 남은 플레이어가 2명 이상이면서 올인하지 않은(계속 액션 가능한) 좌석이 1명 이하인 상태.
+		 * 더 이상 베팅이 불가능하므로 남은 스트릿을 진행하지 않고 곧바로 쇼다운으로 넘어가야 한다.
+		 */
+		val isAllInShowdown: Boolean
+			get() {
+				val remaining = remainingSeats
+				if (remaining.size < 2) return false
+				return remaining.count { it !in players.allInSeats } <= 1
+			}
+
 		// --- Showdown Results ---
 
 		val showdownEntries: List<ShowdownEntry>
@@ -190,16 +201,13 @@ internal sealed interface RecordHandState {
 
 				if (!isShowdownComplete || streets.boardCards.size != 5) return emptyList()
 				val knownEntries = showdownEntries.filter { players[it.seat]?.isCardsUnknown != true }
-				if (knownEntries.isEmpty()) return emptyList()
+				// 승패를 비교하려면 최소 두 명의 핸드가 공개되어야 한다.
+				// 히어로만 공개된 상태(상대 전원 미공개)에서는 결과를 내지 않는다.
+				if (knownEntries.size < 2) return emptyList()
 
-				val hasUnknownPlayers = remainingSeats.any { seat ->
-					players[seat]?.isCardsUnknown == true
-				}
-				val results = HandEvaluator.calculateShowdown(streets.boardCards, knownEntries)
-				if (hasUnknownPlayers) {
-					return results.map { it.copy(outcome = ShowdownOutcome.LOSE) }
-				}
-				return results
+				// 공개된 핸드끼리만 비교해 실제 순위대로 승패를 판정한다.
+				// 미공개(머크) 플레이어는 팟 경쟁에서 빠지므로 결과에 포함하지 않는다.
+				return HandEvaluator.calculateShowdown(streets.boardCards, knownEntries)
 			}
 
 		// --- Blinds ---

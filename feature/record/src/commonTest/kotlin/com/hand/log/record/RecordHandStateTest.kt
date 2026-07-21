@@ -1001,6 +1001,72 @@ class RecordHandStateTest {
 		assertTrue(state.actionOrder.isEmpty())
 	}
 
+	// ===== 올인 쇼다운 =====
+
+	@Test
+	fun `남은 전원이 올인이면 올인 쇼다운이다`() {
+		val state = makeState(
+			playerCount = 3,
+			buttonSeat = 1,
+			players = RecordPlayers(
+				mapOf(
+					1 to RecordPlayer(seat = 1, status = PlayerStatus.FOLDED),
+					2 to RecordPlayer(seat = 2, status = PlayerStatus.ALL_IN),
+					3 to RecordPlayer(seat = 3, status = PlayerStatus.ALL_IN),
+				),
+			),
+		)
+		assertTrue(state.isAllInShowdown)
+	}
+
+	@Test
+	fun `올인 아닌 좌석이 1명뿐이면 올인 쇼다운이다`() {
+		val state = makeState(
+			playerCount = 3,
+			buttonSeat = 1,
+			players = RecordPlayers(
+				mapOf(
+					1 to RecordPlayer(seat = 1, status = PlayerStatus.ALL_IN),
+					2 to RecordPlayer(seat = 2, status = PlayerStatus.ALL_IN),
+					3 to RecordPlayer(seat = 3),
+				),
+			),
+		)
+		assertTrue(state.isAllInShowdown)
+	}
+
+	@Test
+	fun `올인 아닌 좌석이 2명이면 올인 쇼다운이 아니다`() {
+		val state = makeState(
+			playerCount = 3,
+			buttonSeat = 1,
+			players = RecordPlayers(
+				mapOf(
+					1 to RecordPlayer(seat = 1, status = PlayerStatus.ALL_IN),
+					2 to RecordPlayer(seat = 2),
+					3 to RecordPlayer(seat = 3),
+				),
+			),
+		)
+		assertFalse(state.isAllInShowdown)
+	}
+
+	@Test
+	fun `1명만 남으면 올인 쇼다운이 아니다`() {
+		val state = makeState(
+			playerCount = 3,
+			buttonSeat = 1,
+			players = RecordPlayers(
+				mapOf(
+					1 to RecordPlayer(seat = 1, status = PlayerStatus.FOLDED),
+					2 to RecordPlayer(seat = 2, status = PlayerStatus.FOLDED),
+					3 to RecordPlayer(seat = 3, status = PlayerStatus.ALL_IN),
+				),
+			),
+		)
+		assertFalse(state.isAllInShowdown)
+	}
+
 	// ===== 포지션 =====
 
 	@Test
@@ -1132,6 +1198,67 @@ class RecordHandStateTest {
 		val loserResult = results.find { it.seat == 2 }
 		assertEquals(ShowdownOutcome.LOSE, loserResult?.outcome)
 		assertEquals(HandRanking.WIN_BY_FOLD, loserResult?.ranking)
+	}
+
+	// ===== 올인 쇼다운 결과 (핸드 공개) =====
+
+	private val fullBoard = HandStreets(
+		preflop = PreflopStreet(),
+		flop = FlopStreet(
+			card1 = Card(Rank.ACE, Suit.HEARTS),
+			card2 = Card(Rank.KING, Suit.DIAMONDS),
+			card3 = Card(Rank.QUEEN, Suit.CLUBS),
+		),
+		turn = TurnStreet(card = Card(Rank.SEVEN, Suit.HEARTS)),
+		river = RiverStreet(card = Card(Rank.TWO, Suit.DIAMONDS)),
+	)
+
+	@Test
+	fun `상대 핸드가 하나도 공개되지 않으면 결과가 없다`() {
+		// 히어로(seat 3)만 카드가 있고 나머지는 미공개 → 승패 비교 불가
+		val state = makeState(
+			playerCount = 3,
+			heroSeat = 3,
+			buttonSeat = 1,
+			currentStep = RecordStep.SHOWDOWN,
+			streets = fullBoard,
+			players = RecordPlayers(
+				mapOf(
+					1 to RecordPlayer(seat = 1, isCardsUnknown = true, status = PlayerStatus.ALL_IN),
+					2 to RecordPlayer(seat = 2, isCardsUnknown = true, status = PlayerStatus.ALL_IN),
+					3 to RecordPlayer(seat = 3, status = PlayerStatus.ALL_IN),
+				),
+			),
+		)
+		assertTrue(state.showdownResults.isEmpty())
+	}
+
+	@Test
+	fun `상대 한 명이라도 공개되면 공개된 핸드끼리 실제 승패가 나온다`() {
+		// 히어로(seat 3) A♠K♠ 투페어 vs seat1 9♣9♦ 원페어, seat2 미공개
+		val state = makeState(
+			playerCount = 3,
+			heroSeat = 3,
+			buttonSeat = 1,
+			currentStep = RecordStep.SHOWDOWN,
+			streets = fullBoard,
+			players = RecordPlayers(
+				mapOf(
+					1 to RecordPlayer(
+						seat = 1,
+						cards = PocketCards(Card(Rank.NINE, Suit.CLUBS), Card(Rank.NINE, Suit.DIAMONDS)),
+						status = PlayerStatus.ALL_IN,
+					),
+					2 to RecordPlayer(seat = 2, isCardsUnknown = true, status = PlayerStatus.ALL_IN),
+					3 to RecordPlayer(seat = 3, status = PlayerStatus.ALL_IN),
+				),
+			),
+		)
+		val results = state.showdownResults
+		// 공개된 히어로/seat1만 결과에 포함, 미공개 seat2는 제외
+		assertEquals(setOf(1, 3), results.map { it.seat }.toSet())
+		assertEquals(ShowdownOutcome.WIN, results.find { it.seat == 3 }?.outcome)
+		assertEquals(ShowdownOutcome.LOSE, results.find { it.seat == 1 }?.outcome)
 	}
 
 	// ===== 다음 액션 좌석 결정 =====
