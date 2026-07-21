@@ -124,6 +124,21 @@ data class HandStreets(
 		Street.RIVER -> this
 	}
 
+	/** 해당 스트릿 이후 스트릿의 액션만 제거하고 보드 카드는 보존 */
+	fun clearActionsAfter(street: Street): HandStreets = when (street) {
+		Street.PREFLOP -> copy(
+			flop = flop?.copy(actions = emptyList()),
+			turn = turn?.copy(actions = emptyList()),
+			river = river?.copy(actions = emptyList()),
+		)
+		Street.FLOP -> copy(
+			turn = turn?.copy(actions = emptyList()),
+			river = river?.copy(actions = emptyList()),
+		)
+		Street.TURN -> copy(river = river?.copy(actions = emptyList()))
+		Street.RIVER -> this
+	}
+
 	fun totalActionAmount(): Double {
 		fun streetTotal(actions: List<Action>): Double {
 			return actions
