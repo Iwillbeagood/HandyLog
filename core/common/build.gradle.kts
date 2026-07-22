@@ -7,12 +7,14 @@ plugins {
 	alias(libs.plugins.buildkonfig)
 }
 
-val notionToken = Properties().apply {
+val localProperties = Properties().apply {
 	val localFile = rootProject.file("local.properties")
 	if (localFile.exists()) {
 		localFile.inputStream().use(::load)
 	}
-}.getProperty("notion.token").orEmpty().trim()
+}
+val notionToken = localProperties.getProperty("notion.token").orEmpty().trim()
+val slackWebhookUrl = localProperties.getProperty("slack.webhook").orEmpty().trim()
 
 android {
 	namespace = "com.hand.log.core.common"
@@ -29,5 +31,6 @@ buildkonfig {
 	packageName = "com.hand.log.common"
 	defaultConfigs {
 		buildConfigField(STRING, "NOTION_TOKEN", notionToken)
+		buildConfigField(STRING, "SLACK_WEBHOOK_URL", slackWebhookUrl)
 	}
 }

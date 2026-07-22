@@ -164,7 +164,6 @@
 	<string name="contact_field_email_label">Reply Email</string>
 	<string name="contact_field_email_hint">example@email.com</string>
 	<string name="contact_attach_label">Attach screenshot (optional)</string>
-	<string name="contact_attach_add">Add image</string>
 	<string name="contact_submit">Send</string>
 	<string name="contact_success">Your message has been received. Thank you!</string>
 	<string name="contact_error">Failed to send. Please try again later.</string>

@@ -3,9 +3,11 @@ package com.hand.log.settings.contact
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hand.log.domain.model.Feedback
+import com.hand.log.domain.model.FeedbackImage
 import com.hand.log.domain.usecase.SubmitFeedbackUseCase
 import com.hand.log.settings.contact.contract.ContactEffect
 import com.hand.log.settings.contact.contract.ContactState
+import com.hand.log.platform.image.PickedImage
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -37,6 +39,24 @@ internal class ContactViewModel(
 		_state.update { it.copy(email = value) }
 	}
 
+	fun addImage(image: PickedImage) {
+		_state.update {
+			if (!it.canAddImage) it else it.copy(images = it.images + image)
+		}
+	}
+
+	fun removeImage(index: Int) {
+		_state.update {
+			if (index !in it.images.indices) {
+				it
+			} else {
+				it.copy(
+					images = it.images.filterIndexed { i, _ -> i != index },
+				)
+			}
+		}
+	}
+
 	fun submit() {
 		val current = _state.value
 		if (!current.canSubmit) return
@@ -48,6 +68,7 @@ internal class ContactViewModel(
 					title = current.title,
 					content = current.content,
 					email = current.email,
+					images = current.images.map { FeedbackImage(it.bytes, it.mimeType) },
 				),
 			)
 			_state.update { it.copy(isSubmitting = false) }

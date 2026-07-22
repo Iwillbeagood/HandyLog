@@ -24,6 +24,8 @@ internal fun ContactRoute(
 		onTitleChange = viewModel::updateTitle,
 		onContentChange = viewModel::updateContent,
 		onEmailChange = viewModel::updateEmail,
+		onImagePicked = viewModel::addImage,
+		onImageRemove = viewModel::removeImage,
 		onSubmit = viewModel::submit,
 		onBack = navAction::popBackStack,
 	)

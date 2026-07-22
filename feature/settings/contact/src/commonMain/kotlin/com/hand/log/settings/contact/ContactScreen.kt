@@ -1,24 +1,34 @@
 package com.hand.log.settings.contact
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.decodeToImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
@@ -30,8 +40,9 @@ import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.settings.contact.contract.ContactState
+import com.hand.log.platform.image.PickedImage
+import com.hand.log.platform.image.rememberImagePicker
 import handylog.core.res.generated.resources.Res
-import handylog.core.res.generated.resources.contact_attach_add
 import handylog.core.res.generated.resources.contact_attach_label
 import handylog.core.res.generated.resources.contact_field_content_hint
 import handylog.core.res.generated.resources.contact_field_content_label
@@ -42,7 +53,8 @@ import handylog.core.res.generated.resources.contact_field_title_label
 import handylog.core.res.generated.resources.contact_intro
 import handylog.core.res.generated.resources.contact_submit
 import handylog.core.res.generated.resources.contact_title
-import handylog.core.res.generated.resources.image
+import handylog.core.res.generated.resources.plus
+import handylog.core.res.generated.resources.x
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -52,10 +64,13 @@ internal fun ContactScreen(
 	onTitleChange: (String) -> Unit,
 	onContentChange: (String) -> Unit,
 	onEmailChange: (String) -> Unit,
+	onImagePicked: (PickedImage) -> Unit,
+	onImageRemove: (Int) -> Unit,
 	onSubmit: () -> Unit,
 	onBack: () -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
+	val imagePicker = rememberImagePicker(onPicked = onImagePicked)
 
 	BaseScaffold(
 		topBar = {
@@ -101,48 +116,117 @@ internal fun ContactScreen(
 				keyboardType = KeyboardType.Email,
 			)
 
-			AttachmentBox()
+			AttachmentBox(
+				images = state.images,
+				canAddImage = state.canAddImage,
+				onAddClick = imagePicker::launch,
+				onImageRemove = onImageRemove,
+			)
 
 			RegularButton(
 				text = stringResource(Res.string.contact_submit),
 				onClick = onSubmit,
 				enabled = state.canSubmit,
+				loading = state.isSubmitting,
 			)
 		}
 	}
 }
 
 /**
- * 스크린샷 첨부 영역. 현재는 디자인 노출용 정적 플레이스홀더이며 실제 첨부는 추후 연동한다.
+ * 스크린샷 첨부 영역. 선택한 이미지를 정사각 썸네일로 나열하고, 최대 개수 미만이면 추가 버튼을 노출한다.
  */
 @Composable
-private fun AttachmentBox() {
-	val colors = HandyTheme.colorScheme
-
+private fun AttachmentBox(
+	images: List<PickedImage>,
+	canAddImage: Boolean,
+	onAddClick: () -> Unit,
+	onImageRemove: (Int) -> Unit,
+) {
 	HandySectionLabel(stringResource(Res.string.contact_attach_label)) {
-		Column(
+		Row(
 			modifier = Modifier
 				.fillMaxWidth()
-				.height(88.dp)
-				.clip(RoundedCornerShape(8.dp))
-				.background(colors.muted)
-				.border(1.dp, colors.inputBorder, RoundedCornerShape(8.dp)),
-			horizontalAlignment = Alignment.CenterHorizontally,
-			verticalArrangement = Arrangement.Center,
+				.height(88.dp),
+			horizontalArrangement = Arrangement.spacedBy(8.dp),
 		) {
-			Icon(
-				painter = painterResource(Res.drawable.image),
+			images.forEachIndexed { index, image ->
+				AttachmentThumbnail(
+					image = image,
+					onRemove = { onImageRemove(index) },
+				)
+			}
+			if (canAddImage) {
+				AddAttachmentButton(onClick = onAddClick)
+			}
+		}
+	}
+}
+
+@Composable
+private fun AttachmentThumbnail(
+	image: PickedImage,
+	onRemove: () -> Unit,
+) {
+	val colors = HandyTheme.colorScheme
+	val bitmap = remember(image) { runCatching { image.bytes.decodeToImageBitmap() }.getOrNull() }
+
+	Box(
+		modifier = Modifier
+			.fillMaxHeight()
+			.aspectRatio(1f)
+			.clip(RoundedCornerShape(8.dp))
+			.background(colors.muted)
+			.border(1.dp, colors.inputBorder, RoundedCornerShape(8.dp)),
+	) {
+		if (bitmap != null) {
+			Image(
+				bitmap = bitmap,
 				contentDescription = null,
-				tint = colors.textSecondary,
-				modifier = Modifier.size(24.dp),
-			)
-			Spacer(modifier = Modifier.height(6.dp))
-			Text(
-				text = stringResource(Res.string.contact_attach_add),
-				style = HandyTheme.typography.regular14,
-				color = colors.textSecondary,
+				contentScale = ContentScale.Crop,
+				modifier = Modifier.fillMaxSize(),
 			)
 		}
+		Box(
+			modifier = Modifier
+				.align(Alignment.TopEnd)
+				.padding(4.dp)
+				.size(20.dp)
+				.clip(CircleShape)
+				.background(colors.error)
+				.clickable(onClick = onRemove),
+			contentAlignment = Alignment.Center,
+		) {
+			Icon(
+				painter = painterResource(Res.drawable.x),
+				contentDescription = null,
+				tint = Color.White,
+				modifier = Modifier.size(12.dp),
+			)
+		}
+	}
+}
+
+@Composable
+private fun AddAttachmentButton(onClick: () -> Unit) {
+	val colors = HandyTheme.colorScheme
+
+	Box(
+		modifier = Modifier
+			.fillMaxHeight()
+			.aspectRatio(1f)
+			.clip(RoundedCornerShape(8.dp))
+			.background(colors.muted)
+			.border(1.dp, colors.inputBorder, RoundedCornerShape(8.dp))
+			.clickable(onClick = onClick),
+		contentAlignment = Alignment.Center,
+	) {
+		Icon(
+			painter = painterResource(Res.drawable.plus),
+			contentDescription = null,
+			tint = colors.textSecondary,
+			modifier = Modifier.size(24.dp),
+		)
 	}
 }
 
@@ -159,6 +243,8 @@ private fun ContactScreenPreview() {
 			onTitleChange = {},
 			onContentChange = {},
 			onEmailChange = {},
+			onImagePicked = {},
+			onImageRemove = {},
 			onSubmit = {},
 			onBack = {},
 		)

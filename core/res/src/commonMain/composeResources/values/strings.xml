@@ -173,7 +173,6 @@
 	<string name="contact_field_email_label">답변받을 이메일</string>
 	<string name="contact_field_email_hint">example@email.com</string>
 	<string name="contact_attach_label">스크린샷 첨부 (선택)</string>
-	<string name="contact_attach_add">이미지 추가</string>
 	<string name="contact_submit">문의 보내기</string>
 	<string name="contact_success">문의가 접수되었습니다. 감사합니다!</string>
 	<string name="contact_error">문의 전송에 실패했습니다. 잠시 후 다시 시도해주세요.</string>
