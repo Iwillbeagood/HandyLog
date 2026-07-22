@@ -1,19 +1,21 @@
 package com.hand.log.players.hands
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +36,7 @@ import com.hand.log.domain.model.Card
 import com.hand.log.domain.model.FlopStreet
 import com.hand.log.domain.model.HandRecord
 import com.hand.log.domain.model.HandStreets
+import com.hand.log.domain.model.HeroOutcome
 import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.PreflopStreet
 import com.hand.log.domain.model.HandPlayer
@@ -83,10 +86,6 @@ internal fun PlayerHandsScreen(
 						)
 					}
 				} else {
-					val wins = state.hands.count { (it.result ?: 0.0) > 0 }
-					val losses = state.hands.count { (it.result ?: 0.0) < 0 }
-					val draws = state.hands.size - wins - losses
-
 					LazyColumn(
 						modifier = Modifier.fillMaxSize(),
 						contentPadding = PaddingValues(
@@ -99,10 +98,10 @@ internal fun PlayerHandsScreen(
 					) {
 						item {
 							RecordSummary(
-								total = state.hands.size,
-								wins = wins,
-								losses = losses,
-								draws = draws,
+								total = state.record.total,
+								wins = state.record.wins,
+								losses = state.record.losses,
+								draws = state.record.draws,
 							)
 						}
 						items(state.hands, key = { it.id }) { hand ->
@@ -124,105 +123,111 @@ private fun HandItem(
 	onClick: () -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
-	val result = hand.result ?: 0.0
-	val isWin = result > 0
-	val isLose = result < 0
 
 	Column(
 		modifier = Modifier
 			.fillMaxWidth()
 			.clip(RoundedCornerShape(12.dp))
 			.background(colors.card)
+			.border(1.dp, colors.border, RoundedCornerShape(12.dp))
 			.clickable(onClick = onClick)
 			.padding(12.dp),
 	) {
+		// 나(히어로) 기준 승/패/무 라벨 — HandRecordCard의 #index 위치
+		OutcomeBadge(outcome = hand.heroOutcome)
+		Spacer(modifier = Modifier.height(6.dp))
+
+		// 히어로 카드 + 상세
 		Row(
 			verticalAlignment = Alignment.CenterVertically,
-			horizontalArrangement = Arrangement.spacedBy(10.dp),
+			horizontalArrangement = Arrangement.spacedBy(8.dp),
 		) {
-			// 승패 뱃지
-			Box(
-				modifier = Modifier
-					.size(28.dp)
-					.clip(CircleShape)
-					.background(
-						when {
-							isWin -> colors.primary.copy(alpha = 0.15f)
-							isLose -> colors.error.copy(alpha = 0.15f)
-							else -> colors.muted
-						},
-					),
-				contentAlignment = Alignment.Center,
-			) {
-				Text(
-					text = when {
-						isWin -> "W"
-						isLose -> "L"
-						else -> "D"
-					},
-					style = HandyTheme.typography.bold10.nonScaledSp,
-					color = when {
-						isWin -> colors.primary
-						isLose -> colors.error
-						else -> colors.textSecondary
-					},
-				)
-			}
-
-			// 히어로 카드
-			hand.heroHoleCards?.let { pocket ->
-				Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+			Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+				val pocket = hand.heroHoleCards
+				if (pocket != null) {
 					PlayingCard(card = pocket.card1, size = CardSize.SM)
 					PlayingCard(card = pocket.card2, size = CardSize.SM)
+				} else {
+					PlayingCard(card = null, size = CardSize.SM, faceDown = true)
+					PlayingCard(card = null, size = CardSize.SM, faceDown = true)
 				}
 			}
 
-			// 정보
 			Column(modifier = Modifier.weight(1f)) {
-				Text(
-					text = hand.heroPosition.label,
-					style = HandyTheme.typography.bold12,
-					color = colors.textPrimary,
-				)
-				hand.blinds?.let { blinds ->
+				Row(verticalAlignment = Alignment.CenterVertically) {
 					Text(
-						text = "${formatWithComma(blinds.sb.toLong())}/${formatWithComma(blinds.bb.toLong())}",
-						style = HandyTheme.typography.regular10,
+						text = hand.heroPosition.label,
+						style = HandyTheme.typography.bold12,
 						color = colors.textSecondary,
 					)
+					hand.blinds?.let { blinds ->
+						Text(
+							text = " • ${formatWithComma(blinds.sb.toLong())}/${formatWithComma(blinds.bb.toLong())}",
+							style = HandyTheme.typography.regular12,
+							color = colors.textSecondary,
+						)
+					}
 				}
-				hand.memo?.let { memo ->
-					Text(
-						text = memo,
-						style = HandyTheme.typography.regular10,
-						maxLines = 1,
-					)
-				}
-				// 보드 카드
+
 				val boardStreets = listOf(Street.FLOP, Street.TURN, Street.RIVER)
 				val hasBoard = boardStreets.any { hand.streets.getCards(it).isNotEmpty() }
 				if (hasBoard) {
-					Row(
-						horizontalArrangement = Arrangement.spacedBy(2.dp),
-						modifier = Modifier.padding(top = 4.dp),
-					) {
+					Spacer(modifier = Modifier.height(4.dp))
+					Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
 						boardStreets.forEach { street ->
 							hand.streets.getCards(street).forEach { card ->
 								PlayingCard(card = card, size = CardSize.XS)
+							}
+							if (street != Street.RIVER && hand.streets.getCards(street).isNotEmpty()) {
+								Spacer(modifier = Modifier.width(2.dp))
 							}
 						}
 					}
 				}
 			}
-
 		}
 
-		// 날짜 (왼쪽 하단)
+		// 메모
+		hand.memo?.let { memo ->
+			Spacer(modifier = Modifier.height(6.dp))
+			Text(
+				text = memo,
+				style = HandyTheme.typography.regular12,
+				color = colors.textSecondary,
+				maxLines = 2,
+			)
+		}
+
+		// 기록 날짜
+		Spacer(modifier = Modifier.height(4.dp))
 		Text(
 			text = formatDate(hand.createdAt),
 			style = HandyTheme.typography.regular10,
-			color = colors.textSecondary.copy(alpha = 0.5f),
-			modifier = Modifier.padding(top = 4.dp),
+			color = colors.textSecondary.copy(alpha = 0.6f),
+		)
+	}
+}
+
+@Composable
+private fun OutcomeBadge(outcome: HeroOutcome) {
+	val colors = HandyTheme.colorScheme
+	val (labelRes, color) = when (outcome) {
+		HeroOutcome.WIN -> Res.string.player_hands_result_win to colors.primary
+		HeroOutcome.LOSE -> Res.string.player_hands_result_lose to colors.error
+		HeroOutcome.DRAW -> Res.string.player_hands_result_draw to colors.textSecondary
+	}
+
+	Box(
+		modifier = Modifier
+			.clip(RoundedCornerShape(6.dp))
+			.background(color.copy(alpha = 0.15f))
+			.padding(horizontal = 8.dp, vertical = 4.dp),
+		contentAlignment = Alignment.Center,
+	) {
+		Text(
+			text = stringResource(labelRes),
+			style = HandyTheme.typography.bold12.nonScaledSp,
+			color = color,
 		)
 	}
 }
@@ -302,6 +307,7 @@ private fun PlayerHandsScreenPreview() {
 		PlayerHandsScreen(
 			playerName = "Fish",
 			state = PlayerHandsState.Success(
+				record = PlayerRecord(wins = 2, losses = 1, draws = 0),
 				hands = listOf(
 					HandRecord(
 						id = "h1",

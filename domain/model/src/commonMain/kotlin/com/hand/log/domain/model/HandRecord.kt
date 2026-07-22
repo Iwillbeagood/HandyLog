@@ -83,6 +83,24 @@ data class HandRecord(
 			return if (r == HandRanking.WIN_BY_FOLD) null else r
 		}
 
+	/**
+	 * 히어로(나) 기준 승/무/패. 쇼다운 결과([HandPlayer.outcome])를 우선 판정하고,
+	 * 쇼다운 없이 끝난 핸드(폴드 등)는 순수익([result]) 부호로 폴백한다.
+	 */
+	val heroOutcome: HeroOutcome
+		get() {
+			val hero = players.find { it.isHero }
+			return when {
+				isFoldWin -> HeroOutcome.WIN
+				hero?.isSplit == true -> HeroOutcome.DRAW
+				hero?.isWinner == true -> HeroOutcome.WIN
+				hero?.outcome == ShowdownOutcome.LOSE -> HeroOutcome.LOSE
+				(result ?: 0.0) > 0 -> HeroOutcome.WIN
+				(result ?: 0.0) < 0 -> HeroOutcome.LOSE
+				else -> HeroOutcome.DRAW
+			}
+		}
+
 	val winnerSeats: Set<Int>
 		get() {
 			if (isFoldWin) return remainingSeats

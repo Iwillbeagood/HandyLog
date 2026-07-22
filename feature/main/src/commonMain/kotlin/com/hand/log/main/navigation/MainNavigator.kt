@@ -5,6 +5,7 @@ import com.hand.log.navigation.navigation.LaunchMode
 import com.hand.log.navigation.navigation.MainTabRoute
 import com.hand.log.navigation.navigation.BetSizeSettings
 import com.hand.log.navigation.navigation.Contact
+import com.hand.log.navigation.navigation.Legal
 import com.hand.log.navigation.navigation.HandDetail
 import com.hand.log.navigation.navigation.ProUpgrade
 import com.hand.log.navigation.navigation.PlayerHands
@@ -62,6 +63,10 @@ internal class MainNavigator {
 
 		override fun navigateToContact() {
 			navigate(Contact)
+		}
+
+		override fun navigateToLegal() {
+			navigate(Legal)
 		}
 	}
 

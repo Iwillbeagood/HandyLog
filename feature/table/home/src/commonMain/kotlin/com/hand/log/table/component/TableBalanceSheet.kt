@@ -56,7 +56,6 @@ internal fun TableBalanceSheet(
 		title = stringResource(Res.string.table_balance),
 		confirmText = stringResource(Res.string.btn_confirm),
 		onConfirm = {
-			onDismiss()
 			onConfirm(heroSeat.value, selectedSeats.value)
 		},
 		confirmEnabled = isValid,

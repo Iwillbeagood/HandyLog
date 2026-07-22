@@ -155,6 +155,9 @@
 	<string name="player_hands_win">승</string>
 	<string name="player_hands_lose">패</string>
 	<string name="player_hands_draw">무</string>
+	<string name="player_hands_result_win">WIN</string>
+	<string name="player_hands_result_lose">LOSE</string>
+	<string name="player_hands_result_draw">DRAW</string>
 
 	<!-- Settings -->
 	<string name="settings_title">설정</string>
@@ -178,6 +181,10 @@
 	<string name="contact_error">문의 전송에 실패했습니다. 잠시 후 다시 시도해주세요.</string>
 	<string name="settings_app_info">앱 정보</string>
 	<string name="settings_version">버전</string>
+	<string name="settings_info">정보</string>
+	<string name="settings_legal">약관 및 정책</string>
+	<string name="legal_title">약관 및 정책</string>
+	<string name="legal_privacy_policy">개인정보처리방침</string>
 
 	<!-- Bet Size Settings -->
 	<string name="betsize_title">베팅 사이즈 프리셋</string>

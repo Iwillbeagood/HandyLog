@@ -47,10 +47,14 @@ class Converters {
 	fun toPlayerTendency(value: String?): PlayerTendency? = value?.let { PlayerTendency.valueOf(it) }
 
 	@TypeConverter
-	fun fromBlinds(value: Blinds?): String? = value?.let { json.encodeToString(Blinds.serializer(), it) }
+	fun fromBlinds(value: Blinds?): String? = value?.let {
+		json.encodeToString(Blinds.serializer(), it)
+	}
 
 	@TypeConverter
-	fun toBlinds(value: String?): Blinds? = value?.let { json.decodeFromString(Blinds.serializer(), it) }
+	fun toBlinds(value: String?): Blinds? = value?.let {
+		json.decodeFromString(Blinds.serializer(), it)
+	}
 
 	@TypeConverter
 	fun fromLocalDate(value: LocalDate): String = value.toString()
@@ -59,16 +63,26 @@ class Converters {
 	fun toLocalDate(value: String): LocalDate = LocalDate.parse(value)
 
 	@TypeConverter
-	fun fromPocketCards(value: PocketCards?): String? = value?.let { json.encodeToString(PocketCards.serializer(), it) }
+	fun fromPocketCards(value: PocketCards?): String? = value?.let {
+		json.encodeToString(PocketCards.serializer(), it)
+	}
 
 	@TypeConverter
-	fun toPocketCards(value: String?): PocketCards? = value?.let { json.decodeFromString(PocketCards.serializer(), it) }
+	fun toPocketCards(value: String?): PocketCards? = value?.let {
+		json.decodeFromString(PocketCards.serializer(), it)
+	}
 
 	@TypeConverter
-	fun fromHandStreets(value: HandStreets): String = json.encodeToString(HandStreets.serializer(), value)
+	fun fromHandStreets(value: HandStreets): String = json.encodeToString(
+		HandStreets.serializer(),
+		value,
+	)
 
 	@TypeConverter
-	fun toHandStreets(value: String): HandStreets = json.decodeFromString(HandStreets.serializer(), value)
+	fun toHandStreets(value: String): HandStreets = json.decodeFromString(
+		HandStreets.serializer(),
+		value,
+	)
 
 	@TypeConverter
 	fun fromHandPlayers(value: List<HandPlayer>): String = json.encodeToString(value)

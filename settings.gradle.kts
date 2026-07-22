@@ -78,4 +78,5 @@ include(
     ":feature:settings:betsize",
     ":feature:settings:upgrade",
     ":feature:settings:contact",
+    ":feature:settings:legal",
 )

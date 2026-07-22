@@ -7,3 +7,10 @@ enum class HeroResultType {
 	SHOWDOWN_LOSE,
 	SHOWDOWN_SPLIT,
 }
+
+/** 히어로(나) 기준 승/무/패 — 전적 집계용 */
+enum class HeroOutcome {
+	WIN,
+	LOSE,
+	DRAW,
+}

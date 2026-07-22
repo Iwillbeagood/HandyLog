@@ -51,6 +51,7 @@ internal fun SettingsScreen(
 	onNavigateToBetSize: () -> Unit,
 	onUpgradeClick: () -> Unit,
 	onContactClick: () -> Unit,
+	onLegalClick: () -> Unit,
 ) {
 	BaseScaffold {
 		Column(
@@ -89,8 +90,8 @@ internal fun SettingsScreen(
 				// 문의하기
 				ContactNavigationItem(onClick = onContactClick)
 
-				// 앱 정보
-				AppInfoSection()
+				// 정보 (약관 및 정책, 앱 버전)
+				InfoSection(onLegalClick = onLegalClick)
 			}
 		}
 	}
@@ -218,23 +219,33 @@ private fun PlanSection(
 }
 
 @Composable
-private fun AppInfoSection() {
-	HandySectionLabel(stringResource(Res.string.settings_app_info)) {
-		SettingsCard {
-			Row(
-				modifier = Modifier.fillMaxWidth(),
-				horizontalArrangement = Arrangement.SpaceBetween,
-			) {
-				Text(
-					text = stringResource(Res.string.settings_version),
-					style = HandyTheme.typography.regular14,
-					color = HandyTheme.colorScheme.textSecondary,
-				)
-				Text(
-					text = "1.0.0",
-					style = HandyTheme.typography.medium14,
-					color = HandyTheme.colorScheme.textPrimary,
-				)
+private fun InfoSection(
+	onLegalClick: () -> Unit,
+) {
+	HandySectionLabel(stringResource(Res.string.settings_info)) {
+		Column(
+			verticalArrangement = Arrangement.spacedBy(8.dp),
+		) {
+			SettingsNavigationItem(
+				title = stringResource(Res.string.settings_legal),
+				onClick = onLegalClick,
+			)
+			SettingsCard {
+				Row(
+					modifier = Modifier.fillMaxWidth(),
+					horizontalArrangement = Arrangement.SpaceBetween,
+				) {
+					Text(
+						text = stringResource(Res.string.settings_version),
+						style = HandyTheme.typography.regular14,
+						color = HandyTheme.colorScheme.textSecondary,
+					)
+					Text(
+						text = "1.0.0",
+						style = HandyTheme.typography.medium14,
+						color = HandyTheme.colorScheme.textPrimary,
+					)
+				}
 			}
 		}
 	}
@@ -251,6 +262,7 @@ private fun SettingsScreenPreview() {
 			onNavigateToBetSize = {},
 			onUpgradeClick = {},
 			onContactClick = {},
+			onLegalClick = {},
 		)
 	}
 }

@@ -225,8 +225,8 @@ fun ConfirmDialog(
 private fun DefaultDialogPreview() {
 	ThemePreview {
 		DefaultDialog(
-			title = "화물등록",
-			content = "화물 등록을 하시겠습니까?",
+			title = "등록",
+			content = "등록을 하시겠습니까?",
 			description = "등록 후 수정이 불가능합니다.",
 			onDismissRequest = {},
 		)

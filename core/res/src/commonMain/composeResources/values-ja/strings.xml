@@ -27,8 +27,8 @@
 	<string name="home_empty_title">まだ記録がありません</string>
 	<string name="home_empty_desc">新しいテーブルを作成してハンドを記録しましょう</string>
 	<string name="home_table_deleted">テーブルが削除されました</string>
-	<string name="home_hand_count">%d件のハンド記録</string>
-	<string name="home_player_count">%d人</string>
+	<string name="home_hand_count">%1$d件のハンド記録</string>
+	<string name="home_player_count">%1$d人</string>
 	<string name="home_tab_table">テーブル</string>
 	<string name="home_tab_hand">ハンド記録</string>
 
@@ -37,7 +37,7 @@
 	<string name="table_detail_cash">キャッシュ</string>
 	<string name="table_detail_settings">設定</string>
 	<string name="table_detail_record_hand">ハンド記録</string>
-	<string name="table_detail_hand_count">%d件</string>
+	<string name="table_detail_hand_count">%1$d件</string>
 	<string name="table_detail_empty_title">まだハンドが記録されていません</string>
 	<string name="table_detail_empty_desc">+ボタンを押して最初のハンドを記録しましょう</string>
 	<string name="table_detail_player_added">プレイヤーが追加されました</string>
@@ -78,8 +78,8 @@
 	<string name="record_hero_stack">ヒーロースタック</string>
 	<string name="record_select_opener">オープナーを選択してください</string>
 	<string name="record_all_actions_complete">全プレイヤーのアクション完了</string>
-	<string name="record_amount_label">金額（最小 %s）</string>
-	<string name="record_stack_warning">スタック（%s）を超えるとオールインとして処理されます</string>
+	<string name="record_amount_label">金額（最小 %1$s）</string>
+	<string name="record_stack_warning">スタック（%1$s）を超えるとオールインとして処理されます</string>
 
 	<!-- Record Steps -->
 	<string name="step_setup">設定</string>
@@ -103,9 +103,9 @@
 
 	<!-- Card Selector -->
 	<string name="card_selector_hero">ヒーローカード選択</string>
-	<string name="card_selector_board">%s カード選択</string>
-	<string name="card_selector_board_change">%s カード変更</string>
-	<string name="card_selector_showdown">%s カード選択</string>
+	<string name="card_selector_board">%1$s カード選択</string>
+	<string name="card_selector_board_change">%1$s カード変更</string>
+	<string name="card_selector_showdown">%1$s カード選択</string>
 
 	<!-- Hand Detail -->
 	<string name="hand_detail_title">ハンド詳細</string>
@@ -125,7 +125,7 @@
 	<string name="action_raise">レイズ</string>
 	<string name="action_all_in">オールイン</string>
 	<string name="action_open">オープン</string>
-	<string name="action_n_bet">%dベット</string>
+	<string name="action_n_bet">%1$dベット</string>
 
 	<!-- Players -->
 	<string name="players_title">プレイヤーマーキング</string>
@@ -146,13 +146,16 @@
 	<string name="player_hands_win">勝</string>
 	<string name="player_hands_lose">負</string>
 	<string name="player_hands_draw">引</string>
+	<string name="player_hands_result_win">WIN</string>
+	<string name="player_hands_result_lose">LOSE</string>
+	<string name="player_hands_result_draw">DRAW</string>
 
 	<!-- Settings -->
 	<string name="settings_title">設定</string>
 	<string name="settings_theme">テーマ</string>
 	<string name="settings_game">ゲーム設定</string>
 	<string name="settings_bet_size_preset">ベットサイズプリセット</string>
-	<string name="settings_preset_count">%d個設定済み</string>
+	<string name="settings_preset_count">%1$d個設定済み</string>
 	<string name="settings_support">サポート</string>
 	<string name="settings_contact">お問い合わせ</string>
 	<string name="contact_title">サポート</string>
@@ -169,6 +172,10 @@
 	<string name="contact_error">送信に失敗しました。しばらくしてから再度お試しください。</string>
 	<string name="settings_app_info">アプリ情報</string>
 	<string name="settings_version">バージョン</string>
+	<string name="settings_info">情報</string>
+	<string name="settings_legal">規約とポリシー</string>
+	<string name="legal_title">規約とポリシー</string>
+	<string name="legal_privacy_policy">プライバシーポリシー</string>
 
 	<!-- Bet Size Settings -->
 	<string name="betsize_title">ベットサイズプリセット</string>
@@ -226,4 +233,81 @@
 	<string name="upgrade_unlimited">無制限</string>
 	<string name="upgrade_download">Pro版ダウンロード</string>
 	<string name="upgrade_store_note">Google PlayまたはApp Storeからダウンロード</string>
+
+	<!-- Common (Yes/No) -->
+	<string name="btn_yes">はい</string>
+	<string name="btn_no">いいえ</string>
+
+	<!-- Game Type -->
+	<string name="game_type_tournament">トーナメント</string>
+	<string name="game_type_cash">キャッシュ</string>
+
+	<!-- Blind Labels -->
+	<string name="label_sb">SB</string>
+	<string name="label_bb">BB</string>
+
+	<!-- Street -->
+	<string name="street_preflop">プリフロップ</string>
+	<string name="street_flop">フロップ</string>
+	<string name="street_turn">ターン</string>
+	<string name="street_river">リバー</string>
+
+	<!-- Record / Actions -->
+	<string name="record_action">アクション</string>
+	<string name="next_raise_bet">ベット</string>
+	<string name="next_raise_raise">レイズ</string>
+	<string name="next_raise_n_bet">%1$dベット</string>
+	<string name="result_fold_win">相手のフォールドで勝利</string>
+
+	<!-- Step Back -->
+	<string name="step_back_title">前のステップに戻りますか？</string>
+	<string name="step_back_description">現在のステップ以降の記録がすべて削除されます。</string>
+	<string name="step_back_skip_warning">今後表示しない</string>
+
+	<!-- Hand Ranking -->
+	<string name="ranking_high_card">ハイカード</string>
+	<string name="ranking_one_pair">ワンペア</string>
+	<string name="ranking_two_pair">ツーペア</string>
+	<string name="ranking_three_of_a_kind">スリーカード</string>
+	<string name="ranking_straight">ストレート</string>
+	<string name="ranking_flush">フラッシュ</string>
+	<string name="ranking_full_house">フルハウス</string>
+	<string name="ranking_four_of_a_kind">フォーカード</string>
+	<string name="ranking_straight_flush">ストレートフラッシュ</string>
+	<string name="ranking_royal_flush">ロイヤルフラッシュ</string>
+	<string name="ranking_fold">フォールド</string>
+
+	<!-- Hand Detail (Delete / Download) -->
+	<string name="hand_detail_delete_title">ハンド削除</string>
+	<string name="hand_detail_delete_description">このハンド記録を削除しますか？</string>
+	<string name="hand_detail_download_image">画像をダウンロード</string>
+	<string name="hand_detail_image_downloaded">画像を保存しました</string>
+
+	<!-- Table (Edit / Delete / Balance) -->
+	<string name="table_default_name">テーブル</string>
+	<string name="table_edit_create_title">新しいテーブルを作成</string>
+	<string name="table_edit_title">テーブル編集</string>
+	<string name="table_edit_create_button">テーブル作成</string>
+	<string name="table_edit_button">編集完了</string>
+	<string name="table_delete_title">テーブル削除</string>
+	<string name="table_delete_description">このテーブルとすべてのハンド記録が削除されます。続行しますか？</string>
+	<string name="table_balance_seat_select_desc">席を選択してください（%1$d / %2$d）</string>
+
+	<!-- Player Tendency -->
+	<string name="tendency_unknown">不明</string>
+	<string name="tendency_tight_aggressive">タイトアグレッシブ</string>
+	<string name="tendency_tight_passive">タイトパッシブ</string>
+	<string name="tendency_loose_aggressive">ルースアグレッシブ</string>
+	<string name="tendency_loose_passive">ルースパッシブ</string>
+	<string name="tendency_shark">シャーク</string>
+	<string name="tendency_fish">フィッシュ</string>
+	<string name="tendency_regular">レギュラー</string>
+
+	<!-- Theme -->
+	<string name="theme_light">ライト</string>
+	<string name="theme_light_desc">明るいテーマ</string>
+	<string name="theme_dark">ダーク</string>
+	<string name="theme_dark_desc">暗いテーマ</string>
+	<string name="theme_auto">自動</string>
+	<string name="theme_auto_desc">システム設定に従って自動切り替え</string>
 </resources>

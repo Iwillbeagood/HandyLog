@@ -207,6 +207,7 @@ internal class TableViewModel(
 
 	fun applyTableBalance(heroSeat: Int, otherSeats: Set<Int>) {
 		val current = state.value as? TableState.TableData ?: return
+		dismissModal()
 		viewModelScope.launch {
 			applyTableBalanceUseCase(current.table, heroSeat, otherSeats)
 			_effect.emit(TableEffect.ShowToast(Res.string.table_detail_table_updated))

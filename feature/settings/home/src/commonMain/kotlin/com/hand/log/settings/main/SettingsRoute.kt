@@ -29,6 +29,7 @@ internal fun SettingsRoute(
 		},
 		onUpgradeClick = navAction::navigateToProUpgrade,
 		onContactClick = navAction::navigateToContact,
+		onLegalClick = navAction::navigateToLegal,
 	)
 
 	when (val effect = modalEffect) {

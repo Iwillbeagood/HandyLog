@@ -15,8 +15,11 @@ class HandLogApplication : Application() {
 
 		AppConfig.initialize(isProBuild = BuildConfig.IS_PRO)
 
-		FirebaseApp.initializeApp(this)
-		FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = !BuildConfig.DEBUG
+		// paid flavor 에 google-services.json 이 아직 없으면 초기화가 null 을 반환한다.
+		// 이 경우 Crashlytics 접근이 크래시를 유발하므로 초기화 성공 시에만 활성화한다.
+		if (FirebaseApp.initializeApp(this) != null) {
+			FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = !BuildConfig.DEBUG
+		}
 
 		setupGlobalExceptionHandlers()
 

@@ -40,3 +40,6 @@ data object ProUpgrade : Route
 
 @Serializable
 data object Contact : Route
+
+@Serializable
+data object Legal : Route

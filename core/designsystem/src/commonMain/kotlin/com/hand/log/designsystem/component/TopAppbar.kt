@@ -48,6 +48,7 @@ fun HandyTopAppbar(
 			.fillMaxWidth()
 			.background(containerColor),
 	) {
+		VerticalSpacer(6.dp)
 		Box(
 			modifier = Modifier
 				.fillMaxWidth()

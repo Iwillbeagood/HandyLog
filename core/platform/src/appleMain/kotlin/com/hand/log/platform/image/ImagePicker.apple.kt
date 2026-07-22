@@ -7,17 +7,21 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
 import platform.Foundation.NSData
+import platform.Foundation.NSError
+import platform.PhotosUI.PHPickerConfiguration
+import platform.PhotosUI.PHPickerFilter
+import platform.PhotosUI.PHPickerResult
+import platform.PhotosUI.PHPickerViewController
+import platform.PhotosUI.PHPickerViewControllerDelegateProtocol
 import platform.UIKit.UIApplication
 import platform.UIKit.UIImage
 import platform.UIKit.UIImageJPEGRepresentation
-import platform.UIKit.UIImagePickerController
-import platform.UIKit.UIImagePickerControllerDelegateProtocol
-import platform.UIKit.UIImagePickerControllerOriginalImage
-import platform.UIKit.UINavigationControllerDelegateProtocol
 import platform.UIKit.UIViewController
 import platform.UIKit.UIWindow
 import platform.UIKit.UIWindowScene
 import platform.darwin.NSObject
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
 import platform.posix.memcpy
 
 @Composable
@@ -35,12 +39,20 @@ actual fun rememberImagePicker(onPicked: (PickedImage) -> Unit): ImagePickerLaun
 // 델리게이트가 조기 해제되지 않도록 표시 중인 동안 강한 참조를 유지한다.
 private val activeDelegates = mutableListOf<PhotoPickerDelegate>()
 
+/**
+ * PHPickerViewController 는 앱 프로세스 밖에서 동작해 사진 라이브러리 접근 권한이 필요 없다.
+ * (UIImagePickerController 와 달리 Info.plist 사용 설명 문자열도 요구하지 않는다.)
+ */
 private fun presentImagePicker(onResult: (PickedImage?) -> Unit) {
 	val presenter = topViewController() ?: run {
 		onResult(null)
 		return
 	}
-	val picker = UIImagePickerController()
+	val configuration = PHPickerConfiguration().apply {
+		selectionLimit = 1
+		filter = PHPickerFilter.imagesFilter()
+	}
+	val picker = PHPickerViewController(configuration = configuration)
 	val delegate = PhotoPickerDelegate(onResult)
 	activeDelegates.add(delegate)
 	picker.delegate = delegate
@@ -49,21 +61,25 @@ private fun presentImagePicker(onResult: (PickedImage?) -> Unit) {
 
 private class PhotoPickerDelegate(
 	private val onResult: (PickedImage?) -> Unit,
-) : NSObject(), UIImagePickerControllerDelegateProtocol, UINavigationControllerDelegateProtocol {
+) : NSObject(), PHPickerViewControllerDelegateProtocol {
 
-	override fun imagePickerController(
-		picker: UIImagePickerController,
-		didFinishPickingMediaWithInfo: Map<Any?, *>,
-	) {
-		val image = didFinishPickingMediaWithInfo[UIImagePickerControllerOriginalImage] as? UIImage
-		picker.dismissViewControllerAnimated(true) {
-			finish(image?.toPickedImage())
-		}
-	}
+	override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
+		picker.dismissViewControllerAnimated(true, null)
 
-	override fun imagePickerControllerDidCancel(picker: UIImagePickerController) {
-		picker.dismissViewControllerAnimated(true) {
+		val provider = (didFinishPicking.firstOrNull() as? PHPickerResult)?.itemProvider
+		if (provider == null) {
 			finish(null)
+			return
+		}
+
+		provider.loadDataRepresentationForTypeIdentifier(
+			PUBLIC_IMAGE_TYPE,
+		) { data: NSData?, _: NSError? ->
+			val picked = data?.let { UIImage(data = it)?.toPickedImage() }
+			// 데이터 로드 콜백은 임의 큐에서 호출될 수 있어 UI 상태 전달은 메인 큐로 넘긴다.
+			dispatch_async(dispatch_get_main_queue()) {
+				finish(picked)
+			}
 		}
 	}
 
@@ -72,6 +88,8 @@ private class PhotoPickerDelegate(
 		activeDelegates.remove(this)
 	}
 }
+
+private const val PUBLIC_IMAGE_TYPE = "public.image"
 
 @OptIn(ExperimentalForeignApi::class)
 private fun UIImage.toPickedImage(): PickedImage? {
