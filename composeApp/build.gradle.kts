@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import java.util.Properties
 
 plugins {
 	alias(libs.plugins.android.application)
@@ -62,16 +63,35 @@ kotlin {
 	}
 }
 
+// keystore.properties 가 있으면 릴리스 서명 설정을 구성한다(없으면 release 서명 없이 빌드).
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties().apply {
+	if (keystorePropertiesFile.exists()) {
+		keystorePropertiesFile.inputStream().use { load(it) }
+	}
+}
+
 android {
 	namespace = "com.hand.log"
 	compileSdk = libs.versions.android.compileSdk.get().toInt()
+
+	signingConfigs {
+		if (keystorePropertiesFile.exists()) {
+			create("release") {
+				storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+				storePassword = keystoreProperties.getProperty("storePassword")
+				keyAlias = keystoreProperties.getProperty("keyAlias")
+				keyPassword = keystoreProperties.getProperty("keyPassword")
+			}
+		}
+	}
 
 	defaultConfig {
 		applicationId = "com.hand.log"
 		minSdk = libs.versions.android.minSdk.get().toInt()
 		targetSdk = libs.versions.android.targetSdk.get().toInt()
 		versionCode = 1
-		versionName = "1.0"
+		versionName = "1.0.0"
 	}
 	buildFeatures {
 		buildConfig = true
@@ -91,6 +111,9 @@ android {
 	}
 	buildTypes {
 		getByName("release") {
+			if (keystorePropertiesFile.exists()) {
+				signingConfig = signingConfigs.getByName("release")
+			}
 			isMinifyEnabled = true
 			isShrinkResources = true
 			proguardFiles(
@@ -102,14 +125,19 @@ android {
 }
 
 afterEvaluate {
-	tasks.matching { it.name.contains("Paid") && it.name.contains("GoogleServices") }.configureEach {
-		enabled = false
-	}
-	tasks.matching { it.name.contains("Paid") && it.name.contains("Crashlytics") }.configureEach {
-		enabled = false
-	}
-	tasks.matching { it.name.contains("Paid") && it.name.contains("FirebasePerf") }.configureEach {
-		enabled = false
+	// paid flavor(com.hand.log.pro)용 google-services.json 이 있으면 Firebase(크래시 리포팅 등)를 그대로 활성화하고,
+	// 없으면 관련 태스크만 비활성화해 빌드가 깨지지 않게 한다.
+	val paidFirebaseConfigured = file("src/paid/google-services.json").exists()
+	if (!paidFirebaseConfigured) {
+		tasks.matching { it.name.contains("Paid") && it.name.contains("GoogleServices") }.configureEach {
+			enabled = false
+		}
+		tasks.matching { it.name.contains("Paid") && it.name.contains("Crashlytics") }.configureEach {
+			enabled = false
+		}
+		tasks.matching { it.name.contains("Paid") && it.name.contains("FirebasePerf") }.configureEach {
+			enabled = false
+		}
 	}
 }
 
