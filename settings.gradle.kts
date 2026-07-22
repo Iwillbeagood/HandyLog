@@ -56,6 +56,7 @@ include(
     ":core:common",
     ":core:designsystem",
     ":core:navigation",
+    ":core:platform",
     ":core:res",
     ":core:ui",
     ":core:utils",

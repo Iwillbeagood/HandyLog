@@ -3,7 +3,7 @@ package com.hand.log.data.repositoryImpl
 import com.hand.log.data.datasoure.local.SavedPlayerLocalDataSource
 import com.hand.log.domain.model.SavedPlayer
 import com.hand.log.domain.repository.SavedPlayerRepository
-import com.hand.log.utils.etc.Logger
+import com.hand.log.platform.etc.Logger
 import kotlinx.coroutines.flow.Flow
 
 internal class SavedPlayerRepositoryImpl(

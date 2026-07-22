@@ -52,6 +52,7 @@ kotlin {
 			implementation(projects.local.datastore)
 			implementation(projects.core.designsystem)
 			implementation(projects.core.navigation)
+			implementation(projects.core.platform)
 			implementation(projects.core.utils)
 
 			implementation(libs.androidx.lifecycle.runtime.compose)

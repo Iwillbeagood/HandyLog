@@ -4,7 +4,7 @@ import com.hand.log.data.datasoure.local.PokerTableLocalDataSource
 import com.hand.log.domain.model.Player
 import com.hand.log.domain.model.PokerTable
 import com.hand.log.domain.repository.PokerTableRepository
-import com.hand.log.utils.etc.Logger
+import com.hand.log.platform.etc.Logger
 import kotlinx.coroutines.flow.Flow
 
 internal class PokerTableRepositoryImpl(

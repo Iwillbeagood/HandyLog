@@ -28,8 +28,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
-import com.hand.log.utils.imeWindowInsets
-import com.hand.log.utils.isKeyboardVisible
+import com.hand.log.platform.imeWindowInsets
+import com.hand.log.platform.isKeyboardVisible
 import com.hand.log.designsystem.component.HandySwitch
 import com.hand.log.designsystem.component.HandyTopAppbar
 import com.hand.log.designsystem.component.RegularButton

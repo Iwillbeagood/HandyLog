@@ -4,16 +4,17 @@ plugins {
 	alias(libs.plugins.base.compose.multiplatform)
 }
 
-android.namespace = "com.hand.log.core.utils"
+android.namespace = "com.hand.log.core.platform"
 
 kotlin {
 	sourceSets {
 		commonMain.dependencies {
-			implementation(projects.core.res)
 			implementation(projects.domain.model)
 		}
-		commonTest.dependencies {
-			implementation(libs.kotlin.test)
+		androidMain.dependencies {
+			implementation(libs.androidx.core.ktx)
+			implementation(libs.androidx.activity.compose)
+			implementation(libs.firebase.crashlytics)
 		}
 	}
 }

@@ -33,9 +33,9 @@ import com.hand.log.settings.contact.di.featureSettingsContactModule
 import com.hand.log.settings.main.di.featureSettingsMainModule
 import com.hand.log.table.di.featureTableModule
 import com.hand.log.tableedit.di.featureTableEditModule
-import com.hand.log.utils.NavigationBarEffect
-import com.hand.log.utils.StatusBarEffect
-import com.hand.log.utils.toast.ToastManager
+import com.hand.log.platform.NavigationBarEffect
+import com.hand.log.platform.StatusBarEffect
+import com.hand.log.platform.toast.ToastManager
 import org.koin.compose.koinInject
 import org.koin.core.KoinApplication
 import org.koin.dsl.KoinAppDeclaration

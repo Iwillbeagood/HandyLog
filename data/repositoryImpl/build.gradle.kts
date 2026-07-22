@@ -11,6 +11,7 @@ kotlin {
 		commonMain.dependencies {
 			implementation(projects.domain.repository)
 			implementation(projects.data.datasource)
+			implementation(projects.core.platform)
 			implementation(projects.core.utils)
 			implementation(libs.kotlinx.coroutines.core)
 			implementation(libs.koin.core)

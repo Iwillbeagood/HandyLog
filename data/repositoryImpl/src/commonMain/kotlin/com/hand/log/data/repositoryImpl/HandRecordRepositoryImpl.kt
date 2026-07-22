@@ -3,7 +3,7 @@ package com.hand.log.data.repositoryImpl
 import com.hand.log.data.datasoure.local.HandRecordLocalDataSource
 import com.hand.log.domain.model.HandRecord
 import com.hand.log.domain.repository.HandRecordRepository
-import com.hand.log.utils.etc.Logger
+import com.hand.log.platform.etc.Logger
 import com.hand.log.utils.poker.HandEvaluator
 import kotlinx.coroutines.flow.Flow
 import kotlin.math.abs

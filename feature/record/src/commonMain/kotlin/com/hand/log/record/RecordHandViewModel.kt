@@ -33,7 +33,7 @@ import com.hand.log.record.contract.RecordStep
 import com.hand.log.record.contract.ResolvedShowdown
 import com.hand.log.record.model.PlayerStatus
 import com.hand.log.record.model.RecordPlayers
-import com.hand.log.utils.etc.Logger
+import com.hand.log.platform.etc.Logger
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow

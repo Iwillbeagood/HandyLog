@@ -36,6 +36,7 @@ class FeaturePlugin : Plugin<Project> {
                         implementation(project(":core:designsystem"))
                         implementation(project(":core:ui"))
                         implementation(project(":core:navigation"))
+                        implementation(project(":core:platform"))
                         implementation(project(":core:res"))
                         implementation(project(":core:utils"))
                         implementation(project(":domain:model"))

@@ -16,9 +16,9 @@ import com.hand.log.domain.model.etc.ToastDurationType
 import com.hand.log.playersedit.PlayerEditSheet
 import com.hand.log.navigation.interop.LocalMainActionInterop
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
-import com.hand.log.utils.share.rememberShareManager
-import com.hand.log.utils.share.toPngBytes
-import com.hand.log.utils.etc.Logger
+import com.hand.log.platform.share.rememberShareManager
+import com.hand.log.platform.share.toPngBytes
+import com.hand.log.platform.etc.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import handylog.core.res.generated.resources.Res

@@ -4,7 +4,7 @@ import android.app.Application
 import com.google.firebase.FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.hand.log.common.AppConfig
-import com.hand.log.utils.etc.Logger
+import com.hand.log.platform.etc.Logger
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 
