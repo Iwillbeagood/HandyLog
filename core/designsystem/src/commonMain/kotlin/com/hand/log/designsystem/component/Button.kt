@@ -5,7 +5,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -37,6 +39,7 @@ fun RegularButton(
 	containerColor: Color = HandyTheme.colorScheme.primary,
 	contentColor: Color = HandyTheme.colorScheme.onPrimary,
 	enabled: Boolean = true,
+	loading: Boolean = false,
 	isPreventMultipleClicks: Boolean = true,
 	borderStroke: Dp = 8.dp,
 	horizontalPadding: Dp = 4.dp,
@@ -44,8 +47,11 @@ fun RegularButton(
 ) {
 	val multipleEventsCutter = remember { MultipleEventsCutter.get() }
 	val colors = HandyTheme.colorScheme
-	val bgColor = if (enabled) containerColor else colors.secondary
-	val fgColor = if (enabled) contentColor else colors.onSecondary
+	// 로딩 중에는 클릭만 막고 활성 색상을 유지해 진행 중임을 드러낸다.
+	val filled = enabled || loading
+	val bgColor = if (filled) containerColor else colors.secondary
+	val fgColor = if (filled) contentColor else colors.onSecondary
+	val clickable = enabled && !loading
 	val shape = RoundedCornerShape(borderStroke)
 
 	Box(
@@ -54,7 +60,7 @@ fun RegularButton(
 			.clip(shape)
 			.background(bgColor, shape)
 			.then(
-				if (enabled) {
+				if (clickable) {
 					Modifier.clickable {
 						if (isPreventMultipleClicks) {
 							multipleEventsCutter.processEvent(onClick)
@@ -69,12 +75,20 @@ fun RegularButton(
 			.padding(vertical = verticalPadding, horizontal = horizontalPadding),
 		contentAlignment = Alignment.Center,
 	) {
-		Text(
-			text = text,
-			style = textStyle,
-			color = fgColor,
-			textAlign = TextAlign.Center,
-		)
+		if (loading) {
+			CircularProgressIndicator(
+				color = fgColor,
+				strokeWidth = 2.dp,
+				modifier = Modifier.size(20.dp),
+			)
+		} else {
+			Text(
+				text = text,
+				style = textStyle,
+				color = fgColor,
+				textAlign = TextAlign.Center,
+			)
+		}
 	}
 }
 
@@ -87,6 +101,18 @@ private fun RegularButtonPreview(
 		RegularButton(
 			onClick = {},
 			enabled = enable,
+			modifier = Modifier.padding(16.dp),
+		)
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun RegularButtonLoadingPreview() {
+	ThemePreview {
+		RegularButton(
+			onClick = {},
+			loading = true,
 			modifier = Modifier.padding(16.dp),
 		)
 	}
