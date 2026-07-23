@@ -1,0 +1,137 @@
+name: Release to Play Store
+
+# main 에 릴리스가 머지되면(versionName 이 올라가면) 실행:
+#   1. free flavor(com.hand.log) 서명 AAB 빌드
+#   2. Google Play internal 트랙 업로드
+#   3. v<versionName> 태그 생성 + 푸시, GitHub Release 게시
+#
+# versionName 에 해당하는 태그가 이미 있으면 전체 스킵(=버전이 실제로 올라간 머지에서만 배포).
+#
+# 필요한 Repository Secrets:
+#   KEYSTORE_BASE64           - .signing/release.jks 를 base64 인코딩한 값
+#   KEYSTORE_STORE_PASSWORD   - keystore store 비밀번호
+#   KEYSTORE_KEY_ALIAS        - key alias
+#   KEYSTORE_KEY_PASSWORD     - key 비밀번호
+#   GOOGLE_SERVICES_JSON      - composeApp/src/free/google-services.json 을 base64 인코딩한 값
+#   PLAY_SERVICE_ACCOUNT_JSON - Play Console 업로드용 서비스 계정 JSON(원문)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read version
+        id: version
+        run: |
+          VERSION=$(grep -E 'versionName = "' composeApp/build.gradle.kts | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+          if [ -z "$VERSION" ]; then
+            echo "::error::versionName 을 composeApp/build.gradle.kts 에서 찾지 못했습니다."
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "resolved version: v$VERSION"
+
+      - name: Check tag exists
+        id: tagcheck
+        run: |
+          if git rev-parse "refs/tags/${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::${{ steps.version.outputs.tag }} 태그가 이미 존재합니다 — 릴리스를 건너뜁니다."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up JDK 17
+        if: steps.tagcheck.outputs.exists == 'false'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        if: steps.tagcheck.outputs.exists == 'false'
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Decode signing & Firebase secrets
+        if: steps.tagcheck.outputs.exists == 'false'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          KEYSTORE_STORE_PASSWORD: ${{ secrets.KEYSTORE_STORE_PASSWORD }}
+          KEYSTORE_KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
+          KEYSTORE_KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
+        run: |
+          mkdir -p .signing composeApp/src/free
+          echo "$KEYSTORE_BASE64" | base64 --decode > .signing/release.jks
+          echo "$GOOGLE_SERVICES_JSON" | base64 --decode > composeApp/src/free/google-services.json
+          {
+            echo "storeFile=.signing/release.jks"
+            echo "storePassword=$KEYSTORE_STORE_PASSWORD"
+            echo "keyAlias=$KEYSTORE_KEY_ALIAS"
+            echo "keyPassword=$KEYSTORE_KEY_PASSWORD"
+          } > keystore.properties
+
+      - name: Build signed release bundle
+        if: steps.tagcheck.outputs.exists == 'false'
+        # versionCode = 1 + CI run number → 수동 업로드한 versionCode 1 에서 곧장 이어짐(첫 CI 실행 = 2).
+        # run_number 는 main push 마다 증가하므로 값이 건너뛸 수 있으나, 단조 증가만 하면 Play 는 문제없음.
+        run: |
+          VERSION_CODE=$((1 + ${{ github.run_number }}))
+          echo "versionCode=$VERSION_CODE"
+          ./gradlew :composeApp:bundleFreeRelease -PversionCode="$VERSION_CODE" --no-daemon --stacktrace
+
+      - name: Locate AAB
+        if: steps.tagcheck.outputs.exists == 'false'
+        id: aab
+        run: |
+          AAB=$(find composeApp/build/outputs/bundle -name "*.aab" | head -1)
+          if [ -z "$AAB" ]; then
+            echo "::error::생성된 AAB 를 찾지 못했습니다."
+            exit 1
+          fi
+          echo "path=$AAB" >> "$GITHUB_OUTPUT"
+          echo "AAB: $AAB"
+
+      - name: Upload to Google Play (internal)
+        if: steps.tagcheck.outputs.exists == 'false'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.hand.log
+          releaseFiles: ${{ steps.aab.outputs.path }}
+          track: internal
+          status: completed
+
+      - name: Create and push tag
+        if: steps.tagcheck.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+
+      - name: Create GitHub Release
+        if: steps.tagcheck.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          generate_release_notes: true
+          files: ${{ steps.aab.outputs.path }}
