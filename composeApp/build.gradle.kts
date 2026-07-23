@@ -45,6 +45,7 @@ kotlin {
 			implementation(projects.feature.settings.home)
 			implementation(projects.feature.settings.betsize)
 			implementation(projects.feature.settings.contact)
+			implementation(projects.feature.settings.upgrade)
 			implementation(projects.domain.model)
 			implementation(projects.domain.repository)
 			implementation(projects.data.datasource)
@@ -90,24 +91,12 @@ android {
 		applicationId = "com.hand.log"
 		minSdk = libs.versions.android.minSdk.get().toInt()
 		targetSdk = libs.versions.android.targetSdk.get().toInt()
-		versionCode = 1
+		// CI 에서 -PversionCode 로 주입하면 그 값을, 없으면 로컬 빌드용 기본값 1 을 사용한다.
+		versionCode = (project.findProperty("versionCode") as String?)?.toIntOrNull() ?: 1
 		versionName = "1.0.0"
 	}
 	buildFeatures {
 		buildConfig = true
-	}
-	flavorDimensions += "tier"
-	productFlavors {
-		create("free") {
-			dimension = "tier"
-			applicationId = "com.hand.log"
-			buildConfigField("Boolean", "IS_PRO", "false")
-		}
-		create("paid") {
-			dimension = "tier"
-			applicationId = "com.hand.log.pro"
-			buildConfigField("Boolean", "IS_PRO", "true")
-		}
 	}
 	buildTypes {
 		getByName("release") {
@@ -120,23 +109,6 @@ android {
 				getDefaultProguardFile("proguard-android-optimize.txt"),
 				"proguard-rules.pro",
 			)
-		}
-	}
-}
-
-afterEvaluate {
-	// paid flavor(com.hand.log.pro)용 google-services.json 이 있으면 Firebase(크래시 리포팅 등)를 그대로 활성화하고,
-	// 없으면 관련 태스크만 비활성화해 빌드가 깨지지 않게 한다.
-	val paidFirebaseConfigured = file("src/paid/google-services.json").exists()
-	if (!paidFirebaseConfigured) {
-		tasks.matching { it.name.contains("Paid") && it.name.contains("GoogleServices") }.configureEach {
-			enabled = false
-		}
-		tasks.matching { it.name.contains("Paid") && it.name.contains("Crashlytics") }.configureEach {
-			enabled = false
-		}
-		tasks.matching { it.name.contains("Paid") && it.name.contains("FirebasePerf") }.configureEach {
-			enabled = false
 		}
 	}
 }

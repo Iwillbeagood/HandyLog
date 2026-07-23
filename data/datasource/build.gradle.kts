@@ -24,6 +24,9 @@ kotlin {
 		}
 		androidMain.dependencies {
 			implementation(libs.ktor.client.okhttp)
+			implementation(projects.core.platform)
+			implementation(libs.koin.android)
+			implementation(libs.billing)
 		}
 		iosMain.dependencies {
 			implementation(libs.ktor.client.darwin)
