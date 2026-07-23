@@ -1,7 +1,7 @@
 name: Release to Play Store
 
 # main 에 릴리스가 머지되면(versionName 이 올라가면) 실행:
-#   1. free flavor(com.hand.log) 서명 AAB 빌드
+#   1. 서명 AAB 빌드(단일 앱, com.hand.log)
 #   2. Google Play internal 트랙 업로드
 #   3. v<versionName> 태그 생성 + 푸시, GitHub Release 게시
 #
@@ -12,7 +12,7 @@ name: Release to Play Store
 #   KEYSTORE_STORE_PASSWORD   - keystore store 비밀번호
 #   KEYSTORE_KEY_ALIAS        - key alias
 #   KEYSTORE_KEY_PASSWORD     - key 비밀번호
-#   GOOGLE_SERVICES_JSON      - composeApp/src/free/google-services.json 을 base64 인코딩한 값
+#   GOOGLE_SERVICES_JSON      - composeApp/google-services.json 을 base64 인코딩한 값
 #   PLAY_SERVICE_ACCOUNT_JSON - Play Console 업로드용 서비스 계정 JSON(원문)
 
 on:
@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -60,14 +60,14 @@ jobs:
 
       - name: Set up JDK 17
         if: steps.tagcheck.outputs.exists == 'false'
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
       - name: Set up Gradle
         if: steps.tagcheck.outputs.exists == 'false'
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Decode signing & Firebase secrets
         if: steps.tagcheck.outputs.exists == 'false'
@@ -78,9 +78,9 @@ jobs:
           KEYSTORE_KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
           KEYSTORE_KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
         run: |
-          mkdir -p .signing composeApp/src/free
+          mkdir -p .signing
           echo "$KEYSTORE_BASE64" | base64 --decode > .signing/release.jks
-          echo "$GOOGLE_SERVICES_JSON" | base64 --decode > composeApp/src/free/google-services.json
+          echo "$GOOGLE_SERVICES_JSON" | base64 --decode > composeApp/google-services.json
           {
             echo "storeFile=.signing/release.jks"
             echo "storePassword=$KEYSTORE_STORE_PASSWORD"
@@ -95,7 +95,7 @@ jobs:
         run: |
           VERSION_CODE=$((1 + ${{ github.run_number }}))
           echo "versionCode=$VERSION_CODE"
-          ./gradlew :composeApp:bundleFreeRelease -PversionCode="$VERSION_CODE" --no-daemon --stacktrace
+          ./gradlew :composeApp:bundleRelease -PversionCode="$VERSION_CODE" --no-daemon --stacktrace
 
       - name: Locate AAB
         if: steps.tagcheck.outputs.exists == 'false'
