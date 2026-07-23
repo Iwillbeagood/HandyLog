@@ -54,6 +54,10 @@ internal fun HomeRoute(
 		onTableSaved = { table ->
 			viewModel.onTableSaved(table)
 		},
+		onUpgrade = {
+			viewModel.dismissDialog()
+			navAction.navigateToProUpgrade()
+		},
 	)
 }
 
@@ -62,6 +66,7 @@ private fun HomeModalContent(
 	homeModalEffect: HomeModalEffect,
 	onDismissRequest: () -> Unit,
 	onTableSaved: (PokerTable) -> Unit,
+	onUpgrade: () -> Unit,
 ) {
 	when (homeModalEffect) {
 		HomeModalEffect.Idle -> {}
@@ -75,6 +80,7 @@ private fun HomeModalContent(
 			ProPaywallSheet(
 				feature = homeModalEffect.feature,
 				onDismiss = onDismissRequest,
+				onUpgrade = onUpgrade,
 			)
 		}
 	}

@@ -40,6 +40,10 @@ internal fun PlayersRoute(
 		onSavePlayer = viewModel::savePlayer,
 		onDeletePlayer = viewModel::deletePlayer,
 		onDismiss = viewModel::dismissModal,
+		onUpgrade = {
+			viewModel.dismissModal()
+			navAction.navigateToProUpgrade()
+		},
 	)
 }
 
@@ -49,6 +53,7 @@ private fun PlayersModalContent(
 	onSavePlayer: (SavedPlayer) -> Unit,
 	onDeletePlayer: (String) -> Unit,
 	onDismiss: () -> Unit,
+	onUpgrade: () -> Unit,
 ) {
 	when (modalEffect) {
 		PlayersModalEffect.Idle -> {}
@@ -74,6 +79,7 @@ private fun PlayersModalContent(
 			ProPaywallSheet(
 				feature = modalEffect.feature,
 				onDismiss = onDismiss,
+				onUpgrade = onUpgrade,
 			)
 		}
 	}

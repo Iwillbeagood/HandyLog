@@ -1,6 +1,7 @@
 package com.hand.log.settings.upgrade
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,6 +28,7 @@ import com.hand.log.designsystem.component.TopAppbarType
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
+import com.hand.log.settings.upgrade.contract.ProUpgradeState
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.crown
 import handylog.core.res.generated.resources.upgrade_title
@@ -41,15 +43,20 @@ import handylog.core.res.generated.resources.upgrade_players
 import handylog.core.res.generated.resources.upgrade_presets
 import handylog.core.res.generated.resources.upgrade_free_limit
 import handylog.core.res.generated.resources.upgrade_unlimited
-import handylog.core.res.generated.resources.upgrade_download
-import handylog.core.res.generated.resources.upgrade_store_note
+import handylog.core.res.generated.resources.upgrade_purchase
+import handylog.core.res.generated.resources.upgrade_purchase_priced
+import handylog.core.res.generated.resources.upgrade_restore
+import handylog.core.res.generated.resources.upgrade_owned_title
+import handylog.core.res.generated.resources.upgrade_owned_desc
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun ProUpgradeScreen(
+	state: ProUpgradeState,
 	onBack: () -> Unit,
-	onDownloadClick: () -> Unit,
+	onPurchase: () -> Unit,
+	onRestore: () -> Unit,
 ) {
 	BaseScaffold {
 		Column(modifier = Modifier.fillMaxSize()) {
@@ -69,7 +76,15 @@ internal fun ProUpgradeScreen(
 			) {
 				HeroSection()
 				ComparisonTable()
-				DownloadSection(onDownloadClick = onDownloadClick)
+				if (state.isPro) {
+					OwnedSection()
+				} else {
+					PurchaseSection(
+						state = state,
+						onPurchase = onPurchase,
+						onRestore = onRestore,
+					)
+				}
 			}
 		}
 	}
@@ -185,21 +200,65 @@ private fun ComparisonTable() {
 }
 
 @Composable
-private fun DownloadSection(onDownloadClick: () -> Unit) {
+private fun PurchaseSection(
+	state: ProUpgradeState,
+	onPurchase: () -> Unit,
+	onRestore: () -> Unit,
+) {
 	Column(
 		modifier = Modifier.fillMaxWidth(),
 		horizontalAlignment = Alignment.CenterHorizontally,
 		verticalArrangement = Arrangement.spacedBy(12.dp),
 	) {
+		val purchaseText = state.price?.let {
+			stringResource(Res.string.upgrade_purchase_priced, it)
+		} ?: stringResource(Res.string.upgrade_purchase)
+
 		RegularButton(
-			onClick = onDownloadClick,
-			text = stringResource(Res.string.upgrade_download),
+			onClick = onPurchase,
+			text = purchaseText,
+			loading = state.isProcessing,
 			modifier = Modifier.fillMaxWidth(),
 		)
 		Text(
-			text = stringResource(Res.string.upgrade_store_note),
-			style = HandyTheme.typography.regular12,
+			text = stringResource(Res.string.upgrade_restore),
+			style = HandyTheme.typography.medium14,
 			color = HandyTheme.colorScheme.textSecondary,
+			modifier = Modifier
+				.clip(RoundedCornerShape(8.dp))
+				.clickable(enabled = !state.isProcessing, onClick = onRestore)
+				.padding(horizontal = 12.dp, vertical = 8.dp),
+		)
+	}
+}
+
+@Composable
+private fun OwnedSection() {
+	Column(
+		modifier = Modifier
+			.fillMaxWidth()
+			.clip(RoundedCornerShape(12.dp))
+			.background(HandyTheme.colorScheme.muted)
+			.padding(20.dp),
+		horizontalAlignment = Alignment.CenterHorizontally,
+		verticalArrangement = Arrangement.spacedBy(8.dp),
+	) {
+		Icon(
+			painter = painterResource(Res.drawable.crown),
+			contentDescription = null,
+			modifier = Modifier.size(32.dp),
+			tint = HandyTheme.colorScheme.gold,
+		)
+		Text(
+			text = stringResource(Res.string.upgrade_owned_title),
+			style = HandyTheme.typography.bold18,
+			color = HandyTheme.colorScheme.textPrimary,
+		)
+		Text(
+			text = stringResource(Res.string.upgrade_owned_desc),
+			style = HandyTheme.typography.regular14,
+			color = HandyTheme.colorScheme.textSecondary,
+			textAlign = TextAlign.Center,
 		)
 	}
 }
@@ -209,8 +268,23 @@ private fun DownloadSection(onDownloadClick: () -> Unit) {
 private fun ProUpgradeScreenPreview() {
 	ThemePreview {
 		ProUpgradeScreen(
+			state = ProUpgradeState(isPro = false, price = "₩4,900"),
 			onBack = {},
-			onDownloadClick = {},
+			onPurchase = {},
+			onRestore = {},
+		)
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun ProUpgradeScreenOwnedPreview() {
+	ThemePreview {
+		ProUpgradeScreen(
+			state = ProUpgradeState(isPro = true),
+			onBack = {},
+			onPurchase = {},
+			onRestore = {},
 		)
 	}
 }

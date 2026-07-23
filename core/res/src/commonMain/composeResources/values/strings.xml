@@ -291,6 +291,7 @@
 	<!-- Pro Paywall -->
 	<string name="pro_paywall_title">Pro 기능</string>
 	<string name="pro_paywall_confirm">확인</string>
+	<string name="pro_paywall_upgrade">Pro 업그레이드</string>
 	<string name="pro_paywall_tables">무료 버전에서는 테이블을 최대 %1$d개까지 생성할 수 있습니다.\nPro 버전에서 무제한으로 이용하세요.</string>
 	<string name="pro_paywall_hands">무료 버전에서는 테이블당 핸드를 최대 %1$d개까지 기록할 수 있습니다.\nPro 버전에서 무제한으로 이용하세요.</string>
 	<string name="pro_paywall_players">무료 버전에서는 플레이어를 최대 %1$d명까지 마킹할 수 있습니다.\nPro 버전에서 무제한으로 이용하세요.</string>
@@ -309,6 +310,16 @@
 	<string name="upgrade_presets">프리셋 편집</string>
 	<string name="upgrade_free_limit">최대 %1$d개</string>
 	<string name="upgrade_unlimited">무제한</string>
-	<string name="upgrade_download">Pro 버전 다운로드</string>
-	<string name="upgrade_store_note">Google Play 또는 App Store에서 다운로드</string>
+	<string name="upgrade_purchase">Pro 구매하기</string>
+	<string name="upgrade_purchase_priced">%1$s에 Pro 구매하기</string>
+	<string name="upgrade_restore">구매 복원</string>
+	<string name="upgrade_owned_title">Pro 이용 중</string>
+	<string name="upgrade_owned_desc">모든 기능이 잠금 해제되었습니다.</string>
+
+	<!-- In-app Purchase -->
+	<string name="purchase_success">Pro 구매가 완료되었습니다.</string>
+	<string name="purchase_already_owned">이미 Pro를 이용 중입니다.</string>
+	<string name="purchase_pending">결제 승인을 기다리고 있습니다.</string>
+	<string name="purchase_restore_none">복원할 구매 내역이 없습니다.</string>
+	<string name="purchase_error">결제를 완료하지 못했습니다. 잠시 후 다시 시도해주세요.</string>
 </resources>

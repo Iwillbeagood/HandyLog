@@ -3,10 +3,12 @@ package com.hand.log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hand.log.data.datasoure.billing.billingModule
 import com.hand.log.data.datasoure.di.networkModule
 import com.hand.log.data.datasoure.di.remoteDataSourceModule
 import com.hand.log.data.repositoryImpl.di.repositoryModule
@@ -17,6 +19,7 @@ import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.ThemeMode
 import com.hand.log.domain.model.etc.ToastDurationType
 import com.hand.log.domain.repository.AppSettingsRepository
+import com.hand.log.domain.repository.ProEntitlementRepository
 import com.hand.log.handdetail.di.featureHandDetailModule
 import com.hand.log.home.di.featureHomeModule
 import com.hand.log.local.datastore.di.dataStoreDataSourceModule
@@ -31,6 +34,7 @@ import com.hand.log.record.di.featureRecordModule
 import com.hand.log.settings.betsize.di.featureSettingsBetSizeModule
 import com.hand.log.settings.contact.di.featureSettingsContactModule
 import com.hand.log.settings.main.di.featureSettingsMainModule
+import com.hand.log.settings.upgrade.di.featureSettingsUpgradeModule
 import com.hand.log.table.di.featureTableModule
 import com.hand.log.tableedit.di.featureTableEditModule
 import com.hand.log.platform.NavigationBarEffect
@@ -54,6 +58,11 @@ internal fun App() {
 	}
 
 	val appSettingsRepository: AppSettingsRepository = koinInject()
+	val proEntitlementRepository: ProEntitlementRepository = koinInject()
+	LaunchedEffect(Unit) {
+		// 앱 시작 시 스토어와 엔타이틀먼트 재동기화(서버리스: 복원·구매 반영).
+		proEntitlementRepository.refresh()
+	}
 	val themeMode by appSettingsRepository.observeThemeMode()
 		.collectAsStateWithLifecycle(initialValue = ThemeMode.AUTO)
 	val darkTheme = when (themeMode) {
@@ -88,6 +97,7 @@ internal val appModule = module {
 		networkModule,
 		remoteDataSourceModule,
 		repositoryModule,
+		billingModule,
 	)
 	includes(
 		featureHomeModule,
@@ -101,6 +111,7 @@ internal val appModule = module {
 		featureSettingsMainModule,
 		featureSettingsBetSizeModule,
 		featureSettingsContactModule,
+		featureSettingsUpgradeModule,
 	)
 }
 

@@ -11,6 +11,7 @@ room = "2.8.0"
 sqlite = "2.6.0"
 googleService = "4.4.3"
 ksp = "2.3.2"
+billing = "7.1.1"
 
 ## Jetpack Compose Multiplatform Navigation 3
 multiplatform-nav3-ui = "1.0.0-alpha05"
@@ -98,6 +99,7 @@ jetbrains-lifecycle-viewmodel-navigation3 = { module = "org.jetbrains.androidx.l
 compose-navigationevent = { module = "org.jetbrains.androidx.navigationevent:navigationevent-compose", version.ref = "composeNavigationEvent" }
 
 # Koin
+billing = { module = "com.android.billingclient:billing", version.ref = "billing" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-compose-viewmodel-navigation = { module = "io.insert-koin:koin-compose-viewmodel-navigation", version.ref = "koin" }
