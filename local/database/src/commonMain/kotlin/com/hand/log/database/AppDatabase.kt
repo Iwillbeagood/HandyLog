@@ -8,9 +8,11 @@ import androidx.room.TypeConverters
 import com.hand.log.database.converter.Converters
 import com.hand.log.database.dao.HandRecordDao
 import com.hand.log.database.dao.PokerTableDao
+import com.hand.log.database.dao.QuizRecordDao
 import com.hand.log.database.dao.SavedPlayerDao
 import com.hand.log.database.entity.HandRecordEntity
 import com.hand.log.database.entity.PokerTableEntity
+import com.hand.log.database.entity.QuizRecordEntity
 import com.hand.log.database.entity.SavedPlayerEntity
 import com.hand.log.database.entity.TablePlayerEntity
 
@@ -20,8 +22,9 @@ import com.hand.log.database.entity.TablePlayerEntity
 		TablePlayerEntity::class,
 		HandRecordEntity::class,
 		SavedPlayerEntity::class,
+		QuizRecordEntity::class,
 	],
-	version = 2,
+	version = 3,
 )
 @TypeConverters(Converters::class)
 @ConstructedBy(AppDatabaseConstructor::class)
@@ -29,6 +32,7 @@ abstract class AppDatabase : RoomDatabase() {
 	abstract fun pokerTableDao(): PokerTableDao
 	abstract fun handRecordDao(): HandRecordDao
 	abstract fun savedPlayerDao(): SavedPlayerDao
+	abstract fun quizRecordDao(): QuizRecordDao
 }
 
 expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {

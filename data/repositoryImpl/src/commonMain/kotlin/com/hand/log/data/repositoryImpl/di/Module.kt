@@ -5,12 +5,16 @@ import com.hand.log.data.repositoryImpl.PokerTableRepositoryImpl
 import com.hand.log.data.repositoryImpl.AppSettingsRepositoryImpl
 import com.hand.log.data.repositoryImpl.FeedbackRepositoryImpl
 import com.hand.log.data.repositoryImpl.ProEntitlementRepositoryImpl
+import com.hand.log.data.repositoryImpl.QuizRecordRepositoryImpl
+import com.hand.log.data.repositoryImpl.QuizReviewRepositoryImpl
 import com.hand.log.data.repositoryImpl.SavedPlayerRepositoryImpl
 import com.hand.log.domain.repository.AppSettingsRepository
 import com.hand.log.domain.repository.FeedbackRepository
 import com.hand.log.domain.repository.HandRecordRepository
 import com.hand.log.domain.repository.PokerTableRepository
 import com.hand.log.domain.repository.ProEntitlementRepository
+import com.hand.log.domain.repository.QuizRecordRepository
+import com.hand.log.domain.repository.QuizReviewRepository
 import com.hand.log.domain.repository.SavedPlayerRepository
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
@@ -23,4 +27,6 @@ val repositoryModule = module {
 	singleOf(::AppSettingsRepositoryImpl) bind AppSettingsRepository::class
 	singleOf(::FeedbackRepositoryImpl) bind FeedbackRepository::class
 	singleOf(::ProEntitlementRepositoryImpl) bind ProEntitlementRepository::class
+	singleOf(::QuizRecordRepositoryImpl) bind QuizRecordRepository::class
+	singleOf(::QuizReviewRepositoryImpl) bind QuizReviewRepository::class
 }

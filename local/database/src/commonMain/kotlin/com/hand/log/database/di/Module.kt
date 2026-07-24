@@ -3,10 +3,12 @@ package com.hand.log.database.di
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.hand.log.data.datasoure.local.HandRecordLocalDataSource
 import com.hand.log.data.datasoure.local.PokerTableLocalDataSource
+import com.hand.log.data.datasoure.local.QuizRecordLocalDataSource
 import com.hand.log.data.datasoure.local.SavedPlayerLocalDataSource
 import com.hand.log.database.AppDatabase
 import com.hand.log.database.impl.HandRecordLocalDataSourceImpl
 import com.hand.log.database.impl.PokerTableLocalDataSourceImpl
+import com.hand.log.database.impl.QuizRecordLocalDataSourceImpl
 import com.hand.log.database.impl.SavedPlayerLocalDataSourceImpl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -25,10 +27,12 @@ val databaseModule = module {
 	single { get<AppDatabase>().pokerTableDao() }
 	single { get<AppDatabase>().handRecordDao() }
 	single { get<AppDatabase>().savedPlayerDao() }
+	single { get<AppDatabase>().quizRecordDao() }
 }
 
 val databaseDataSourceModule = module {
 	singleOf(::PokerTableLocalDataSourceImpl) bind PokerTableLocalDataSource::class
 	singleOf(::HandRecordLocalDataSourceImpl) bind HandRecordLocalDataSource::class
 	singleOf(::SavedPlayerLocalDataSourceImpl) bind SavedPlayerLocalDataSource::class
+	singleOf(::QuizRecordLocalDataSourceImpl) bind QuizRecordLocalDataSource::class
 }

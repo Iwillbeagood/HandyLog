@@ -15,6 +15,7 @@ val localProperties = Properties().apply {
 }
 val notionToken = localProperties.getProperty("notion.token").orEmpty().trim()
 val slackWebhookUrl = localProperties.getProperty("slack.webhook").orEmpty().trim()
+val openAiApiKey = localProperties.getProperty("openai.key").orEmpty().trim()
 
 android {
 	namespace = "com.hand.log.core.common"
@@ -32,5 +33,6 @@ buildkonfig {
 	defaultConfigs {
 		buildConfigField(STRING, "NOTION_TOKEN", notionToken)
 		buildConfigField(STRING, "SLACK_WEBHOOK_URL", slackWebhookUrl)
+		buildConfigField(STRING, "OPENAI_API_KEY", openAiApiKey)
 	}
 }
