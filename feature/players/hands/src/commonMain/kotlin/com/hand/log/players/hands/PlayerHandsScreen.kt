@@ -62,7 +62,10 @@ internal fun PlayerHandsScreen(
 ) {
 	val colors = HandyTheme.colorScheme
 
+	// 바텀바를 표시하는 화면. 네비바 인셋은 아래 리스트 contentPadding(paddingValues.bottom)에
+	// 이미 포함되므로, 여기서 navigationBarsPadding 을 또 적용하면 인셋이 이중 계산된다.
 	BaseScaffold(
+		applyNavigationBarsPadding = false,
 		containerColor = colors.background,
 		topBar = {
 			HandyTopAppbar(

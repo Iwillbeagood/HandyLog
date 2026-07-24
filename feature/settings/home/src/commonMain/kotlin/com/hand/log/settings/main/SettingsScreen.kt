@@ -53,7 +53,8 @@ internal fun SettingsScreen(
 	onContactClick: () -> Unit,
 	onLegalClick: () -> Unit,
 ) {
-	BaseScaffold {
+	// 바텀바를 표시하는 탭 화면이라 네비바 인셋은 MainBottomBar 가 처리한다.
+	BaseScaffold(applyNavigationBarsPadding = false) {
 		Column(
 			modifier = Modifier.fillMaxSize(),
 		) {

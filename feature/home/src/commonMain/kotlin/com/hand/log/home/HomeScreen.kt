@@ -49,7 +49,9 @@ internal fun HomeScreen(
 	onNavigateToHandDetail: (String) -> Unit,
 	onTableAdd: () -> Unit,
 ) {
-	BaseScaffold {
+	// 바텀바를 표시하는 탭 화면이라 네비바 인셋은 MainBottomBar 가 처리한다.
+	// 여기서 다시 적용하면 화면 콘텐츠와 바텀바 사이에 인셋 높이만큼 빈 패딩이 생긴다.
+	BaseScaffold(applyNavigationBarsPadding = false) {
 		Column(
 			modifier = Modifier.fillMaxSize(),
 		) {
