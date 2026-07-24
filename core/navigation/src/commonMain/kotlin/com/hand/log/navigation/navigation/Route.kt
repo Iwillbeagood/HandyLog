@@ -14,6 +14,9 @@ sealed interface MainTabRoute : Route {
 	data object Home : MainTabRoute
 
 	@Serializable
+	data object Preflop : MainTabRoute
+
+	@Serializable
 	data class Players(val openAdd: Boolean = false, val nonce: Long = 0) : MainTabRoute
 
 	@Serializable
@@ -34,6 +37,15 @@ data class PlayerHands(val savedPlayerId: String, val playerName: String) : Rout
 
 @Serializable
 data object BetSizeSettings : Route
+
+@Serializable
+data object PreflopChart : Route
+
+@Serializable
+data object PreflopQuiz : Route
+
+@Serializable
+data class PreflopQuizSession(val type: String) : Route
 
 @Serializable
 data object ProUpgrade : Route

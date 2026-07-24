@@ -30,6 +30,9 @@ import com.hand.log.navigation.interop.MainActionInterop
 import com.hand.log.players.di.featurePlayersModule
 import com.hand.log.players.hands.di.featurePlayerHandsModule
 import com.hand.log.playersetup.di.featurePlayerSetupModule
+import com.hand.log.preflop.chart.di.featurePreflopChartModule
+import com.hand.log.preflop.quiz.home.di.featurePreflopQuizHomeModule
+import com.hand.log.preflop.quiz.session.di.featurePreflopQuizSessionModule
 import com.hand.log.record.di.featureRecordModule
 import com.hand.log.settings.betsize.di.featureSettingsBetSizeModule
 import com.hand.log.settings.contact.di.featureSettingsContactModule
@@ -101,6 +104,9 @@ internal val appModule = module {
 	)
 	includes(
 		featureHomeModule,
+		featurePreflopChartModule,
+		featurePreflopQuizHomeModule,
+		featurePreflopQuizSessionModule,
 		featureTableModule,
 		featureTableEditModule,
 		featureRecordModule,

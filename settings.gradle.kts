@@ -66,6 +66,11 @@ include(
 include(
     ":feature:main",
     ":feature:home",
+    ":feature:preflop:home",
+    ":feature:preflop:chart",
+    ":feature:preflop:quiz:common",
+    ":feature:preflop:quiz:home",
+    ":feature:preflop:quiz:session",
     ":feature:players:home",
     ":feature:players:players-edit",
     ":feature:players:hands",
