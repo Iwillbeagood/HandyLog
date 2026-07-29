@@ -1,9 +1,9 @@
 package com.hand.log.data.datasoure.di
 
+import com.hand.log.data.datasoure.remote.AiReviewRemoteDataSource
+import com.hand.log.data.datasoure.remote.AiReviewRemoteDataSourceImpl
 import com.hand.log.data.datasoure.remote.FeedbackRemoteDataSource
 import com.hand.log.data.datasoure.remote.FeedbackRemoteDataSourceImpl
-import com.hand.log.data.datasoure.remote.QuizReviewRemoteDataSource
-import com.hand.log.data.datasoure.remote.QuizReviewRemoteDataSourceImpl
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
@@ -36,5 +36,5 @@ val networkModule = module {
 
 val remoteDataSourceModule = module {
 	singleOf(::FeedbackRemoteDataSourceImpl) bind FeedbackRemoteDataSource::class
-	singleOf(::QuizReviewRemoteDataSourceImpl) bind QuizReviewRemoteDataSource::class
+	singleOf(::AiReviewRemoteDataSourceImpl) bind AiReviewRemoteDataSource::class
 }

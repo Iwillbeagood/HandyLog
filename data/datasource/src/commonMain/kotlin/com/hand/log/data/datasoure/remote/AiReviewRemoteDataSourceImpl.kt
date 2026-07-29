@@ -14,24 +14,32 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 
-/**
- * OpenAI Chat Completions API(`api.openai.com`)를 직접 호출해 퀴즈 해설을 생성한다.
- * openai-kotlin 의존성 없이 앱의 기존 Ktor/HttpClient 패턴을 재사용한다.
- */
-class QuizReviewRemoteDataSourceImpl(
+class AiReviewRemoteDataSourceImpl(
 	private val httpClient: HttpClient,
-) : QuizReviewRemoteDataSource {
+) : AiReviewRemoteDataSource {
 
-	override suspend fun review(spot: QuizReviewSpot): String {
+	override suspend fun reviewQuizSpot(spot: QuizReviewSpot): String = chat(
+		systemPrompt = HoldemPromptManager.SYSTEM_PROMPT,
+		userPrompt = HoldemPromptManager.buildUserPrompt(spot),
+		temperature = QUIZ_TEMPERATURE,
+	)
+
+	override suspend fun reviewHand(handHistory: String, languageName: String): String = chat(
+		systemPrompt = HandReviewPromptManager.SYSTEM_PROMPT,
+		userPrompt = HandReviewPromptManager.buildUserPrompt(handHistory, languageName),
+		temperature = HAND_TEMPERATURE,
+	)
+
+	private suspend fun chat(systemPrompt: String, userPrompt: String, temperature: Double): String {
 		require(openAiApiKey.isNotBlank()) { "OpenAI API 키가 설정되지 않았습니다." }
 
 		val request = OpenAiChatRequest(
 			model = MODEL,
 			messages = listOf(
-				OpenAiMessage(role = ROLE_SYSTEM, content = HoldemPromptManager.SYSTEM_PROMPT),
-				OpenAiMessage(role = ROLE_USER, content = HoldemPromptManager.buildUserPrompt(spot)),
+				OpenAiMessage(role = ROLE_SYSTEM, content = systemPrompt),
+				OpenAiMessage(role = ROLE_USER, content = userPrompt),
 			),
-			temperature = TEMPERATURE,
+			temperature = temperature,
 		)
 
 		val response: OpenAiChatResponse = httpClient.post(CHAT_COMPLETIONS_URL) {
@@ -46,7 +54,8 @@ class QuizReviewRemoteDataSourceImpl(
 	private companion object {
 		const val CHAT_COMPLETIONS_URL = "https://api.openai.com/v1/chat/completions"
 		const val MODEL = "gpt-4o-mini"
-		const val TEMPERATURE = 0.3
+		const val QUIZ_TEMPERATURE = 0.3
+		const val HAND_TEMPERATURE = 0.5
 		const val ROLE_SYSTEM = "system"
 		const val ROLE_USER = "user"
 	}
