@@ -90,10 +90,11 @@ jobs:
 
       - name: Build signed release bundle
         if: steps.tagcheck.outputs.exists == 'false'
-        # versionCode = 1 + CI run number → 수동 업로드한 versionCode 1 에서 곧장 이어짐(첫 CI 실행 = 2).
+        # versionCode = 100 + CI run number.
+        # 로컬 UI 수동 업로드로 사용한 versionCode(최대 10)보다 항상 높게 유지하기 위해 base 를 100 으로 둔다.
         # run_number 는 main push 마다 증가하므로 값이 건너뛸 수 있으나, 단조 증가만 하면 Play 는 문제없음.
         run: |
-          VERSION_CODE=$((1 + ${{ github.run_number }}))
+          VERSION_CODE=$((100 + ${{ github.run_number }}))
           echo "versionCode=$VERSION_CODE"
           ./gradlew :composeApp:bundleRelease -PversionCode="$VERSION_CODE" --no-daemon --stacktrace
 
@@ -118,8 +119,6 @@ jobs:
           releaseFiles: ${{ steps.aab.outputs.path }}
           track: internal
           status: completed
-          # API 로 자동 검토 제출이 불가한 앱 상태(예: API 통한 첫 릴리스)에서 Edit 커밋이 실패하므로,
-          # 검토 미제출로 커밋만 하고 검토는 Play Console UI 에서 진행한다.
           changesNotSentForReview: true
 
       - name: Create and push tag
