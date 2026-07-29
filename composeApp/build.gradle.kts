@@ -93,7 +93,7 @@ android {
 		targetSdk = libs.versions.android.targetSdk.get().toInt()
 		// CI 에서 -PversionCode 로 주입하면 그 값을, 없으면 로컬 빌드용 기본값 1 을 사용한다.
 		versionCode = (project.findProperty("versionCode") as String?)?.toIntOrNull() ?: 1
-		versionName = "1.0.0"
+		versionName = "1.0.1"
 	}
 	buildFeatures {
 		buildConfig = true
