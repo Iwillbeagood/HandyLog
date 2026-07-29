@@ -20,6 +20,7 @@ kotlin {
 					baseName = "ComposeApp"
 					isStatic = true
 					binaryOption("bundleId", "com.hand.log")
+					export(projects.data.datasource)
 				}
 			}
 		}
@@ -52,7 +53,7 @@ kotlin {
 			implementation(projects.feature.settings.upgrade)
 			implementation(projects.domain.model)
 			implementation(projects.domain.repository)
-			implementation(projects.data.datasource)
+			api(projects.data.datasource)
 			implementation(projects.data.repositoryImpl)
 			implementation(projects.local.database)
 			implementation(projects.local.datastore)
