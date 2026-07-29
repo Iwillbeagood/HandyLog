@@ -37,4 +37,10 @@ internal class AppSettingsLocalDataSourceImpl(
 
 	override suspend fun setHomeTab(tab: String) =
 		appSettingsDataSource.setHomeTab(tab)
+
+	override fun observePreflopSelection(): Flow<String> =
+		appSettingsDataSource.observePreflopSelection()
+
+	override suspend fun setPreflopSelection(value: String) =
+		appSettingsDataSource.setPreflopSelection(value)
 }

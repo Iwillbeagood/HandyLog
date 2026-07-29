@@ -12,4 +12,5 @@ data class PreflopQuizQuestion(
 	val villain: Position?,
 	val hand: PreflopHand,
 	val correct: QuizAnswer,
+	val options: List<QuizAnswer>,
 )

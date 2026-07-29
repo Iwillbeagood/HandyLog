@@ -124,6 +124,10 @@
 	<string name="hand_detail_delete_title">핸드 삭제</string>
 	<string name="hand_detail_delete_description">이 핸드 기록을 삭제하시겠습니까?</string>
 	<string name="hand_detail_image_shared">이미지가 공유되었습니다</string>
+	<string name="hand_review_cta">AI 핸드 리뷰 보기</string>
+	<string name="hand_review_title">AI 핸드 리뷰</string>
+	<string name="hand_review_loading">AI가 핸드를 분석하고 있어요…</string>
+	<string name="hand_review_error">분석을 불러오지 못했어요. 다시 시도해 주세요.</string>
 
 
 	<!-- Action Types -->
@@ -326,12 +330,13 @@
 	<!-- Preflop Chart -->
 	<string name="nav_chart">차트</string>
 	<string name="preflop_title">프리플랍 차트</string>
-	<string name="preflop_scenario_rfi">RFI</string>
+	<string name="preflop_scenario_rfi">오픈</string>
 	<string name="preflop_scenario_facing">vs 오픈</string>
 	<string name="preflop_scenario_vs3bet">vs 3벳</string>
 	<string name="preflop_hero">포지션</string>
 	<string name="preflop_villain_label">상대</string>
 	<string name="preflop_stack_label">스택</string>
+	<string name="preflop_scenario_label">시나리오</string>
 	<string name="preflop_main_title">프리플랍</string>
 	<string name="preflop_chart_card_desc">포지션별 오프닝 레인지와\n최적의 액션을 확인하세요</string>
 	<string name="preflop_chart_card_cta">차트 보기</string>
@@ -347,8 +352,10 @@
 	<string name="quiz_type_rfi_desc">내가 첫 오픈일 때 어떤 핸드로 레이즈할지 연습</string>
 	<string name="quiz_type_vsopen_title">vs 오픈 레이즈</string>
 	<string name="quiz_type_vsopen_desc">상대의 오픈에 3벳·콜·폴드를 판단</string>
+	<string name="quiz_type_vs3bet_title">vs 3벳</string>
+	<string name="quiz_type_vs3bet_desc">내 오픈에 상대가 3벳했을 때 4벳·콜·폴드를 판단</string>
 	<string name="quiz_type_mixed_title">종합 퀴즈</string>
-	<string name="quiz_type_mixed_desc">여러 상황을 섞어 출제 (준비 중)</string>
+	<string name="quiz_type_mixed_desc">RFI·vs 오픈·vs 3벳을 섞어 출제</string>
 	<string name="quiz_prompt">당신의 액션은?</string>
 	<string name="quiz_sub_value">밸류</string>
 	<string name="quiz_sub_bluff">블러프</string>
@@ -372,16 +379,23 @@
 	<string name="quiz_result_good">좋아요! 👍</string>
 	<string name="quiz_result_fair">조금 더 연습해요 💪</string>
 	<string name="quiz_result_desc">프리플랍 전략을 점검해 보세요</string>
+	<string name="quiz_start_review">오답 복습하기</string>
+	<string name="quiz_review_exit">복습 종료</string>
+	<string name="quiz_review_your_answer">내 답변</string>
+	<string name="quiz_review_correct_answer">정답</string>
+	<string name="quiz_review_skipped">건너뜀</string>
+	<string name="quiz_review_prev">이전</string>
+	<string name="quiz_review_next">다음</string>
 	<string name="preflop_villain_raiser">오픈한 상대</string>
 	<string name="preflop_villain_3bettor">3벳한 상대</string>
 	<string name="preflop_action_raise">레이즈</string>
-	<string name="preflop_action_raise_bluff">레이즈 블러프</string>
+	<string name="preflop_action_raise_bluff">블러프 레이즈</string>
 	<string name="preflop_action_3bet">3벳</string>
 	<string name="preflop_action_3bet_bluff">3벳 블러프</string>
 	<string name="preflop_action_4bet">4벳</string>
 	<string name="preflop_action_4bet_bluff">4벳 블러프</string>
+	<string name="preflop_action_allin">올인</string>
 	<string name="preflop_action_limp">림프</string>
 	<string name="preflop_action_call">콜</string>
 	<string name="preflop_action_fold">폴드</string>
-	<string name="preflop_empty">이 상황의 범위는 아직 준비 중입니다.</string>
 </resources>

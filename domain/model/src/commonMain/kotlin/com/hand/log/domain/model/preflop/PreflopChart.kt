@@ -11,8 +11,8 @@ enum class PreflopScenario { RFI, FACING_RFI, VS_3BET }
 data class PreflopChart(
 	val actions: Map<String, PreflopAction>,
 ) {
-	fun actionFor(hand: PreflopHand): PreflopAction =
-		actions[hand.notation] ?: PreflopAction.FOLD
+	fun actionFor(hand: PreflopHand): PreflopAction? =
+		actions[hand.notation]
 
 	/** 실제 범위 데이터가 아직 채워지지 않은 차트인지. */
 	val isEmpty: Boolean get() = actions.isEmpty()

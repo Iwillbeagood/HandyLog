@@ -18,13 +18,13 @@ enum class MainBottomNavItem(
 		icon = Res.drawable.house,
 		route = MainTabRoute.Home,
 	),
-	Chart(
-		icon = Res.drawable.grid_3x3,
-		route = MainTabRoute.Preflop,
-	),
 	Players(
 		icon = Res.drawable.users,
 		route = MainTabRoute.Players(),
+	),
+	Chart(
+		icon = Res.drawable.grid_3x3,
+		route = MainTabRoute.Preflop,
 	),
 	Settings(
 		icon = Res.drawable.settings,

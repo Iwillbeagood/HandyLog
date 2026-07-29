@@ -113,6 +113,10 @@
 	<string name="hand_detail_share_image">Share as Image</string>
 	<string name="hand_detail_text_shared">Text shared</string>
 	<string name="hand_detail_image_shared">Image shared</string>
+	<string name="hand_review_cta">AI Hand Review</string>
+	<string name="hand_review_title">AI Hand Review</string>
+	<string name="hand_review_loading">AI is analyzing your hand…</string>
+	<string name="hand_review_error">Couldn\'t load the review. Please try again.</string>
 	<string name="hand_detail_image_share_failed">Failed to share image</string>
 	<string name="hand_detail_image_save_failed">Failed to save image</string>
 
@@ -325,12 +329,13 @@
 	<!-- Preflop Chart -->
 	<string name="nav_chart">Chart</string>
 	<string name="preflop_title">Preflop Charts</string>
-	<string name="preflop_scenario_rfi">RFI</string>
+	<string name="preflop_scenario_rfi">Open</string>
 	<string name="preflop_scenario_facing">vs Open</string>
 	<string name="preflop_scenario_vs3bet">vs 3-Bet</string>
 	<string name="preflop_hero">Position</string>
 	<string name="preflop_villain_label">vs</string>
 	<string name="preflop_stack_label">Stack</string>
+	<string name="preflop_scenario_label">Scenario</string>
 	<string name="preflop_main_title">Preflop</string>
 	<string name="preflop_chart_card_desc">Check opening ranges by position\nand the optimal action</string>
 	<string name="preflop_chart_card_cta">View charts</string>
@@ -346,8 +351,10 @@
 	<string name="quiz_type_rfi_desc">Practice which hands to raise when opening first</string>
 	<string name="quiz_type_vsopen_title">vs Open Raise</string>
 	<string name="quiz_type_vsopen_desc">Decide 3-bet, call, or fold against an open</string>
+	<string name="quiz_type_vs3bet_title">vs 3-Bet</string>
+	<string name="quiz_type_vs3bet_desc">Decide 4-bet, call, or fold when your open is 3-bet</string>
 	<string name="quiz_type_mixed_title">Mixed Quiz</string>
-	<string name="quiz_type_mixed_desc">A mix of situations (coming soon)</string>
+	<string name="quiz_type_mixed_desc">A mix of RFI, vs open, and vs 3-bet</string>
 	<string name="quiz_prompt">What is your action?</string>
 	<string name="quiz_sub_value">Value</string>
 	<string name="quiz_sub_bluff">Bluff</string>
@@ -371,6 +378,13 @@
 	<string name="quiz_result_good">Nice! 👍</string>
 	<string name="quiz_result_fair">Keep practicing 💪</string>
 	<string name="quiz_result_desc">Review your preflop strategy</string>
+	<string name="quiz_start_review">Review Mistakes</string>
+	<string name="quiz_review_exit">Exit Review</string>
+	<string name="quiz_review_your_answer">Your answer</string>
+	<string name="quiz_review_correct_answer">Correct</string>
+	<string name="quiz_review_skipped">Skipped</string>
+	<string name="quiz_review_prev">Prev</string>
+	<string name="quiz_review_next">Next</string>
 	<string name="preflop_villain_raiser">Raiser</string>
 	<string name="preflop_villain_3bettor">3-Bettor</string>
 	<string name="preflop_action_raise">Raise</string>
@@ -379,8 +393,8 @@
 	<string name="preflop_action_3bet_bluff">3-Bet (Bluff)</string>
 	<string name="preflop_action_4bet">4-Bet</string>
 	<string name="preflop_action_4bet_bluff">4-Bet (Bluff)</string>
+	<string name="preflop_action_allin">All-in</string>
 	<string name="preflop_action_limp">Limp</string>
 	<string name="preflop_action_call">Call</string>
 	<string name="preflop_action_fold">Fold</string>
-	<string name="preflop_empty">Ranges for this spot are not filled in yet.</string>
 </resources>

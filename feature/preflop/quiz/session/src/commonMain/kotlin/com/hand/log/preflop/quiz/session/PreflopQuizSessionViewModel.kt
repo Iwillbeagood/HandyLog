@@ -7,7 +7,7 @@ import com.hand.log.domain.model.preflop.PreflopScenario
 import com.hand.log.domain.model.preflop.QuizRecord
 import com.hand.log.domain.model.preflop.QuizReviewSpot
 import com.hand.log.domain.repository.QuizRecordRepository
-import com.hand.log.domain.usecase.ReviewSpotUseCase
+import com.hand.log.domain.repository.AiReviewRepository
 import com.hand.log.preflop.chart.data.PreflopChartRepository
 import com.hand.log.preflop.quiz.common.PreflopQuizType
 import com.hand.log.preflop.quiz.common.QuizAnswer
@@ -32,7 +32,7 @@ internal class PreflopQuizSessionViewModel(
 	private val chartRepository: PreflopChartRepository,
 	private val generator: QuizQuestionGenerator,
 	private val quizRecordRepository: QuizRecordRepository,
-	private val reviewSpot: ReviewSpotUseCase,
+	private val aiReviewRepository: AiReviewRepository,
 ) : ViewModel() {
 
 	private val quizType = runCatching { PreflopQuizType.valueOf(quizTypeName) }
@@ -52,7 +52,7 @@ internal class PreflopQuizSessionViewModel(
 		responseTimes.clear()
 		_state.value = PreflopQuizSessionState(phase = QuizPhase.LOADING)
 		viewModelScope.launch {
-			val charts = chartRepository.load()
+			val charts = chartRepository.load().charts
 			val questions = generator.generate(charts, quizType, QUESTION_COUNT)
 			questionMark = TimeSource.Monotonic.markNow()
 			_state.value = PreflopQuizSessionState(
@@ -62,46 +62,110 @@ internal class PreflopQuizSessionViewModel(
 		}
 	}
 
-	fun onAnswer(answer: QuizAnswer) {
-		_state.update { s ->
-			val question = s.current ?: return@update s
-			if (s.answered) return@update s
-			responseTimes.add(questionMark.elapsedNow().inWholeMilliseconds)
-			val correct = answer == question.correct
-			val streak = if (correct) s.streak + 1 else 0
-			s.copy(
-				selected = answer,
-				score = if (correct) s.score + 1 else s.score,
-				streak = streak,
-				bestStreak = maxOf(s.bestStreak, streak),
+	fun onAnswer(answer: QuizAnswer) = record(answer)
+
+	fun onSkip() = record(null)
+
+	fun onRetry() = start()
+
+	/** 정답 공개 없이 답변만 기록하고 곧바로 다음 문제로 넘어간다. 결과는 전 문제를 푼 뒤 공개한다. */
+	private fun record(answer: QuizAnswer?) {
+		val s = _state.value
+		if (s.phase != QuizPhase.PLAYING || s.current == null) return
+		responseTimes.add(questionMark.elapsedNow().inWholeMilliseconds)
+		val answers = s.answers + answer
+		if (s.index + 1 >= s.total) {
+			finish(answers)
+		} else {
+			questionMark = TimeSource.Monotonic.markNow()
+			_state.update { it.copy(index = it.index + 1, answers = answers) }
+		}
+	}
+
+	private fun finish(answers: List<QuizAnswer?>) {
+		val questions = _state.value.questions
+		val total = questions.size
+		val score = answers.indices.count { answers[it] == questions[it].correct }
+		val bestStreak = bestStreak(answers, questions.map { it.correct })
+		val avg = if (responseTimes.isEmpty()) 0L else responseTimes.average().toLong()
+		val accuracy = if (total == 0) 0 else score * 100 / total
+		val result = QuizResult(score, total, accuracy, avg, bestStreak)
+
+		_state.update {
+			it.copy(phase = QuizPhase.RESULT, answers = answers, result = result)
+		}
+
+		if (total > 0) {
+			viewModelScope.launch {
+				quizRecordRepository.save(
+					QuizRecord(
+						id = Uuid.random().toString(),
+						quizType = quizType.name,
+						score = score,
+						total = total,
+						avgResponseMs = avg,
+						bestStreak = bestStreak,
+						playedAt = Clock.System.now().toEpochMilliseconds(),
+					),
+				)
+			}
+		}
+	}
+
+	private fun bestStreak(answers: List<QuizAnswer?>, correct: List<QuizAnswer>): Int {
+		var streak = 0
+		var best = 0
+		answers.forEachIndexed { i, a ->
+			if (a == correct[i]) {
+				streak++
+				best = maxOf(best, streak)
+			} else {
+				streak = 0
+			}
+		}
+		return best
+	}
+
+	fun onStartReview() {
+		if (_state.value.reviewTotal == 0) return
+		_state.update {
+			it.copy(
+				phase = QuizPhase.REVIEW,
+				reviewIndex = 0,
+				reviewStatus = ReviewStatus.IDLE,
+				reviewText = "",
 			)
 		}
 	}
 
-	fun onNext() {
+	fun onReviewPrev() = moveReview(-1)
+
+	fun onReviewNext() = moveReview(1)
+
+	fun onExitReview() {
+		_state.update { it.copy(phase = QuizPhase.RESULT) }
+	}
+
+	private fun moveReview(delta: Int) {
 		val s = _state.value
-		if (!s.answered) return
-		advance(resetStreak = false)
+		val next = s.reviewIndex + delta
+		if (next < 0 || next >= s.reviewTotal) return
+		_state.update {
+			it.copy(reviewIndex = next, reviewStatus = ReviewStatus.IDLE, reviewText = "")
+		}
 	}
-
-	fun onSkip() {
-		if (_state.value.current == null) return
-		advance(resetStreak = true)
-	}
-
-	fun onRetry() = start()
 
 	/**
-	 * 현재 문제의 정답 액션에 대한 LLM 해설을 요청한다. 정답은 차트에서 확정된 값이므로
+	 * 리뷰 중인 문제의 정답 액션에 대한 LLM 해설을 요청한다. 정답은 차트에서 확정된 값이므로
 	 * LLM 은 "왜 정답인지"만 설명한다. 응답이 늦게 도착해도 다른 문제로 넘어갔다면 무시한다.
 	 */
 	fun onRequestReview(languageName: String) {
 		val s = _state.value
-		val question = s.current ?: return
-		val selected = s.selected ?: return
+		val question = s.reviewQuestion ?: return
+		val userAnswer = s.reviewUserAnswer
 		if (s.reviewStatus == ReviewStatus.LOADING || s.reviewStatus == ReviewStatus.LOADED) return
 
-		val requestedIndex = s.index
+		val requestedIndex = s.reviewIndex
 		_state.update { it.copy(reviewStatus = ReviewStatus.LOADING) }
 
 		viewModelScope.launch {
@@ -110,35 +174,18 @@ internal class PreflopQuizSessionViewModel(
 				heroLabel = question.hero.label,
 				scenarioLabel = scenarioLabel(question.scenario, question.villain),
 				handNotation = question.hand.notation,
-				correctActionLabel = actionLabel(question.correct),
-				userAnswerLabel = actionLabel(selected),
-				isCorrect = selected == question.correct,
+				correctActionLabel = actionLabel(question.correct, question.scenario),
+				userAnswerLabel = userAnswer?.let { actionLabel(it, question.scenario) } ?: "건너뜀",
+				isCorrect = userAnswer == question.correct,
 				languageName = languageName,
 			)
-			val result = reviewSpot(spot)
+			val result = runCatching { aiReviewRepository.reviewQuizSpot(spot) }
+				.mapCatching { it.ifBlank { error("empty review") } }
 			_state.update { st ->
-				if (st.index != requestedIndex) return@update st
+				if (st.reviewIndex != requestedIndex) return@update st
 				result.fold(
 					onSuccess = { st.copy(reviewStatus = ReviewStatus.LOADED, reviewText = it) },
 					onFailure = { st.copy(reviewStatus = ReviewStatus.ERROR) },
-				)
-			}
-		}
-	}
-
-	private fun advance(resetStreak: Boolean) {
-		val s = _state.value
-		if (s.index + 1 >= s.total) {
-			finish()
-		} else {
-			questionMark = TimeSource.Monotonic.markNow()
-			_state.update {
-				it.copy(
-					index = it.index + 1,
-					selected = null,
-					streak = if (resetStreak) 0 else it.streak,
-					reviewStatus = ReviewStatus.IDLE,
-					reviewText = "",
 				)
 			}
 		}
@@ -151,35 +198,14 @@ internal class PreflopQuizSessionViewModel(
 		PreflopScenario.VS_3BET -> "내 오픈에 ${villain?.label ?: "상대"}가 3벳한 상황"
 	}
 
-	private fun actionLabel(answer: QuizAnswer): String = when (answer) {
-		QuizAnswer.RAISE_VALUE -> "레이즈(밸류)"
-		QuizAnswer.RAISE_BLUFF -> "레이즈(블러프)"
+	private fun actionLabel(answer: QuizAnswer, scenario: PreflopScenario): String = when (answer) {
+		QuizAnswer.RAISE -> when (scenario) {
+			PreflopScenario.RFI -> "레이즈"
+			PreflopScenario.FACING_RFI -> "3벳"
+			PreflopScenario.VS_3BET -> "4벳"
+		}
 		QuizAnswer.CALL -> "콜"
 		QuizAnswer.FOLD -> "폴드"
-	}
-
-	private fun finish() {
-		val s = _state.value
-		val avg = if (responseTimes.isEmpty()) 0L else responseTimes.average().toLong()
-		val accuracy = if (s.total == 0) 0 else s.score * 100 / s.total
-		val result = QuizResult(s.score, s.total, accuracy, avg, s.bestStreak)
-		_state.update { it.copy(phase = QuizPhase.RESULT, result = result) }
-
-		if (s.total > 0) {
-			viewModelScope.launch {
-				quizRecordRepository.save(
-					QuizRecord(
-						id = Uuid.random().toString(),
-						quizType = quizType.name,
-						score = s.score,
-						total = s.total,
-						avgResponseMs = avg,
-						bestStreak = s.bestStreak,
-						playedAt = Clock.System.now().toEpochMilliseconds(),
-					),
-				)
-			}
-		}
 	}
 
 	companion object {

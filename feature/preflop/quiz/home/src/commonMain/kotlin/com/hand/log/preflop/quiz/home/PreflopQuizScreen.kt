@@ -41,6 +41,8 @@ import handylog.core.res.generated.resources.quiz_type_mixed_desc
 import handylog.core.res.generated.resources.quiz_type_mixed_title
 import handylog.core.res.generated.resources.quiz_type_rfi_desc
 import handylog.core.res.generated.resources.quiz_type_rfi_title
+import handylog.core.res.generated.resources.quiz_type_vs3bet_desc
+import handylog.core.res.generated.resources.quiz_type_vs3bet_title
 import handylog.core.res.generated.resources.quiz_type_vsopen_desc
 import handylog.core.res.generated.resources.quiz_type_vsopen_title
 import handylog.core.res.generated.resources.trophy
@@ -88,12 +90,18 @@ internal fun PreflopQuizScreen(
 					onClick = { onTypeSelect(PreflopQuizType.VS_OPEN) },
 				)
 				QuizTypeItem(
+					icon = Res.drawable.trophy,
+					iconColor = HandyTheme.colorScheme.error,
+					title = stringResource(Res.string.quiz_type_vs3bet_title),
+					description = stringResource(Res.string.quiz_type_vs3bet_desc),
+					onClick = { onTypeSelect(PreflopQuizType.VS_3BET) },
+				)
+				QuizTypeItem(
 					icon = Res.drawable.grid_3x3,
 					iconColor = HandyTheme.colorScheme.textSecondary,
 					title = stringResource(Res.string.quiz_type_mixed_title),
 					description = stringResource(Res.string.quiz_type_mixed_desc),
-					onClick = {},
-					locked = true,
+					onClick = { onTypeSelect(PreflopQuizType.MIXED) },
 				)
 			}
 
@@ -119,7 +127,6 @@ private fun QuizTypeItem(
 	title: String,
 	description: String,
 	onClick: () -> Unit,
-	locked: Boolean = false,
 ) {
 	val colors = HandyTheme.colorScheme
 	Row(
@@ -127,7 +134,7 @@ private fun QuizTypeItem(
 			.fillMaxWidth()
 			.clip(RoundedCornerShape(12.dp))
 			.background(colors.card)
-			.then(if (locked) Modifier else Modifier.clickable(onClick = onClick))
+			.clickable(onClick = onClick)
 			.padding(16.dp),
 		horizontalArrangement = Arrangement.spacedBy(14.dp),
 		verticalAlignment = Alignment.CenterVertically,
@@ -153,7 +160,7 @@ private fun QuizTypeItem(
 			Text(
 				text = title,
 				style = HandyTheme.typography.bold16,
-				color = if (locked) colors.textSecondary else colors.textPrimary,
+				color = colors.textPrimary,
 			)
 			Text(
 				text = description,
@@ -241,6 +248,7 @@ private fun RecentRecordsCard(records: List<QuizRecord>) {
 private fun quizTypeLabel(typeName: String): String = when (typeName) {
 	PreflopQuizType.RFI.name -> stringResource(Res.string.quiz_type_rfi_title)
 	PreflopQuizType.VS_OPEN.name -> stringResource(Res.string.quiz_type_vsopen_title)
+	PreflopQuizType.VS_3BET.name -> stringResource(Res.string.quiz_type_vs3bet_title)
 	else -> stringResource(Res.string.quiz_type_mixed_title)
 }
 

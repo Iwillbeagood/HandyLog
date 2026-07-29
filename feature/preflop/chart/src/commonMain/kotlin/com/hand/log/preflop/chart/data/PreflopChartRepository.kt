@@ -11,6 +11,15 @@ import handylog.core.res.generated.resources.Res
 import kotlinx.serialization.json.Json
 
 /**
+ * 로드된 프리플랍 차트 카탈로그.
+ * [groupKeys] 는 각 쿼리가 유래한 원본 DTO 그룹 식별자로, 같은 그룹의 상대 포지션은 하나의 칩으로 병합할 때 쓴다.
+ */
+data class PreflopCatalog(
+	val charts: Map<PreflopChartQuery, PreflopChart>,
+	val groupKeys: Map<PreflopChartQuery, String>,
+)
+
+/**
  * 스택별 preflop_charts.json 5종을 1회 로드·파싱하여 (스택·상황 → 차트) 카탈로그로 캐시한다.
  *
  * 한 차트가 히어로/상대 그룹("UTG+1/+2", "LJ/HJ")이나 범위("UTG+1 - CO"), 미지정("vs All-In")을
@@ -27,26 +36,30 @@ class PreflopChartRepository {
 	)
 
 	private val json = Json { ignoreUnknownKeys = true }
-	private var cache: Map<PreflopChartQuery, PreflopChart>? = null
+	private var cache: PreflopCatalog? = null
 
-	suspend fun load(): Map<PreflopChartQuery, PreflopChart> {
+	suspend fun load(): PreflopCatalog {
 		cache?.let { return it }
 
-		val result = buildMap {
-			files.forEach { path ->
-				val raw = Res.readBytes(path).decodeToString()
-				json.decodeFromString<List<PreflopChartDto>>(raw).forEach { dto ->
-					val stack = PreflopStack.fromLabel(dto.stackSize) ?: return@forEach
-					val scenario = scenarioOf(dto.category) ?: return@forEach
-					val chart = PreflopChart(dto.actions.mapValues { actionOf(it.value) })
-					parseTargets(scenario, dto.chartName).forEach { (hero, villain) ->
-						put(PreflopChartQuery(stack, scenario, hero, villain), chart)
-					}
+		val charts = mutableMapOf<PreflopChartQuery, PreflopChart>()
+		val groupKeys = mutableMapOf<PreflopChartQuery, String>()
+
+		files.forEach { path ->
+			val raw = Res.readBytes(path).decodeToString()
+			json.decodeFromString<List<PreflopChartDto>>(raw).forEach { dto ->
+				val stack = PreflopStack.fromLabel(dto.stackSize) ?: return@forEach
+				val scenario = scenarioOf(dto.category) ?: return@forEach
+				val chart = PreflopChart(dto.actions.mapValues { actionOf(it.value) })
+				// 한 DTO(chart_name)에서 전개된 (hero, villain) 들은 같은 원본 그룹으로 간주한다.
+				val groupKey = "${dto.stackSize}|${dto.category}|${dto.chartName}"
+				parseTargets(scenario, dto.chartName).forEach { (hero, villain) ->
+					val query = PreflopChartQuery(stack, scenario, hero, villain)
+					charts[query] = chart
+					groupKeys[query] = groupKey
 				}
 			}
 		}
-		cache = result
-		return result
+		return PreflopCatalog(charts, groupKeys).also { cache = it }
 	}
 
 	private fun scenarioOf(category: String): PreflopScenario? = when {
@@ -62,6 +75,7 @@ class PreflopChartRepository {
 			value == "Fold" -> PreflopAction.FOLD
 			value == "Call" -> PreflopAction.CALL
 			value == "Limp" -> PreflopAction.LIMP
+			value == "All-in" -> PreflopAction.ALL_IN
 			value.startsWith("4-bet") -> if (bluff) PreflopAction.FOUR_BET_BLUFF else PreflopAction.FOUR_BET
 			value.startsWith(
 				"3-bet",

@@ -113,6 +113,10 @@
 	<string name="hand_detail_share_image">画像で共有</string>
 	<string name="hand_detail_text_shared">テキストを共有しました</string>
 	<string name="hand_detail_image_shared">画像を共有しました</string>
+	<string name="hand_review_cta">AI ハンドレビューを見る</string>
+	<string name="hand_review_title">AI ハンドレビュー</string>
+	<string name="hand_review_loading">AIがハンドを分析しています…</string>
+	<string name="hand_review_error">分析を読み込めませんでした。もう一度お試しください。</string>
 	<string name="hand_detail_image_share_failed">画像の共有に失敗しました</string>
 	<string name="hand_detail_image_save_failed">画像の保存に失敗しました</string>
 
@@ -325,12 +329,13 @@
 	<!-- Preflop Chart -->
 	<string name="nav_chart">チャート</string>
 	<string name="preflop_title">プリフロップチャート</string>
-	<string name="preflop_scenario_rfi">RFI</string>
+	<string name="preflop_scenario_rfi">オープン</string>
 	<string name="preflop_scenario_facing">vs オープン</string>
 	<string name="preflop_scenario_vs3bet">vs 3ベット</string>
 	<string name="preflop_hero">ポジション</string>
 	<string name="preflop_villain_label">相手</string>
 	<string name="preflop_stack_label">スタック</string>
+	<string name="preflop_scenario_label">シナリオ</string>
 	<string name="preflop_main_title">プリフロップ</string>
 	<string name="preflop_chart_card_desc">ポジション別のオープンレンジと\n最適なアクションを確認しましょう</string>
 	<string name="preflop_chart_card_cta">チャートを見る</string>
@@ -346,8 +351,10 @@
 	<string name="quiz_type_rfi_desc">自分が最初にオープンする時のレイズハンドを練習</string>
 	<string name="quiz_type_vsopen_title">vs オープンレイズ</string>
 	<string name="quiz_type_vsopen_desc">相手のオープンに3ベット・コール・フォールドを判断</string>
+	<string name="quiz_type_vs3bet_title">vs 3ベット</string>
+	<string name="quiz_type_vs3bet_desc">自分のオープンに3ベットされた時、4ベット・コール・フォールドを判断</string>
 	<string name="quiz_type_mixed_title">総合クイズ</string>
-	<string name="quiz_type_mixed_desc">様々な状況を混ぜて出題（準備中）</string>
+	<string name="quiz_type_mixed_desc">RFI・vs オープン・vs 3ベットを混ぜて出題</string>
 	<string name="quiz_prompt">あなたのアクションは？</string>
 	<string name="quiz_sub_value">バリュー</string>
 	<string name="quiz_sub_bluff">ブラフ</string>
@@ -371,6 +378,13 @@
 	<string name="quiz_result_good">いいね！ 👍</string>
 	<string name="quiz_result_fair">もう少し練習しましょう 💪</string>
 	<string name="quiz_result_desc">プリフロップ戦略を見直しましょう</string>
+	<string name="quiz_start_review">ミス復習</string>
+	<string name="quiz_review_exit">復習終了</string>
+	<string name="quiz_review_your_answer">あなたの答え</string>
+	<string name="quiz_review_correct_answer">正解</string>
+	<string name="quiz_review_skipped">スキップ済み</string>
+	<string name="quiz_review_prev">前へ</string>
+	<string name="quiz_review_next">次へ</string>
 	<string name="preflop_villain_raiser">オープンした相手</string>
 	<string name="preflop_villain_3bettor">3ベットした相手</string>
 	<string name="preflop_action_raise">レイズ</string>
@@ -379,8 +393,8 @@
 	<string name="preflop_action_3bet_bluff">3ベット ブラフ</string>
 	<string name="preflop_action_4bet">4ベット</string>
 	<string name="preflop_action_4bet_bluff">4ベット ブラフ</string>
+	<string name="preflop_action_allin">オールイン</string>
 	<string name="preflop_action_limp">リンプ</string>
 	<string name="preflop_action_call">コール</string>
 	<string name="preflop_action_fold">フォールド</string>
-	<string name="preflop_empty">このシチュエーションのレンジはまだ準備中です。</string>
 </resources>

@@ -3,7 +3,7 @@ package com.hand.log.preflop.quiz.session.contract
 import com.hand.log.preflop.quiz.common.PreflopQuizQuestion
 import com.hand.log.preflop.quiz.common.QuizAnswer
 
-internal enum class QuizPhase { LOADING, PLAYING, RESULT }
+internal enum class QuizPhase { LOADING, PLAYING, RESULT, REVIEW }
 
 internal enum class ReviewStatus { IDLE, LOADING, LOADED, ERROR }
 
@@ -11,17 +11,26 @@ internal data class PreflopQuizSessionState(
 	val phase: QuizPhase = QuizPhase.LOADING,
 	val questions: List<PreflopQuizQuestion> = emptyList(),
 	val index: Int = 0,
-	val selected: QuizAnswer? = null,
-	val score: Int = 0,
-	val streak: Int = 0,
-	val bestStreak: Int = 0,
+	val answers: List<QuizAnswer?> = emptyList(),
 	val result: QuizResult? = null,
+	val reviewIndex: Int = 0,
 	val reviewStatus: ReviewStatus = ReviewStatus.IDLE,
 	val reviewText: String = "",
 ) {
 	val current: PreflopQuizQuestion? get() = questions.getOrNull(index)
 	val total: Int get() = questions.size
-	val answered: Boolean get() = selected != null
+
+	/** 오답(또는 건너뛴) 문제의 원본 인덱스 목록 — 결과 후 리뷰 대상. */
+	val reviewQuestionIndices: List<Int>
+		get() = questions.indices.filter { answers.getOrNull(it) != questions[it].correct }
+
+	val reviewTotal: Int get() = reviewQuestionIndices.size
+
+	val reviewQuestion: PreflopQuizQuestion?
+		get() = reviewQuestionIndices.getOrNull(reviewIndex)?.let { questions[it] }
+
+	val reviewUserAnswer: QuizAnswer?
+		get() = reviewQuestionIndices.getOrNull(reviewIndex)?.let { answers.getOrNull(it) }
 }
 
 internal data class QuizResult(

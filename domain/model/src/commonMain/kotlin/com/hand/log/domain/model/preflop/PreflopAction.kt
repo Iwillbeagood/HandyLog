@@ -10,6 +10,7 @@ enum class PreflopAction {
 	THREE_BET_BLUFF,
 	FOUR_BET,
 	FOUR_BET_BLUFF,
+	ALL_IN,
 	CALL,
 	LIMP,
 	FOLD,

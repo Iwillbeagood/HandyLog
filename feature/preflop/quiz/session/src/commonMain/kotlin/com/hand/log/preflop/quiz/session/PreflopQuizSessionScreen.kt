@@ -8,12 +8,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,17 +43,18 @@ import com.hand.log.domain.model.preflop.PreflopStack
 import com.hand.log.domain.model.preflop.chartChar
 import com.hand.log.preflop.quiz.common.PreflopQuizQuestion
 import com.hand.log.preflop.quiz.common.QuizAnswer
+import com.hand.log.preflop.quiz.common.answerOptions
 import com.hand.log.preflop.quiz.session.contract.PreflopQuizSessionState
 import com.hand.log.preflop.quiz.session.contract.QuizPhase
 import com.hand.log.preflop.quiz.session.contract.QuizResult
 import com.hand.log.preflop.quiz.session.contract.ReviewStatus
 import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.preflop_action_3bet
+import handylog.core.res.generated.resources.preflop_action_4bet
 import handylog.core.res.generated.resources.preflop_action_call
 import handylog.core.res.generated.resources.preflop_action_fold
 import handylog.core.res.generated.resources.preflop_action_raise
 import handylog.core.res.generated.resources.preflop_quiz_title
-import handylog.core.res.generated.resources.quiz_correct
-import handylog.core.res.generated.resources.quiz_next
 import handylog.core.res.generated.resources.quiz_progress
 import handylog.core.res.generated.resources.quiz_prompt
 import handylog.core.res.generated.resources.quiz_result_accuracy
@@ -63,26 +67,33 @@ import handylog.core.res.generated.resources.quiz_result_great
 import handylog.core.res.generated.resources.quiz_result_streak
 import handylog.core.res.generated.resources.quiz_result_streak_value
 import handylog.core.res.generated.resources.quiz_retry
+import handylog.core.res.generated.resources.quiz_review_correct_answer
 import handylog.core.res.generated.resources.quiz_review_cta
 import handylog.core.res.generated.resources.quiz_review_error
+import handylog.core.res.generated.resources.quiz_review_exit
 import handylog.core.res.generated.resources.quiz_review_loading
+import handylog.core.res.generated.resources.quiz_review_next
+import handylog.core.res.generated.resources.quiz_review_prev
+import handylog.core.res.generated.resources.quiz_review_skipped
 import handylog.core.res.generated.resources.quiz_review_title
+import handylog.core.res.generated.resources.quiz_review_your_answer
 import handylog.core.res.generated.resources.quiz_skip
-import handylog.core.res.generated.resources.quiz_sub_bluff
-import handylog.core.res.generated.resources.quiz_sub_value
+import handylog.core.res.generated.resources.quiz_start_review
 import handylog.core.res.generated.resources.quiz_view_chart
-import handylog.core.res.generated.resources.quiz_wrong
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun PreflopQuizSessionScreen(
 	state: PreflopQuizSessionState,
 	onAnswer: (QuizAnswer) -> Unit,
-	onNext: () -> Unit,
 	onSkip: () -> Unit,
 	onRetry: () -> Unit,
 	onBack: () -> Unit,
 	onViewChart: () -> Unit,
+	onStartReview: () -> Unit,
+	onReviewPrev: () -> Unit,
+	onReviewNext: () -> Unit,
+	onExitReview: () -> Unit,
 	onRequestReview: () -> Unit,
 ) {
 	BaseScaffold(
@@ -95,19 +106,37 @@ internal fun PreflopQuizSessionScreen(
 		},
 	) {
 		when (state.phase) {
-			QuizPhase.RESULT -> state.result?.let {
-				ResultContent(it, onRetry = onRetry, onViewChart = onViewChart)
+			QuizPhase.LOADING -> LoadingContent()
+			QuizPhase.PLAYING -> state.current?.let {
+				QuestionContent(state = state, onAnswer = onAnswer, onSkip = onSkip)
 			}
-			else -> state.current?.let {
-				QuestionContent(
-					state = state,
-					onAnswer = onAnswer,
-					onNext = onNext,
-					onSkip = onSkip,
-					onRequestReview = onRequestReview,
+			QuizPhase.RESULT -> state.result?.let {
+				ResultContent(
+					result = it,
+					reviewTotal = state.reviewTotal,
+					onRetry = onRetry,
+					onViewChart = onViewChart,
+					onStartReview = onStartReview,
 				)
 			}
+			QuizPhase.REVIEW -> ReviewContent(
+				state = state,
+				onReviewPrev = onReviewPrev,
+				onReviewNext = onReviewNext,
+				onExitReview = onExitReview,
+				onRequestReview = onRequestReview,
+			)
 		}
+	}
+}
+
+@Composable
+private fun LoadingContent() {
+	Box(
+		modifier = Modifier.fillMaxSize(),
+		contentAlignment = Alignment.Center,
+	) {
+		CircularProgressIndicator(color = HandyTheme.colorScheme.primary)
 	}
 }
 
@@ -115,9 +144,7 @@ internal fun PreflopQuizSessionScreen(
 private fun QuestionContent(
 	state: PreflopQuizSessionState,
 	onAnswer: (QuizAnswer) -> Unit,
-	onNext: () -> Unit,
 	onSkip: () -> Unit,
-	onRequestReview: () -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
 	val question = state.current ?: return
@@ -174,90 +201,197 @@ private fun QuestionContent(
 			modifier = Modifier.fillMaxWidth(),
 		)
 
-		Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-			Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-				AnswerButton(QuizAnswer.RAISE_VALUE, state, onAnswer, Modifier.weight(1f))
-				AnswerButton(QuizAnswer.RAISE_BLUFF, state, onAnswer, Modifier.weight(1f))
-			}
-			Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-				AnswerButton(QuizAnswer.CALL, state, onAnswer, Modifier.weight(1f))
-				AnswerButton(QuizAnswer.FOLD, state, onAnswer, Modifier.weight(1f))
+		Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+			question.options.forEach { answer ->
+				AnswerButton(answer, question.scenario, onAnswer, Modifier.weight(1f))
 			}
 		}
 
-		if (state.answered) {
-			val correct = state.selected == question.correct
-			Text(
-				text = stringResource(if (correct) Res.string.quiz_correct else Res.string.quiz_wrong),
-				style = HandyTheme.typography.bold18,
-				color = if (correct) colors.primary else colors.error,
-				textAlign = TextAlign.Center,
-				modifier = Modifier.fillMaxWidth(),
-			)
-			ReviewSection(
-				status = state.reviewStatus,
-				text = state.reviewText,
-				onRequestReview = onRequestReview,
-			)
-			PrimaryButton(text = stringResource(Res.string.quiz_next), onClick = onNext)
-		} else {
-			Text(
-				text = stringResource(Res.string.quiz_skip),
-				style = HandyTheme.typography.medium14,
-				color = colors.textSecondary,
-				textAlign = TextAlign.Center,
-				modifier = Modifier
-					.fillMaxWidth()
-					.clickable(onClick = onSkip)
-					.padding(8.dp),
-			)
-		}
+		Text(
+			text = stringResource(Res.string.quiz_skip),
+			style = HandyTheme.typography.medium14,
+			color = colors.textSecondary,
+			textAlign = TextAlign.Center,
+			modifier = Modifier
+				.fillMaxWidth()
+				.clickable(onClick = onSkip)
+				.padding(8.dp),
+		)
 	}
 }
 
 @Composable
 private fun AnswerButton(
 	answer: QuizAnswer,
-	state: PreflopQuizSessionState,
+	scenario: PreflopScenario,
 	onAnswer: (QuizAnswer) -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme
-	val answered = state.answered
-	val isCorrect = state.current?.correct == answer
-	val isSelected = state.selected == answer
-
-	val background = when {
-		answered && isCorrect -> colors.primary.copy(alpha = 0.18f)
-		answered && isSelected -> colors.error.copy(alpha = 0.18f)
-		else -> colors.muted
-	}
-	val border = when {
-		answered && isCorrect -> colors.primary
-		answered && isSelected -> colors.error
-		else -> colors.border
-	}
-
-	Column(
+	Box(
 		modifier = modifier
 			.clip(RoundedCornerShape(12.dp))
-			.background(background)
-			.border(1.dp, border, RoundedCornerShape(12.dp))
-			.then(if (answered) Modifier else Modifier.clickable { onAnswer(answer) })
-			.padding(horizontal = 8.dp, vertical = 14.dp),
-		verticalArrangement = Arrangement.Center,
-		horizontalAlignment = Alignment.CenterHorizontally,
+			.background(colors.muted)
+			.border(1.dp, colors.border, RoundedCornerShape(12.dp))
+			.clickable { onAnswer(answer) }
+			.padding(horizontal = 8.dp, vertical = 16.dp),
+		contentAlignment = Alignment.Center,
 	) {
 		Text(
-			text = stringResource(answerLabel(answer)),
+			text = stringResource(answerLabel(answer, scenario)),
 			style = HandyTheme.typography.bold14,
 			color = colors.textPrimary,
 		)
-		answerSub(answer)?.let {
+	}
+}
+
+@Composable
+private fun ReviewContent(
+	state: PreflopQuizSessionState,
+	onReviewPrev: () -> Unit,
+	onReviewNext: () -> Unit,
+	onExitReview: () -> Unit,
+	onRequestReview: () -> Unit,
+) {
+	val colors = HandyTheme.colorScheme
+	val question = state.reviewQuestion ?: return
+
+	Column(
+		modifier = Modifier
+			.fillMaxSize()
+			.verticalScroll(rememberScrollState())
+			.padding(16.dp),
+		verticalArrangement = Arrangement.spacedBy(16.dp),
+	) {
+		Text(
+			text = stringResource(Res.string.quiz_progress, state.reviewIndex + 1, state.reviewTotal),
+			style = HandyTheme.typography.medium12,
+			color = colors.textSecondary,
+		)
+
+		Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+			SpotChip(question.stack.label)
+			SpotChip(question.hero.label)
+			question.villain?.let { SpotChip("vs ${it.label}") }
+		}
+
+		Box(
+			modifier = Modifier
+				.fillMaxWidth()
+				.clip(RoundedCornerShape(16.dp))
+				.background(colors.felt)
+				.padding(vertical = 28.dp),
+			contentAlignment = Alignment.Center,
+		) {
+			HandCards(question.hand)
+		}
+
+		Column(
+			modifier = Modifier
+				.fillMaxWidth()
+				.clip(RoundedCornerShape(12.dp))
+				.background(colors.card)
+				.padding(16.dp),
+			verticalArrangement = Arrangement.spacedBy(8.dp),
+		) {
+			val userAnswer = state.reviewUserAnswer
+			val userText = userAnswer?.let { answerText(it, question.scenario) }
+				?: stringResource(Res.string.quiz_review_skipped)
+			Row(
+				modifier = Modifier.fillMaxWidth(),
+				horizontalArrangement = Arrangement.SpaceBetween,
+			) {
+				Text(
+					text = stringResource(Res.string.quiz_review_your_answer),
+					style = HandyTheme.typography.regular12,
+					color = colors.textSecondary,
+				)
+				Text(
+					text = userText,
+					style = HandyTheme.typography.bold14,
+					color = colors.error,
+				)
+			}
+			Row(
+				modifier = Modifier.fillMaxWidth(),
+				horizontalArrangement = Arrangement.SpaceBetween,
+			) {
+				Text(
+					text = stringResource(Res.string.quiz_review_correct_answer),
+					style = HandyTheme.typography.regular12,
+					color = colors.textSecondary,
+				)
+				Text(
+					text = answerText(question.correct, question.scenario),
+					style = HandyTheme.typography.bold14,
+					color = colors.primary,
+				)
+			}
+		}
+
+		ReviewSection(
+			status = state.reviewStatus,
+			text = state.reviewText,
+			onRequestReview = onRequestReview,
+		)
+
+		Row(
+			modifier = Modifier.fillMaxWidth(),
+			horizontalArrangement = Arrangement.spacedBy(8.dp),
+		) {
+			if (state.reviewIndex > 0) {
+				Box(
+					modifier = Modifier
+						.weight(1f)
+						.clip(RoundedCornerShape(10.dp))
+						.background(colors.muted)
+						.clickable(onClick = onReviewPrev)
+						.padding(vertical = 14.dp),
+					contentAlignment = Alignment.Center,
+				) {
+					Text(
+						text = stringResource(Res.string.quiz_review_prev),
+						style = HandyTheme.typography.bold14,
+						color = colors.textPrimary,
+					)
+				}
+			} else {
+				Spacer(Modifier.weight(1f))
+			}
+			if (state.reviewIndex < state.reviewTotal - 1) {
+				Box(
+					modifier = Modifier
+						.weight(1f)
+						.clip(RoundedCornerShape(10.dp))
+						.background(colors.primary)
+						.clickable(onClick = onReviewNext)
+						.padding(vertical = 14.dp),
+					contentAlignment = Alignment.Center,
+				) {
+					Text(
+						text = stringResource(Res.string.quiz_review_next),
+						style = HandyTheme.typography.bold14,
+						color = colors.onPrimary,
+					)
+				}
+			} else {
+				Spacer(Modifier.weight(1f))
+			}
+		}
+
+		Box(
+			modifier = Modifier
+				.fillMaxWidth()
+				.clip(RoundedCornerShape(10.dp))
+				.background(colors.muted)
+				.clickable(onClick = onExitReview)
+				.padding(vertical = 14.dp),
+			contentAlignment = Alignment.Center,
+		) {
 			Text(
-				text = stringResource(it),
-				style = HandyTheme.typography.regular10,
-				color = colors.textSecondary,
+				text = stringResource(Res.string.quiz_review_exit),
+				style = HandyTheme.typography.bold14,
+				color = colors.textPrimary,
 			)
 		}
 	}
@@ -404,8 +538,10 @@ private fun SpotChip(text: String) {
 @Composable
 private fun ResultContent(
 	result: QuizResult,
+	reviewTotal: Int,
 	onRetry: () -> Unit,
 	onViewChart: () -> Unit,
+	onStartReview: () -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
 	Column(
@@ -456,6 +592,23 @@ private fun ResultContent(
 		}
 
 		PrimaryButton(text = stringResource(Res.string.quiz_retry), onClick = onRetry)
+		if (reviewTotal > 0) {
+			Box(
+				modifier = Modifier
+					.fillMaxWidth()
+					.clip(RoundedCornerShape(10.dp))
+					.border(1.dp, colors.primary, RoundedCornerShape(10.dp))
+					.clickable(onClick = onStartReview)
+					.padding(vertical = 14.dp),
+				contentAlignment = Alignment.Center,
+			) {
+				Text(
+					text = stringResource(Res.string.quiz_start_review),
+					style = HandyTheme.typography.bold14,
+					color = colors.primary,
+				)
+			}
+		}
 		Box(
 			modifier = Modifier
 				.fillMaxWidth()
@@ -552,17 +705,20 @@ private fun PrimaryButton(text: String, onClick: () -> Unit) {
 	}
 }
 
-private fun answerLabel(answer: QuizAnswer) = when (answer) {
-	QuizAnswer.RAISE_VALUE, QuizAnswer.RAISE_BLUFF -> Res.string.preflop_action_raise
+/** 공격 라벨은 시나리오에 따라 레이즈(RFI)·3벳(vs 오픈)·4벳(vs 3벳)으로 달라진다. */
+private fun answerLabel(answer: QuizAnswer, scenario: PreflopScenario) = when (answer) {
+	QuizAnswer.RAISE -> when (scenario) {
+		PreflopScenario.RFI -> Res.string.preflop_action_raise
+		PreflopScenario.FACING_RFI -> Res.string.preflop_action_3bet
+		PreflopScenario.VS_3BET -> Res.string.preflop_action_4bet
+	}
 	QuizAnswer.CALL -> Res.string.preflop_action_call
 	QuizAnswer.FOLD -> Res.string.preflop_action_fold
 }
 
-private fun answerSub(answer: QuizAnswer) = when (answer) {
-	QuizAnswer.RAISE_VALUE -> Res.string.quiz_sub_value
-	QuizAnswer.RAISE_BLUFF -> Res.string.quiz_sub_bluff
-	else -> null
-}
+@Composable
+private fun answerText(answer: QuizAnswer, scenario: PreflopScenario): String =
+	stringResource(answerLabel(answer, scenario))
 
 /** ms → "3.2" 형태의 초 문자열(소수 1자리). */
 private fun seconds(ms: Long): String {
@@ -582,28 +738,28 @@ private val previewQuestion = PreflopQuizQuestion(
 	hero = Position.CO,
 	villain = null,
 	hand = PreflopHand(Rank.ACE, Rank.KING, HandShape.SUITED),
-	correct = QuizAnswer.RAISE_VALUE,
+	correct = QuizAnswer.RAISE,
+	options = PreflopScenario.RFI.answerOptions(),
 )
 
 @ThemePreviews
 @Composable
-private fun PreflopQuizSessionAnsweredPreview() {
+private fun PreflopQuizSessionPlayingPreview() {
 	ThemePreview {
 		PreflopQuizSessionScreen(
 			state = PreflopQuizSessionState(
 				phase = QuizPhase.PLAYING,
 				questions = listOf(previewQuestion),
-				selected = QuizAnswer.RAISE_VALUE,
-				score = 3,
-				streak = 3,
-				bestStreak = 3,
 			),
 			onAnswer = {},
-			onNext = {},
 			onSkip = {},
 			onRetry = {},
 			onBack = {},
 			onViewChart = {},
+			onStartReview = {},
+			onReviewPrev = {},
+			onReviewNext = {},
+			onExitReview = {},
 			onRequestReview = {},
 		)
 	}
@@ -616,6 +772,8 @@ private fun PreflopQuizSessionResultPreview() {
 		PreflopQuizSessionScreen(
 			state = PreflopQuizSessionState(
 				phase = QuizPhase.RESULT,
+				questions = listOf(previewQuestion, previewQuestion),
+				answers = listOf(QuizAnswer.FOLD, null),
 				result = QuizResult(
 					score = 8,
 					total = 10,
@@ -625,11 +783,39 @@ private fun PreflopQuizSessionResultPreview() {
 				),
 			),
 			onAnswer = {},
-			onNext = {},
 			onSkip = {},
 			onRetry = {},
 			onBack = {},
 			onViewChart = {},
+			onStartReview = {},
+			onReviewPrev = {},
+			onReviewNext = {},
+			onExitReview = {},
+			onRequestReview = {},
+		)
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun PreflopQuizSessionReviewPreview() {
+	ThemePreview {
+		PreflopQuizSessionScreen(
+			state = PreflopQuizSessionState(
+				phase = QuizPhase.REVIEW,
+				questions = listOf(previewQuestion, previewQuestion),
+				answers = listOf(QuizAnswer.FOLD, null),
+				reviewIndex = 0,
+			),
+			onAnswer = {},
+			onSkip = {},
+			onRetry = {},
+			onBack = {},
+			onViewChart = {},
+			onStartReview = {},
+			onReviewPrev = {},
+			onReviewNext = {},
+			onExitReview = {},
 			onRequestReview = {},
 		)
 	}

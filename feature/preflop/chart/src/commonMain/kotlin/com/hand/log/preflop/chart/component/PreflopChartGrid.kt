@@ -54,10 +54,15 @@ internal fun PreflopChartGrid(
 @Composable
 private fun HandCell(
 	hand: PreflopHand,
-	action: PreflopAction,
+	action: PreflopAction?,
 	size: Dp,
 ) {
-	val (background, foreground) = actionColors(action)
+	val colors = HandyTheme.colorScheme
+	val (background, foreground) = if (action == null) {
+		colors.muted to colors.textSecondary.copy(alpha = 0.5f)
+	} else {
+		actionColors(action)
+	}
 
 	Box(
 		modifier = Modifier

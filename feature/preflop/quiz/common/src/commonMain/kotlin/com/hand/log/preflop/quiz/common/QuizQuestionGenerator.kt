@@ -21,6 +21,7 @@ class QuizQuestionGenerator {
 		val scenario = when (type) {
 			PreflopQuizType.RFI -> PreflopScenario.RFI
 			PreflopQuizType.VS_OPEN -> PreflopScenario.FACING_RFI
+			PreflopQuizType.VS_3BET -> PreflopScenario.VS_3BET
 			PreflopQuizType.MIXED -> null
 		}
 		val pool = charts.entries.filter { (query, chart) ->
@@ -39,14 +40,17 @@ class QuizQuestionGenerator {
 				hero = query.hero,
 				villain = query.villain,
 				hand = hand,
-				correct = chart.actionFor(hand).toQuizAnswer(),
+				correct = (chart.actionFor(hand) ?: PreflopAction.FOLD).toQuizAnswer(),
+				options = query.scenario.answerOptions(),
 			)
 		}
 	}
 
 	/** 대부분 폴드인 그리드 특성상, 65% 확률로 논-폴드 핸드를 뽑아 문제 다양성을 확보. */
 	private fun pickHand(chart: PreflopChart): PreflopHand {
-		val nonFold = allHands.filter { chart.actionFor(it) != PreflopAction.FOLD }
+		val nonFold = allHands.filter {
+			chart.actionFor(it) != null && chart.actionFor(it) != PreflopAction.FOLD
+		}
 		return if (nonFold.isNotEmpty() && Random.nextInt(100) < 65) nonFold.random() else allHands.random()
 	}
 }
