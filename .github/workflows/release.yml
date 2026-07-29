@@ -118,6 +118,9 @@ jobs:
           releaseFiles: ${{ steps.aab.outputs.path }}
           track: internal
           status: completed
+          # API 로 자동 검토 제출이 불가한 앱 상태(예: API 통한 첫 릴리스)에서 Edit 커밋이 실패하므로,
+          # 검토 미제출로 커밋만 하고 검토는 Play Console UI 에서 진행한다.
+          changesNotSentForReview: true
 
       - name: Create and push tag
         if: steps.tagcheck.outputs.exists == 'false'
