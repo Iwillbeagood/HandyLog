@@ -46,7 +46,7 @@ import handylog.core.res.generated.resources.*
 @Composable
 internal fun SettingsScreen(
 	settings: AppSettings,
-	isProBuild: Boolean,
+	isPro: Boolean,
 	onThemeChange: (ThemeMode) -> Unit,
 	onNavigateToBetSize: () -> Unit,
 	onUpgradeClick: () -> Unit,
@@ -72,7 +72,7 @@ internal fun SettingsScreen(
 			) {
 				// 플랜 섹션
 				PlanSection(
-					isProBuild = isProBuild,
+					isPro = isPro,
 					onUpgradeClick = onUpgradeClick,
 				)
 
@@ -196,11 +196,11 @@ private fun ContactNavigationItem(
 
 @Composable
 private fun PlanSection(
-	isProBuild: Boolean,
+	isPro: Boolean,
 	onUpgradeClick: () -> Unit,
 ) {
 	HandySectionLabel(stringResource(Res.string.settings_plan)) {
-		if (isProBuild) {
+		if (isPro) {
 			SettingsCard {
 				Text(
 					text = stringResource(Res.string.settings_plan_pro),
@@ -257,7 +257,7 @@ private fun SettingsScreenPreview() {
 	ThemePreview {
 		SettingsScreen(
 			settings = AppSettings(),
-			isProBuild = false,
+			isPro = false,
 			onThemeChange = {},
 			onNavigateToBetSize = {},
 			onUpgradeClick = {},

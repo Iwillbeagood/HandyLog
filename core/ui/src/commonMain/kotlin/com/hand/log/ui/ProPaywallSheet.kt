@@ -15,18 +15,22 @@ import handylog.core.res.generated.resources.pro_paywall_players
 import handylog.core.res.generated.resources.pro_paywall_presets
 import handylog.core.res.generated.resources.pro_paywall_tables
 import handylog.core.res.generated.resources.pro_paywall_title
+import handylog.core.res.generated.resources.pro_paywall_upgrade
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ProPaywallSheet(
 	feature: ProFeature,
 	onDismiss: () -> Unit,
+	onUpgrade: () -> Unit,
 ) {
 	HandyBottomSheet(
 		onDismissRequest = onDismiss,
 		title = stringResource(Res.string.pro_paywall_title),
-		confirmText = stringResource(Res.string.pro_paywall_confirm),
-		onConfirm = onDismiss,
+		confirmText = stringResource(Res.string.pro_paywall_upgrade),
+		onConfirm = onUpgrade,
+		subText = stringResource(Res.string.pro_paywall_confirm),
+		onSub = onDismiss,
 	) {
 		Text(
 			text = featureDescription(feature),

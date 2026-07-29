@@ -50,6 +50,10 @@ internal fun TableRoute(
 		onPositionSetupDismiss = viewModel::dismissPositionSetup,
 		onBalanceConfirmed = viewModel::applyTableBalance,
 		onSwapHeroSeat = viewModel::swapHeroSeat,
+		onUpgrade = {
+			viewModel.dismissModal()
+			navAction.navigateToProUpgrade()
+		},
 	)
 
 	LaunchedEffect(Unit) {
@@ -78,6 +82,7 @@ private fun TableModalContent(
 	onPositionSetupDismiss: () -> Unit,
 	onBalanceConfirmed: (heroSeat: Int, otherSeats: Set<Int>) -> Unit,
 	onSwapHeroSeat: (Int) -> Unit,
+	onUpgrade: () -> Unit,
 ) {
 	when (modalEffect) {
 		TableModalEffect.Idle -> {}
@@ -144,6 +149,7 @@ private fun TableModalContent(
 			ProPaywallSheet(
 				feature = modalEffect.feature,
 				onDismiss = onDismiss,
+				onUpgrade = onUpgrade,
 			)
 		}
 	}

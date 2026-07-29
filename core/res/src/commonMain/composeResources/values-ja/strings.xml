@@ -213,6 +213,7 @@
 	<!-- Pro Paywall -->
 	<string name="pro_paywall_title">Pro機能</string>
 	<string name="pro_paywall_confirm">確認</string>
+	<string name="pro_paywall_upgrade">Proにアップグレード</string>
 	<string name="pro_paywall_tables">無料版ではテーブルを最大%1$d個まで作成できます。\nPro版で無制限にご利用ください。</string>
 	<string name="pro_paywall_hands">無料版ではテーブルごとにハンドを最大%1$d個まで記録できます。\nPro版で無制限にご利用ください。</string>
 	<string name="pro_paywall_players">無料版ではプレイヤーを最大%1$d人までマークできます。\nPro版で無制限にご利用ください。</string>
@@ -231,8 +232,18 @@
 	<string name="upgrade_presets">プリセット編集</string>
 	<string name="upgrade_free_limit">最大%1$d個</string>
 	<string name="upgrade_unlimited">無制限</string>
-	<string name="upgrade_download">Pro版ダウンロード</string>
-	<string name="upgrade_store_note">Google PlayまたはApp Storeからダウンロード</string>
+	<string name="upgrade_purchase">Proを購入</string>
+	<string name="upgrade_purchase_priced">%1$sでProを購入</string>
+	<string name="upgrade_restore">購入を復元</string>
+	<string name="upgrade_owned_title">Pro利用中</string>
+	<string name="upgrade_owned_desc">すべての機能が解除されました。</string>
+
+	<!-- In-app Purchase -->
+	<string name="purchase_success">Proの購入が完了しました。</string>
+	<string name="purchase_already_owned">すでにProをご利用中です。</string>
+	<string name="purchase_pending">支払いの承認を待っています。</string>
+	<string name="purchase_restore_none">復元する購入履歴がありません。</string>
+	<string name="purchase_error">購入を完了できませんでした。しばらくしてからもう一度お試しください。</string>
 
 	<!-- Common (Yes/No) -->
 	<string name="btn_yes">はい</string>

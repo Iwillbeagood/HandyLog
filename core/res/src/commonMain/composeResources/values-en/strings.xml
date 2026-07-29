@@ -213,6 +213,7 @@
 	<!-- Pro Paywall -->
 	<string name="pro_paywall_title">Pro Feature</string>
 	<string name="pro_paywall_confirm">OK</string>
+	<string name="pro_paywall_upgrade">Upgrade to Pro</string>
 	<string name="pro_paywall_tables">Free version allows up to %1$d tables.\nUpgrade to Pro for unlimited tables.</string>
 	<string name="pro_paywall_hands">Free version allows up to %1$d hands per table.\nUpgrade to Pro for unlimited hands.</string>
 	<string name="pro_paywall_players">Free version allows up to %1$d marked players.\nUpgrade to Pro for unlimited players.</string>
@@ -231,8 +232,18 @@
 	<string name="upgrade_presets">Presets</string>
 	<string name="upgrade_free_limit">Up to %1$d</string>
 	<string name="upgrade_unlimited">Unlimited</string>
-	<string name="upgrade_download">Download Pro</string>
-	<string name="upgrade_store_note">Download from Google Play or App Store</string>
+	<string name="upgrade_purchase">Get Pro</string>
+	<string name="upgrade_purchase_priced">Get Pro for %1$s</string>
+	<string name="upgrade_restore">Restore Purchase</string>
+	<string name="upgrade_owned_title">Pro Active</string>
+	<string name="upgrade_owned_desc">All features are unlocked.</string>
+
+	<!-- In-app Purchase -->
+	<string name="purchase_success">Pro purchase complete.</string>
+	<string name="purchase_already_owned">You already have Pro.</string>
+	<string name="purchase_pending">Waiting for payment approval.</string>
+	<string name="purchase_restore_none">No purchases to restore.</string>
+	<string name="purchase_error">Could not complete the purchase. Please try again later.</string>
 
 	<!-- Common (Yes/No) -->
 	<string name="btn_yes">Yes</string>
