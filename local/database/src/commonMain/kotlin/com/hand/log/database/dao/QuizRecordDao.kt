@@ -13,6 +13,9 @@ interface QuizRecordDao {
 	@Query("SELECT * FROM quiz_records ORDER BY playedAt DESC LIMIT :limit")
 	fun observeRecent(limit: Int): Flow<List<QuizRecordEntity>>
 
+	@Query("SELECT * FROM quiz_records WHERE id = :id")
+	suspend fun findById(id: String): QuizRecordEntity?
+
 	@Insert(onConflict = OnConflictStrategy.REPLACE)
 	suspend fun insert(record: QuizRecordEntity)
 }

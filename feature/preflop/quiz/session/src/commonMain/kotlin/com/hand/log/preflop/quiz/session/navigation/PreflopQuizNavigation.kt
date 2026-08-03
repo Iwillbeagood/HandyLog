@@ -10,7 +10,8 @@ import org.koin.core.parameter.parametersOf
 
 fun EntryProviderScope<NavKey>.preflopQuizSessionNavGraph() {
 	entry<PreflopQuizSession> { key ->
-		val viewModel = koinViewModel<PreflopQuizSessionViewModel> { parametersOf(key.type) }
+		val viewModel =
+			koinViewModel<PreflopQuizSessionViewModel> { parametersOf(key.type, key.recordId) }
 		PreflopQuizSessionRoute(viewModel = viewModel)
 	}
 }

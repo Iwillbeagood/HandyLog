@@ -14,6 +14,9 @@ internal class QuizRecordLocalDataSourceImpl(
 	override fun observeRecent(limit: Int): Flow<List<QuizRecord>> =
 		quizRecordDao.observeRecent(limit).map { list -> list.map { it.toDomain() } }
 
+	override suspend fun findById(id: String): QuizRecord? =
+		quizRecordDao.findById(id)?.toDomain()
+
 	override suspend fun save(record: QuizRecord) {
 		quizRecordDao.insert(record.toEntity())
 	}
@@ -26,6 +29,7 @@ internal class QuizRecordLocalDataSourceImpl(
 		avgResponseMs = avgResponseMs,
 		bestStreak = bestStreak,
 		playedAt = playedAt,
+		questions = questions,
 	)
 
 	private fun QuizRecord.toEntity() = QuizRecordEntity(
@@ -36,5 +40,6 @@ internal class QuizRecordLocalDataSourceImpl(
 		avgResponseMs = avgResponseMs,
 		bestStreak = bestStreak,
 		playedAt = playedAt,
+		questions = questions,
 	)
 }

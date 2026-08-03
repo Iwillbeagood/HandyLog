@@ -16,4 +16,6 @@ data class QuizReviewSpot(
 	val userAnswerLabel: String,
 	val isCorrect: Boolean,
 	val languageName: String,
+	/** 같은 하이카드 라인 주변 핸드의 실제 차트 액션(예: "98s:레이즈, 97s:폴드"). 경계 핸드 추측을 막는 근거. */
+	val neighborHint: String = "",
 )

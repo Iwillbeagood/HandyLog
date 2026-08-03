@@ -12,6 +12,9 @@ internal class QuizRecordRepositoryImpl(
 	override fun observeRecent(limit: Int): Flow<List<QuizRecord>> =
 		localDataSource.observeRecent(limit)
 
+	override suspend fun findById(id: String): QuizRecord? =
+		localDataSource.findById(id)
+
 	override suspend fun save(record: QuizRecord) =
 		localDataSource.save(record)
 }

@@ -48,8 +48,17 @@ class PreflopChartRepository {
 			val raw = Res.readBytes(path).decodeToString()
 			json.decodeFromString<List<PreflopChartDto>>(raw).forEach { dto ->
 				val stack = PreflopStack.fromLabel(dto.stackSize) ?: return@forEach
-				val scenario = scenarioOf(dto.category) ?: return@forEach
-				val chart = PreflopChart(dto.actions.mapValues { actionOf(it.value) })
+				val scenario = scenarioOf(dto.category, dto.chartName) ?: return@forEach
+				// "Not in Range" 핸드는 map 에서 제외 → 그리드에서 빈칸으로 표시된다.
+				// VS_LIMP 는 BB 가 무료로 들어가 있어 폴드가 없으므로 원본 Fold 를 체크로 해석한다.
+				val chart = PreflopChart(
+					dto.actions.mapNotNull { (hand, value) ->
+						actionOf(
+							value,
+							scenario,
+						)?.let { hand to it }
+					}.toMap(),
+				)
 				// 한 DTO(chart_name)에서 전개된 (hero, villain) 들은 같은 원본 그룹으로 간주한다.
 				val groupKey = "${dto.stackSize}|${dto.category}|${dto.chartName}"
 				parseTargets(scenario, dto.chartName).forEach { (hero, villain) ->
@@ -62,27 +71,45 @@ class PreflopChartRepository {
 		return PreflopCatalog(charts, groupKeys).also { cache = it }
 	}
 
-	private fun scenarioOf(category: String): PreflopScenario? = when {
+	private fun scenarioOf(category: String, chartName: String): PreflopScenario? = when {
 		category.startsWith("Raise First") -> PreflopScenario.RFI
 		category.startsWith("Facing RFI") -> PreflopScenario.FACING_RFI
 		category.contains("vs 3bet") || category.startsWith("Facing 3-bet") -> PreflopScenario.VS_3BET
-		else -> null // Blind vs Blind 등은 제외
+		category == "Blind vs Blind" && chartName == "BB vs SB Limp" -> PreflopScenario.VS_LIMP
+		else -> null // 그 외 Blind vs Blind(림프/잼 라인 등)는 제외
 	}
 
-	private fun actionOf(value: String): PreflopAction {
-		val bluff = value.contains("Bluff")
-		return when {
-			value == "Fold" -> PreflopAction.FOLD
-			value == "Call" -> PreflopAction.CALL
-			value == "Limp" -> PreflopAction.LIMP
-			value == "All-in" -> PreflopAction.ALL_IN
-			value.startsWith("4-bet") -> if (bluff) PreflopAction.FOUR_BET_BLUFF else PreflopAction.FOUR_BET
-			value.startsWith(
-				"3-bet",
-			) -> if (bluff) PreflopAction.THREE_BET_BLUFF else PreflopAction.THREE_BET
-			bluff -> PreflopAction.RAISE_BLUFF
+	/**
+	 * 원본 액션 문자열을 [PreflopAction] 으로 매핑한다. "3-bet/Fold to 4bet", "Raise/Call 3bet" 처럼
+	 * "베이스 액션 + 대응 계획" 형태의 복합 표기는 계획 키워드(Jam/Fold/Call/4bet/Stackoff/Bluff)로 세분한다.
+	 */
+	private fun actionOf(value: String, scenario: PreflopScenario): PreflopAction? = when {
+		value == "Not in Range" -> null
+		// VS_LIMP 에서 BB 는 폴드 대신 무료로 체크한다.
+		value == "Fold" -> if (scenario == PreflopScenario.VS_LIMP) PreflopAction.CHECK else PreflopAction.FOLD
+		// RFI(첫 오픈)에서 "Call" 은 콜이 아니라 블라인드 컴플리트 = 림프다. (SB 전용)
+		value == "Call" -> if (scenario == PreflopScenario.RFI) PreflopAction.LIMP else PreflopAction.CALL
+		value == "Limp" -> PreflopAction.LIMP
+		value == "All-in" -> PreflopAction.ALL_IN
+		value.startsWith("4-bet") ->
+			if (value.contains("Bluff")) PreflopAction.FOUR_BET_BLUFF else PreflopAction.FOUR_BET
+		value.startsWith("3-bet") -> when {
+			value.contains("Jam") -> PreflopAction.THREE_BET_JAM
+			value.contains("Fold") -> PreflopAction.THREE_BET_FOLD
+			value.contains("Call") -> PreflopAction.THREE_BET_CALL
+			value.contains("Stackoff") -> PreflopAction.THREE_BET_STACKOFF
+			value.contains("Bluff") -> PreflopAction.THREE_BET_BLUFF
+			else -> PreflopAction.THREE_BET
+		}
+		value.startsWith("Raise") -> when {
+			value.contains("Jam") || value.contains("shove") -> PreflopAction.RAISE_JAM
+			value.contains("4bet") -> PreflopAction.RAISE_4BET
+			value.contains("Fold") -> PreflopAction.RAISE_FOLD
+			value.contains("Call") -> PreflopAction.RAISE_CALL
+			value.contains("Bluff") -> PreflopAction.RAISE_BLUFF
 			else -> PreflopAction.RAISE
 		}
+		else -> PreflopAction.RAISE
 	}
 
 	/** chart_name → (히어로, 상대) 조합 목록. RFI 는 상대 null. 파싱 불가/림프 라인은 빈 목록. */
@@ -94,6 +121,8 @@ class PreflopChartRepository {
 			val hero = positionOf(chartName) ?: return emptyList()
 			return listOf(hero to null)
 		}
+		// VS_LIMP 는 SB 림프에 대응하는 BB 단일 매치업으로 고정한다.
+		if (scenario == PreflopScenario.VS_LIMP) return listOf(Position.BB to Position.SB)
 		if (chartName.contains("Limp") || chartName.contains("Jam")) return emptyList()
 
 		val cleaned = chartName

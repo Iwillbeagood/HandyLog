@@ -30,6 +30,7 @@ import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.preflop.QuizRecord
 import com.hand.log.preflop.quiz.common.PreflopQuizType
+import com.hand.log.preflop.quiz.common.formatQuizPlayedAt
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.chevron_right
 import handylog.core.res.generated.resources.grid_3x3
@@ -55,12 +56,13 @@ internal fun PreflopQuizScreen(
 	records: List<QuizRecord>,
 	onBack: () -> Unit,
 	onTypeSelect: (PreflopQuizType) -> Unit,
+	onRecordClick: (QuizRecord) -> Unit,
 ) {
 	BaseScaffold(
 		topBar = {
 			HandyTopAppbar(
 				title = stringResource(Res.string.preflop_quiz_title),
-				navigationType = TopAppbarType.Default,
+				navigationType = TopAppbarType.Close,
 				onBackEvent = onBack,
 			)
 		},
@@ -106,7 +108,7 @@ internal fun PreflopQuizScreen(
 			}
 
 			SectionHeader(stringResource(Res.string.preflop_recent_title))
-			RecentRecordsCard(records)
+			RecentRecordsCard(records, onRecordClick)
 		}
 	}
 }
@@ -178,7 +180,7 @@ private fun QuizTypeItem(
 }
 
 @Composable
-private fun RecentRecordsCard(records: List<QuizRecord>) {
+private fun RecentRecordsCard(records: List<QuizRecord>, onRecordClick: (QuizRecord) -> Unit) {
 	val colors = HandyTheme.colorScheme
 	Column(
 		modifier = Modifier
@@ -200,15 +202,23 @@ private fun RecentRecordsCard(records: List<QuizRecord>) {
 			Row(
 				modifier = Modifier
 					.fillMaxWidth()
+					.clickable { onRecordClick(record) }
 					.padding(horizontal = 16.dp, vertical = 12.dp),
 				horizontalArrangement = Arrangement.SpaceBetween,
 				verticalAlignment = Alignment.CenterVertically,
 			) {
-				Text(
-					text = quizTypeLabel(record.quizType),
-					style = HandyTheme.typography.medium14,
-					color = colors.textPrimary,
-				)
+				Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+					Text(
+						text = quizTypeLabel(record.quizType),
+						style = HandyTheme.typography.medium14,
+						color = colors.textPrimary,
+					)
+					Text(
+						text = formatQuizPlayedAt(record.playedAt),
+						style = HandyTheme.typography.regular12,
+						color = colors.textSecondary,
+					)
+				}
 				Row(
 					horizontalArrangement = Arrangement.spacedBy(10.dp),
 					verticalAlignment = Alignment.CenterVertically,
@@ -260,6 +270,7 @@ private fun PreflopQuizScreenPreview() {
 			records = emptyList(),
 			onBack = {},
 			onTypeSelect = {},
+			onRecordClick = {},
 		)
 	}
 }

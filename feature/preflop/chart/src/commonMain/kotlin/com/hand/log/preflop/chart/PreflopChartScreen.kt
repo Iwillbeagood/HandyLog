@@ -54,7 +54,7 @@ internal fun PreflopChartScreen(
 		topBar = {
 			HandyTopAppbar(
 				title = stringResource(Res.string.preflop_title),
-				navigationType = TopAppbarType.Default,
+				navigationType = TopAppbarType.Close,
 				onBackEvent = onBack,
 			)
 		},

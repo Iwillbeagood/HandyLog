@@ -58,12 +58,13 @@ private fun HandCell(
 	size: Dp,
 ) {
 	val colors = HandyTheme.colorScheme
+
+	// Not in Range(action == null) → 폴드 핸드. 표기를 딤 처리해 최소한으로 보이게 한다.
 	val (background, foreground) = if (action == null) {
-		colors.muted to colors.textSecondary.copy(alpha = 0.5f)
+		colors.muted.copy(alpha = 0.4f) to colors.textSecondary
 	} else {
 		actionColors(action)
 	}
-
 	Box(
 		modifier = Modifier
 			.size(size)
@@ -90,9 +91,9 @@ private fun PreflopChartGridPreview() {
 				actions = mapOf(
 					"AA" to PreflopAction.RAISE,
 					"AKs" to PreflopAction.THREE_BET,
-					"KQs" to PreflopAction.THREE_BET_BLUFF,
+					"KQs" to PreflopAction.FOUR_BET,
 					"99" to PreflopAction.CALL,
-					"A2s" to PreflopAction.RAISE_BLUFF,
+					"A2s" to PreflopAction.ALL_IN,
 				),
 			),
 		)

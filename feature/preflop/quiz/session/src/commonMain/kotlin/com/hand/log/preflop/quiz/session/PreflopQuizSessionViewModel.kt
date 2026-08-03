@@ -3,15 +3,24 @@ package com.hand.log.preflop.quiz.session
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hand.log.domain.model.Position
+import com.hand.log.domain.model.Rank
+import com.hand.log.domain.model.preflop.HandShape
+import com.hand.log.domain.model.preflop.PreflopAction
+import com.hand.log.domain.model.preflop.PreflopChart
+import com.hand.log.domain.model.preflop.PreflopChartQuery
+import com.hand.log.domain.model.preflop.PreflopHand
 import com.hand.log.domain.model.preflop.PreflopScenario
 import com.hand.log.domain.model.preflop.QuizRecord
+import com.hand.log.domain.model.preflop.QuizRecordQuestion
 import com.hand.log.domain.model.preflop.QuizReviewSpot
+import com.hand.log.preflop.quiz.common.PreflopQuizQuestion
 import com.hand.log.domain.repository.QuizRecordRepository
 import com.hand.log.domain.repository.AiReviewRepository
 import com.hand.log.preflop.chart.data.PreflopChartRepository
 import com.hand.log.preflop.quiz.common.PreflopQuizType
-import com.hand.log.preflop.quiz.common.QuizAnswer
 import com.hand.log.preflop.quiz.common.QuizQuestionGenerator
+import com.hand.log.preflop.quiz.common.hasResponsePlan
+import com.hand.log.preflop.quiz.common.primaryAction
 import com.hand.log.preflop.quiz.session.contract.PreflopQuizSessionState
 import com.hand.log.preflop.quiz.session.contract.QuizPhase
 import com.hand.log.preflop.quiz.session.contract.QuizResult
@@ -29,6 +38,7 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
 internal class PreflopQuizSessionViewModel(
 	quizTypeName: String,
+	recordId: String,
 	private val chartRepository: PreflopChartRepository,
 	private val generator: QuizQuestionGenerator,
 	private val quizRecordRepository: QuizRecordRepository,
@@ -41,11 +51,43 @@ internal class PreflopQuizSessionViewModel(
 	private val responseTimes = mutableListOf<Long>()
 	private var questionMark = TimeSource.Monotonic.markNow()
 
+	private var loadedCharts: Map<PreflopChartQuery, PreflopChart> = emptyMap()
+
 	private val _state = MutableStateFlow(PreflopQuizSessionState())
 	val state: StateFlow<PreflopQuizSessionState> = _state
 
 	init {
-		start()
+		if (recordId.isEmpty()) start() else openRecord(recordId)
+	}
+
+	/** 저장된 퀴즈 기록을 결과 화면으로 바로 연다. 문제는 저장하지 않으므로 리뷰는 제공하지 않는다. */
+	private fun openRecord(id: String) {
+		_state.value = PreflopQuizSessionState(phase = QuizPhase.LOADING)
+		viewModelScope.launch {
+			val record = quizRecordRepository.findById(id)
+			if (record == null) {
+				start()
+				return@launch
+			}
+			val accuracy = if (record.total == 0) 0 else record.score * 100 / record.total
+			val recordType = runCatching { PreflopQuizType.valueOf(record.quizType) }
+				.getOrDefault(quizType)
+			// 저장된 문제 스냅샷을 복원해 결과 화면에서 리뷰를 다시 시작할 수 있게 한다.
+			_state.value = PreflopQuizSessionState(
+				phase = QuizPhase.RESULT,
+				questions = record.questions.map { it.toQuizQuestion() },
+				answers = record.questions.map { it.userAnswer },
+				result = QuizResult(
+					score = record.score,
+					total = record.total,
+					accuracyPct = accuracy,
+					avgResponseMs = record.avgResponseMs,
+					bestStreak = record.bestStreak,
+					quizType = recordType,
+					playedAt = record.playedAt,
+				),
+			)
+		}
 	}
 
 	private fun start() {
@@ -53,6 +95,7 @@ internal class PreflopQuizSessionViewModel(
 		_state.value = PreflopQuizSessionState(phase = QuizPhase.LOADING)
 		viewModelScope.launch {
 			val charts = chartRepository.load().charts
+			loadedCharts = charts
 			val questions = generator.generate(charts, quizType, QUESTION_COUNT)
 			questionMark = TimeSource.Monotonic.markNow()
 			_state.value = PreflopQuizSessionState(
@@ -62,14 +105,29 @@ internal class PreflopQuizSessionViewModel(
 		}
 	}
 
-	fun onAnswer(answer: QuizAnswer) = record(answer)
+	/**
+	 * 1차(첫 액션) 선택. 정답이 리레이즈 대응이 있는 복합 라인이고 그 첫 액션을 맞게 골랐을 때만
+	 * 2차 선택을 기다린다. 그 외에는 곧바로 답으로 확정한다.
+	 */
+	fun onPrimarySelect(primary: PreflopAction) {
+		val q = _state.value.current ?: return
+		if (_state.value.phase != QuizPhase.PLAYING) return
+		val needPlan = q.correct.hasResponsePlan() &&
+			primary == q.correct.primaryAction() &&
+			q.planOptions.isNotEmpty()
+		if (needPlan) {
+			_state.update { it.copy(pendingPrimary = primary) }
+		} else {
+			record(primary)
+		}
+	}
 
-	fun onSkip() = record(null)
+	fun onPlanSelect(fullAction: PreflopAction) = record(fullAction)
 
 	fun onRetry() = start()
 
 	/** 정답 공개 없이 답변만 기록하고 곧바로 다음 문제로 넘어간다. 결과는 전 문제를 푼 뒤 공개한다. */
-	private fun record(answer: QuizAnswer?) {
+	private fun record(answer: PreflopAction?) {
 		val s = _state.value
 		if (s.phase != QuizPhase.PLAYING || s.current == null) return
 		responseTimes.add(questionMark.elapsedNow().inWholeMilliseconds)
@@ -78,24 +136,26 @@ internal class PreflopQuizSessionViewModel(
 			finish(answers)
 		} else {
 			questionMark = TimeSource.Monotonic.markNow()
-			_state.update { it.copy(index = it.index + 1, answers = answers) }
+			_state.update { it.copy(index = it.index + 1, answers = answers, pendingPrimary = null) }
 		}
 	}
 
-	private fun finish(answers: List<QuizAnswer?>) {
+	private fun finish(answers: List<PreflopAction?>) {
 		val questions = _state.value.questions
 		val total = questions.size
 		val score = answers.indices.count { answers[it] == questions[it].correct }
 		val bestStreak = bestStreak(answers, questions.map { it.correct })
 		val avg = if (responseTimes.isEmpty()) 0L else responseTimes.average().toLong()
 		val accuracy = if (total == 0) 0 else score * 100 / total
-		val result = QuizResult(score, total, accuracy, avg, bestStreak)
+		val playedAt = Clock.System.now().toEpochMilliseconds()
+		val result = QuizResult(score, total, accuracy, avg, bestStreak, quizType, playedAt)
 
 		_state.update {
 			it.copy(phase = QuizPhase.RESULT, answers = answers, result = result)
 		}
 
 		if (total > 0) {
+			val recordQuestions = questions.mapIndexed { i, q -> q.toRecordQuestion(answers.getOrNull(i)) }
 			viewModelScope.launch {
 				quizRecordRepository.save(
 					QuizRecord(
@@ -105,14 +165,15 @@ internal class PreflopQuizSessionViewModel(
 						total = total,
 						avgResponseMs = avg,
 						bestStreak = bestStreak,
-						playedAt = Clock.System.now().toEpochMilliseconds(),
+						playedAt = playedAt,
+						questions = recordQuestions,
 					),
 				)
 			}
 		}
 	}
 
-	private fun bestStreak(answers: List<QuizAnswer?>, correct: List<QuizAnswer>): Int {
+	private fun bestStreak(answers: List<PreflopAction?>, correct: List<PreflopAction>): Int {
 		var streak = 0
 		var best = 0
 		answers.forEachIndexed { i, a ->
@@ -142,6 +203,7 @@ internal class PreflopQuizSessionViewModel(
 
 	fun onReviewNext() = moveReview(1)
 
+	/** 리뷰를 끝내고 결과 화면으로 돌아간다. */
 	fun onExitReview() {
 		_state.update { it.copy(phase = QuizPhase.RESULT) }
 	}
@@ -174,10 +236,11 @@ internal class PreflopQuizSessionViewModel(
 				heroLabel = question.hero.label,
 				scenarioLabel = scenarioLabel(question.scenario, question.villain),
 				handNotation = question.hand.notation,
-				correctActionLabel = actionLabel(question.correct, question.scenario),
-				userAnswerLabel = userAnswer?.let { actionLabel(it, question.scenario) } ?: "건너뜀",
+				correctActionLabel = actionLabel(question.correct),
+				userAnswerLabel = userAnswer?.let { actionLabel(it) } ?: "건너뜀",
 				isCorrect = userAnswer == question.correct,
 				languageName = languageName,
+				neighborHint = neighborHint(question),
 			)
 			val result = runCatching { aiReviewRepository.reviewQuizSpot(spot) }
 				.mapCatching { it.ifBlank { error("empty review") } }
@@ -191,24 +254,77 @@ internal class PreflopQuizSessionViewModel(
 		}
 	}
 
+	private fun neighborHint(question: PreflopQuizQuestion): String {
+		val chart = loadedCharts[
+			PreflopChartQuery(question.stack, question.scenario, question.hero, question.villain),
+		] ?: return ""
+		val hand = question.hand
+		val lane = when (hand.shape) {
+			HandShape.PAIR -> Rank.entries.map { PreflopHand(it, it, HandShape.PAIR) }
+			else ->
+				Rank.entries
+					.filter { it.ordinal > hand.high.ordinal }
+					.map { PreflopHand(hand.high, it, hand.shape) }
+		}
+		if (lane.size <= 1) return ""
+		return lane.joinToString(", ") { h ->
+			"${h.notation}:${chart.actionFor(h)?.let { actionLabel(it) } ?: "폴드"}"
+		}
+	}
+
 	// LLM 프롬프트에 삽입할 스팟 설명 문자열(UI 표시가 아닌 프롬프트 데이터).
 	private fun scenarioLabel(scenario: PreflopScenario, villain: Position?): String = when (scenario) {
 		PreflopScenario.RFI -> "RFI — 앞 포지션이 모두 폴드, 내가 첫 오픈 여부를 결정하는 상황"
 		PreflopScenario.FACING_RFI -> "앞 포지션 ${villain?.label ?: "상대"}의 오픈 레이즈에 대응하는 상황"
 		PreflopScenario.VS_3BET -> "내 오픈에 ${villain?.label ?: "상대"}가 3벳한 상황"
+		PreflopScenario.VS_LIMP -> "SB 가 림프한 상황에서 BB 로 대응하는 상황"
 	}
 
-	private fun actionLabel(answer: QuizAnswer, scenario: PreflopScenario): String = when (answer) {
-		QuizAnswer.RAISE -> when (scenario) {
-			PreflopScenario.RFI -> "레이즈"
-			PreflopScenario.FACING_RFI -> "3벳"
-			PreflopScenario.VS_3BET -> "4벳"
-		}
-		QuizAnswer.CALL -> "콜"
-		QuizAnswer.FOLD -> "폴드"
+	// LLM 프롬프트용 한국어 액션 라벨(로컬라이즈 불필요). 차트 액션과 1:1.
+	private fun actionLabel(action: PreflopAction): String = when (action) {
+		PreflopAction.RAISE -> "레이즈"
+		PreflopAction.RAISE_BLUFF -> "레이즈 블러프"
+		PreflopAction.RAISE_FOLD -> "레이즈/폴드"
+		PreflopAction.RAISE_CALL -> "레이즈/콜"
+		PreflopAction.RAISE_4BET -> "레이즈/4벳"
+		PreflopAction.RAISE_JAM -> "레이즈 올인"
+		PreflopAction.THREE_BET -> "3벳"
+		PreflopAction.THREE_BET_BLUFF -> "3벳 블러프"
+		PreflopAction.THREE_BET_STACKOFF -> "3벳/스택오프"
+		PreflopAction.THREE_BET_FOLD -> "3벳/폴드"
+		PreflopAction.THREE_BET_CALL -> "3벳/콜"
+		PreflopAction.THREE_BET_JAM -> "3벳 올인"
+		PreflopAction.FOUR_BET -> "4벳"
+		PreflopAction.FOUR_BET_BLUFF -> "4벳 블러프"
+		PreflopAction.ALL_IN -> "올인"
+		PreflopAction.CALL -> "콜"
+		PreflopAction.LIMP -> "림프"
+		PreflopAction.CHECK -> "체크"
+		PreflopAction.FOLD -> "폴드"
 	}
 
 	companion object {
 		const val QUESTION_COUNT = 10
 	}
 }
+
+private fun PreflopQuizQuestion.toRecordQuestion(userAnswer: PreflopAction?) = QuizRecordQuestion(
+	stack = stack,
+	scenario = scenario,
+	hero = hero,
+	villain = villain,
+	hand = hand,
+	correct = correct,
+	options = options,
+	userAnswer = userAnswer,
+)
+
+private fun QuizRecordQuestion.toQuizQuestion() = PreflopQuizQuestion(
+	stack = stack,
+	scenario = scenario,
+	hero = hero,
+	villain = villain,
+	hand = hand,
+	correct = correct,
+	options = options,
+)

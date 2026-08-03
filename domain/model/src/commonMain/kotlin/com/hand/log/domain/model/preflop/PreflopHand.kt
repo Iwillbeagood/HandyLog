@@ -1,6 +1,7 @@
 package com.hand.log.domain.model.preflop
 
 import com.hand.log.domain.model.Rank
+import kotlinx.serialization.Serializable
 
 /** 169개 프리플랍 핸드의 형태. */
 enum class HandShape { PAIR, SUITED, OFFSUIT }
@@ -9,6 +10,7 @@ enum class HandShape { PAIR, SUITED, OFFSUIT }
  * 프리플랍 차트의 한 칸(=169개 스타팅 핸드 중 하나).
  * [high] 는 항상 [low] 이상(랭크 ordinal 이 더 작거나 같음)이다. 페어는 high == low.
  */
+@Serializable
 data class PreflopHand(
 	val high: Rank,
 	val low: Rank,

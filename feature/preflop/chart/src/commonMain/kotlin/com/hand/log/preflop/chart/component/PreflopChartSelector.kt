@@ -39,8 +39,10 @@ import handylog.core.res.generated.resources.preflop_scenario_label
 import handylog.core.res.generated.resources.preflop_scenario_facing
 import handylog.core.res.generated.resources.preflop_scenario_rfi
 import handylog.core.res.generated.resources.preflop_scenario_vs3bet
+import handylog.core.res.generated.resources.preflop_scenario_vslimp
 import handylog.core.res.generated.resources.preflop_stack_label
 import handylog.core.res.generated.resources.preflop_villain_label
+import handylog.core.res.generated.resources.preflop_vslimp_caption
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -77,6 +79,12 @@ internal fun PreflopChartSelector(
 			)
 		}
 
+		// VS_LIMP 는 SB 림프 → BB 단일 매치업이라 포지션 칩 대신 고정 캡션을 보여준다.
+		if (state.scenario == PreflopScenario.VS_LIMP) {
+			MatchupCaption(text = stringResource(Res.string.preflop_vslimp_caption))
+			return@Column
+		}
+
 		val selectedHeroGroup = state.heroOptions.find { state.hero in it }
 			?: state.heroOptions.firstOrNull().orEmpty()
 		ChipGroup(
@@ -99,6 +107,30 @@ internal fun PreflopChartSelector(
 				optionLabel = { group -> group.joinToString("/") { it.label } },
 				selectedColor = HandyTheme.colorScheme.accent,
 				onSelect = { group -> group.firstOrNull()?.let(onVillainSelect) },
+			)
+		}
+	}
+}
+
+@Composable
+private fun MatchupCaption(text: String) {
+	val colors = HandyTheme.colorScheme
+	Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+		Text(
+			text = stringResource(Res.string.preflop_hero),
+			style = HandyTheme.typography.medium12,
+			color = colors.textSecondary,
+		)
+		Box(
+			modifier = Modifier
+				.clip(RoundedCornerShape(8.dp))
+				.background(colors.accent.copy(alpha = 0.15f))
+				.padding(horizontal = 12.dp, vertical = 8.dp),
+		) {
+			Text(
+				text = text,
+				style = HandyTheme.typography.bold12,
+				color = colors.accent,
 			)
 		}
 	}
@@ -221,6 +253,7 @@ private fun scenarioLabel(scenario: PreflopScenario): String = when (scenario) {
 	PreflopScenario.RFI -> stringResource(Res.string.preflop_scenario_rfi)
 	PreflopScenario.FACING_RFI -> stringResource(Res.string.preflop_scenario_facing)
 	PreflopScenario.VS_3BET -> stringResource(Res.string.preflop_scenario_vs3bet)
+	PreflopScenario.VS_LIMP -> stringResource(Res.string.preflop_scenario_vslimp)
 }
 
 @ThemePreviews
@@ -237,6 +270,24 @@ private fun PreflopChartSelectorPreview() {
 					listOf(Position.UTG2),
 					listOf(Position.LJ, Position.HJ),
 				),
+			),
+			onStackSelect = {},
+			onScenarioSelect = {},
+			onHeroSelect = {},
+			onVillainSelect = {},
+		)
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun PreflopChartSelectorVsLimpPreview() {
+	ThemePreview {
+		PreflopChartSelector(
+			state = PreflopChartState(
+				scenario = PreflopScenario.VS_LIMP,
+				hero = Position.BB,
+				villain = Position.SB,
 			),
 			onStackSelect = {},
 			onScenarioSelect = {},

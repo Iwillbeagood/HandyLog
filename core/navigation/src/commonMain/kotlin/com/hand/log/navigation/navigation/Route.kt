@@ -39,13 +39,18 @@ data class PlayerHands(val savedPlayerId: String, val playerName: String) : Rout
 data object BetSizeSettings : Route
 
 @Serializable
-data object PreflopChart : Route
+data class PreflopChart(
+	val stack: String? = null,
+	val scenario: String? = null,
+	val hero: String? = null,
+	val villain: String? = null,
+) : Route
 
 @Serializable
 data object PreflopQuiz : Route
 
 @Serializable
-data class PreflopQuizSession(val type: String) : Route
+data class PreflopQuizSession(val type: String, val recordId: String = "") : Route
 
 @Serializable
 data object ProUpgrade : Route

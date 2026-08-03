@@ -2,6 +2,7 @@ package com.hand.log.designsystem.component
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -21,6 +22,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+
+/**
+ * 상태값에 따라 다른 콘텐츠로 교체될 때(if/else·when 스왑) 단순 페이드로 전환한다.
+ * 등장/퇴장(단일 콘텐츠의 표시 여부)은 [FadeAnimatedVisibility] 를 사용한다.
+ */
+@Composable
+fun <T> FadeAnimatedContent(
+	targetState: T,
+	modifier: Modifier = Modifier,
+	content: @Composable (T) -> Unit,
+) {
+	Crossfade(
+		targetState = targetState,
+		modifier = modifier,
+		animationSpec = tween(300),
+		label = "fadeContent",
+		content = content,
+	)
+}
 
 @Composable
 fun FadeAnimatedVisibility(

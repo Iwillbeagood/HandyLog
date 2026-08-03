@@ -2,6 +2,7 @@ package com.hand.log.database.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.hand.log.domain.model.preflop.QuizRecordQuestion
 
 @Entity(tableName = "quiz_records")
 data class QuizRecordEntity(
@@ -12,4 +13,5 @@ data class QuizRecordEntity(
 	val avgResponseMs: Long,
 	val bestStreak: Int,
 	val playedAt: Long,
+	val questions: List<QuizRecordQuestion> = emptyList(),
 )

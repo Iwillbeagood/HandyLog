@@ -22,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
+import com.hand.log.designsystem.component.FadeAnimatedContent
+import com.hand.log.designsystem.component.FadeAnimatedVisibility
 import com.hand.log.designsystem.component.HandyHorizontalDivider
 import com.hand.log.designsystem.component.HandySectionLabel
 import com.hand.log.designsystem.component.HandyTopAppbar
@@ -153,7 +155,7 @@ private fun ThemeSection(
 						)
 					}
 
-					if (isSelected) {
+					FadeAnimatedVisibility(isSelected) {
 						Box(
 							modifier = Modifier
 								.size(8.dp)
@@ -201,20 +203,22 @@ private fun PlanSection(
 	onUpgradeClick: () -> Unit,
 ) {
 	HandySectionLabel(stringResource(Res.string.settings_plan)) {
-		if (isPro) {
-			SettingsCard {
-				Text(
-					text = stringResource(Res.string.settings_plan_pro),
-					style = HandyTheme.typography.medium14,
-					color = HandyTheme.colorScheme.primary,
+		FadeAnimatedContent(isPro) { pro ->
+			if (pro) {
+				SettingsCard {
+					Text(
+						text = stringResource(Res.string.settings_plan_pro),
+						style = HandyTheme.typography.medium14,
+						color = HandyTheme.colorScheme.primary,
+					)
+				}
+			} else {
+				SettingsNavigationItem(
+					title = stringResource(Res.string.settings_plan_free),
+					subtitle = stringResource(Res.string.settings_plan_upgrade),
+					onClick = onUpgradeClick,
 				)
 			}
-		} else {
-			SettingsNavigationItem(
-				title = stringResource(Res.string.settings_plan_free),
-				subtitle = stringResource(Res.string.settings_plan_upgrade),
-				onClick = onUpgradeClick,
-			)
 		}
 	}
 }

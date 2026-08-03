@@ -56,16 +56,21 @@ internal class MainNavigator {
 			navigate(PlayerHands(savedPlayerId, playerName))
 		}
 
-		override fun navigateToPreflopChart() {
-			navigate(PreflopChart)
+		override fun navigateToPreflopChart(
+			stack: String?,
+			scenario: String?,
+			hero: String?,
+			villain: String?,
+		) {
+			navigate(PreflopChart(stack, scenario, hero, villain))
 		}
 
 		override fun navigateToPreflopQuiz() {
 			navigate(PreflopQuiz)
 		}
 
-		override fun navigateToPreflopQuizSession(type: String) {
-			navigate(PreflopQuizSession(type))
+		override fun navigateToPreflopQuizSession(type: String, recordId: String) {
+			navigate(PreflopQuizSession(type, recordId))
 		}
 
 		override fun navigateToBetSizeSettings() {

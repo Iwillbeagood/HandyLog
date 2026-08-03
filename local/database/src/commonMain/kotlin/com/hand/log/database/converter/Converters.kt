@@ -10,6 +10,7 @@ import com.hand.log.domain.model.HandStreets
 import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.PlayerTendency
 import com.hand.log.domain.model.Street
+import com.hand.log.domain.model.preflop.QuizRecordQuestion
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.Json
 
@@ -89,6 +90,12 @@ class Converters {
 
 	@TypeConverter
 	fun toHandPlayers(value: String): List<HandPlayer> = json.decodeFromString(value)
+
+	@TypeConverter
+	fun fromQuizRecordQuestions(value: List<QuizRecordQuestion>): String = json.encodeToString(value)
+
+	@TypeConverter
+	fun toQuizRecordQuestions(value: String): List<QuizRecordQuestion> = json.decodeFromString(value)
 
 	@TypeConverter
 	fun fromHandResults(value: HandResults?): String? =

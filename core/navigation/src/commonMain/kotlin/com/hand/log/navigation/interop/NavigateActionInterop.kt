@@ -15,9 +15,14 @@ interface NavigateActionInterop {
 	fun navigateToHandDetail(handId: String)
 	fun navigateToPlayerHands(savedPlayerId: String, playerName: String)
 	fun navigateToPlayersWithAdd()
-	fun navigateToPreflopChart()
+	fun navigateToPreflopChart(
+		stack: String? = null,
+		scenario: String? = null,
+		hero: String? = null,
+		villain: String? = null,
+	)
 	fun navigateToPreflopQuiz()
-	fun navigateToPreflopQuizSession(type: String)
+	fun navigateToPreflopQuizSession(type: String, recordId: String = "")
 	fun navigateToBetSizeSettings()
 	fun navigateToProUpgrade()
 	fun navigateToContact()

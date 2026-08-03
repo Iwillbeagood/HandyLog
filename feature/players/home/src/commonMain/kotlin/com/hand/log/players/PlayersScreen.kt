@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
+import com.hand.log.designsystem.component.FadeAnimatedContent
 import com.hand.log.designsystem.component.HandyHorizontalDivider
 import com.hand.log.designsystem.component.HandyTopAppbar
 import com.hand.log.designsystem.component.IconButton
@@ -52,8 +53,8 @@ internal fun PlayersScreen(
 
 			when (state) {
 				PlayersState.Loading -> {}
-				is PlayersState.Success -> {
-					if (state.players.isEmpty()) {
+				is PlayersState.Success -> FadeAnimatedContent(state.players.isEmpty()) { isEmpty ->
+					if (isEmpty) {
 						PlayersEmptyState(
 							modifier = Modifier
 								.fillMaxSize()

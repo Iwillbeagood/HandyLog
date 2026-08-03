@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
+import com.hand.log.designsystem.component.FadeAnimatedContent
 import com.hand.log.designsystem.component.HandyHorizontalDivider
 import com.hand.log.designsystem.component.HandyTopAppbar
 import com.hand.log.designsystem.component.RegularButton
@@ -76,14 +77,16 @@ internal fun ProUpgradeScreen(
 			) {
 				HeroSection()
 				ComparisonTable()
-				if (state.isPro) {
-					OwnedSection()
-				} else {
-					PurchaseSection(
-						state = state,
-						onPurchase = onPurchase,
-						onRestore = onRestore,
-					)
+				FadeAnimatedContent(state.isPro) { isPro ->
+					if (isPro) {
+						OwnedSection()
+					} else {
+						PurchaseSection(
+							state = state,
+							onPurchase = onPurchase,
+							onRestore = onRestore,
+						)
+					}
 				}
 			}
 		}

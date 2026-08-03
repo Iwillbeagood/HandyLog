@@ -25,6 +25,7 @@ import com.hand.log.designsystem.theme.HandyTheme
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.arrow_left
 import handylog.core.res.generated.resources.spade_filled
+import handylog.core.res.generated.resources.x
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import com.hand.log.designsystem.etc.ThemePreview
@@ -61,7 +62,14 @@ fun HandyTopAppbar(
 					TopAppbarType.Main -> {
 						HomeLogo(title = title)
 					}
-					else -> {
+					TopAppbarType.Close -> {
+						TopAppbarIcon(
+							tint = contentColor,
+							icon = Res.drawable.x,
+							onClick = onBackEvent,
+						)
+					}
+					TopAppbarType.Default -> {
 						TopAppbarIcon(
 							tint = contentColor,
 							icon = Res.drawable.arrow_left,
@@ -215,6 +223,7 @@ fun HomeLogo(title: String = "") {
 sealed interface TopAppbarType {
 	data object Default : TopAppbarType
 	data object Main : TopAppbarType
+	data object Close : TopAppbarType
 }
 
 data class IconButton(
@@ -230,6 +239,17 @@ private fun DefaultTopAppbarPreview() {
 		HandyTopAppbar(
 			title = "등록",
 			navigationType = TopAppbarType.Default,
+		)
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun CloseTopAppbarPreview() {
+	ThemePreview {
+		HandyTopAppbar(
+			title = "프리플랍 퀴즈",
+			navigationType = TopAppbarType.Close,
 		)
 	}
 }

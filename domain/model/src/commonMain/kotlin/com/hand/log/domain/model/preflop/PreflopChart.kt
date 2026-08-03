@@ -2,11 +2,12 @@ package com.hand.log.domain.model.preflop
 
 import com.hand.log.domain.model.Position
 
-/** 세 가지 차트 세트. */
-enum class PreflopScenario { RFI, FACING_RFI, VS_3BET }
+/** 차트 세트. VS_LIMP 는 SB 림프에 대응하는 BB 단일 매치업(포지션 고정)이다. */
+enum class PreflopScenario { RFI, FACING_RFI, VS_3BET, VS_LIMP }
 
 /**
- * 특정 상황 하나에 대한 169칸 차트. [actions] 는 핸드 표기(notation) → 액션. 없으면 폴드로 간주.
+ * 특정 상황 하나에 대한 169칸 차트. [actions] 는 핸드 표기(notation) → 액션.
+ * Not in Range 핸드는 [actions] 에 포함되지 않으며(=null), 그리드에서 빈칸으로 표시된다.
  */
 data class PreflopChart(
 	val actions: Map<String, PreflopAction>,

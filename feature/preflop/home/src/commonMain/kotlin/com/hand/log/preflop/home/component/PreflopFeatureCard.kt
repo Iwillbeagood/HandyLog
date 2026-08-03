@@ -45,7 +45,6 @@ internal fun PreflopFeatureCard(
 	ctaColor: Color,
 	onClick: () -> Unit,
 	modifier: Modifier = Modifier,
-	badge: String? = null,
 ) {
 	val colors = HandyTheme.colorScheme
 	val tint = if (variant == PreflopCardVariant.CHART) colors.primary else colors.gold
@@ -65,20 +64,6 @@ internal fun PreflopFeatureCard(
 					.padding(start = 20.dp, end = 116.dp, top = 16.dp, bottom = 16.dp),
 				verticalArrangement = Arrangement.spacedBy(6.dp),
 			) {
-				if (badge != null) {
-					Box(
-						modifier = Modifier
-							.clip(RoundedCornerShape(12.dp))
-							.background(colors.gold)
-							.padding(horizontal = 8.dp, vertical = 3.dp),
-					) {
-						Text(
-							text = badge,
-							style = HandyTheme.typography.bold10,
-							color = colors.onPrimary,
-						)
-					}
-				}
 				Text(
 					text = title,
 					style = HandyTheme.typography.bold20,
@@ -192,7 +177,6 @@ private fun PreflopFeatureCardQuizPreview() {
 				description = "실력을 테스트해보세요",
 				ctaText = "퀴즈 시작",
 				ctaColor = HandyTheme.colorScheme.gold,
-				badge = "NEW",
 				onClick = {},
 			)
 		}

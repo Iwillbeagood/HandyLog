@@ -16,11 +16,13 @@ internal fun PreflopQuizSessionRoute(
 
 	PreflopQuizSessionScreen(
 		state = state,
-		onAnswer = viewModel::onAnswer,
-		onSkip = viewModel::onSkip,
+		onPrimarySelect = viewModel::onPrimarySelect,
+		onPlanSelect = viewModel::onPlanSelect,
 		onRetry = viewModel::onRetry,
 		onBack = navAction::popBackStack,
-		onViewChart = navAction::navigateToPreflopChart,
+		onViewChart = { stack, scenario, hero, villain ->
+			navAction.navigateToPreflopChart(stack.name, scenario.name, hero.name, villain?.name)
+		},
 		onStartReview = viewModel::onStartReview,
 		onReviewPrev = viewModel::onReviewPrev,
 		onReviewNext = viewModel::onReviewNext,

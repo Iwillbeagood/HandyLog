@@ -24,7 +24,7 @@ import com.hand.log.database.entity.TablePlayerEntity
 		SavedPlayerEntity::class,
 		QuizRecordEntity::class,
 	],
-	version = 3,
+	version = 4,
 )
 @TypeConverters(Converters::class)
 @ConstructedBy(AppDatabaseConstructor::class)

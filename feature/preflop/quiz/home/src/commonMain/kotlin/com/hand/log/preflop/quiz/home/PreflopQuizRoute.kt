@@ -17,5 +17,6 @@ internal fun PreflopQuizRoute(
 		records = records,
 		onBack = navAction::popBackStack,
 		onTypeSelect = { type -> navAction.navigateToPreflopQuizSession(type.name) },
+		onRecordClick = { record -> navAction.navigateToPreflopQuizSession(record.quizType, record.id) },
 	)
 }

@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
+import com.hand.log.designsystem.component.FadeAnimatedContent
 import com.hand.log.designsystem.component.HandyTopAppbar
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.designsystem.theme.nonScaledSp
@@ -76,8 +77,8 @@ internal fun PlayerHandsScreen(
 	) {
 		when (state) {
 			PlayerHandsState.Loading -> {}
-			is PlayerHandsState.Success -> {
-				if (state.hands.isEmpty()) {
+			is PlayerHandsState.Success -> FadeAnimatedContent(state.hands.isEmpty()) { isEmpty ->
+				if (isEmpty) {
 					Box(
 						modifier = Modifier.fillMaxSize().padding(16.dp),
 						contentAlignment = Alignment.Center,

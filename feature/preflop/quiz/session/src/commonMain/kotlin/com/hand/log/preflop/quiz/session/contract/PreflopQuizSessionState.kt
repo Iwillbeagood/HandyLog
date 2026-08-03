@@ -1,7 +1,8 @@
 package com.hand.log.preflop.quiz.session.contract
 
+import com.hand.log.domain.model.preflop.PreflopAction
 import com.hand.log.preflop.quiz.common.PreflopQuizQuestion
-import com.hand.log.preflop.quiz.common.QuizAnswer
+import com.hand.log.preflop.quiz.common.PreflopQuizType
 
 internal enum class QuizPhase { LOADING, PLAYING, RESULT, REVIEW }
 
@@ -11,7 +12,9 @@ internal data class PreflopQuizSessionState(
 	val phase: QuizPhase = QuizPhase.LOADING,
 	val questions: List<PreflopQuizQuestion> = emptyList(),
 	val index: Int = 0,
-	val answers: List<QuizAnswer?> = emptyList(),
+	val answers: List<PreflopAction?> = emptyList(),
+	// 현재 문제에서 1차(첫 액션)를 고른 뒤 2차(리레이즈 대응)를 기다리는 중이면 그 1차 액션. null 이면 1차 선택 단계.
+	val pendingPrimary: PreflopAction? = null,
 	val result: QuizResult? = null,
 	val reviewIndex: Int = 0,
 	val reviewStatus: ReviewStatus = ReviewStatus.IDLE,
@@ -29,7 +32,7 @@ internal data class PreflopQuizSessionState(
 	val reviewQuestion: PreflopQuizQuestion?
 		get() = reviewQuestionIndices.getOrNull(reviewIndex)?.let { questions[it] }
 
-	val reviewUserAnswer: QuizAnswer?
+	val reviewUserAnswer: PreflopAction?
 		get() = reviewQuestionIndices.getOrNull(reviewIndex)?.let { answers.getOrNull(it) }
 }
 
@@ -39,4 +42,6 @@ internal data class QuizResult(
 	val accuracyPct: Int,
 	val avgResponseMs: Long,
 	val bestStreak: Int,
+	val quizType: PreflopQuizType,
+	val playedAt: Long,
 )

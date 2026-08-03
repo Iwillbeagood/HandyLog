@@ -28,6 +28,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
+import com.hand.log.designsystem.component.FadeAnimatedContent
+import com.hand.log.designsystem.component.FadeAnimatedVisibility
 import com.hand.log.platform.imeWindowInsets
 import com.hand.log.platform.isKeyboardVisible
 import com.hand.log.designsystem.component.HandySwitch
@@ -121,7 +123,7 @@ internal fun RecordHandScreen(
 		bottomBar = {
 			val isSetup = state.currentStep == RecordStep.SETUP
 			val isShowdown = state.currentStep == RecordStep.SHOWDOWN
-			if (isSetup || isShowdown) {
+			FadeAnimatedVisibility(isSetup || isShowdown) {
 				BottomNavigationBar(
 					currentStep = state.currentStep,
 					canProceed = if (isSetup) state.canProceedFromSetup else true,
@@ -163,43 +165,45 @@ internal fun RecordHandScreen(
 					.padding(horizontal = 16.dp, vertical = 8.dp),
 				verticalArrangement = Arrangement.spacedBy(16.dp),
 			) {
-				when (state.currentStep) {
-					RecordStep.SETUP -> {
-						SetupStepContent(
-							state = state,
-							onSelectHeroCard = onSelectHeroCard,
-							onSelectBoardCards = onSelectAllBoardCards,
-							onUpdateHeroStack = onUpdateHeroStack,
-							onUpdateButtonSeat = onUpdateButtonSeat,
-							onUpdateBb = onUpdateBb,
-							onUpdateSb = onUpdateSb,
-							bbFocusRequester = bbFocusRequester,
-						)
-					}
+				FadeAnimatedContent(state.currentStep) { step ->
+					when (step) {
+						RecordStep.SETUP -> {
+							SetupStepContent(
+								state = state,
+								onSelectHeroCard = onSelectHeroCard,
+								onSelectBoardCards = onSelectAllBoardCards,
+								onUpdateHeroStack = onUpdateHeroStack,
+								onUpdateButtonSeat = onUpdateButtonSeat,
+								onUpdateBb = onUpdateBb,
+								onUpdateSb = onUpdateSb,
+								bbFocusRequester = bbFocusRequester,
+							)
+						}
 
-					RecordStep.PREFLOP, RecordStep.FLOP, RecordStep.TURN, RecordStep.RIVER -> {
-						StreetStepContent(
-							state = state,
-							onSelectBoardCard = onSelectBoardCard,
-							onSelectActionSeat = onSelectActionSeat,
-							onSelectActionType = onSelectActionType,
-							onUpdateActionAmount = onUpdateActionAmount,
-							onUpdatePlayerStack = onUpdatePlayerStack,
-							onConfirmAction = onConfirmAction,
-							onRemoveLastAction = onRemoveLastAction,
-							preflopPresets = state.actionPresets.preflopPresets,
-							postflopPresets = state.actionPresets.postflopPresets,
-						)
-					}
+						RecordStep.PREFLOP, RecordStep.FLOP, RecordStep.TURN, RecordStep.RIVER -> {
+							StreetStepContent(
+								state = state,
+								onSelectBoardCard = onSelectBoardCard,
+								onSelectActionSeat = onSelectActionSeat,
+								onSelectActionType = onSelectActionType,
+								onUpdateActionAmount = onUpdateActionAmount,
+								onUpdatePlayerStack = onUpdatePlayerStack,
+								onConfirmAction = onConfirmAction,
+								onRemoveLastAction = onRemoveLastAction,
+								preflopPresets = state.actionPresets.preflopPresets,
+								postflopPresets = state.actionPresets.postflopPresets,
+							)
+						}
 
-					RecordStep.SHOWDOWN -> {
-						ShowdownStepContent(
-							state = state,
-							onSelectSingleBoardCard = onSelectSingleBoardCard,
-							onSelectHeroCard = onSelectHeroCard,
-							onSelectShowdownCard = onSelectShowdownCard,
-							onUpdateMemo = onUpdateMemo,
-						)
+						RecordStep.SHOWDOWN -> {
+							ShowdownStepContent(
+								state = state,
+								onSelectSingleBoardCard = onSelectSingleBoardCard,
+								onSelectHeroCard = onSelectHeroCard,
+								onSelectShowdownCard = onSelectShowdownCard,
+								onUpdateMemo = onUpdateMemo,
+							)
+						}
 					}
 				}
 			}
