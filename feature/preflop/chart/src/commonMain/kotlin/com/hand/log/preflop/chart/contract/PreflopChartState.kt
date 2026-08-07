@@ -13,9 +13,28 @@ internal data class PreflopChartState(
 	val villain: Position? = null,
 	val stackOptions: List<PreflopStack> = PreflopStack.entries,
 	val scenarioOptions: List<PreflopScenario> = PreflopScenario.entries,
-	// 병합된 포지션 그룹 목록 — 하나의 칩이 여러 포지션(예: UTG/UTG+1)을 나타낼 수 있다.
 	val heroOptions: List<List<Position>> = PreflopPositions.order.map { listOf(it) },
 	val villainOptions: List<List<Position>> = emptyList(),
 	val chart: PreflopChart = PreflopChart.EMPTY,
 	val isLoading: Boolean = true,
-)
+	val isPro: Boolean = true,
+) {
+	val lockedStacks: Set<PreflopStack>
+		get() = if (isPro) {
+			emptySet()
+		} else {
+			stackOptions.filterTo(
+				mutableSetOf(),
+			) { it != PreflopStack.FREE }
+		}
+
+	val isFixedMatchup: Boolean get() = scenario == PreflopScenario.VS_LIMP
+
+	val selectedHeroGroup: List<Position>
+		get() = heroOptions.find { hero in it } ?: heroOptions.firstOrNull().orEmpty()
+
+	val showVillainChips: Boolean get() = villain != null && villainOptions.isNotEmpty()
+
+	val selectedVillainGroup: List<Position>
+		get() = villainOptions.find { it.contains(villain) } ?: villainOptions.firstOrNull().orEmpty()
+}

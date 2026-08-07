@@ -34,6 +34,7 @@ import com.hand.log.domain.model.preflop.PreflopStack
 import com.hand.log.preflop.chart.contract.PreflopChartState
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.chevron_down
+import handylog.core.res.generated.resources.crown
 import handylog.core.res.generated.resources.preflop_hero
 import handylog.core.res.generated.resources.preflop_scenario_label
 import handylog.core.res.generated.resources.preflop_scenario_facing
@@ -66,6 +67,7 @@ internal fun PreflopChartSelector(
 				selected = state.stack,
 				optionLabel = { it.label },
 				onSelect = onStackSelect,
+				lockedOptions = state.lockedStacks,
 				modifier = Modifier.weight(1f),
 			)
 			val scenarioLabels = PreflopScenario.entries.associateWith { scenarioLabel(it) }
@@ -79,31 +81,25 @@ internal fun PreflopChartSelector(
 			)
 		}
 
-		// VS_LIMP 는 SB 림프 → BB 단일 매치업이라 포지션 칩 대신 고정 캡션을 보여준다.
-		if (state.scenario == PreflopScenario.VS_LIMP) {
+		if (state.isFixedMatchup) {
 			MatchupCaption(text = stringResource(Res.string.preflop_vslimp_caption))
 			return@Column
 		}
 
-		val selectedHeroGroup = state.heroOptions.find { state.hero in it }
-			?: state.heroOptions.firstOrNull().orEmpty()
 		ChipGroup(
 			label = stringResource(Res.string.preflop_hero),
 			options = state.heroOptions,
-			selected = selectedHeroGroup,
+			selected = state.selectedHeroGroup,
 			optionLabel = { group -> group.joinToString("/") { it.label } },
 			selectedColor = HandyTheme.colorScheme.primary,
 			onSelect = { group -> group.firstOrNull()?.let(onHeroSelect) },
 		)
 
-		val villain = state.villain
-		if (villain != null && state.villainOptions.isNotEmpty()) {
-			val selectedVillainGroup = state.villainOptions.find { villain in it }
-				?: state.villainOptions.first()
+		if (state.showVillainChips) {
 			ChipGroup(
 				label = stringResource(Res.string.preflop_villain_label),
 				options = state.villainOptions,
-				selected = selectedVillainGroup,
+				selected = state.selectedVillainGroup,
 				optionLabel = { group -> group.joinToString("/") { it.label } },
 				selectedColor = HandyTheme.colorScheme.accent,
 				onSelect = { group -> group.firstOrNull()?.let(onVillainSelect) },
@@ -144,6 +140,7 @@ private fun <T> DropdownField(
 	optionLabel: (T) -> String,
 	onSelect: (T) -> Unit,
 	modifier: Modifier = Modifier,
+	lockedOptions: Set<T> = emptySet(),
 ) {
 	val colors = HandyTheme.colorScheme
 	var expanded by remember { mutableStateOf(false) }
@@ -185,6 +182,7 @@ private fun <T> DropdownField(
 			) {
 				options.forEach { option ->
 					val isSelected = option == selected
+					val isLocked = option in lockedOptions
 					Row(
 						modifier = Modifier
 							.fillMaxWidth()
@@ -193,12 +191,27 @@ private fun <T> DropdownField(
 								onSelect(option)
 							}
 							.padding(horizontal = 16.dp, vertical = 10.dp),
+						horizontalArrangement = Arrangement.spacedBy(6.dp),
+						verticalAlignment = Alignment.CenterVertically,
 					) {
 						Text(
 							text = optionLabel(option),
 							style = if (isSelected) HandyTheme.typography.bold12 else HandyTheme.typography.medium12,
-							color = if (isSelected) colors.primary else colors.textPrimary,
+							color = when {
+								isLocked -> colors.textSecondary
+								isSelected -> colors.primary
+								else -> colors.textPrimary
+							},
+							modifier = Modifier.weight(1f),
 						)
+						if (isLocked) {
+							Icon(
+								painter = painterResource(Res.drawable.crown),
+								contentDescription = null,
+								modifier = Modifier.size(14.dp),
+								tint = colors.gold,
+							)
+						}
 					}
 				}
 			}

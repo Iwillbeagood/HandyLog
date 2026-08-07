@@ -3,6 +3,7 @@ package com.hand.log.preflop.chart
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hand.log.domain.model.Position
+import com.hand.log.domain.model.ProFeature
 import com.hand.log.domain.model.preflop.PreflopAction
 import com.hand.log.domain.model.preflop.PreflopChart
 import com.hand.log.domain.model.preflop.PreflopChartQuery
@@ -11,6 +12,8 @@ import com.hand.log.domain.model.preflop.PreflopScenario
 import com.hand.log.domain.model.preflop.PreflopSelection
 import com.hand.log.domain.model.preflop.PreflopStack
 import com.hand.log.domain.repository.AppSettingsRepository
+import com.hand.log.domain.usecase.CheckFeatureLimitUseCase
+import com.hand.log.preflop.chart.contract.PreflopChartModalEffect
 import com.hand.log.preflop.chart.contract.PreflopChartState
 import com.hand.log.preflop.chart.data.PreflopCatalog
 import com.hand.log.preflop.chart.data.PreflopChartRepository
@@ -23,14 +26,20 @@ import kotlinx.coroutines.launch
 internal class PreflopChartViewModel(
 	private val repository: PreflopChartRepository,
 	private val appSettingsRepository: AppSettingsRepository,
+	private val checkFeatureLimit: CheckFeatureLimitUseCase,
 ) : ViewModel() {
 
 	private var catalog: PreflopCatalog = PreflopCatalog(emptyMap(), emptyMap())
+
+	private var isPro: Boolean = false
 
 	private val _state = MutableStateFlow(
 		resolve(PreflopStack.BB100, PreflopScenario.RFI, Position.BTN, null, loading = true),
 	)
 	val state: StateFlow<PreflopChartState> = _state
+
+	private val _modalEffect = MutableStateFlow<PreflopChartModalEffect>(PreflopChartModalEffect.Idle)
+	val modalEffect: StateFlow<PreflopChartModalEffect> get() = _modalEffect
 
 	private var pendingSpot: PreflopSelection? = null
 	private var catalogLoaded = false
@@ -38,6 +47,7 @@ internal class PreflopChartViewModel(
 	init {
 		viewModelScope.launch {
 			catalog = repository.load()
+			isPro = checkFeatureLimit.canUseAllPreflopStacks()
 			catalogLoaded = true
 			// 저장된 선택을 먼저 읽은(suspend) 뒤 pendingSpot 을 확인한다. 로드 중 openSpot(리뷰의
 			// 차트 보기)이 들어오면 pendingSpot 이 반영되어, 저장된 선택이 스팟을 덮어쓰지 않는다.
@@ -56,8 +66,17 @@ internal class PreflopChartViewModel(
 	}
 
 	fun selectStack(stack: PreflopStack) {
+		// 무료 사용자가 100BB 외 스택을 고르면 전환 대신 Paywall 을 띄운다.
+		if (!isPro && stack != PreflopStack.FREE) {
+			_modalEffect.update { PreflopChartModalEffect.ShowPaywall(ProFeature.PREFLOP_STACKS) }
+			return
+		}
 		_state.update { resolve(stack, it.scenario, it.hero, it.villain) }
 		persistSelection()
+	}
+
+	fun dismissModal() {
+		_modalEffect.update { PreflopChartModalEffect.Idle }
 	}
 
 	fun selectScenario(scenario: PreflopScenario) {
@@ -87,12 +106,14 @@ internal class PreflopChartViewModel(
 
 	/** 선택값을 유효 범위로 정규화한 뒤 로드된 카탈로그에서 차트를 찾아 State 를 구성한다. */
 	private fun resolve(
-		stack: PreflopStack,
+		requestedStack: PreflopStack,
 		scenario: PreflopScenario,
 		hero: Position,
 		desiredVillain: Position?,
 		loading: Boolean = false,
 	): PreflopChartState {
+		// 무료 사용자는 어떤 입력이 와도 항상 100BB 차트만 본다.
+		val stack = if (isPro) requestedStack else PreflopStack.FREE
 		// 데이터(차트)가 없는 시나리오는 옵션에서 제외하고, 현재 시나리오가 없으면 첫 옵션으로 대체한다.
 		val scenarioOptions = PreflopScenario.entries.filter { s -> hasScenarioData(stack, s) }
 		val resolvedScenario = if (scenario in scenarioOptions) {
@@ -159,6 +180,7 @@ internal class PreflopChartViewModel(
 			villainOptions = villainOptions,
 			chart = chart,
 			isLoading = loading,
+			isPro = isPro,
 		)
 	}
 

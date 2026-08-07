@@ -33,6 +33,7 @@ class PreflopChartRepository {
 		"files/40bb_preflop_charts.json",
 		"files/75bb_preflop_charts.json",
 		"files/100bb_preflop_charts.json",
+		"files/online_preflop_charts.json",
 	)
 
 	private val json = Json { ignoreUnknownKeys = true }
