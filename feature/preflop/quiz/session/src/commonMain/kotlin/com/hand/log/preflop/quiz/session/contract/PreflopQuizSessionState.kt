@@ -23,6 +23,14 @@ internal data class PreflopQuizSessionState(
 	val current: PreflopQuizQuestion? get() = questions.getOrNull(index)
 	val total: Int get() = questions.size
 
+	val progress: Float get() = if (total == 0) 0f else (index + 1).toFloat() / total
+
+	val canGoPrevious: Boolean get() = index > 0 || pendingPrimary != null
+
+	val canReviewPrev: Boolean get() = reviewIndex > 0
+
+	val hasNextReview: Boolean get() = reviewIndex < reviewTotal - 1
+
 	/** 오답(또는 건너뛴) 문제의 원본 인덱스 목록 — 결과 후 리뷰 대상. */
 	val reviewQuestionIndices: List<Int>
 		get() = questions.indices.filter { answers.getOrNull(it) != questions[it].correct }
@@ -44,4 +52,6 @@ internal data class QuizResult(
 	val bestStreak: Int,
 	val quizType: PreflopQuizType,
 	val playedAt: Long,
-)
+) {
+	val scoreFraction: Float get() = if (total == 0) 0f else score.toFloat() / total
+}

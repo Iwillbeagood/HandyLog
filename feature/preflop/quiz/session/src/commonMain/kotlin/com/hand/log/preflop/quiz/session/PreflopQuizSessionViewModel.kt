@@ -21,6 +21,7 @@ import com.hand.log.preflop.quiz.common.PreflopQuizType
 import com.hand.log.preflop.quiz.common.QuizQuestionGenerator
 import com.hand.log.preflop.quiz.common.hasResponsePlan
 import com.hand.log.preflop.quiz.common.primaryAction
+import com.hand.log.preflop.quiz.session.contract.PreflopQuizSessionModalEffect
 import com.hand.log.preflop.quiz.session.contract.PreflopQuizSessionState
 import com.hand.log.preflop.quiz.session.contract.QuizPhase
 import com.hand.log.preflop.quiz.session.contract.QuizResult
@@ -55,6 +56,10 @@ internal class PreflopQuizSessionViewModel(
 
 	private val _state = MutableStateFlow(PreflopQuizSessionState())
 	val state: StateFlow<PreflopQuizSessionState> = _state
+
+	private val _modalEffect =
+		MutableStateFlow<PreflopQuizSessionModalEffect>(PreflopQuizSessionModalEffect.Idle)
+	val modalEffect: StateFlow<PreflopQuizSessionModalEffect> get() = _modalEffect
 
 	init {
 		if (recordId.isEmpty()) start() else openRecord(recordId)
@@ -123,6 +128,34 @@ internal class PreflopQuizSessionViewModel(
 	}
 
 	fun onPlanSelect(fullAction: PreflopAction) = record(fullAction)
+
+	fun onSkip() = record(null)
+
+	/** 2차 선택 대기 중이면 1차 선택으로, 그 외에는 직전 문제로 돌아가 그 답을 지운다. */
+	fun onPrevious() {
+		val s = _state.value
+		if (s.phase != QuizPhase.PLAYING) return
+		if (s.pendingPrimary != null) {
+			_state.update { it.copy(pendingPrimary = null) }
+			return
+		}
+		if (s.index == 0) return
+		responseTimes.removeAt(responseTimes.lastIndex)
+		questionMark = TimeSource.Monotonic.markNow()
+		_state.update {
+			it.copy(index = it.index - 1, answers = it.answers.dropLast(1), pendingPrimary = null)
+		}
+	}
+
+	fun onCloseRequest() {
+		if (_state.value.phase == QuizPhase.PLAYING) {
+			_modalEffect.update { PreflopQuizSessionModalEffect.ConfirmExit }
+		}
+	}
+
+	fun dismissModal() {
+		_modalEffect.update { PreflopQuizSessionModalEffect.Idle }
+	}
 
 	fun onRetry() = start()
 

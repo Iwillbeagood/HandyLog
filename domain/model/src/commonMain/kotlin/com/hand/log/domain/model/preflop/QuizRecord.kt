@@ -10,4 +10,6 @@ data class QuizRecord(
 	val bestStreak: Int,
 	val playedAt: Long,
 	val questions: List<QuizRecordQuestion> = emptyList(),
-)
+) {
+	val accuracyPct: Int get() = if (total == 0) 0 else score * 100 / total
+}

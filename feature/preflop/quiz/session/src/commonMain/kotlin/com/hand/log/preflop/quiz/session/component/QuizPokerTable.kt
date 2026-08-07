@@ -39,6 +39,10 @@ import org.jetbrains.compose.resources.painterResource
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.sqrt
+
+private val CHIP_SIZE = 18.dp
+private const val CHIP_SEAT_GAP = 4f
 
 /**
  * 프리플랍 스팟을 9-max 포커 테이블로 시각화한다. 좌석·히어로(크라운)·액션(레이저)·딜러·블라인드
@@ -124,10 +128,15 @@ internal fun QuizPokerTable(
 						modifier = Modifier.offset(x = x - seat / 2, y = y - seat / 2),
 					)
 
-					// 좌석 안쪽(테이블 쪽)에 딜러 버튼·블라인드·베팅 칩을 배치 — ActionTableView 와 동일.
-					val mx = cx + ringW * 0.27f * cos(angle).toFloat()
-					val my = cy + ringH * 0.25f * sin(angle).toFloat()
-					val markerMod = Modifier.offset(x = mx - 9.dp, y = my - 9.dp)
+					// 칩을 좌석 중심에서 테이블 중앙 방향으로 (좌석 반지름 + 칩 반지름 + 여백)만큼 당겨,
+					// 화면 크기·좌석 위치와 무관하게 좌석 원과 항상 일정 간격을 둔다.
+					val dx = x - cx
+					val dy = y - cy
+					val dist = sqrt(dx.value * dx.value + dy.value * dy.value)
+					val pull = seat.value / 2 + CHIP_SIZE.value / 2 + CHIP_SEAT_GAP
+					val mx = x - (dx.value / dist * pull).dp
+					val my = y - (dy.value / dist * pull).dp
+					val markerMod = Modifier.offset(x = mx - CHIP_SIZE / 2, y = my - CHIP_SIZE / 2)
 					when {
 						isVillain && action != null -> BetChip(actionColor, markerMod)
 						isHero && action != null -> BetChip(colors.accent, markerMod)
@@ -218,12 +227,11 @@ private fun ActionLabel(text: String, color: Color) {
 	)
 }
 
-/** 딜러 버튼 — ActionTableView 와 동일한 다크 디스크 "D". */
 @Composable
 private fun DealerMarker(modifier: Modifier = Modifier) {
 	Box(
 		modifier = modifier
-			.size(18.dp)
+			.size(CHIP_SIZE)
 			.clip(CircleShape)
 			.background(Color(0xFF3A3A3A)),
 		contentAlignment = Alignment.Center,
@@ -236,13 +244,12 @@ private fun DealerMarker(modifier: Modifier = Modifier) {
 	}
 }
 
-/** 블라인드 칩 — 골드 디스크 SB/BB. */
 @Composable
 private fun BlindMarker(text: String, modifier: Modifier = Modifier) {
 	val colors = HandyTheme.colorScheme
 	Box(
 		modifier = modifier
-			.size(18.dp)
+			.size(CHIP_SIZE)
 			.clip(CircleShape)
 			.background(colors.gold)
 			.border(1.dp, colors.border, CircleShape),
@@ -256,14 +263,13 @@ private fun BlindMarker(text: String, modifier: Modifier = Modifier) {
 	}
 }
 
-/** 베팅 칩 — ActionTableView 와 동일한 poker_chip 아이콘(액션색). */
 @Composable
 private fun BetChip(color: Color, modifier: Modifier = Modifier) {
 	Icon(
 		painter = painterResource(Res.drawable.poker_chip),
 		contentDescription = null,
 		tint = color,
-		modifier = modifier.size(18.dp),
+		modifier = modifier.size(CHIP_SIZE),
 	)
 }
 

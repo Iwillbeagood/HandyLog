@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,8 +31,10 @@ import com.hand.log.preflop.quiz.session.contract.QuizPhase
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.quiz_plan_prompt_vs_3bet
 import handylog.core.res.generated.resources.quiz_plan_prompt_vs_4bet
+import handylog.core.res.generated.resources.quiz_prev_question
 import handylog.core.res.generated.resources.quiz_progress
 import handylog.core.res.generated.resources.quiz_prompt
+import handylog.core.res.generated.resources.quiz_skip
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -38,6 +42,8 @@ internal fun QuestionContent(
 	state: PreflopQuizSessionState,
 	onPrimarySelect: (PreflopAction) -> Unit,
 	onPlanSelect: (PreflopAction) -> Unit,
+	onSkip: () -> Unit,
+	onPrevious: () -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
 	val question = state.current ?: return
@@ -59,7 +65,7 @@ internal fun QuestionContent(
 		) {
 			Box(
 				modifier = Modifier
-					.fillMaxWidth((state.index + 1).toFloat() / state.total)
+					.fillMaxWidth(state.progress)
 					.height(4.dp)
 					.clip(RoundedCornerShape(2.dp))
 					.background(colors.primary),
@@ -99,7 +105,43 @@ internal fun QuestionContent(
 				)
 			}
 		}
+
+		Spacer(modifier = Modifier.weight(1f))
+
+		Row(
+			modifier = Modifier.fillMaxWidth(),
+			horizontalArrangement = Arrangement.SpaceBetween,
+		) {
+			NavTextButton(
+				text = stringResource(Res.string.quiz_prev_question),
+				enabled = state.canGoPrevious,
+				onClick = onPrevious,
+			)
+			NavTextButton(
+				text = stringResource(Res.string.quiz_skip),
+				enabled = true,
+				onClick = onSkip,
+			)
+		}
 	}
+}
+
+@Composable
+private fun NavTextButton(
+	text: String,
+	enabled: Boolean,
+	onClick: () -> Unit,
+) {
+	val colors = HandyTheme.colorScheme
+	Text(
+		text = text,
+		style = HandyTheme.typography.bold14,
+		color = if (enabled) colors.textSecondary else colors.textSecondary.copy(alpha = 0.4f),
+		modifier = Modifier
+			.clip(RoundedCornerShape(8.dp))
+			.clickable(enabled = enabled, onClick = onClick)
+			.padding(horizontal = 12.dp, vertical = 8.dp),
+	)
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -170,6 +212,8 @@ private fun QuestionContentRfiPreview() {
 			),
 			onPrimarySelect = {},
 			onPlanSelect = {},
+			onSkip = {},
+			onPrevious = {},
 		)
 	}
 }
@@ -185,6 +229,8 @@ private fun QuestionContentSbLimpPreview() {
 			),
 			onPrimarySelect = {},
 			onPlanSelect = {},
+			onSkip = {},
+			onPrevious = {},
 		)
 	}
 }
@@ -200,6 +246,8 @@ private fun QuestionContentFacingRfiPreview() {
 			),
 			onPrimarySelect = {},
 			onPlanSelect = {},
+			onSkip = {},
+			onPrevious = {},
 		)
 	}
 }
@@ -215,6 +263,8 @@ private fun QuestionContentVs3betPreview() {
 			),
 			onPrimarySelect = {},
 			onPlanSelect = {},
+			onSkip = {},
+			onPrevious = {},
 		)
 	}
 }
@@ -231,6 +281,8 @@ private fun QuestionContentPlanStepPreview() {
 			),
 			onPrimarySelect = {},
 			onPlanSelect = {},
+			onSkip = {},
+			onPrevious = {},
 		)
 	}
 }

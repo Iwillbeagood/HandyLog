@@ -167,7 +167,7 @@ private fun SecondaryButton(
 @Composable
 private fun ScoreCircle(result: QuizResult) {
 	val colors = HandyTheme.colorScheme
-	val fraction = if (result.total == 0) 0f else result.score.toFloat() / result.total
+	val fraction = result.scoreFraction
 	Box(
 		modifier = Modifier.size(140.dp),
 		contentAlignment = Alignment.Center,

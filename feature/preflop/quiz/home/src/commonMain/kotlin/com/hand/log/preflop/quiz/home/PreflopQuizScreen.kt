@@ -198,7 +198,7 @@ private fun RecentRecordsCard(records: List<QuizRecord>, onRecordClick: (QuizRec
 			return
 		}
 		records.forEachIndexed { index, record ->
-			val accuracy = if (record.total == 0) 0 else record.score * 100 / record.total
+			val accuracy = record.accuracyPct
 			Row(
 				modifier = Modifier
 					.fillMaxWidth()

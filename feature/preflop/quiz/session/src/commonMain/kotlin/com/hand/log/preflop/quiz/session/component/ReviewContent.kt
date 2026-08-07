@@ -162,7 +162,7 @@ internal fun ReviewContent(
 					.padding(horizontal = 16.dp, vertical = 8.dp),
 				horizontalArrangement = Arrangement.spacedBy(8.dp),
 			) {
-				FadeAnimatedContent(state.reviewIndex > 0, modifier = Modifier.weight(1f)) { canPrev ->
+				FadeAnimatedContent(state.canReviewPrev, modifier = Modifier.weight(1f)) { canPrev ->
 					if (canPrev) {
 						Box(
 							modifier = Modifier
@@ -184,7 +184,7 @@ internal fun ReviewContent(
 					}
 				}
 				FadeAnimatedContent(
-					state.reviewIndex < state.reviewTotal - 1,
+					state.hasNextReview,
 					modifier = Modifier.weight(1f),
 				) { hasNext ->
 					Box(
