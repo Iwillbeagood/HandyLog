@@ -64,6 +64,9 @@ data class HandRecord(
 	val heroShowdownEntry: ShowdownEntry?
 		get() = players.find { it.isHero }?.toShowdownEntry()
 
+	val opponentShowdownEntries: List<ShowdownEntry>
+		get() = showdown.filter { it.seat != heroSeat }
+
 	val resolvedHeroResultType: HeroResultType
 		get() {
 			val heroPlayer = players.find { it.isHero }

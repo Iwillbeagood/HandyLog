@@ -135,8 +135,7 @@ internal fun ShowdownStepContent(
 		if (hasResults) {
 			val heroSeat = state.table?.heroSeat
 			val heroResult = state.heroResult
-			val heroWonAnyPot = state.potResults.any { it.winnerSeat == heroSeat }
-			val isWin = heroResult >= 0 || heroWonAnyPot
+			val isWin = heroResult >= 0 || state.seatWonAnyPot(heroSeat)
 			val colors = HandyTheme.colorScheme
 			val heroShowdownResult = results.find { it.seat == heroSeat }
 
@@ -225,7 +224,7 @@ private fun ShowdownPlayerCard(
 	val hand = if (isHero) state.heroHand else state.players[seat]?.cards
 	val isUnknown = !isHero && state.players[seat]?.isCardsUnknown == true
 	// 사이드팟에서 이긴 경우도 반영
-	val wonAnyPot = state.potResults.any { it.winnerSeat == seat }
+	val wonAnyPot = state.seatWonAnyPot(seat)
 	val isSplit = result?.isSplit == true && !isUnknown
 	val isWinner = (result?.isWinner == true || wonAnyPot) && !isUnknown
 	val isLoser = (result != null && !isWinner && !isSplit && !isFolded) || isUnknown

@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -208,12 +208,11 @@ private fun TableContent(
 				}
 			}
 		} else {
-			items(state.hands, key = { it.id }) { hand ->
-				val handIndex = state.hands.size - state.hands.indexOf(hand)
+			itemsIndexed(state.hands, key = { _, hand -> hand.id }) { index, hand ->
 				HandRecordCard(
 					hand = hand,
 					tableDate = state.table.date,
-					index = handIndex,
+					index = state.handNumber(index),
 					onClick = { onNavigateToHandDetail(hand.id) },
 				)
 			}

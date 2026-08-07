@@ -15,5 +15,7 @@ internal sealed interface TableState {
 	data class TableData(
 		val table: PokerTable,
 		val hands: List<HandRecord> = emptyList(),
-	) : TableState
+	) : TableState {
+		fun handNumber(index: Int): Int = hands.size - index
+	}
 }

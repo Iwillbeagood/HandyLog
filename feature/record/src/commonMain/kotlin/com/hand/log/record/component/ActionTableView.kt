@@ -319,12 +319,7 @@ internal fun ActionTableView(
 				val ay = centerY + (tableRadiusY - chipHalf - chipGapPx) * sinA - chipHalf
 
 				val allInAmount = action?.takeIf { it.type == ActionType.ALL_IN }?.amount
-					?: state.streets.let { streets ->
-						listOf(Street.PREFLOP, Street.FLOP, Street.TURN, Street.RIVER)
-							.flatMap { streets.getActions(it) }
-							.lastOrNull { it.playerSeat == seat && it.type == ActionType.ALL_IN }
-							?.amount
-					}
+					?: state.lastAllInAmount(seat)
 
 				ScaleInAnimation(
 					modifier = Modifier.offset { IntOffset(ax.roundToInt(), ay.roundToInt()) },

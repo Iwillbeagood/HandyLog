@@ -134,6 +134,14 @@ internal sealed interface RecordHandState {
 
 		fun getPlayerStack(seat: Int): Double? = players.getStack(seat)
 
+		fun seatWonAnyPot(seat: Int?): Boolean = seat != null && potResults.any { it.winnerSeat == seat }
+
+		fun lastAllInAmount(seat: Int): Double? =
+			listOf(Street.PREFLOP, Street.FLOP, Street.TURN, Street.RIVER)
+				.flatMap { streets.getActions(it) }
+				.lastOrNull { it.playerSeat == seat && it.type == ActionType.ALL_IN }
+				?.amount
+
 		fun getBlindCost(seat: Int): Double {
 			val sb = blinds?.sb ?: 0.0
 			val bb = blinds?.bb ?: 0.0
