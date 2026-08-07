@@ -30,6 +30,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun PreflopHomeScreen(
+	quizLocked: Boolean,
 	onChartClick: () -> Unit,
 	onQuizClick: () -> Unit,
 ) {
@@ -65,6 +66,7 @@ internal fun PreflopHomeScreen(
 				ctaText = stringResource(Res.string.preflop_quiz_cta),
 				ctaColor = HandyTheme.colorScheme.gold,
 				onClick = onQuizClick,
+				locked = quizLocked,
 			)
 		}
 	}
@@ -75,6 +77,7 @@ internal fun PreflopHomeScreen(
 private fun PreflopHomeScreenPreview() {
 	ThemePreview {
 		PreflopHomeScreen(
+			quizLocked = true,
 			onChartClick = {},
 			onQuizClick = {},
 		)

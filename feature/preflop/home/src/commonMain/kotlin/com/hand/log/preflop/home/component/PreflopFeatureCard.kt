@@ -32,6 +32,7 @@ import com.hand.log.ui.poker.CardSize
 import com.hand.log.ui.poker.PlayingCard
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.chevron_right
+import handylog.core.res.generated.resources.crown
 import org.jetbrains.compose.resources.painterResource
 
 internal enum class PreflopCardVariant { CHART, QUIZ }
@@ -45,6 +46,7 @@ internal fun PreflopFeatureCard(
 	ctaColor: Color,
 	onClick: () -> Unit,
 	modifier: Modifier = Modifier,
+	locked: Boolean = false,
 ) {
 	val colors = HandyTheme.colorScheme
 	val tint = if (variant == PreflopCardVariant.CHART) colors.primary else colors.gold
@@ -103,6 +105,24 @@ internal fun PreflopFeatureCard(
 				.rotate(if (variant == PreflopCardVariant.CHART) -10f else -15f),
 		) {
 			if (variant == PreflopCardVariant.CHART) MiniGridDecoration() else QuizCardsDecoration()
+		}
+
+		if (locked) {
+			Box(
+				modifier = Modifier
+					.align(Alignment.TopEnd)
+					.padding(10.dp)
+					.clip(RoundedCornerShape(8.dp))
+					.background(colors.gold.copy(alpha = 0.18f))
+					.padding(horizontal = 8.dp, vertical = 5.dp),
+			) {
+				Icon(
+					painter = painterResource(Res.drawable.crown),
+					contentDescription = null,
+					modifier = Modifier.size(14.dp),
+					tint = colors.gold,
+				)
+			}
 		}
 	}
 }
@@ -178,6 +198,28 @@ private fun PreflopFeatureCardQuizPreview() {
 				ctaText = "퀴즈 시작",
 				ctaColor = HandyTheme.colorScheme.gold,
 				onClick = {},
+			)
+		}
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun PreflopFeatureCardQuizLockedPreview() {
+	ThemePreview {
+		Box(
+			modifier = Modifier
+				.background(HandyTheme.colorScheme.background)
+				.padding(16.dp),
+		) {
+			PreflopFeatureCard(
+				variant = PreflopCardVariant.QUIZ,
+				title = "프리플랍 퀴즈",
+				description = "실력을 테스트해보세요",
+				ctaText = "퀴즈 시작",
+				ctaColor = HandyTheme.colorScheme.gold,
+				onClick = {},
+				locked = true,
 			)
 		}
 	}
