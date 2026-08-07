@@ -3,6 +3,7 @@ package com.hand.log.settings.main
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hand.log.designsystem.etc.LocalProStatus
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.settings.main.contract.SettingsModalEffect
 import com.hand.log.ui.ProPaywallSheet
@@ -13,7 +14,7 @@ internal fun SettingsRoute(
 ) {
 	val settings by viewModel.settings.collectAsStateWithLifecycle()
 	val modalEffect by viewModel.modalEffect.collectAsStateWithLifecycle()
-	val isPro by viewModel.isPro.collectAsStateWithLifecycle()
+	val isPro = LocalProStatus.current
 	val navAction = LocalNavigateActionInterop.current
 
 	SettingsScreen(
@@ -21,13 +22,13 @@ internal fun SettingsRoute(
 		isPro = isPro,
 		onThemeChange = viewModel::updateTheme,
 		onNavigateToBetSize = {
-			if (viewModel.canNavigateToBetSize()) {
+			if (isPro) {
 				navAction.navigateToBetSizeSettings()
 			} else {
 				viewModel.showPresetsPaywall()
 			}
 		},
-		onUpgradeClick = navAction::navigateToProUpgrade,
+		onPlanClick = navAction::navigateToProUpgrade,
 		onContactClick = navAction::navigateToContact,
 		onLegalClick = navAction::navigateToLegal,
 	)

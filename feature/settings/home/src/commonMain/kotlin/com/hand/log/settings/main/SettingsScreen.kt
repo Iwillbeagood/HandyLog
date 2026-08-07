@@ -51,7 +51,7 @@ internal fun SettingsScreen(
 	isPro: Boolean,
 	onThemeChange: (ThemeMode) -> Unit,
 	onNavigateToBetSize: () -> Unit,
-	onUpgradeClick: () -> Unit,
+	onPlanClick: () -> Unit,
 	onContactClick: () -> Unit,
 	onLegalClick: () -> Unit,
 ) {
@@ -76,7 +76,7 @@ internal fun SettingsScreen(
 				// 플랜 섹션
 				PlanSection(
 					isPro = isPro,
-					onUpgradeClick = onUpgradeClick,
+					onPlanClick = onPlanClick,
 				)
 
 				// 테마 섹션
@@ -200,23 +200,22 @@ private fun ContactNavigationItem(
 @Composable
 private fun PlanSection(
 	isPro: Boolean,
-	onUpgradeClick: () -> Unit,
+	onPlanClick: () -> Unit,
 ) {
 	HandySectionLabel(stringResource(Res.string.settings_plan)) {
 		FadeAnimatedContent(isPro) { pro ->
 			if (pro) {
-				SettingsCard {
-					Text(
-						text = stringResource(Res.string.settings_plan_pro),
-						style = HandyTheme.typography.medium14,
-						color = HandyTheme.colorScheme.primary,
-					)
-				}
+				SettingsNavigationItem(
+					title = stringResource(Res.string.settings_plan_pro),
+					subtitle = stringResource(Res.string.settings_plan_pro_desc),
+					titleColor = HandyTheme.colorScheme.primary,
+					onClick = onPlanClick,
+				)
 			} else {
 				SettingsNavigationItem(
 					title = stringResource(Res.string.settings_plan_free),
 					subtitle = stringResource(Res.string.settings_plan_upgrade),
-					onClick = onUpgradeClick,
+					onClick = onPlanClick,
 				)
 			}
 		}
@@ -265,7 +264,7 @@ private fun SettingsScreenPreview() {
 			isPro = false,
 			onThemeChange = {},
 			onNavigateToBetSize = {},
-			onUpgradeClick = {},
+			onPlanClick = {},
 			onContactClick = {},
 			onLegalClick = {},
 		)

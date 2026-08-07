@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hand.log.designsystem.etc.LocalProStatus
 import com.hand.log.navigation.interop.LocalMainActionInterop
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.settings.upgrade.contract.ProUpgradeEffect
@@ -19,6 +20,7 @@ internal fun ProUpgradeRoute(
 	viewModel: ProUpgradeViewModel,
 ) {
 	val state by viewModel.state.collectAsStateWithLifecycle()
+	val isPro = LocalProStatus.current
 	val navAction = LocalNavigateActionInterop.current
 	val mainAction = LocalMainActionInterop.current
 
@@ -36,7 +38,7 @@ internal fun ProUpgradeRoute(
 	}
 
 	ProUpgradeScreen(
-		state = state,
+		state = state.copy(isPro = isPro),
 		onBack = navAction::popBackStack,
 		onPurchase = viewModel::onPurchase,
 		onRestore = viewModel::onRestore,
