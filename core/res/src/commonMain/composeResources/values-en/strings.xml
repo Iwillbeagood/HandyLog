@@ -212,6 +212,7 @@
 	<string name="settings_plan">Current Plan</string>
 	<string name="settings_plan_free">Free</string>
 	<string name="settings_plan_pro">Pro</string>
+	<string name="settings_plan_pro_desc">View Pro benefits</string>
 	<string name="settings_plan_upgrade">Upgrade to Pro</string>
 
 	<!-- Pro Paywall -->
@@ -222,6 +223,8 @@
 	<string name="pro_paywall_hands">Free version allows up to %1$d hands per table.\nUpgrade to Pro for unlimited hands.</string>
 	<string name="pro_paywall_players">Free version allows up to %1$d marked players.\nUpgrade to Pro for unlimited players.</string>
 	<string name="pro_paywall_presets">Customizing bet presets is a Pro feature.\nUpgrade to Pro to edit freely.</string>
+	<string name="pro_paywall_preflop_stacks">Free version only includes the %1$s preflop chart.\nUpgrade to Pro for every stack depth.</string>
+	<string name="pro_paywall_preflop_quiz">Preflop quiz is a Pro feature.\nUpgrade to Pro to train your skills.</string>
 
 	<!-- Pro Upgrade -->
 	<string name="upgrade_title">Pro Version</string>
@@ -236,6 +239,8 @@
 	<string name="upgrade_presets">Presets</string>
 	<string name="upgrade_free_limit">Up to %1$d</string>
 	<string name="upgrade_unlimited">Unlimited</string>
+	<string name="upgrade_included">Included</string>
+	<string name="upgrade_preflop_chart_pro">All stacks</string>
 	<string name="upgrade_purchase">Get Pro</string>
 	<string name="upgrade_purchase_priced">Get Pro for %1$s</string>
 	<string name="upgrade_restore">Restore Purchase</string>
@@ -386,6 +391,12 @@
 	<string name="quiz_review_skipped">Skipped</string>
 	<string name="quiz_review_prev">Prev</string>
 	<string name="quiz_review_next">Next</string>
+	<string name="quiz_skip">Skip</string>
+	<string name="quiz_prev_question">Previous</string>
+	<string name="quiz_exit_title">End the quiz?</string>
+	<string name="quiz_exit_desc">Your progress so far won\'t be saved.</string>
+	<string name="quiz_exit_confirm">End</string>
+	<string name="quiz_exit_cancel">Keep going</string>
 	<string name="preflop_villain_raiser">Raiser</string>
 	<string name="preflop_villain_3bettor">3-Bettor</string>
 	<string name="preflop_action_raise">Raise</string>

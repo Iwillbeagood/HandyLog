@@ -8,10 +8,13 @@ import androidx.compose.ui.text.style.TextAlign
 import com.hand.log.designsystem.component.modal.HandyBottomSheet
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.ProFeature
+import com.hand.log.domain.model.preflop.PreflopStack
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.pro_paywall_confirm
 import handylog.core.res.generated.resources.pro_paywall_hands
 import handylog.core.res.generated.resources.pro_paywall_players
+import handylog.core.res.generated.resources.pro_paywall_preflop_quiz
+import handylog.core.res.generated.resources.pro_paywall_preflop_stacks
 import handylog.core.res.generated.resources.pro_paywall_presets
 import handylog.core.res.generated.resources.pro_paywall_tables
 import handylog.core.res.generated.resources.pro_paywall_title
@@ -57,6 +60,11 @@ private fun featureDescription(feature: ProFeature): String = when (feature) {
 		MAX_FREE_PLAYERS,
 	)
 	ProFeature.CUSTOM_PRESETS -> stringResource(Res.string.pro_paywall_presets)
+	ProFeature.PREFLOP_STACKS -> stringResource(
+		Res.string.pro_paywall_preflop_stacks,
+		PreflopStack.FREE.label,
+	)
+	ProFeature.PREFLOP_QUIZ -> stringResource(Res.string.pro_paywall_preflop_quiz)
 }
 
 private const val MAX_FREE_TABLES = 2

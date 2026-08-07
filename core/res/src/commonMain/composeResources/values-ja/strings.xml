@@ -212,6 +212,7 @@
 	<string name="settings_plan">利用中のプラン</string>
 	<string name="settings_plan_free">Free</string>
 	<string name="settings_plan_pro">Pro</string>
+	<string name="settings_plan_pro_desc">Pro特典を見る</string>
 	<string name="settings_plan_upgrade">Pro版にアップグレード</string>
 
 	<!-- Pro Paywall -->
@@ -222,6 +223,8 @@
 	<string name="pro_paywall_hands">無料版ではテーブルごとにハンドを最大%1$d個まで記録できます。\nPro版で無制限にご利用ください。</string>
 	<string name="pro_paywall_players">無料版ではプレイヤーを最大%1$d人までマークできます。\nPro版で無制限にご利用ください。</string>
 	<string name="pro_paywall_presets">ベットプリセットのカスタマイズはPro機能です。\nPro版で自由に編集してください。</string>
+	<string name="pro_paywall_preflop_stacks">無料版では%1$sのプリフロップチャートのみ閲覧できます。\nPro版ですべてのスタックの深さを確認しましょう。</string>
+	<string name="pro_paywall_preflop_quiz">プリフロップクイズはPro機能です。\nPro版でスキルを鍛えましょう。</string>
 
 	<!-- Pro Upgrade -->
 	<string name="upgrade_title">Pro版</string>
@@ -236,6 +239,8 @@
 	<string name="upgrade_presets">プリセット編集</string>
 	<string name="upgrade_free_limit">最大%1$d個</string>
 	<string name="upgrade_unlimited">無制限</string>
+	<string name="upgrade_included">利用可</string>
+	<string name="upgrade_preflop_chart_pro">全スタック</string>
 	<string name="upgrade_purchase">Proを購入</string>
 	<string name="upgrade_purchase_priced">%1$sでProを購入</string>
 	<string name="upgrade_restore">購入を復元</string>
@@ -386,6 +391,12 @@
 	<string name="quiz_review_skipped">スキップ済み</string>
 	<string name="quiz_review_prev">前へ</string>
 	<string name="quiz_review_next">次へ</string>
+	<string name="quiz_skip">スキップ</string>
+	<string name="quiz_prev_question">前の問題</string>
+	<string name="quiz_exit_title">クイズを終了しますか？</string>
+	<string name="quiz_exit_desc">これまでの進行状況は保存されません。</string>
+	<string name="quiz_exit_confirm">終了</string>
+	<string name="quiz_exit_cancel">続ける</string>
 	<string name="preflop_villain_raiser">オープンした相手</string>
 	<string name="preflop_villain_3bettor">3ベットした相手</string>
 	<string name="preflop_action_raise">レイズ</string>

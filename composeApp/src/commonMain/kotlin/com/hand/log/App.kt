@@ -25,12 +25,14 @@ import com.hand.log.home.di.featureHomeModule
 import com.hand.log.local.datastore.di.dataStoreDataSourceModule
 import com.hand.log.local.datastore.di.dataStoreModule
 import com.hand.log.main.MainScreen
+import com.hand.log.designsystem.etc.LocalProStatus
 import com.hand.log.navigation.interop.LocalMainActionInterop
 import com.hand.log.navigation.interop.MainActionInterop
 import com.hand.log.players.di.featurePlayersModule
 import com.hand.log.players.hands.di.featurePlayerHandsModule
 import com.hand.log.playersetup.di.featurePlayerSetupModule
 import com.hand.log.preflop.chart.di.featurePreflopChartModule
+import com.hand.log.preflop.home.di.featurePreflopHomeModule
 import com.hand.log.preflop.quiz.home.di.featurePreflopQuizHomeModule
 import com.hand.log.preflop.quiz.session.di.featurePreflopQuizSessionModule
 import com.hand.log.record.di.featureRecordModule
@@ -74,8 +76,13 @@ internal fun App() {
 		ThemeMode.DARK -> true
 	}
 
+	// Pro 여부는 앱 루트에서 한 번만 구독해 하위 화면에 내려준다(화면 진입 시 깜빡임 방지).
+	val isPro by proEntitlementRepository.observeIsPro()
+		.collectAsStateWithLifecycle(initialValue = false)
+
 	CompositionLocalProvider(
 		LocalMainActionInterop provides mainActionInterop,
+		LocalProStatus provides isPro,
 	) {
 		HandLogTheme(darkTheme = darkTheme) {
 			StatusBarEffect(
@@ -104,6 +111,7 @@ internal val appModule = module {
 	)
 	includes(
 		featureHomeModule,
+		featurePreflopHomeModule,
 		featurePreflopChartModule,
 		featurePreflopQuizHomeModule,
 		featurePreflopQuizSessionModule,
