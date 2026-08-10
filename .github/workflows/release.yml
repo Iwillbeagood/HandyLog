@@ -96,13 +96,14 @@ jobs:
         run: |
           VERSION_CODE=$((100 + ${{ github.run_number }}))
           echo "versionCode=$VERSION_CODE"
-          ./gradlew :composeApp:bundleRelease -PversionCode="$VERSION_CODE" --no-daemon --stacktrace
+          # normal flavor 만 빌드한다. proTest 는 FORCE_PRO=true 로 Pro 를 강제 해금하는 검증용이라 배포하지 않는다.
+          ./gradlew :composeApp:bundleNormalRelease -PversionCode="$VERSION_CODE" --no-daemon --stacktrace
 
       - name: Locate AAB
         if: steps.tagcheck.outputs.exists == 'false'
         id: aab
         run: |
-          AAB=$(find composeApp/build/outputs/bundle -name "*.aab" | head -1)
+          AAB=$(find composeApp/build/outputs/bundle/normalRelease -name "*.aab" | head -1)
           if [ -z "$AAB" ]; then
             echo "::error::생성된 AAB 를 찾지 못했습니다."
             exit 1
