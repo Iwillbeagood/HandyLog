@@ -120,7 +120,7 @@ jobs:
           releaseFiles: ${{ steps.aab.outputs.path }}
           track: internal
           status: completed
-          changesNotSentForReview: true
+          # 첫 프로덕션 승인 전 앱은 변경사항이 자동으로 심사에 제출되므로 changesNotSentForReview 를 설정하면 API 가 거부한다.
 
       - name: Create and push tag
         if: steps.tagcheck.outputs.exists == 'false'
