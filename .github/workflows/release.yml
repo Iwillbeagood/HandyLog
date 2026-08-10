@@ -77,6 +77,9 @@ jobs:
           KEYSTORE_STORE_PASSWORD: ${{ secrets.KEYSTORE_STORE_PASSWORD }}
           KEYSTORE_KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
           KEYSTORE_KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
           mkdir -p .signing
           echo "$KEYSTORE_BASE64" | base64 --decode > .signing/release.jks
@@ -87,6 +90,11 @@ jobs:
             echo "keyAlias=$KEYSTORE_KEY_ALIAS"
             echo "keyPassword=$KEYSTORE_KEY_PASSWORD"
           } > keystore.properties
+          {
+            echo "openai.key=$OPENAI_API_KEY"
+            echo "notion.token=$NOTION_TOKEN"
+            echo "slack.webhook=$SLACK_WEBHOOK_URL"
+          } > local.properties
 
       - name: Build signed release bundle
         if: steps.tagcheck.outputs.exists == 'false'
