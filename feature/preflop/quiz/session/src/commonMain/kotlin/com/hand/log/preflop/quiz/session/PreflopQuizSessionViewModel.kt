@@ -13,6 +13,7 @@ import com.hand.log.domain.model.preflop.PreflopScenario
 import com.hand.log.domain.model.preflop.QuizRecord
 import com.hand.log.domain.model.preflop.QuizRecordQuestion
 import com.hand.log.domain.model.preflop.QuizReviewSpot
+import com.hand.log.platform.etc.Logger
 import com.hand.log.preflop.quiz.common.PreflopQuizQuestion
 import com.hand.log.domain.repository.QuizRecordRepository
 import com.hand.log.domain.repository.AiReviewRepository
@@ -277,6 +278,7 @@ internal class PreflopQuizSessionViewModel(
 			)
 			val result = runCatching { aiReviewRepository.reviewQuizSpot(spot) }
 				.mapCatching { it.ifBlank { error("empty review") } }
+			result.onFailure { Logger.e("AI 퀴즈 리뷰 실패", it) }
 			_state.update { st ->
 				if (st.reviewIndex != requestedIndex) return@update st
 				result.fold(
