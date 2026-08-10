@@ -14,6 +14,7 @@ import com.hand.log.handdetail.contract.HandDetailModalEffect
 import com.hand.log.handdetail.contract.HandDetailState
 import com.hand.log.handdetail.contract.HandReviewStatus
 import com.hand.log.handdetail.model.HandHistoryFormatter
+import com.hand.log.platform.etc.Logger
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -197,6 +198,7 @@ internal class HandDetailViewModel(
 						_reviewStatus.value = HandReviewStatus.LOADED
 					},
 					onFailure = {
+						Logger.e("AI 핸드 리뷰 실패", it)
 						_reviewStatus.value = HandReviewStatus.ERROR
 					},
 				)
