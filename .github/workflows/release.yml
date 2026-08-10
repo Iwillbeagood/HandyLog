@@ -96,7 +96,6 @@ jobs:
         run: |
           VERSION_CODE=$((100 + ${{ github.run_number }}))
           echo "versionCode=$VERSION_CODE"
-          # normal flavor 만 빌드한다. proTest 는 FORCE_PRO=true 로 Pro 를 강제 해금하는 검증용이라 배포하지 않는다.
           ./gradlew :composeApp:bundleNormalRelease -PversionCode="$VERSION_CODE" --no-daemon --stacktrace
 
       - name: Locate AAB
@@ -120,7 +119,6 @@ jobs:
           releaseFiles: ${{ steps.aab.outputs.path }}
           track: internal
           status: completed
-          # 첫 프로덕션 승인 전 앱은 변경사항이 자동으로 심사에 제출되므로 changesNotSentForReview 를 설정하면 API 가 거부한다.
 
       - name: Create and push tag
         if: steps.tagcheck.outputs.exists == 'false'
