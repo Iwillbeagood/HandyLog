@@ -22,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
+import com.hand.log.designsystem.component.FadeAnimatedContent
+import com.hand.log.designsystem.component.FadeAnimatedVisibility
 import com.hand.log.designsystem.component.HandyHorizontalDivider
 import com.hand.log.designsystem.component.HandySectionLabel
 import com.hand.log.designsystem.component.HandyTopAppbar
@@ -49,11 +51,12 @@ internal fun SettingsScreen(
 	isPro: Boolean,
 	onThemeChange: (ThemeMode) -> Unit,
 	onNavigateToBetSize: () -> Unit,
-	onUpgradeClick: () -> Unit,
+	onPlanClick: () -> Unit,
 	onContactClick: () -> Unit,
 	onLegalClick: () -> Unit,
 ) {
-	BaseScaffold {
+	// 바텀바를 표시하는 탭 화면이라 네비바 인셋은 MainBottomBar 가 처리한다.
+	BaseScaffold(applyNavigationBarsPadding = false) {
 		Column(
 			modifier = Modifier.fillMaxSize(),
 		) {
@@ -73,7 +76,7 @@ internal fun SettingsScreen(
 				// 플랜 섹션
 				PlanSection(
 					isPro = isPro,
-					onUpgradeClick = onUpgradeClick,
+					onPlanClick = onPlanClick,
 				)
 
 				// 테마 섹션
@@ -152,7 +155,7 @@ private fun ThemeSection(
 						)
 					}
 
-					if (isSelected) {
+					FadeAnimatedVisibility(isSelected) {
 						Box(
 							modifier = Modifier
 								.size(8.dp)
@@ -197,23 +200,24 @@ private fun ContactNavigationItem(
 @Composable
 private fun PlanSection(
 	isPro: Boolean,
-	onUpgradeClick: () -> Unit,
+	onPlanClick: () -> Unit,
 ) {
 	HandySectionLabel(stringResource(Res.string.settings_plan)) {
-		if (isPro) {
-			SettingsCard {
-				Text(
-					text = stringResource(Res.string.settings_plan_pro),
-					style = HandyTheme.typography.medium14,
-					color = HandyTheme.colorScheme.primary,
+		FadeAnimatedContent(isPro) { pro ->
+			if (pro) {
+				SettingsNavigationItem(
+					title = stringResource(Res.string.settings_plan_pro),
+					subtitle = stringResource(Res.string.settings_plan_pro_desc),
+					titleColor = HandyTheme.colorScheme.primary,
+					onClick = onPlanClick,
+				)
+			} else {
+				SettingsNavigationItem(
+					title = stringResource(Res.string.settings_plan_free),
+					subtitle = stringResource(Res.string.settings_plan_upgrade),
+					onClick = onPlanClick,
 				)
 			}
-		} else {
-			SettingsNavigationItem(
-				title = stringResource(Res.string.settings_plan_free),
-				subtitle = stringResource(Res.string.settings_plan_upgrade),
-				onClick = onUpgradeClick,
-			)
 		}
 	}
 }
@@ -260,7 +264,7 @@ private fun SettingsScreenPreview() {
 			isPro = false,
 			onThemeChange = {},
 			onNavigateToBetSize = {},
-			onUpgradeClick = {},
+			onPlanClick = {},
 			onContactClick = {},
 			onLegalClick = {},
 		)

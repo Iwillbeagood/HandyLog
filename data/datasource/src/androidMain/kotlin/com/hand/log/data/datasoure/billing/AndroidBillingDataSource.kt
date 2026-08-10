@@ -123,11 +123,17 @@ internal class AndroidBillingDataSource(
 		return ProProduct(id = details.productId, formattedPrice = price)
 	}
 
-	override suspend fun isPurchased(): Boolean =
-		queryPurchases().any { purchase ->
+	override suspend fun isPurchased(): Boolean {
+		// 앱 밖에서 리딤된 구매(프로모 코드 등)도 이 경로로 처음 감지되므로 여기서 승인한다.
+		// 3일 내 미승인 시 Play 가 자동 환불하므로, restore 뿐 아니라 시작 시 동기화에서도 반드시 승인해야
+		// 재설치·기기 변경 후에도 소유가 유지된다.
+		val owned = queryPurchases().filter { purchase ->
 			productId in purchase.products &&
 				purchase.purchaseState == Purchase.PurchaseState.PURCHASED
 		}
+		owned.forEach { acknowledgeIfNeeded(it) }
+		return owned.isNotEmpty()
+	}
 
 	override suspend fun purchase(): PurchaseResult {
 		val activity = activityProvider()

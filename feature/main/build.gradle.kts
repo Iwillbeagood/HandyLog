@@ -8,6 +8,10 @@ kotlin {
 	sourceSets {
 		commonMain.dependencies {
 			implementation(projects.feature.home)
+			implementation(projects.feature.preflop.home)
+			implementation(projects.feature.preflop.chart)
+			implementation(projects.feature.preflop.quiz.home)
+			implementation(projects.feature.preflop.quiz.session)
 			implementation(projects.feature.players.home)
 			implementation(projects.feature.players.hands)
 			implementation(projects.feature.table.home)

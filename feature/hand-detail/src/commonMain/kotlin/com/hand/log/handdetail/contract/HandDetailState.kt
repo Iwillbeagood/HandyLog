@@ -4,6 +4,8 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.hand.log.domain.model.HandRecord
 
+internal enum class HandReviewStatus { IDLE, LOADING, LOADED, ERROR }
+
 @Stable
 internal sealed interface HandDetailState {
 
@@ -14,6 +16,8 @@ internal sealed interface HandDetailState {
 	data class Detail(
 		val hand: HandRecord,
 		val useBbUnit: Boolean = false,
+		val reviewStatus: HandReviewStatus = HandReviewStatus.IDLE,
+		val reviewText: String = "",
 	) : HandDetailState
 
 	@Immutable

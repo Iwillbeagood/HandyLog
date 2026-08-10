@@ -12,6 +12,7 @@
 		2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
 		7555FF83242A565900829871 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7555FF82242A565900829871 /* ContentView.swift */; };
 		B1A2C3D4E5F60001AABBCCDD /* StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A2C3D4E5F60002AABBCCDD /* StatusBarController.swift */; };
+		C1A2C3D4E5F60001AABBCCEE /* StoreKitBridgeImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A2C3D4E5F60002AABBCCEE /* StoreKitBridgeImpl.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -35,6 +36,7 @@
 		7555FF82242A565900829871 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		7555FF8C242A565B00829871 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B1A2C3D4E5F60002AABBCCDD /* StatusBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarController.swift; sourceTree = "<group>"; };
+		C1A2C3D4E5F60002AABBCCEE /* StoreKitBridgeImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitBridgeImpl.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,6 +83,7 @@
 				7555FF8C242A565B00829871 /* Info.plist */,
 				2152FB032600AC8F00CF470E /* iOSApp.swift */,
 				B1A2C3D4E5F60002AABBCCDD /* StatusBarController.swift */,
+				C1A2C3D4E5F60002AABBCCEE /* StoreKitBridgeImpl.swift */,
 				058557D7273AAEEB004C7B11 /* Preview Content */,
 			);
 			path = iosApp;
@@ -188,6 +191,7 @@
 				2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */,
 				7555FF83242A565900829871 /* ContentView.swift in Sources */,
 				B1A2C3D4E5F60001AABBCCDD /* StatusBarController.swift in Sources */,
+				C1A2C3D4E5F60001AABBCCEE /* StoreKitBridgeImpl.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

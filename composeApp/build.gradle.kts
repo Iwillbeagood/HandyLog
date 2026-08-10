@@ -20,6 +20,7 @@ kotlin {
 					baseName = "ComposeApp"
 					isStatic = true
 					binaryOption("bundleId", "com.hand.log")
+					export(projects.data.datasource)
 				}
 			}
 		}
@@ -35,6 +36,10 @@ kotlin {
 			implementation(projects.core.common)
 			implementation(projects.feature.main)
 			implementation(projects.feature.home)
+			implementation(projects.feature.preflop.home)
+			implementation(projects.feature.preflop.chart)
+			implementation(projects.feature.preflop.quiz.home)
+			implementation(projects.feature.preflop.quiz.session)
 			implementation(projects.feature.table.home)
 			implementation(projects.feature.table.tableEdit)
 			implementation(projects.feature.table.playerSetup)
@@ -48,7 +53,7 @@ kotlin {
 			implementation(projects.feature.settings.upgrade)
 			implementation(projects.domain.model)
 			implementation(projects.domain.repository)
-			implementation(projects.data.datasource)
+			api(projects.data.datasource)
 			implementation(projects.data.repositoryImpl)
 			implementation(projects.local.database)
 			implementation(projects.local.datastore)
@@ -97,6 +102,19 @@ android {
 	}
 	buildFeatures {
 		buildConfig = true
+	}
+	// 테스트용 Pro 해금 flavor. proTest 는 스토어(IAP) 없이 Pro 권한을 강제로 켜 유료 기능을 검증한다.
+	// 배포는 normal(실제 IAP) 단일앱 모델을 사용한다.
+	flavorDimensions += "mode"
+	productFlavors {
+		create("normal") {
+			dimension = "mode"
+			buildConfigField("boolean", "FORCE_PRO", "false")
+		}
+		create("proTest") {
+			dimension = "mode"
+			buildConfigField("boolean", "FORCE_PRO", "true")
+		}
 	}
 	buildTypes {
 		getByName("release") {

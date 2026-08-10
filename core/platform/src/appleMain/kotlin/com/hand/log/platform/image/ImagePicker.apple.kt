@@ -75,7 +75,7 @@ private class PhotoPickerDelegate(
 		provider.loadDataRepresentationForTypeIdentifier(
 			PUBLIC_IMAGE_TYPE,
 		) { data: NSData?, _: NSError? ->
-			val picked = data?.let { UIImage(data = it)?.toPickedImage() }
+			val picked = data?.let { UIImage(data = it).toPickedImage() }
 			// 데이터 로드 콜백은 임의 큐에서 호출될 수 있어 UI 상태 전달은 메인 큐로 넘긴다.
 			dispatch_async(dispatch_get_main_queue()) {
 				finish(picked)

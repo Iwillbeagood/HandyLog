@@ -50,6 +50,7 @@ internal fun HandDetailScreen(
 	onEditHeroHand: () -> Unit = {},
 	onEditShowdownHand: (Int) -> Unit = {},
 	onMemoClick: () -> Unit = {},
+	onRequestReview: () -> Unit = {},
 	graphicsLayer: GraphicsLayer = rememberGraphicsLayer(),
 ) {
 	val loaded = state as? HandDetailState.Detail
@@ -90,7 +91,10 @@ internal fun HandDetailScreen(
 				HandDetailContent(
 					hand = loaded.hand,
 					useBbUnit = loaded.useBbUnit,
+					reviewStatus = loaded.reviewStatus,
+					reviewText = loaded.reviewText,
 					onMemoClick = onMemoClick,
+					onRequestReview = onRequestReview,
 					graphicsLayer = graphicsLayer,
 					onMarkPlayer = onMarkPlayer,
 					onEditHeroHand = onEditHeroHand,

@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.hand.log.designsystem.component.FadeAnimatedVisibility
 import com.hand.log.designsystem.component.HandyTextField
 import com.hand.log.designsystem.component.RegularButton
 import com.hand.log.designsystem.component.VerticalSpacer
@@ -85,54 +86,56 @@ internal fun ActionSelector(
 			selectedAction == ActionType.RAISE ||
 			selectedAction == ActionType.ALL_IN
 
-		if (needsAmount) {
-			VerticalSpacer(12.dp)
-
-			val displayMinRaise = minRaiseAmount.toLong().toString()
-
-			val chipAmount = if (currentAmount.isNotBlank()) {
-				val parsed = currentAmount.toDoubleOrNull() ?: 0.0
-				if (useBbUnit && bbAmount > 0) parsed * bbAmount else parsed
-			} else {
-				0.0
-			}
-			val exceedsStack = playerStack != null && chipAmount > playerStack
-
-			HandyTextField(
-				value = currentAmount,
-				onValueChange = onUpdateAmount,
-				label = stringResource(Res.string.record_amount_label, displayMinRaise),
-				keyboardType = KeyboardType.Number,
-				onDone = if ((selectedAction == ActionType.BET || selectedAction == ActionType.RAISE) && !exceedsStack) {
-					onConfirmAction
-				} else {
-					null
-				},
-			)
-			VerticalSpacer(8.dp)
-
-			val isRaiseOrBet = selectedAction == ActionType.RAISE || selectedAction == ActionType.BET
-			val presets = when {
-				isRaiseOrBet && lastBetAmount > 0 -> raiseMultiplierPresets(lastBetAmount, bbAmount, useBbUnit)
-				currentStreet == Street.PREFLOP && bbAmount > 0 -> preflopBBPresets(
-					preflopPresets,
-					bbAmount,
-					useBbUnit,
-				)
-				currentPot > 0 -> postflopPotPresets(postflopPresets, currentPot, bbAmount, useBbUnit)
-				else -> emptyList()
-			}
-			if (presets.isNotEmpty()) {
-				PresetRow(presets = presets, onSelect = onUpdateAmount)
-			}
-
-			if (selectedAction == ActionType.BET || selectedAction == ActionType.RAISE) {
+		FadeAnimatedVisibility(needsAmount) {
+			Column {
 				VerticalSpacer(12.dp)
-				RegularButton(
-					text = stringResource(Res.string.btn_confirm),
-					onClick = onConfirmAction,
-					enabled = !exceedsStack,
+
+				val displayMinRaise = minRaiseAmount.toLong().toString()
+
+				val chipAmount = if (currentAmount.isNotBlank()) {
+					val parsed = currentAmount.toDoubleOrNull() ?: 0.0
+					if (useBbUnit && bbAmount > 0) parsed * bbAmount else parsed
+				} else {
+					0.0
+				}
+				val exceedsStack = playerStack != null && chipAmount > playerStack
+
+				HandyTextField(
+					value = currentAmount,
+					onValueChange = onUpdateAmount,
+					label = stringResource(Res.string.record_amount_label, displayMinRaise),
+					keyboardType = KeyboardType.Number,
+					onDone = if ((selectedAction == ActionType.BET || selectedAction == ActionType.RAISE) && !exceedsStack) {
+						onConfirmAction
+					} else {
+						null
+					},
 				)
+				VerticalSpacer(8.dp)
+
+				val isRaiseOrBet = selectedAction == ActionType.RAISE || selectedAction == ActionType.BET
+				val presets = when {
+					isRaiseOrBet && lastBetAmount > 0 -> raiseMultiplierPresets(lastBetAmount, bbAmount, useBbUnit)
+					currentStreet == Street.PREFLOP && bbAmount > 0 -> preflopBBPresets(
+						preflopPresets,
+						bbAmount,
+						useBbUnit,
+					)
+					currentPot > 0 -> postflopPotPresets(postflopPresets, currentPot, bbAmount, useBbUnit)
+					else -> emptyList()
+				}
+				if (presets.isNotEmpty()) {
+					PresetRow(presets = presets, onSelect = onUpdateAmount)
+				}
+
+				if (selectedAction == ActionType.BET || selectedAction == ActionType.RAISE) {
+					VerticalSpacer(12.dp)
+					RegularButton(
+						text = stringResource(Res.string.btn_confirm),
+						onClick = onConfirmAction,
+						enabled = !exceedsStack,
+					)
+				}
 			}
 		}
 	}

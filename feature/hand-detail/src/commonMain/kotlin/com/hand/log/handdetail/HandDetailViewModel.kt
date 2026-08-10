@@ -7,10 +7,12 @@ import com.hand.log.domain.model.HandRecord
 import com.hand.log.domain.model.PocketCards
 import com.hand.log.domain.model.SavedPlayer
 import com.hand.log.domain.repository.HandRecordRepository
+import com.hand.log.domain.repository.AiReviewRepository
 import com.hand.log.domain.usecase.MarkPlayerOnHandUseCase
 import com.hand.log.handdetail.contract.HandDetailEffect
 import com.hand.log.handdetail.contract.HandDetailModalEffect
 import com.hand.log.handdetail.contract.HandDetailState
+import com.hand.log.handdetail.contract.HandReviewStatus
 import com.hand.log.handdetail.model.HandHistoryFormatter
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,9 +28,12 @@ internal class HandDetailViewModel(
 	handId: String,
 	private val handRecordRepository: HandRecordRepository,
 	private val markPlayerOnHandUseCase: MarkPlayerOnHandUseCase,
+	private val aiReviewRepository: AiReviewRepository,
 ) : ViewModel() {
 
 	private val useBbUnit = MutableStateFlow(false)
+	private val _reviewStatus = MutableStateFlow(HandReviewStatus.IDLE)
+	private val _reviewText = MutableStateFlow("")
 
 	private val _effect = MutableSharedFlow<HandDetailEffect>()
 	val effect: SharedFlow<HandDetailEffect> get() = _effect.asSharedFlow()
@@ -39,9 +44,16 @@ internal class HandDetailViewModel(
 	val state: StateFlow<HandDetailState> = combine(
 		handRecordRepository.observeHandById(handId),
 		useBbUnit,
-	) { hand, bbUnit ->
+		_reviewStatus,
+		_reviewText,
+	) { hand, bbUnit, reviewStatus, reviewText ->
 		if (hand != null) {
-			HandDetailState.Detail(hand = hand, useBbUnit = bbUnit)
+			HandDetailState.Detail(
+				hand = hand,
+				useBbUnit = bbUnit,
+				reviewStatus = reviewStatus,
+				reviewText = reviewText,
+			)
 		} else {
 			HandDetailState.Error
 		}
@@ -168,6 +180,26 @@ internal class HandDetailViewModel(
 		val text = HandHistoryFormatter.format(loaded.hand)
 		viewModelScope.launch {
 			_effect.emit(HandDetailEffect.ShareText(text))
+		}
+	}
+
+	fun requestReview(languageName: String) {
+		val loaded = (state.value as? HandDetailState.Detail) ?: return
+		if (_reviewStatus.value == HandReviewStatus.LOADING || _reviewStatus.value == HandReviewStatus.LOADED) return
+		val handHistory = HandHistoryFormatter.format(loaded.hand)
+		_reviewStatus.value = HandReviewStatus.LOADING
+		viewModelScope.launch {
+			runCatching { aiReviewRepository.reviewHand(handHistory, languageName) }
+				.mapCatching { it.ifBlank { error("empty review") } }
+				.fold(
+					onSuccess = {
+						_reviewText.value = it
+						_reviewStatus.value = HandReviewStatus.LOADED
+					},
+					onFailure = {
+						_reviewStatus.value = HandReviewStatus.ERROR
+					},
+				)
 		}
 	}
 

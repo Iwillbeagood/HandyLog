@@ -113,6 +113,10 @@
 	<string name="hand_detail_share_image">Share as Image</string>
 	<string name="hand_detail_text_shared">Text shared</string>
 	<string name="hand_detail_image_shared">Image shared</string>
+	<string name="hand_review_cta">AI Hand Review</string>
+	<string name="hand_review_title">AI Hand Review</string>
+	<string name="hand_review_loading">AI is analyzing your hand…</string>
+	<string name="hand_review_error">Couldn\'t load the review. Please try again.</string>
 	<string name="hand_detail_image_share_failed">Failed to share image</string>
 	<string name="hand_detail_image_save_failed">Failed to save image</string>
 
@@ -208,6 +212,7 @@
 	<string name="settings_plan">Current Plan</string>
 	<string name="settings_plan_free">Free</string>
 	<string name="settings_plan_pro">Pro</string>
+	<string name="settings_plan_pro_desc">View Pro benefits</string>
 	<string name="settings_plan_upgrade">Upgrade to Pro</string>
 
 	<!-- Pro Paywall -->
@@ -218,6 +223,8 @@
 	<string name="pro_paywall_hands">Free version allows up to %1$d hands per table.\nUpgrade to Pro for unlimited hands.</string>
 	<string name="pro_paywall_players">Free version allows up to %1$d marked players.\nUpgrade to Pro for unlimited players.</string>
 	<string name="pro_paywall_presets">Customizing bet presets is a Pro feature.\nUpgrade to Pro to edit freely.</string>
+	<string name="pro_paywall_preflop_stacks">Free version only includes the %1$s preflop chart.\nUpgrade to Pro for every stack depth.</string>
+	<string name="pro_paywall_preflop_quiz">Preflop quiz is a Pro feature.\nUpgrade to Pro to train your skills.</string>
 
 	<!-- Pro Upgrade -->
 	<string name="upgrade_title">Pro Version</string>
@@ -232,6 +239,8 @@
 	<string name="upgrade_presets">Presets</string>
 	<string name="upgrade_free_limit">Up to %1$d</string>
 	<string name="upgrade_unlimited">Unlimited</string>
+	<string name="upgrade_included">Included</string>
+	<string name="upgrade_preflop_chart_pro">All stacks</string>
 	<string name="upgrade_purchase">Get Pro</string>
 	<string name="upgrade_purchase_priced">Get Pro for %1$s</string>
 	<string name="upgrade_restore">Restore Purchase</string>
@@ -321,4 +330,93 @@
 	<string name="theme_dark_desc">Dark theme</string>
 	<string name="theme_auto">Auto</string>
 	<string name="theme_auto_desc">Switch automatically with system settings</string>
+
+	<!-- Preflop Chart -->
+	<string name="nav_chart">Chart</string>
+	<string name="preflop_title">Preflop Charts</string>
+	<string name="preflop_scenario_rfi">Open</string>
+	<string name="preflop_scenario_facing">vs Open</string>
+	<string name="preflop_scenario_vs3bet">vs 3-Bet</string>
+	<string name="preflop_scenario_vslimp">vs Limp</string>
+	<string name="preflop_vslimp_caption">SB Limp → BB</string>
+	<string name="preflop_hero">Position</string>
+	<string name="preflop_villain_label">vs</string>
+	<string name="preflop_stack_label">Type</string>
+	<string name="preflop_scenario_label">Scenario</string>
+	<string name="preflop_main_title">Preflop</string>
+	<string name="preflop_chart_card_desc">Check opening ranges by position\nand the optimal action</string>
+	<string name="preflop_chart_card_cta">View charts</string>
+	<string name="preflop_quiz_title">Preflop Quiz</string>
+	<string name="preflop_quiz_desc">Test your actions on random hands\nand check your skills</string>
+	<string name="preflop_quiz_cta">Start quiz</string>
+	<string name="preflop_recent_title">Recent Quiz Results</string>
+	<string name="preflop_recent_empty">No quiz results yet</string>
+	<string name="preflop_quiz_coming_soon">Coming soon</string>
+	<string name="preflop_quiz_select">Select Quiz</string>
+	<string name="quiz_type_rfi_title">Open Raise</string>
+	<string name="quiz_type_rfi_desc">Practice which hands to raise when opening first</string>
+	<string name="quiz_type_vsopen_title">vs Open Raise</string>
+	<string name="quiz_type_vsopen_desc">Decide 3-bet, call, or fold against an open</string>
+	<string name="quiz_type_vs3bet_title">vs 3-Bet</string>
+	<string name="quiz_type_vs3bet_desc">Decide 4-bet, call, or fold when your open is 3-bet</string>
+	<string name="quiz_type_mixed_title">Mixed Quiz</string>
+	<string name="quiz_type_mixed_desc">A mix of open, vs open, and vs 3-bet</string>
+	<string name="quiz_prompt">What is your action?</string>
+	<string name="quiz_answer_plan_format">%1$s → %2$s</string>
+	<string name="quiz_plan_prompt_vs_3bet">If you get 3-bet, how do you respond?</string>
+	<string name="quiz_plan_prompt_vs_4bet">If you get 4-bet, how do you respond?</string>
+	<string name="quiz_correct">Correct!</string>
+	<string name="quiz_wrong">Wrong</string>
+	<string name="quiz_next">Next</string>
+	<string name="quiz_progress">%1$d / %2$d</string>
+	<string name="quiz_result_accuracy">Accuracy</string>
+	<string name="quiz_result_avgtime">Avg. response time</string>
+	<string name="quiz_result_avgtime_value">%1$ss</string>
+	<string name="quiz_result_streak">Best streak</string>
+	<string name="quiz_result_streak_value">%1$d in a row</string>
+	<string name="quiz_retry">Try again</string>
+	<string name="quiz_view_chart">View charts</string>
+	<string name="quiz_review_cta">See AI explanation</string>
+	<string name="quiz_review_title">Explanation</string>
+	<string name="quiz_review_loading">AI is writing an explanation…</string>
+	<string name="quiz_review_error">Couldn't load the explanation. Please try again.</string>
+	<string name="quiz_result_great">Excellent! 🎯</string>
+	<string name="quiz_result_good">Nice! 👍</string>
+	<string name="quiz_result_fair">Keep practicing 💪</string>
+	<string name="quiz_result_desc">Review your preflop strategy</string>
+	<string name="quiz_start_review">Review</string>
+	<string name="quiz_review_exit">Exit Review</string>
+	<string name="quiz_review_your_answer">Your answer</string>
+	<string name="quiz_review_correct_answer">Correct</string>
+	<string name="quiz_review_skipped">Skipped</string>
+	<string name="quiz_review_prev">Prev</string>
+	<string name="quiz_review_next">Next</string>
+	<string name="quiz_skip">Skip</string>
+	<string name="quiz_prev_question">Previous</string>
+	<string name="quiz_exit_title">End the quiz?</string>
+	<string name="quiz_exit_desc">Your progress so far won\'t be saved.</string>
+	<string name="quiz_exit_confirm">End</string>
+	<string name="quiz_exit_cancel">Keep going</string>
+	<string name="preflop_villain_raiser">Raiser</string>
+	<string name="preflop_villain_3bettor">3-Bettor</string>
+	<string name="preflop_action_raise">Raise</string>
+	<string name="preflop_action_raise_bluff">Raise (Bluff)</string>
+	<string name="preflop_action_raise_fold">Raise/Fold</string>
+	<string name="preflop_action_raise_call">Raise/Call</string>
+	<string name="preflop_action_raise_4bet">Raise/4-Bet</string>
+	<string name="preflop_action_raise_jam">Raise/Jam</string>
+	<string name="preflop_action_3bet">3-Bet</string>
+	<string name="preflop_action_3bet_bluff">3-Bet (Bluff)</string>
+	<string name="preflop_action_3bet_stackoff">3-Bet/Stack-off</string>
+	<string name="preflop_action_3bet_fold">3-Bet/Fold</string>
+	<string name="preflop_action_3bet_call">3-Bet/Call</string>
+	<string name="preflop_action_3bet_jam">3-Bet Jam</string>
+	<string name="preflop_action_4bet">4-Bet</string>
+	<string name="preflop_action_4bet_bluff">4-Bet (Bluff)</string>
+	<string name="preflop_action_stackoff">Stack-off</string>
+	<string name="preflop_action_allin">All-in</string>
+	<string name="preflop_action_limp">Limp</string>
+	<string name="preflop_action_check">Check</string>
+	<string name="preflop_action_call">Call</string>
+	<string name="preflop_action_fold">Fold</string>
 </resources>
