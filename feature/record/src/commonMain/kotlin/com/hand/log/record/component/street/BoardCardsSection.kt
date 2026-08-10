@@ -69,7 +69,6 @@ internal fun BoardCardsSection(
 			Street.FLOP -> 3
 			Street.TURN -> 1
 			Street.RIVER -> 1
-			else -> 0
 		}
 		Row(
 			horizontalArrangement = Arrangement.spacedBy(4.dp),

@@ -49,7 +49,9 @@ class PreflopChartRepository {
 			val raw = Res.readBytes(path).decodeToString()
 			json.decodeFromString<List<PreflopChartDto>>(raw).forEach { dto ->
 				val stack = PreflopStack.fromLabel(dto.stackSize) ?: return@forEach
-				val scenario = scenarioOf(dto.category, dto.chartName) ?: return@forEach
+				// 파일마다 "Big Blind"/"BB", 대소문자가 뒤섞여 있어 포지션 표기를 먼저 통일한다.
+				val chartName = normalizeChartName(dto.chartName)
+				val scenario = scenarioOf(dto.category, chartName) ?: return@forEach
 				// "Not in Range" 핸드는 map 에서 제외 → 그리드에서 빈칸으로 표시된다.
 				// VS_LIMP 는 BB 가 무료로 들어가 있어 폴드가 없으므로 원본 Fold 를 체크로 해석한다.
 				val chart = PreflopChart(
@@ -61,8 +63,8 @@ class PreflopChartRepository {
 					}.toMap(),
 				)
 				// 한 DTO(chart_name)에서 전개된 (hero, villain) 들은 같은 원본 그룹으로 간주한다.
-				val groupKey = "${dto.stackSize}|${dto.category}|${dto.chartName}"
-				parseTargets(scenario, dto.chartName).forEach { (hero, villain) ->
+				val groupKey = "${dto.stackSize}|${dto.category}|$chartName"
+				parseTargets(scenario, chartName).forEach { (hero, villain) ->
 					val query = PreflopChartQuery(stack, scenario, hero, villain)
 					charts[query] = chart
 					groupKeys[query] = groupKey
@@ -76,8 +78,11 @@ class PreflopChartRepository {
 		category.startsWith("Raise First") -> PreflopScenario.RFI
 		category.startsWith("Facing RFI") -> PreflopScenario.FACING_RFI
 		category.contains("vs 3bet") || category.startsWith("Facing 3-bet") -> PreflopScenario.VS_3BET
-		category == "Blind vs Blind" && chartName == "BB vs SB Limp" -> PreflopScenario.VS_LIMP
-		else -> null // 그 외 Blind vs Blind(림프/잼 라인 등)는 제외
+		// SB 림프에 대응하는 BB. "…Limp/Jam", "…Limp/All-In" 복합 라인은 제외한다.
+		category == "Blind vs Blind" && chartName.endsWith("vs SB Limp", ignoreCase = true) -> PreflopScenario.VS_LIMP
+		// SB 오픈(레이즈)에 대응하는 BB = 사실상 FACING_RFI(히어로 BB, 상대 SB).
+		category == "Blind vs Blind" && chartName.contains("vs SB Raise", ignoreCase = true) -> PreflopScenario.FACING_RFI
+		else -> null // 그 외 Blind vs Blind(SB 시점·올인·잼 라인 등)는 제외
 	}
 
 	/**
@@ -127,11 +132,10 @@ class PreflopChartRepository {
 		if (chartName.contains("Limp") || chartName.contains("Jam")) return emptyList()
 
 		val cleaned = chartName
-			.replace("RFI", "")
-			.replace("3bet", "")
-			.replace("All-In", "")
-			.replace("All-in", "")
-			.replace("Raise", "")
+			.replace("RFI", "", ignoreCase = true)
+			.replace("3bet", "", ignoreCase = true)
+			.replace("All-In", "", ignoreCase = true)
+			.replace("Raise", "", ignoreCase = true)
 		val parts = cleaned.split(" vs ")
 		if (parts.size != 2) return emptyList()
 
@@ -144,7 +148,6 @@ class PreflopChartRepository {
 				when (scenario) {
 					PreflopScenario.FACING_RFI -> PreflopPositions.raisersBefore(hero)
 					PreflopScenario.VS_3BET -> PreflopPositions.threeBettorsAfter(hero)
-					else -> emptyList()
 				}
 			}
 			villains.map { hero to it }
@@ -171,6 +174,11 @@ class PreflopChartRepository {
 
 		return s.split("/").mapNotNull { positionOf(it.trim()) }
 	}
+
+	/** 파일마다 다른 포지션 표기("Big Blind"/"Small Blind")를 짧은 표기(BB/SB)로 통일. */
+	private fun normalizeChartName(name: String): String = name
+		.replace("Big Blind", "BB", ignoreCase = true)
+		.replace("Small Blind", "SB", ignoreCase = true)
 
 	private fun positionOf(token: String): Position? = when (token.trim()) {
 		"UTG" -> Position.UTG

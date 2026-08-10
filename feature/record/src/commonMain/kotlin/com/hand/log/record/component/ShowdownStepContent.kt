@@ -304,7 +304,7 @@ private fun ShowdownPlayerCard(
 					Text(
 						text = stringResource(result.ranking.stringRes()),
 						style = HandyTheme.typography.regular12,
-						color = outcomeColor(result?.outcome),
+						color = outcomeColor(result.outcome),
 					)
 				} else if (isHero) {
 					Text(

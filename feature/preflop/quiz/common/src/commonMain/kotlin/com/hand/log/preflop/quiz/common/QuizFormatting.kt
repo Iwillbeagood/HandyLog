@@ -5,6 +5,8 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
 /** epoch millis → "2026.07.30 14:32" 형태의 로컬 시각 문자열. 퀴즈를 언제 풀었는지 표시용. */
+@OptIn(kotlin.time.ExperimentalTime::class)
+@Suppress("DEPRECATION")
 fun formatQuizPlayedAt(epochMillis: Long): String {
 	val dt = Instant.fromEpochMilliseconds(
 		epochMillis,

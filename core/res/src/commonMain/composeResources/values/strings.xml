@@ -342,7 +342,7 @@
 	<string name="preflop_vslimp_caption">SB 림프 → BB</string>
 	<string name="preflop_hero">포지션</string>
 	<string name="preflop_villain_label">상대</string>
-	<string name="preflop_stack_label">스택</string>
+	<string name="preflop_stack_label">유형</string>
 	<string name="preflop_scenario_label">시나리오</string>
 	<string name="preflop_main_title">프리플랍</string>
 	<string name="preflop_chart_card_desc">포지션별 오프닝 레인지와\n최적의 액션을 확인하세요</string>

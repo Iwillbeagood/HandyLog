@@ -341,7 +341,7 @@
 	<string name="preflop_vslimp_caption">SB リンプ → BB</string>
 	<string name="preflop_hero">ポジション</string>
 	<string name="preflop_villain_label">相手</string>
-	<string name="preflop_stack_label">スタック</string>
+	<string name="preflop_stack_label">タイプ</string>
 	<string name="preflop_scenario_label">シナリオ</string>
 	<string name="preflop_main_title">プリフロップ</string>
 	<string name="preflop_chart_card_desc">ポジション別のオープンレンジと\n最適なアクションを確認しましょう</string>

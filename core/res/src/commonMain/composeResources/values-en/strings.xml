@@ -341,7 +341,7 @@
 	<string name="preflop_vslimp_caption">SB Limp → BB</string>
 	<string name="preflop_hero">Position</string>
 	<string name="preflop_villain_label">vs</string>
-	<string name="preflop_stack_label">Stack</string>
+	<string name="preflop_stack_label">Type</string>
 	<string name="preflop_scenario_label">Scenario</string>
 	<string name="preflop_main_title">Preflop</string>
 	<string name="preflop_chart_card_desc">Check opening ranges by position\nand the optimal action</string>

@@ -29,7 +29,7 @@ import org.jetbrains.compose.resources.StringResource
  *
  * 계열별 색상(hue)으로 베이스 액션을, 명도/변형으로 대응 계획을 구분한다.
  * - 오픈(RFI) 계열: 레드~로즈 (밸류 레드 / 블러프 오렌지 / 콜·4벳·잼은 명도 변형)
- * - 3벳 계열: 퍼플 (밸류·블러프·스택오프·폴드·콜·잼)
+ * - 3벳 계열: 퍼플 (밸류·블러프·폴드·콜·잼), 스택오프만 마젠타로 hue 분리(가장 커밋된 라인)
  * - 4벳 계열: 브릭 레드, 올인: 다크 네이비, 콜: 그린, 림프: 딥그린, 체크: 스틸블루, 폴드: 그레이
  */
 private val ChartRed = Color(0xFFD63A3A) // 오픈(밸류)
@@ -40,7 +40,7 @@ private val ChartRedDark = Color(0xFFA82626) // 오픈/4벳 — 강하게 되받
 private val ChartMaroon = Color(0xFF7E1E1E) // 오픈/잼(open-shove)
 private val ChartPurple = Color(0xFF8E44AD) // 3벳(밸류)
 private val ChartViolet = Color(0xFFB07CC6) // 3벳(블러프)
-private val ChartPurpleDeep = Color(0xFF6C3483) // 3벳/스택오프
+private val ChartMagenta = Color(0xFFC0348A) // 3벳/스택오프 — 퍼플 계열에서 확실히 구분되는 마젠타
 private val ChartPurpleMuted = Color(0xFF9B84B0) // 3벳/폴드
 private val ChartIndigo = Color(0xFF5B6BBF) // 3벳/콜
 private val ChartPurpleDark = Color(0xFF4A235A) // 3벳/잼
@@ -63,7 +63,7 @@ internal fun actionColors(action: PreflopAction): Pair<Color, Color> = when (act
 	PreflopAction.RAISE_JAM -> ChartMaroon to ChartText
 	PreflopAction.THREE_BET -> ChartPurple to ChartText
 	PreflopAction.THREE_BET_BLUFF -> ChartViolet to ChartText
-	PreflopAction.THREE_BET_STACKOFF -> ChartPurpleDeep to ChartText
+	PreflopAction.THREE_BET_STACKOFF -> ChartMagenta to ChartText
 	PreflopAction.THREE_BET_FOLD -> ChartPurpleMuted to ChartText
 	PreflopAction.THREE_BET_CALL -> ChartIndigo to ChartText
 	PreflopAction.THREE_BET_JAM -> ChartPurpleDark to ChartText

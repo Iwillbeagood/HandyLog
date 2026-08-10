@@ -331,7 +331,7 @@ data class HandRecord(
 		}
 
 		// 앤티 팟 분배
-		val anteCost = if (blinds?.isBigBlindAnte == true) (blinds?.bb ?: 0.0) else 0.0
+		val anteCost = if (blinds?.isBigBlindAnte == true) blinds.bb else 0.0
 		if (anteCost > 0) {
 			val anteWinners = if (remainingSeats.size == 1) {
 				listOf(remainingSeats.first())

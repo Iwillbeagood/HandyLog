@@ -339,7 +339,7 @@ internal sealed interface RecordHandState {
 				val allInSeats = players.allInSeats
 				if (allInSeats.isEmpty()) return emptyList()
 
-				val anteAmount = if (blinds?.isBigBlindAnte == true) (blinds?.bb ?: 0.0) else 0.0
+				val anteAmount = if (blinds?.isBigBlindAnte == true) blinds.bb else 0.0
 
 				val investments = mutableMapOf<Int, Double>()
 				for (seat in seats) {
