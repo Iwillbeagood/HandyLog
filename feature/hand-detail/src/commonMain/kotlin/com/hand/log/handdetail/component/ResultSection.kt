@@ -162,7 +162,7 @@ internal fun ResultSection(
 			)
 
 			// 카드 공개 플레이어
-			hand.showdown.filter { it.seat != hand.heroSeat }.forEach { entry ->
+			hand.opponentShowdownEntries.forEach { entry ->
 				ShowdownPlayerRow(
 					positionName = hand.getPositionName(entry.seat),
 					entry = entry,

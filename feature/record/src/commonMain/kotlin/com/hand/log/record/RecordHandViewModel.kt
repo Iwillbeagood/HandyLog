@@ -1084,7 +1084,7 @@ internal fun getNextActionSeat(
 
 internal fun calculateWinnings(state: RecordHandState.Recording): Map<Int, Double> {
 	val boardCards = state.streets.boardCards
-	val anteAmount = if (state.blinds?.isBigBlindAnte == true) (state.blinds?.bb ?: 0.0) else 0.0
+	val anteAmount = if (state.blinds?.isBigBlindAnte == true) state.blinds.bb else 0.0
 	val investments = buildMap {
 		for (seat in state.occupiedSeats) {
 			val player = state.players[seat] ?: continue

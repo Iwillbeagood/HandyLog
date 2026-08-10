@@ -177,9 +177,7 @@ internal fun HomeHandCard(
 				}
 
 				// Board cards
-				val hasBoard = listOf(Street.FLOP, Street.TURN, Street.RIVER)
-					.any { hand.streets.getCards(it).isNotEmpty() }
-				if (hasBoard) {
+				if (hand.streets.boardCards.isNotEmpty()) {
 					Spacer(modifier = Modifier.height(4.dp))
 					Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
 						listOf(Street.FLOP, Street.TURN, Street.RIVER).forEach { street ->

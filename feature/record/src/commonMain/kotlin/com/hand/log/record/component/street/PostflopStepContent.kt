@@ -1,11 +1,11 @@
 package com.hand.log.record.component.street
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.hand.log.designsystem.component.FadeAnimatedVisibility
 import com.hand.log.designsystem.component.VerticalSpacer
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
@@ -56,17 +56,16 @@ internal fun PostflopStepContent(
 			modifier = Modifier.fillMaxWidth(),
 		)
 
-		if (streetActions.isNotEmpty()) {
-			VerticalSpacer(8.dp)
-			UndoButton(onClick = onRemoveLastAction)
+		FadeAnimatedVisibility(streetActions.isNotEmpty()) {
+			Column {
+				VerticalSpacer(8.dp)
+				UndoButton(onClick = onRemoveLastAction)
+			}
 		}
-
-		VerticalSpacer(12.dp)
-		ActionHistoryList(state = state)
 
 		VerticalSpacer(16.dp)
 
-		AnimatedVisibility(visible = boardCardsReady) {
+		FadeAnimatedVisibility(boardCardsReady) {
 			PlayerActionArea(
 				state = state,
 				onSelectActionType = onSelectActionType,
@@ -77,6 +76,9 @@ internal fun PostflopStepContent(
 				postflopPresets = postflopPresets,
 			)
 		}
+
+		VerticalSpacer(16.dp)
+		ActionHistoryList(state = state)
 
 		VerticalSpacer(16.dp)
 	}

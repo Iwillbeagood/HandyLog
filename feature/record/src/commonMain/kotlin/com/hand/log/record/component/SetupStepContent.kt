@@ -17,6 +17,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.hand.log.designsystem.component.FadeAnimatedVisibility
 import com.hand.log.designsystem.component.HandySectionLabel
 import com.hand.log.designsystem.component.HandySelector
 import com.hand.log.designsystem.component.HandyTextField
@@ -127,12 +128,14 @@ internal fun SetupStepContent(
 		)
 
 		val bbAmount = state.blinds?.bb ?: 0.0
-		if (bbAmount > 0) {
-			VerticalSpacer(8.dp)
-			PresetRow(
-				presets = stackPresets(bbAmount),
-				onSelect = onUpdateHeroStack,
-			)
+		FadeAnimatedVisibility(bbAmount > 0) {
+			Column {
+				VerticalSpacer(8.dp)
+				PresetRow(
+					presets = stackPresets(bbAmount),
+					onSelect = onUpdateHeroStack,
+				)
+			}
 		}
 	}
 }

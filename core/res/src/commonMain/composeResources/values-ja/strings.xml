@@ -113,6 +113,10 @@
 	<string name="hand_detail_share_image">画像で共有</string>
 	<string name="hand_detail_text_shared">テキストを共有しました</string>
 	<string name="hand_detail_image_shared">画像を共有しました</string>
+	<string name="hand_review_cta">AI ハンドレビューを見る</string>
+	<string name="hand_review_title">AI ハンドレビュー</string>
+	<string name="hand_review_loading">AIがハンドを分析しています…</string>
+	<string name="hand_review_error">分析を読み込めませんでした。もう一度お試しください。</string>
 	<string name="hand_detail_image_share_failed">画像の共有に失敗しました</string>
 	<string name="hand_detail_image_save_failed">画像の保存に失敗しました</string>
 
@@ -208,6 +212,7 @@
 	<string name="settings_plan">利用中のプラン</string>
 	<string name="settings_plan_free">Free</string>
 	<string name="settings_plan_pro">Pro</string>
+	<string name="settings_plan_pro_desc">Pro特典を見る</string>
 	<string name="settings_plan_upgrade">Pro版にアップグレード</string>
 
 	<!-- Pro Paywall -->
@@ -218,6 +223,8 @@
 	<string name="pro_paywall_hands">無料版ではテーブルごとにハンドを最大%1$d個まで記録できます。\nPro版で無制限にご利用ください。</string>
 	<string name="pro_paywall_players">無料版ではプレイヤーを最大%1$d人までマークできます。\nPro版で無制限にご利用ください。</string>
 	<string name="pro_paywall_presets">ベットプリセットのカスタマイズはPro機能です。\nPro版で自由に編集してください。</string>
+	<string name="pro_paywall_preflop_stacks">無料版では%1$sのプリフロップチャートのみ閲覧できます。\nPro版ですべてのスタックの深さを確認しましょう。</string>
+	<string name="pro_paywall_preflop_quiz">プリフロップクイズはPro機能です。\nPro版でスキルを鍛えましょう。</string>
 
 	<!-- Pro Upgrade -->
 	<string name="upgrade_title">Pro版</string>
@@ -232,6 +239,8 @@
 	<string name="upgrade_presets">プリセット編集</string>
 	<string name="upgrade_free_limit">最大%1$d個</string>
 	<string name="upgrade_unlimited">無制限</string>
+	<string name="upgrade_included">利用可</string>
+	<string name="upgrade_preflop_chart_pro">全スタック</string>
 	<string name="upgrade_purchase">Proを購入</string>
 	<string name="upgrade_purchase_priced">%1$sでProを購入</string>
 	<string name="upgrade_restore">購入を復元</string>
@@ -321,4 +330,93 @@
 	<string name="theme_dark_desc">暗いテーマ</string>
 	<string name="theme_auto">自動</string>
 	<string name="theme_auto_desc">システム設定に従って自動切り替え</string>
+
+	<!-- Preflop Chart -->
+	<string name="nav_chart">チャート</string>
+	<string name="preflop_title">プリフロップチャート</string>
+	<string name="preflop_scenario_rfi">オープン</string>
+	<string name="preflop_scenario_facing">vs オープン</string>
+	<string name="preflop_scenario_vs3bet">vs 3ベット</string>
+	<string name="preflop_scenario_vslimp">vs リンプ</string>
+	<string name="preflop_vslimp_caption">SB リンプ → BB</string>
+	<string name="preflop_hero">ポジション</string>
+	<string name="preflop_villain_label">相手</string>
+	<string name="preflop_stack_label">タイプ</string>
+	<string name="preflop_scenario_label">シナリオ</string>
+	<string name="preflop_main_title">プリフロップ</string>
+	<string name="preflop_chart_card_desc">ポジション別のオープンレンジと\n最適なアクションを確認しましょう</string>
+	<string name="preflop_chart_card_cta">チャートを見る</string>
+	<string name="preflop_quiz_title">プリフロップクイズ</string>
+	<string name="preflop_quiz_desc">ランダムハンドでアクションをテストし\n実力を確認しましょう</string>
+	<string name="preflop_quiz_cta">クイズ開始</string>
+	<string name="preflop_recent_title">最近のクイズ記録</string>
+	<string name="preflop_recent_empty">まだクイズ記録がありません</string>
+	<string name="preflop_quiz_coming_soon">準備中です</string>
+	<string name="preflop_quiz_select">クイズ選択</string>
+	<string name="quiz_type_rfi_title">オープンレイズ</string>
+	<string name="quiz_type_rfi_desc">自分が最初にオープンする時のレイズハンドを練習</string>
+	<string name="quiz_type_vsopen_title">vs オープンレイズ</string>
+	<string name="quiz_type_vsopen_desc">相手のオープンに3ベット・コール・フォールドを判断</string>
+	<string name="quiz_type_vs3bet_title">vs 3ベット</string>
+	<string name="quiz_type_vs3bet_desc">自分のオープンに3ベットされた時、4ベット・コール・フォールドを判断</string>
+	<string name="quiz_type_mixed_title">総合クイズ</string>
+	<string name="quiz_type_mixed_desc">オープン・vs オープン・vs 3ベットを混ぜて出題</string>
+	<string name="quiz_prompt">あなたのアクションは？</string>
+	<string name="quiz_answer_plan_format">%1$s → %2$s</string>
+	<string name="quiz_plan_prompt_vs_3bet">3ベットされたらどう対応しますか？</string>
+	<string name="quiz_plan_prompt_vs_4bet">4ベットされたらどう対応しますか？</string>
+	<string name="quiz_correct">正解！</string>
+	<string name="quiz_wrong">不正解</string>
+	<string name="quiz_next">次の問題</string>
+	<string name="quiz_progress">%1$d / %2$d</string>
+	<string name="quiz_result_accuracy">正解率</string>
+	<string name="quiz_result_avgtime">平均応答時間</string>
+	<string name="quiz_result_avgtime_value">%1$s秒</string>
+	<string name="quiz_result_streak">連続正解</string>
+	<string name="quiz_result_streak_value">%1$d問</string>
+	<string name="quiz_retry">もう一度挑戦</string>
+	<string name="quiz_view_chart">チャートを見る</string>
+	<string name="quiz_review_cta">AI解説を見る</string>
+	<string name="quiz_review_title">解説</string>
+	<string name="quiz_review_loading">AIが解説を作成しています…</string>
+	<string name="quiz_review_error">解説を読み込めませんでした。もう一度お試しください。</string>
+	<string name="quiz_result_great">素晴らしい！ 🎯</string>
+	<string name="quiz_result_good">いいね！ 👍</string>
+	<string name="quiz_result_fair">もう少し練習しましょう 💪</string>
+	<string name="quiz_result_desc">プリフロップ戦略を見直しましょう</string>
+	<string name="quiz_start_review">復習</string>
+	<string name="quiz_review_exit">復習終了</string>
+	<string name="quiz_review_your_answer">あなたの答え</string>
+	<string name="quiz_review_correct_answer">正解</string>
+	<string name="quiz_review_skipped">スキップ済み</string>
+	<string name="quiz_review_prev">前へ</string>
+	<string name="quiz_review_next">次へ</string>
+	<string name="quiz_skip">スキップ</string>
+	<string name="quiz_prev_question">前の問題</string>
+	<string name="quiz_exit_title">クイズを終了しますか？</string>
+	<string name="quiz_exit_desc">これまでの進行状況は保存されません。</string>
+	<string name="quiz_exit_confirm">終了</string>
+	<string name="quiz_exit_cancel">続ける</string>
+	<string name="preflop_villain_raiser">オープンした相手</string>
+	<string name="preflop_villain_3bettor">3ベットした相手</string>
+	<string name="preflop_action_raise">レイズ</string>
+	<string name="preflop_action_raise_bluff">レイズ ブラフ</string>
+	<string name="preflop_action_raise_fold">レイズ/フォールド</string>
+	<string name="preflop_action_raise_call">レイズ/コール</string>
+	<string name="preflop_action_raise_4bet">レイズ/4ベット</string>
+	<string name="preflop_action_raise_jam">レイズ オールイン</string>
+	<string name="preflop_action_3bet">3ベット</string>
+	<string name="preflop_action_3bet_bluff">3ベット ブラフ</string>
+	<string name="preflop_action_3bet_stackoff">3ベット/スタックオフ</string>
+	<string name="preflop_action_3bet_fold">3ベット/フォールド</string>
+	<string name="preflop_action_3bet_call">3ベット/コール</string>
+	<string name="preflop_action_3bet_jam">3ベット オールイン</string>
+	<string name="preflop_action_4bet">4ベット</string>
+	<string name="preflop_action_4bet_bluff">4ベット ブラフ</string>
+	<string name="preflop_action_stackoff">スタックオフ</string>
+	<string name="preflop_action_allin">オールイン</string>
+	<string name="preflop_action_limp">リンプ</string>
+	<string name="preflop_action_check">チェック</string>
+	<string name="preflop_action_call">コール</string>
+	<string name="preflop_action_fold">フォールド</string>
 </resources>

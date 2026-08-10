@@ -79,7 +79,7 @@ fun PlayerEditSheet(
 		},
 		confirmEnabled = name.isNotBlank(),
 		subText = if (canDelete) stringResource(Res.string.btn_delete) else null,
-		onSub = { if (canDelete) onDelete!!(player!!.id) },
+		onSub = { if (canDelete) onDelete(player.id) },
 		subContainerColor = colors.error.copy(alpha = 0.15f),
 		subContentColor = colors.error,
 	) {

@@ -7,12 +7,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,13 +22,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.hand.log.designsystem.etc.LocalProStatus
 import com.hand.log.designsystem.etc.clickableSingle
 import com.hand.log.designsystem.theme.HandyTheme
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.arrow_left
+import handylog.core.res.generated.resources.settings_plan_pro
 import handylog.core.res.generated.resources.spade_filled
+import handylog.core.res.generated.resources.x
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 
@@ -61,7 +67,14 @@ fun HandyTopAppbar(
 					TopAppbarType.Main -> {
 						HomeLogo(title = title)
 					}
-					else -> {
+					TopAppbarType.Close -> {
+						TopAppbarIcon(
+							tint = contentColor,
+							icon = Res.drawable.x,
+							onClick = onBackEvent,
+						)
+					}
+					TopAppbarType.Default -> {
 						TopAppbarIcon(
 							tint = contentColor,
 							icon = Res.drawable.arrow_left,
@@ -171,24 +184,39 @@ fun TopAppbarIconButton(
 @Composable
 fun HomeLogo(title: String = "") {
 	val colors = HandyTheme.colorScheme
+	val isPro = LocalProStatus.current
 
 	Row(
 		verticalAlignment = Alignment.CenterVertically,
 	) {
-		Box(
-			modifier = Modifier
-				.padding(start = 12.dp)
-				.size(28.dp)
-				.clip(RoundedCornerShape(8.dp))
-				.background(colors.felt),
-			contentAlignment = Alignment.Center,
-		) {
-			Icon(
-				painter = painterResource(Res.drawable.spade_filled),
-				contentDescription = null,
-				tint = Color.White,
-				modifier = Modifier.size(14.dp),
-			)
+		Box(modifier = Modifier.padding(start = 12.dp)) {
+			Box(
+				modifier = Modifier
+					.size(28.dp)
+					.clip(RoundedCornerShape(8.dp))
+					.background(colors.felt),
+				contentAlignment = Alignment.Center,
+			) {
+				Icon(
+					painter = painterResource(Res.drawable.spade_filled),
+					contentDescription = null,
+					tint = Color.White,
+					modifier = Modifier.size(14.dp),
+				)
+			}
+			if (isPro) {
+				Text(
+					text = stringResource(Res.string.settings_plan_pro),
+					style = HandyTheme.typography.bold10,
+					color = Color.White,
+					modifier = Modifier
+						.align(Alignment.TopEnd)
+						.offset(x = 6.dp, y = (-6).dp)
+						.clip(RoundedCornerShape(3.dp))
+						.background(colors.gold)
+						.padding(horizontal = 3.dp, vertical = 1.dp),
+				)
+			}
 		}
 		HorizontalSpacer(8.dp)
 		if (title.isNotBlank()) {
@@ -215,6 +243,7 @@ fun HomeLogo(title: String = "") {
 sealed interface TopAppbarType {
 	data object Default : TopAppbarType
 	data object Main : TopAppbarType
+	data object Close : TopAppbarType
 }
 
 data class IconButton(
@@ -230,6 +259,17 @@ private fun DefaultTopAppbarPreview() {
 		HandyTopAppbar(
 			title = "등록",
 			navigationType = TopAppbarType.Default,
+		)
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun CloseTopAppbarPreview() {
+	ThemePreview {
+		HandyTopAppbar(
+			title = "프리플랍 퀴즈",
+			navigationType = TopAppbarType.Close,
 		)
 	}
 }
@@ -252,6 +292,18 @@ private fun MainTopAppbarWithTitlePreview() {
 			title = "플레이어",
 			navigationType = TopAppbarType.Main,
 		)
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun MainTopAppbarProPreview() {
+	ThemePreview {
+		CompositionLocalProvider(LocalProStatus provides true) {
+			HandyTopAppbar(
+				navigationType = TopAppbarType.Main,
+			)
+		}
 	}
 }
 

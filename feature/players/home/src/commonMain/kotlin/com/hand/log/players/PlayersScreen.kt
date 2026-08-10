@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
+import com.hand.log.designsystem.component.FadeAnimatedContent
 import com.hand.log.designsystem.component.HandyHorizontalDivider
 import com.hand.log.designsystem.component.HandyTopAppbar
 import com.hand.log.designsystem.component.IconButton
@@ -34,7 +35,8 @@ internal fun PlayersScreen(
 	onDeletePlayer: (String) -> Unit,
 	onAddPlayer: () -> Unit,
 ) {
-	BaseScaffold {
+	// 바텀바를 표시하는 탭 화면이라 네비바 인셋은 MainBottomBar 가 처리한다.
+	BaseScaffold(applyNavigationBarsPadding = false) {
 		Column(
 			modifier = Modifier.fillMaxSize(),
 		) {
@@ -51,8 +53,8 @@ internal fun PlayersScreen(
 
 			when (state) {
 				PlayersState.Loading -> {}
-				is PlayersState.Success -> {
-					if (state.players.isEmpty()) {
+				is PlayersState.Success -> FadeAnimatedContent(state.players.isEmpty()) { isEmpty ->
+					if (isEmpty) {
 						PlayersEmptyState(
 							modifier = Modifier
 								.fillMaxSize()

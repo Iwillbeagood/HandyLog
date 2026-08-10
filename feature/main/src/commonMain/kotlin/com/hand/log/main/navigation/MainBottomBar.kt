@@ -3,6 +3,7 @@ package com.hand.log.main.navigation
 import androidx.compose.animation.AnimatedVisibility
 import org.jetbrains.compose.resources.stringResource
 import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.nav_chart
 import handylog.core.res.generated.resources.nav_home
 import handylog.core.res.generated.resources.nav_marking
 import handylog.core.res.generated.resources.nav_settings
@@ -90,6 +91,7 @@ internal fun MainBottomBar(
 								Text(
 									text = when (item) {
 										MainBottomNavItem.Home -> stringResource(Res.string.nav_home)
+										MainBottomNavItem.Chart -> stringResource(Res.string.nav_chart)
 										MainBottomNavItem.Players -> stringResource(Res.string.nav_marking)
 										MainBottomNavItem.Settings -> stringResource(Res.string.nav_settings)
 									},

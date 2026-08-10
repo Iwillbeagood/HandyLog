@@ -33,14 +33,19 @@ import com.hand.log.domain.model.Suit
 import com.hand.log.domain.model.TurnStreet
 import com.hand.log.handdetail.component.ActionGridSection
 import com.hand.log.handdetail.component.HandDetailTableView
+import com.hand.log.handdetail.component.HandReviewSection
 import com.hand.log.handdetail.component.MemoSection
 import com.hand.log.handdetail.component.ResultSection
+import com.hand.log.handdetail.contract.HandReviewStatus
 
 @Composable
 internal fun HandDetailContent(
 	hand: HandRecord,
 	useBbUnit: Boolean,
+	reviewStatus: HandReviewStatus,
+	reviewText: String,
 	onMemoClick: () -> Unit,
+	onRequestReview: () -> Unit,
 	graphicsLayer: GraphicsLayer,
 	onMarkPlayer: (Int) -> Unit = {},
 	onEditHeroHand: () -> Unit = {},
@@ -84,6 +89,11 @@ internal fun HandDetailContent(
 		MemoSection(
 			memo = hand.memo.orEmpty(),
 			onClick = onMemoClick,
+		)
+		HandReviewSection(
+			status = reviewStatus,
+			text = reviewText,
+			onRequestReview = onRequestReview,
 		)
 		VerticalSpacer(32.dp)
 	}
@@ -172,7 +182,10 @@ private fun HandDetailContentPreview() {
 		HandDetailContent(
 			hand = hand,
 			useBbUnit = false,
+			reviewStatus = com.hand.log.handdetail.contract.HandReviewStatus.IDLE,
+			reviewText = "",
 			onMemoClick = {},
+			onRequestReview = {},
 			graphicsLayer = rememberGraphicsLayer(),
 		)
 	}

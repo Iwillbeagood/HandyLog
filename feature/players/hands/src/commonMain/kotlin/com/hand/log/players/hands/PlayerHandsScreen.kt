@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
+import com.hand.log.designsystem.component.FadeAnimatedContent
 import com.hand.log.designsystem.component.HandyTopAppbar
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.designsystem.theme.nonScaledSp
@@ -62,7 +63,10 @@ internal fun PlayerHandsScreen(
 ) {
 	val colors = HandyTheme.colorScheme
 
+	// 바텀바를 표시하는 화면. 네비바 인셋은 아래 리스트 contentPadding(paddingValues.bottom)에
+	// 이미 포함되므로, 여기서 navigationBarsPadding 을 또 적용하면 인셋이 이중 계산된다.
 	BaseScaffold(
+		applyNavigationBarsPadding = false,
 		containerColor = colors.background,
 		topBar = {
 			HandyTopAppbar(
@@ -73,8 +77,8 @@ internal fun PlayerHandsScreen(
 	) {
 		when (state) {
 			PlayerHandsState.Loading -> {}
-			is PlayerHandsState.Success -> {
-				if (state.hands.isEmpty()) {
+			is PlayerHandsState.Success -> FadeAnimatedContent(state.hands.isEmpty()) { isEmpty ->
+				if (isEmpty) {
 					Box(
 						modifier = Modifier.fillMaxSize().padding(16.dp),
 						contentAlignment = Alignment.Center,

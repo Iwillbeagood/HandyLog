@@ -18,6 +18,10 @@ import com.hand.log.handdetail.navigation.handDetailNavGraph
 import com.hand.log.home.navigation.homeNavGraph
 import com.hand.log.players.hands.navigation.playerHandsNavGraph
 import com.hand.log.players.navigation.playersNavGraph
+import com.hand.log.preflop.chart.navigation.preflopChartNavGraph
+import com.hand.log.preflop.home.navigation.preflopHomeNavGraph
+import com.hand.log.preflop.quiz.home.navigation.preflopQuizHomeNavGraph
+import com.hand.log.preflop.quiz.session.navigation.preflopQuizSessionNavGraph
 import com.hand.log.record.navigation.recordHandNavGraph
 import com.hand.log.settings.betsize.navigation.betSizeNavGraph
 import com.hand.log.settings.contact.navigation.contactNavGraph
@@ -36,9 +40,13 @@ internal fun MainNavDisplay(
 ) {
 	val entryProvider = entryProvider {
 		homeNavGraph(paddingValues)
+		preflopHomeNavGraph(paddingValues)
 		playersNavGraph(paddingValues)
 		settingsMainNavGraph(paddingValues)
 
+		preflopChartNavGraph()
+		preflopQuizHomeNavGraph()
+		preflopQuizSessionNavGraph()
 		tableNavGraph()
 		recordHandNavGraph()
 		handDetailNavGraph()

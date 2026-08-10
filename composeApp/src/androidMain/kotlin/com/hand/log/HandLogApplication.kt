@@ -21,6 +21,7 @@ class HandLogApplication : Application() {
 		startKoin(
 			handLogAppDeclaration {
 				androidContext(this@HandLogApplication)
+				if (BuildConfig.FORCE_PRO) modules(forceProModule)
 			},
 		)
 	}

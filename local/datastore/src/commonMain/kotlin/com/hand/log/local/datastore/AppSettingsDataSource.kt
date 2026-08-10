@@ -17,6 +17,7 @@ class AppSettingsDataSource(
 		val POT_PERCENT_PRESETS = stringPreferencesKey("pot_percent_presets")
 		val SKIP_STEP_BACK_WARNING = booleanPreferencesKey("skip_step_back_warning")
 		val HOME_TAB = stringPreferencesKey("home_tab")
+		val PREFLOP_SELECTION = stringPreferencesKey("preflop_selection")
 	}
 
 	fun observeThemeMode(): Flow<String> = dataStore.data.map { prefs ->
@@ -68,6 +69,16 @@ class AppSettingsDataSource(
 	suspend fun setHomeTab(tab: String) {
 		dataStore.edit { prefs ->
 			prefs[HOME_TAB] = tab
+		}
+	}
+
+	fun observePreflopSelection(): Flow<String> = dataStore.data.map { prefs ->
+		prefs[PREFLOP_SELECTION] ?: ""
+	}
+
+	suspend fun setPreflopSelection(value: String) {
+		dataStore.edit { prefs ->
+			prefs[PREFLOP_SELECTION] = value
 		}
 	}
 }

@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.contentColorFor
 import com.hand.log.designsystem.theme.HandyTheme
@@ -44,7 +44,9 @@ fun BaseScaffold(
 			Column(
 				modifier = Modifier
 					.background(color = statusBarColor)
-					.systemBarsPadding(),
+					// 탑 앱바는 상태바(위) 인셋만 필요. systemBarsPadding 을 쓰면 네비바(아래) 인셋까지
+					// 붙어 앱바 아래에 빈 패딩이 생긴다(특히 스캐폴드가 navigationBarsPadding 을 소비하지 않는 탭 화면).
+					.statusBarsPadding(),
 			) {
 				topBar()
 			}

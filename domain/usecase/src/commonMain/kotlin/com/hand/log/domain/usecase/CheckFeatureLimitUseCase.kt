@@ -32,6 +32,10 @@ class CheckFeatureLimitUseCase(
 
 	suspend fun canCustomizePresets(): Boolean = isPro()
 
+	suspend fun canUseAllPreflopStacks(): Boolean = isPro()
+
+	suspend fun canUsePreflopQuiz(): Boolean = isPro()
+
 	companion object {
 		const val MAX_FREE_TABLES = 2
 		const val MAX_FREE_HANDS_PER_TABLE = 5

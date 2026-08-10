@@ -13,6 +13,7 @@ import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
+import com.hand.log.designsystem.component.FadeAnimatedContent
 import com.hand.log.designsystem.component.FadeAnimatedVisibility
 import com.hand.log.designsystem.component.HandyHorizontalDivider
 import com.hand.log.designsystem.component.HandySegmentedTab
@@ -49,7 +50,7 @@ internal fun HomeScreen(
 	onNavigateToHandDetail: (String) -> Unit,
 	onTableAdd: () -> Unit,
 ) {
-	BaseScaffold {
+	BaseScaffold(applyNavigationBarsPadding = false) {
 		Column(
 			modifier = Modifier.fillMaxSize(),
 		) {
@@ -98,8 +99,8 @@ private fun HomeContent(
 		val data = homeState as? HomeState.HomeData ?: return@FadeAnimatedVisibility
 
 		when (selectedTab) {
-			HomeTab.TABLE -> {
-				if (data.tables.isEmpty()) {
+			HomeTab.TABLE -> FadeAnimatedContent(data.tables.isEmpty()) { isEmpty ->
+				if (isEmpty) {
 					EmptyState(modifier = Modifier.fillMaxSize())
 				} else {
 					LazyColumn(
@@ -122,8 +123,8 @@ private fun HomeContent(
 					}
 				}
 			}
-			HomeTab.HAND -> {
-				if (data.hands.isEmpty()) {
+			HomeTab.HAND -> FadeAnimatedContent(data.hands.isEmpty()) { isEmpty ->
+				if (isEmpty) {
 					EmptyState(modifier = Modifier.fillMaxSize())
 				} else {
 					LazyColumn(

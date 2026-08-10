@@ -13,4 +13,6 @@ interface AppSettingsLocalDataSource {
 	suspend fun setSkipStepBackWarning(skip: Boolean)
 	fun observeHomeTab(): Flow<String>
 	suspend fun setHomeTab(tab: String)
+	fun observePreflopSelection(): Flow<String>
+	suspend fun setPreflopSelection(value: String)
 }

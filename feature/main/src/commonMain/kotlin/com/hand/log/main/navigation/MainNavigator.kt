@@ -9,6 +9,9 @@ import com.hand.log.navigation.navigation.Legal
 import com.hand.log.navigation.navigation.HandDetail
 import com.hand.log.navigation.navigation.ProUpgrade
 import com.hand.log.navigation.navigation.PlayerHands
+import com.hand.log.navigation.navigation.PreflopChart
+import com.hand.log.navigation.navigation.PreflopQuiz
+import com.hand.log.navigation.navigation.PreflopQuizSession
 import com.hand.log.navigation.navigation.RecordHand
 import com.hand.log.navigation.navigation.Route
 import com.hand.log.navigation.navigation.RouteStack
@@ -51,6 +54,23 @@ internal class MainNavigator {
 
 		override fun navigateToPlayerHands(savedPlayerId: String, playerName: String) {
 			navigate(PlayerHands(savedPlayerId, playerName))
+		}
+
+		override fun navigateToPreflopChart(
+			stack: String?,
+			scenario: String?,
+			hero: String?,
+			villain: String?,
+		) {
+			navigate(PreflopChart(stack, scenario, hero, villain))
+		}
+
+		override fun navigateToPreflopQuiz() {
+			navigate(PreflopQuiz)
+		}
+
+		override fun navigateToPreflopQuizSession(type: String, recordId: String) {
+			navigate(PreflopQuizSession(type, recordId))
 		}
 
 		override fun navigateToBetSizeSettings() {

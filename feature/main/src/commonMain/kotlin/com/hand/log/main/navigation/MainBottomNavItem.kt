@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import com.hand.log.navigation.navigation.MainTabRoute
 import com.hand.log.navigation.navigation.Route
 import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.grid_3x3
 import handylog.core.res.generated.resources.house
 import handylog.core.res.generated.resources.settings
 import handylog.core.res.generated.resources.users
@@ -20,6 +21,10 @@ enum class MainBottomNavItem(
 	Players(
 		icon = Res.drawable.users,
 		route = MainTabRoute.Players(),
+	),
+	Chart(
+		icon = Res.drawable.grid_3x3,
+		route = MainTabRoute.Preflop,
 	),
 	Settings(
 		icon = Res.drawable.settings,

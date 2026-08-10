@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.BaseScaffold
+import com.hand.log.designsystem.component.FadeAnimatedContent
 import com.hand.log.designsystem.component.HandyHorizontalDivider
 import com.hand.log.designsystem.component.HandyTopAppbar
 import com.hand.log.designsystem.component.RegularButton
@@ -28,9 +29,12 @@ import com.hand.log.designsystem.component.TopAppbarType
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
+import com.hand.log.domain.model.preflop.PreflopStack
 import com.hand.log.settings.upgrade.contract.ProUpgradeState
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.crown
+import handylog.core.res.generated.resources.preflop_quiz_title
+import handylog.core.res.generated.resources.preflop_title
 import handylog.core.res.generated.resources.upgrade_title
 import handylog.core.res.generated.resources.upgrade_hero_title
 import handylog.core.res.generated.resources.upgrade_hero_desc
@@ -41,6 +45,8 @@ import handylog.core.res.generated.resources.upgrade_tables
 import handylog.core.res.generated.resources.upgrade_hands
 import handylog.core.res.generated.resources.upgrade_players
 import handylog.core.res.generated.resources.upgrade_presets
+import handylog.core.res.generated.resources.upgrade_preflop_chart_pro
+import handylog.core.res.generated.resources.upgrade_included
 import handylog.core.res.generated.resources.upgrade_free_limit
 import handylog.core.res.generated.resources.upgrade_unlimited
 import handylog.core.res.generated.resources.upgrade_purchase
@@ -50,6 +56,12 @@ import handylog.core.res.generated.resources.upgrade_owned_title
 import handylog.core.res.generated.resources.upgrade_owned_desc
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+
+private data class UpgradeRow(
+	val feature: String,
+	val free: String,
+	val pro: String,
+)
 
 @Composable
 internal fun ProUpgradeScreen(
@@ -76,14 +88,16 @@ internal fun ProUpgradeScreen(
 			) {
 				HeroSection()
 				ComparisonTable()
-				if (state.isPro) {
-					OwnedSection()
-				} else {
-					PurchaseSection(
-						state = state,
-						onPurchase = onPurchase,
-						onRestore = onRestore,
-					)
+				FadeAnimatedContent(state.isPro) { isPro ->
+					if (isPro) {
+						OwnedSection()
+					} else {
+						PurchaseSection(
+							state = state,
+							onPurchase = onPurchase,
+							onRestore = onRestore,
+						)
+					}
 				}
 			}
 		}
@@ -155,14 +169,40 @@ private fun ComparisonTable() {
 			)
 		}
 
-		val features = listOf(
-			Triple(Res.string.upgrade_tables, Res.string.upgrade_free_limit to 2, true),
-			Triple(Res.string.upgrade_hands, Res.string.upgrade_free_limit to 5, true),
-			Triple(Res.string.upgrade_players, Res.string.upgrade_free_limit to 5, true),
-			Triple(Res.string.upgrade_presets, null, true),
+		val rows = listOf(
+			UpgradeRow(
+				feature = stringResource(Res.string.upgrade_tables),
+				free = stringResource(Res.string.upgrade_free_limit, 2),
+				pro = stringResource(Res.string.upgrade_unlimited),
+			),
+			UpgradeRow(
+				feature = stringResource(Res.string.upgrade_hands),
+				free = stringResource(Res.string.upgrade_free_limit, 5),
+				pro = stringResource(Res.string.upgrade_unlimited),
+			),
+			UpgradeRow(
+				feature = stringResource(Res.string.upgrade_players),
+				free = stringResource(Res.string.upgrade_free_limit, 5),
+				pro = stringResource(Res.string.upgrade_unlimited),
+			),
+			UpgradeRow(
+				feature = stringResource(Res.string.upgrade_presets),
+				free = "X",
+				pro = stringResource(Res.string.upgrade_unlimited),
+			),
+			UpgradeRow(
+				feature = stringResource(Res.string.preflop_title),
+				free = PreflopStack.FREE.label,
+				pro = stringResource(Res.string.upgrade_preflop_chart_pro),
+			),
+			UpgradeRow(
+				feature = stringResource(Res.string.preflop_quiz_title),
+				free = "X",
+				pro = stringResource(Res.string.upgrade_included),
+			),
 		)
 
-		features.forEach { (featureRes, freeLimit, _) ->
+		rows.forEach { row ->
 			HandyHorizontalDivider()
 			Row(
 				modifier = Modifier
@@ -171,24 +211,20 @@ private fun ComparisonTable() {
 				verticalAlignment = Alignment.CenterVertically,
 			) {
 				Text(
-					text = stringResource(featureRes),
+					text = row.feature,
 					style = typography.medium14,
 					color = colors.textPrimary,
 					modifier = Modifier.weight(1f),
 				)
 				Text(
-					text = if (freeLimit != null) {
-						stringResource(freeLimit.first, freeLimit.second)
-					} else {
-						"X"
-					},
+					text = row.free,
 					style = typography.regular12,
 					color = colors.textSecondary,
 					textAlign = TextAlign.Center,
 					modifier = Modifier.weight(1f),
 				)
 				Text(
-					text = stringResource(Res.string.upgrade_unlimited),
+					text = row.pro,
 					style = typography.medium12,
 					color = colors.primary,
 					textAlign = TextAlign.Center,

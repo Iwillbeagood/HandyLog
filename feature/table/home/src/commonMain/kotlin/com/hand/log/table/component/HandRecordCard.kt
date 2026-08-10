@@ -168,7 +168,7 @@ private fun formatTimestamp(
 	val dateTime = kotlinx.datetime.Instant.fromEpochMilliseconds(timestamp)
 		.toLocalDateTime(TimeZone.currentSystemDefault())
 	val recordDate = dateTime.date
-	val daysDiff = (recordDate.toEpochDays() - tableDate.toEpochDays()).toInt()
+	val daysDiff = recordDate.toEpochDays() - tableDate.toEpochDays()
 
 	val h = dateTime.hour.toString().padStart(2, '0')
 	val m = dateTime.minute.toString().padStart(2, '0')

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.rememberGraphicsLayer
+import androidx.compose.ui.text.intl.Locale
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.designsystem.component.modal.DefaultDialog
 import com.hand.log.domain.model.Card
@@ -36,6 +37,7 @@ internal fun HandDetailRoute(
 	val mainAction = LocalMainActionInterop.current
 	val shareManager = rememberShareManager()
 	val graphicsLayer = rememberGraphicsLayer()
+	val languageName = languageNameFor(Locale.current.language)
 
 	HandDetailScreen(
 		state = state,
@@ -49,6 +51,7 @@ internal fun HandDetailRoute(
 		onEditHeroHand = viewModel::editHeroHand,
 		onEditShowdownHand = viewModel::editShowdownHand,
 		onMemoClick = viewModel::showMemoEdit,
+		onRequestReview = { viewModel.requestReview(languageName) },
 		graphicsLayer = graphicsLayer,
 	)
 
@@ -175,4 +178,10 @@ private fun HandDetailModalContent(
 			)
 		}
 	}
+}
+
+private fun languageNameFor(language: String): String = when (language) {
+	"ko" -> "한국어"
+	"ja" -> "日本語"
+	else -> "English"
 }
