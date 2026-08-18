@@ -14,7 +14,9 @@ internal object HoldemPromptManager {
 			"당신은 텍사스 홀덤 프리플랍 코치입니다. '정답 액션'은 차트에서 확정된 값이니 바꾸거나 반박하지 말고, 아래 '해설 지시'가 요구하는 초점만 근거를 들어 설명하세요.\n",
 		)
 		append("약한 핸드나 스몰 수딧 커넥터(예: 65s)를 '강하다'고 표현하지 마세요.\n")
-		append("전문 용어는 초보자도 이해하게 풀어 쓰고, 2~3문장 평문으로, 요청된 언어로만, 마크다운·불릿·머리말 없이 답하세요.")
+		append(
+			"장황하게 늘리지 말고 핵심만 간결하게: 전문 용어는 쉽게 풀되 최대 2문장 평문으로, 서론·반복·군더더기 없이, 요청된 언어로만, 마크다운·불릿·머리말 없이 답하세요.",
+		)
 	}
 
 	fun buildUserPrompt(spot: QuizReviewSpot): String = buildString {
@@ -32,15 +34,29 @@ internal object HoldemPromptManager {
 		append("해설 지시: ")
 		append(focusInstruction(spot))
 		if (spot.neighborHint.isNotBlank()) {
-			append(" '주변 핸드 액션'의 실제 차트 액션을 근거로 경계 핸드를 '○○부터 (정답 액션)' 식으로 짚고, 목록에 없는 핸드·액션은 추측하지 마세요.")
+			append(" ")
+			append(boundaryInstruction(spot))
 		}
+	}
+
+	// '주변 핸드 액션'(같은 레인의 실제 차트 액션)을 근거로 경계 핸드를 짚게 한다.
+	// 대응만 틀린 경우엔 '내가 고른 액션'이 실제로 정답이 되는 경계를 알려 준다.
+	private fun boundaryInstruction(spot: QuizReviewSpot): String = when (spot.focus) {
+		QuizReviewFocus.RESPONSE_PLAN ->
+			"'주변 핸드 액션'을 근거로, 내가 고른 '${spot.userAnswerLabel}'이 실제로 정답이 되는 경계 핸드가 어디부터인지" +
+				" 구체적으로 짚어 주세요(예: '${spot.handNotation}보다 강한 ○○ 이상부터 ${spot.userAnswerLabel}, ${spot.handNotation}는 ${spot.correctActionLabel}')." +
+				" 목록에 없는 핸드·액션은 추측하지 마세요."
+		else ->
+			"'주변 핸드 액션'의 실제 차트 액션을 근거로 경계 핸드를 '○○부터 (정답 액션)' 식으로 짚고, 목록에 없는 핸드·액션은 추측하지 마세요."
 	}
 
 	// 스팟에 실제로 해당하는 코칭 지시만 조립한다 — 무관한 규칙을 매 요청에 싣지 않는다.
 	private fun focusInstruction(spot: QuizReviewSpot): String = when (spot.focus) {
 		QuizReviewFocus.RESPONSE_PLAN ->
 			"첫 액션(${spot.primaryActionLabel})은 정답과 같고, 상대의 ${spot.reraiseLabel} 대응만 틀렸습니다. " +
-				"${spot.primaryActionLabel}이 왜 맞는지는 설명하지 말고, 상대의 ${spot.reraiseLabel}이 들어왔을 때 이 핸드가 왜 '${spot.userAnswerLabel}'이 아니라 정답 '${spot.correctActionLabel}'의 대응이어야 하는지, 핸드 에쿼티·팟오즈·상대 ${spot.reraiseLabel} 레인지로 그 차이에만 집중해 설명하세요." +
+				"${spot.primaryActionLabel}이 왜 맞는지와 '에쿼티(승률)' 이야기는 하지 마세요(너무 당연한 내용). " +
+				"내 스택(${spot.stackLabel}) 깊이를 기준으로, '${spot.userAnswerLabel}'과 정답 '${spot.correctActionLabel}'의 차이를 팟오즈·임플라이드 오즈·SPR 로만 설명하세요. " +
+				responsePlanDirection(spot) +
 				allInGuidance(spot)
 		QuizReviewFocus.PRIMARY ->
 			"내 답 '${spot.userAnswerLabel}'과 정답 '${spot.correctActionLabel}'은 첫 액션부터 다릅니다. 내 답이 어떤 핸드에 어울리는지 짚고, 이 핸드는 왜 그 액션이 아니라 정답 액션이 맞는지 대비해 설명하세요. " +
@@ -48,6 +64,14 @@ internal object HoldemPromptManager {
 		QuizReviewFocus.CORRECT ->
 			"정답 액션이 왜 최선인지 설명하세요. " + rangeGuidance(spot.isOpen) + allInGuidance(spot)
 	}
+
+	// 정답이 폴드면 '과하게 방어함', 아니면 '너무 타이트하게 폴드함' — 방향에 맞는 근거만 싣는다.
+	private fun responsePlanDirection(spot: QuizReviewSpot): String =
+		if (spot.correctActionLabel.contains("폴드")) {
+			"스택이 얕을수록 마진 핸드로 ${spot.reraiseLabel}에 콜하면 임플라이드 오즈가 부족해 손해라, 이 스택·핸드에선 폴드가 맞다고(예: '${spot.stackLabel}에선 ${spot.handNotation}로 콜하면 스택이 얕아 임플라이드 오즈가 안 맞는다') 짚어 주세요."
+		} else {
+			"이 핸드는 이 스택에서 ${spot.reraiseLabel}에 '${spot.correctActionLabel}'로 이어갈 만큼 충분해 폴드는 너무 타이트하다고 짚어 주세요."
+		}
 
 	// 오픈이면 상대 레인지가 없고, 대응이면 이미 액션한 상대 레인지와 비교한다 — 스팟에 맞는 한쪽만 싣는다.
 	private fun rangeGuidance(isOpen: Boolean): String = if (isOpen) {
