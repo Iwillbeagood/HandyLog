@@ -15,7 +15,7 @@ internal object HoldemPromptManager {
 		)
 		append("약한 핸드나 스몰 수딧 커넥터(예: 65s)를 '강하다'고 표현하지 마세요.\n")
 		append(
-			"장황하게 늘리지 말고 핵심만 간결하게: 전문 용어는 쉽게 풀되 최대 2문장 평문으로, 서론·반복·군더더기 없이, 요청된 언어로만, 마크다운·불릿·머리말 없이 답하세요.",
+			"장황하게 늘리지 말고 핵심만 간결하게: 최대 2문장 평문으로, 서론·반복·군더더기 없이, 요청된 언어로만, 마크다운·불릿·머리말 없이 답하세요.",
 		)
 	}
 
@@ -68,9 +68,9 @@ internal object HoldemPromptManager {
 	// 정답이 폴드면 '과하게 방어함', 아니면 '너무 타이트하게 폴드함' — 방향에 맞는 근거만 싣는다.
 	private fun responsePlanDirection(spot: QuizReviewSpot): String =
 		if (spot.correctActionLabel.contains("폴드")) {
-			"스택이 얕을수록 마진 핸드로 ${spot.reraiseLabel}에 콜하면 임플라이드 오즈가 부족해 손해라, 이 스택·핸드에선 폴드가 맞다고(예: '${spot.stackLabel}에선 ${spot.handNotation}로 콜하면 스택이 얕아 임플라이드 오즈가 안 맞는다') 짚어 주세요."
+			"스택이 얕을수록 마지널한 핸드로 ${spot.reraiseLabel}에 콜하면 임플라이드 오즈가 부족하고 콜 뒤 SPR 가 낮아져 플랍에서 운신 폭이 좁아 손해라, 이 스택·핸드에선 폴드가 맞다고(예: '${spot.stackLabel}에선 ${spot.handNotation}로 콜하면 SPR 가 낮아 세트를 못 맞히면 곤란하고 임플라이드 오즈도 안 나온다') 짚어 주세요."
 		} else {
-			"이 핸드는 이 스택에서 ${spot.reraiseLabel}에 '${spot.correctActionLabel}'로 이어갈 만큼 충분해 폴드는 너무 타이트하다고 짚어 주세요."
+			"이 핸드는 이 스택에서 ${spot.reraiseLabel}에 '${spot.correctActionLabel}'로 이어갈 만큼 충분하고 콜 뒤 SPR 도 감당돼 폴드는 너무 타이트하다고 짚어 주세요."
 		}
 
 	// 오픈이면 상대 레인지가 없고, 대응이면 이미 액션한 상대 레인지와 비교한다 — 스팟에 맞는 한쪽만 싣는다.
