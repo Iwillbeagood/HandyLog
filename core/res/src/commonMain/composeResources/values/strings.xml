@@ -409,7 +409,7 @@
 	<string name="preflop_action_raise_fold">레이즈/폴드</string>
 	<string name="preflop_action_raise_call">레이즈/콜</string>
 	<string name="preflop_action_raise_4bet">레이즈/4벳</string>
-	<string name="preflop_action_raise_jam">레이즈 올인</string>
+	<string name="preflop_action_raise_jam">레이즈/4벳 올인</string>
 	<string name="preflop_action_3bet">3벳</string>
 	<string name="preflop_action_3bet_bluff">3벳 블러프</string>
 	<string name="preflop_action_3bet_stackoff">3벳/스택오프</string>

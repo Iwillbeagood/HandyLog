@@ -360,7 +360,7 @@ internal class PreflopQuizSessionViewModel(
 		PreflopAction.RAISE_FOLD -> "레이즈/폴드"
 		PreflopAction.RAISE_CALL -> "레이즈/콜"
 		PreflopAction.RAISE_4BET -> "레이즈/4벳"
-		PreflopAction.RAISE_JAM -> "레이즈 올인"
+		PreflopAction.RAISE_JAM -> "레이즈/4벳 올인"
 		PreflopAction.THREE_BET -> "3벳"
 		PreflopAction.THREE_BET_BLUFF -> "3벳 블러프"
 		PreflopAction.THREE_BET_STACKOFF -> "3벳/스택오프"

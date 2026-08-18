@@ -408,7 +408,7 @@
 	<string name="preflop_action_raise_fold">レイズ/フォールド</string>
 	<string name="preflop_action_raise_call">レイズ/コール</string>
 	<string name="preflop_action_raise_4bet">レイズ/4ベット</string>
-	<string name="preflop_action_raise_jam">レイズ オールイン</string>
+	<string name="preflop_action_raise_jam">レイズ/4ベット オールイン</string>
 	<string name="preflop_action_3bet">3ベット</string>
 	<string name="preflop_action_3bet_bluff">3ベット ブラフ</string>
 	<string name="preflop_action_3bet_stackoff">3ベット/スタックオフ</string>
