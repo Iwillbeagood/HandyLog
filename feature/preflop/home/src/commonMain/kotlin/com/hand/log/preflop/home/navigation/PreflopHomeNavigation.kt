@@ -7,15 +7,12 @@ import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.hand.log.navigation.navigation.MainTabRoute
-import com.hand.log.navigation.navigation.tabTransitionMetadata
 import com.hand.log.preflop.home.PreflopHomeRoute
 
 fun EntryProviderScope<NavKey>.preflopHomeNavGraph(
 	paddingValues: PaddingValues,
 ) {
-	entry<MainTabRoute.Preflop>(
-		metadata = tabTransitionMetadata,
-	) {
+	entry<MainTabRoute.Preflop> {
 		Box(
 			modifier = Modifier.padding(paddingValues),
 		) {

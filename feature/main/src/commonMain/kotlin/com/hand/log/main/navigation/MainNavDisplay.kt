@@ -1,8 +1,9 @@
 package com.hand.log.main.navigation
 
-import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
+import com.hand.log.navigation.navigation.MainTabRoute
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
@@ -31,6 +33,11 @@ import com.hand.log.settings.upgrade.navigation.proUpgradeNavGraph
 import com.hand.log.table.navigation.tableNavGraph
 
 private const val SLIDE_DURATION = 450
+private const val TAB_FADE_DURATION = 250
+
+private fun tabCrossfade(): ContentTransform =
+	fadeIn(tween(TAB_FADE_DURATION, easing = FastOutSlowInEasing)) togetherWith
+		fadeOut(tween(TAB_FADE_DURATION, easing = FastOutSlowInEasing))
 
 @Composable
 internal fun MainNavDisplay(
@@ -66,21 +73,34 @@ internal fun MainNavDisplay(
 		onBack = onBack,
 		entryProvider = entryProvider,
 		transitionSpec = {
-			slideInHorizontally(
-				initialOffsetX = { it },
-				animationSpec = tween(SLIDE_DURATION, easing = FastOutSlowInEasing),
-			) togetherWith
-				slideOutHorizontally(
-					targetOffsetX = { (-it * 0.15f).toInt() },
+			if (initialState.key is MainTabRoute && targetState.key is MainTabRoute) {
+				tabCrossfade()
+			} else {
+				slideInHorizontally(
+					initialOffsetX = { it },
 					animationSpec = tween(SLIDE_DURATION, easing = FastOutSlowInEasing),
-				) + fadeOut(animationSpec = tween(SLIDE_DURATION, easing = FastOutSlowInEasing))
+				) togetherWith
+					slideOutHorizontally(
+						targetOffsetX = { (-it * 0.15f).toInt() },
+						animationSpec = tween(SLIDE_DURATION, easing = FastOutSlowInEasing),
+					)
+			}
 		},
 		popTransitionSpec = {
-			EnterTransition.None togetherWith
-				slideOutHorizontally(
-					targetOffsetX = { it },
-					animationSpec = tween(SLIDE_DURATION, easing = FastOutSlowInEasing),
-				)
+			if (initialState.key is MainTabRoute && targetState.key is MainTabRoute) {
+				tabCrossfade()
+			} else {
+				(
+					slideInHorizontally(
+						initialOffsetX = { (-it * 0.15f).toInt() },
+						animationSpec = tween(SLIDE_DURATION, easing = FastOutSlowInEasing),
+					) togetherWith
+						slideOutHorizontally(
+							targetOffsetX = { it },
+							animationSpec = tween(SLIDE_DURATION, easing = FastOutSlowInEasing),
+						)
+					).apply { targetContentZIndex = -1f }
+			}
 		},
 	)
 }
