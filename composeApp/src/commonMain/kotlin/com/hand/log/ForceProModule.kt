@@ -9,8 +9,9 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 
 /**
- * proTest flavor 전용. 스토어 결제 없이 Pro 권한을 항상 활성으로 고정해 유료 기능을 테스트한다.
+ * 스토어 결제 없이 Pro 권한을 항상 활성으로 고정해 유료 기능을 테스트하는 모듈.
  * [ProEntitlementRepository] 바인딩을 오버라이드하므로 실제 BillingDataSource 는 사용되지 않는다.
+ * Android 는 proTest flavor, iOS 는 디버그 바이너리에서 적용한다.
  */
 val forceProModule: Module = module {
 	single<ProEntitlementRepository> { ForceProEntitlementRepository() }
