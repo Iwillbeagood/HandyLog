@@ -22,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.FadeAnimatedContent
+import com.hand.log.designsystem.component.HandyHorizontalDivider
+import com.hand.log.designsystem.component.RegularButton
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
@@ -50,98 +52,106 @@ internal fun QuestionContent(
 
 	val villainAction = villainActionLabel(question.scenario)
 
-	Column(
-		modifier = Modifier
-			.fillMaxSize()
-			.padding(16.dp),
-		verticalArrangement = Arrangement.spacedBy(16.dp),
-	) {
-		Box(
+	Column(modifier = Modifier.fillMaxSize()) {
+		Column(
 			modifier = Modifier
+				.weight(1f)
 				.fillMaxWidth()
-				.height(4.dp)
-				.clip(RoundedCornerShape(2.dp))
-				.background(colors.muted),
+				.padding(16.dp),
+			verticalArrangement = Arrangement.spacedBy(16.dp),
 		) {
 			Box(
 				modifier = Modifier
-					.fillMaxWidth(state.progress)
+					.fillMaxWidth()
 					.height(4.dp)
 					.clip(RoundedCornerShape(2.dp))
-					.background(colors.primary),
+					.background(colors.muted),
+			) {
+				Box(
+					modifier = Modifier
+						.fillMaxWidth(state.progress)
+						.height(4.dp)
+						.clip(RoundedCornerShape(2.dp))
+						.background(colors.primary),
+				)
+			}
+			Text(
+				text = stringResource(Res.string.quiz_progress, state.index + 1, state.total),
+				style = HandyTheme.typography.medium12,
+				color = colors.textSecondary,
 			)
-		}
-		Text(
-			text = stringResource(Res.string.quiz_progress, state.index + 1, state.total),
-			style = HandyTheme.typography.medium12,
-			color = colors.textSecondary,
-		)
 
-		SpotChip(question.stack.label)
+			SpotChip(question.stack.label)
 
-		QuizPokerTable(
-			hero = question.hero,
-			villain = question.villain,
-			villainAction = villainAction,
-			heroAction = heroActionLabel(question.scenario),
-			hand = question.hand,
-			villainColor = colors.error,
-		)
+			Text(
+				text = situationDescription(question),
+				style = HandyTheme.typography.regular14,
+				color = colors.textSecondary,
+				modifier = Modifier.fillMaxWidth(),
+			)
 
-		FadeAnimatedContent(targetState = state.pendingPrimary) { pending ->
-			if (pending == null) {
-				AnswerStep(
-					prompt = stringResource(Res.string.quiz_prompt),
-					options = question.options,
-					label = { answerText(it) },
-					onSelect = onPrimarySelect,
-				)
-			} else {
-				AnswerStep(
-					prompt = stringResource(planPromptRes(pending)),
-					options = question.planOptions,
-					label = { planText(it) },
-					onSelect = onPlanSelect,
-				)
+			QuizPokerTable(
+				hero = question.hero,
+				villain = question.villain,
+				villainAction = villainAction,
+				heroAction = heroActionLabel(question.scenario),
+				hand = question.hand,
+				villainColor = colors.error,
+			)
+
+			FadeAnimatedContent(targetState = state.pendingPrimary) { pending ->
+				if (pending == null) {
+					AnswerStep(
+						prompt = stringResource(Res.string.quiz_prompt),
+						options = question.options,
+						label = { answerText(it) },
+						onSelect = onPrimarySelect,
+					)
+				} else {
+					AnswerStep(
+						prompt = stringResource(planPromptRes(pending)),
+						options = question.planOptions,
+						label = { planText(it) },
+						onSelect = onPlanSelect,
+					)
+				}
 			}
 		}
 
-		Spacer(modifier = Modifier.weight(1f))
-
-		Row(
-			modifier = Modifier.fillMaxWidth(),
-			horizontalArrangement = Arrangement.SpaceBetween,
-		) {
-			NavTextButton(
-				text = stringResource(Res.string.quiz_prev_question),
-				enabled = state.canGoPrevious,
-				onClick = onPrevious,
-			)
-			NavTextButton(
-				text = stringResource(Res.string.quiz_skip),
-				enabled = true,
-				onClick = onSkip,
-			)
+		Column(modifier = Modifier.fillMaxWidth().background(colors.card)) {
+			HandyHorizontalDivider()
+			Row(
+				modifier = Modifier
+					.fillMaxWidth()
+					.padding(horizontal = 16.dp, vertical = 8.dp),
+				horizontalArrangement = Arrangement.spacedBy(8.dp),
+			) {
+				FadeAnimatedContent(state.canGoPrevious, modifier = Modifier.weight(1f)) { canPrev ->
+					if (canPrev) {
+						RegularButton(
+							onClick = onPrevious,
+							text = stringResource(Res.string.quiz_prev_question),
+							textStyle = HandyTheme.typography.bold14,
+							containerColor = colors.muted,
+							contentColor = colors.textPrimary,
+							borderStroke = 10.dp,
+							verticalPadding = 10.dp,
+						)
+					} else {
+						Spacer(Modifier.fillMaxWidth())
+					}
+				}
+				RegularButton(
+					onClick = onSkip,
+					modifier = Modifier.weight(1f),
+					text = stringResource(Res.string.quiz_skip),
+					textStyle = HandyTheme.typography.bold14,
+					borderStroke = 10.dp,
+					verticalPadding = 10.dp,
+				)
+			}
 		}
 	}
-}
-
-@Composable
-private fun NavTextButton(
-	text: String,
-	enabled: Boolean,
-	onClick: () -> Unit,
-) {
-	val colors = HandyTheme.colorScheme
-	Text(
-		text = text,
-		style = HandyTheme.typography.bold14,
-		color = if (enabled) colors.textSecondary else colors.textSecondary.copy(alpha = 0.4f),
-		modifier = Modifier
-			.clip(RoundedCornerShape(8.dp))
-			.clickable(enabled = enabled, onClick = onClick)
-			.padding(horizontal = 12.dp, vertical = 8.dp),
-	)
 }
 
 @OptIn(ExperimentalLayoutApi::class)

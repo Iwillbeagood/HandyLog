@@ -363,6 +363,10 @@
 	<string name="quiz_type_mixed_title">종합 퀴즈</string>
 	<string name="quiz_type_mixed_desc">오픈·vs 오픈·vs 3벳을 섞어 출제</string>
 	<string name="quiz_prompt">당신의 액션은?</string>
+	<string name="quiz_situation_rfi">HERO(%1$s) open</string>
+	<string name="quiz_situation_facing_rfi">%1$s open → HERO(%2$s)</string>
+	<string name="quiz_situation_vs_3bet">HERO(%1$s) open → %2$s 3bet</string>
+	<string name="quiz_situation_vs_limp">%1$s limp → HERO(%2$s)</string>
 	<string name="quiz_answer_plan_format">%1$s → %2$s</string>
 	<string name="quiz_plan_prompt_vs_3bet">3벳을 당하면 어떻게 대응할까요?</string>
 	<string name="quiz_plan_prompt_vs_4bet">4벳을 당하면 어떻게 대응할까요?</string>

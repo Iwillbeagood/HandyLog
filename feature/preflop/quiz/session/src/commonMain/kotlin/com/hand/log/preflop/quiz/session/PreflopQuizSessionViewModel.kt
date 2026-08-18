@@ -12,6 +12,7 @@ import com.hand.log.domain.model.preflop.PreflopHand
 import com.hand.log.domain.model.preflop.PreflopScenario
 import com.hand.log.domain.model.preflop.QuizRecord
 import com.hand.log.domain.model.preflop.QuizRecordQuestion
+import com.hand.log.domain.model.preflop.QuizReviewFocus
 import com.hand.log.domain.model.preflop.QuizReviewSpot
 import com.hand.log.platform.etc.Logger
 import com.hand.log.preflop.quiz.common.PreflopQuizQuestion
@@ -237,6 +238,12 @@ internal class PreflopQuizSessionViewModel(
 
 	fun onReviewNext() = moveReview(1)
 
+	fun onSelectReview(index: Int) {
+		val s = _state.value
+		if (index < 0 || index >= s.reviewTotal || index == s.reviewIndex) return
+		_state.update { it.copy(reviewIndex = index, reviewStatus = ReviewStatus.IDLE, reviewText = "") }
+	}
+
 	/** 리뷰를 끝내고 결과 화면으로 돌아간다. */
 	fun onExitReview() {
 		_state.update { it.copy(phase = QuizPhase.RESULT) }
@@ -264,6 +271,7 @@ internal class PreflopQuizSessionViewModel(
 		val requestedIndex = s.reviewIndex
 		_state.update { it.copy(reviewStatus = ReviewStatus.LOADING) }
 
+		val focus = reviewFocus(question.correct, userAnswer)
 		viewModelScope.launch {
 			val spot = QuizReviewSpot(
 				stackLabel = question.stack.label,
@@ -272,8 +280,19 @@ internal class PreflopQuizSessionViewModel(
 				handNotation = question.hand.notation,
 				correctActionLabel = actionLabel(question.correct),
 				userAnswerLabel = userAnswer?.let { actionLabel(it) } ?: "건너뜀",
-				isCorrect = userAnswer == question.correct,
+				focus = focus,
+				isOpen = question.scenario == PreflopScenario.RFI,
 				languageName = languageName,
+				primaryActionLabel = if (focus == QuizReviewFocus.RESPONSE_PLAN) {
+					actionLabel(question.correct.primaryAction())
+				} else {
+					""
+				},
+				reraiseLabel = if (focus == QuizReviewFocus.RESPONSE_PLAN) {
+					reraiseLabel(question.correct.primaryAction())
+				} else {
+					""
+				},
 				neighborHint = neighborHint(question),
 			)
 			val result = runCatching { aiReviewRepository.reviewQuizSpot(spot) }
@@ -287,6 +306,25 @@ internal class PreflopQuizSessionViewModel(
 				)
 			}
 		}
+	}
+
+	/**
+	 * 오답이 정답과 어디서 갈렸는지 판정한다. 첫 액션(오픈/3벳)은 맞고 리레이즈 대응만 다르면
+	 * [QuizReviewFocus.RESPONSE_PLAN] — 해설이 대응 차이에만 집중하도록 한다.
+	 */
+	private fun reviewFocus(correct: PreflopAction, userAnswer: PreflopAction?): QuizReviewFocus = when {
+		userAnswer == correct -> QuizReviewFocus.CORRECT
+		userAnswer != null &&
+			correct.hasResponsePlan() &&
+			userAnswer.primaryAction() == correct.primaryAction() -> QuizReviewFocus.RESPONSE_PLAN
+		else -> QuizReviewFocus.PRIMARY
+	}
+
+	// 첫 액션 기준 상대의 리레이즈 라벨: 오픈이면 3벳, 3벳이면 4벳.
+	private fun reraiseLabel(primary: PreflopAction): String = when (primary) {
+		PreflopAction.RAISE -> "3벳"
+		PreflopAction.THREE_BET -> "4벳"
+		else -> "리레이즈"
 	}
 
 	private fun neighborHint(question: PreflopQuizQuestion): String {
