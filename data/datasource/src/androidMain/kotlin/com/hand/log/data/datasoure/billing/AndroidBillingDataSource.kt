@@ -21,7 +21,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
 /**
- * Google Play Billing 7 기반 서버리스 인앱 결제 구현.
+ * Google Play Billing 9 기반 서버리스 인앱 결제 구현.
  * 비소모성(one-time) 상품을 결제 후 acknowledge 하고, 소유 여부는 [queryPurchasesAsync]로 복원한다.
  */
 internal class AndroidBillingDataSource(
@@ -86,8 +86,8 @@ internal class AndroidBillingDataSource(
 			)
 			.build()
 		return suspendCancellableCoroutine { cont ->
-			billingClient.queryProductDetailsAsync(params) { _, productDetailsList ->
-				if (cont.isActive) cont.resume(productDetailsList.firstOrNull())
+			billingClient.queryProductDetailsAsync(params) { _, result ->
+				if (cont.isActive) cont.resume(result.productDetailsList.firstOrNull())
 			}
 		}
 	}

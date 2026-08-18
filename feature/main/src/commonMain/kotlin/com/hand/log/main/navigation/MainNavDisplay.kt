@@ -1,14 +1,14 @@
 package com.hand.log.main.navigation
 
-import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -31,6 +31,22 @@ import com.hand.log.settings.upgrade.navigation.proUpgradeNavGraph
 import com.hand.log.table.navigation.tableNavGraph
 
 private const val SLIDE_DURATION = 450
+
+private fun slideTween() = tween<IntOffset>(SLIDE_DURATION, easing = FastOutSlowInEasing)
+
+// 앞으로 진입: 새 화면이 오른쪽에서 들어오고 이전 화면은 살짝 왼쪽으로 밀린다.
+private fun slideForward(): ContentTransform =
+	slideInHorizontally(initialOffsetX = { it }, animationSpec = slideTween()) togetherWith
+		slideOutHorizontally(targetOffsetX = { (-it * 0.15f).toInt() }, animationSpec = slideTween())
+
+// 뒤로가기(버튼·제스처 공통): 현재 화면이 오른쪽으로 빠지고 이전 화면이 왼쪽에서 되돌아온다.
+private fun slideBack(): ContentTransform =
+	(
+		slideInHorizontally(initialOffsetX = {
+			(-it * 0.15f).toInt()
+		}, animationSpec = slideTween()) togetherWith
+			slideOutHorizontally(targetOffsetX = { it }, animationSpec = slideTween())
+		).apply { targetContentZIndex = -1f }
 
 @Composable
 internal fun MainNavDisplay(
@@ -65,22 +81,9 @@ internal fun MainNavDisplay(
 		backStack = backStack,
 		onBack = onBack,
 		entryProvider = entryProvider,
-		transitionSpec = {
-			slideInHorizontally(
-				initialOffsetX = { it },
-				animationSpec = tween(SLIDE_DURATION, easing = FastOutSlowInEasing),
-			) togetherWith
-				slideOutHorizontally(
-					targetOffsetX = { (-it * 0.15f).toInt() },
-					animationSpec = tween(SLIDE_DURATION, easing = FastOutSlowInEasing),
-				) + fadeOut(animationSpec = tween(SLIDE_DURATION, easing = FastOutSlowInEasing))
-		},
-		popTransitionSpec = {
-			EnterTransition.None togetherWith
-				slideOutHorizontally(
-					targetOffsetX = { it },
-					animationSpec = tween(SLIDE_DURATION, easing = FastOutSlowInEasing),
-				)
-		},
+		transitionSpec = { slideForward() },
+		popTransitionSpec = { slideBack() },
+		// 시스템 뒤로가기(예측 back) 제스처도 기본 scaleOut(중앙 축소) 대신 pop 과 동일한 slide 로 맞춘다.
+		predictivePopTransitionSpec = { slideBack() },
 	)
 }

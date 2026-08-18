@@ -40,6 +40,7 @@ internal fun PreflopQuizSessionRoute(
 		onStartReview = viewModel::onStartReview,
 		onReviewPrev = viewModel::onReviewPrev,
 		onReviewNext = viewModel::onReviewNext,
+		onSelectReview = viewModel::onSelectReview,
 		onExitReview = viewModel::onExitReview,
 		onRequestReview = { viewModel.onRequestReview(languageName) },
 	)

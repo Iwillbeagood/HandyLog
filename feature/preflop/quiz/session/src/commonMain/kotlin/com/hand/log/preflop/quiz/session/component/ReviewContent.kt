@@ -1,8 +1,6 @@
 package com.hand.log.preflop.quiz.session.component
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +14,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.FadeAnimatedContent
 import com.hand.log.designsystem.component.HandyHorizontalDivider
+import com.hand.log.designsystem.component.RegularButton
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
@@ -51,7 +49,6 @@ import handylog.core.res.generated.resources.quiz_review_skipped
 import handylog.core.res.generated.resources.quiz_review_title
 import handylog.core.res.generated.resources.quiz_review_your_answer
 import handylog.core.res.generated.resources.quiz_view_chart
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -59,6 +56,7 @@ internal fun ReviewContent(
 	state: PreflopQuizSessionState,
 	onReviewPrev: () -> Unit,
 	onReviewNext: () -> Unit,
+	onSelectReview: (Int) -> Unit,
 	onExitReview: () -> Unit,
 	onRequestReview: () -> Unit,
 	onViewChart: (PreflopStack, PreflopScenario, Position, Position?) -> Unit,
@@ -71,6 +69,12 @@ internal fun ReviewContent(
 	val villainAction = villainActionLabel(question.scenario)
 
 	Column(modifier = Modifier.fillMaxSize()) {
+		ReviewSelector(
+			questions = state.reviewQuestions,
+			selectedIndex = state.reviewIndex,
+			onSelect = onSelectReview,
+		)
+		HandyHorizontalDivider()
 		Column(
 			modifier = Modifier
 				.weight(1f)
@@ -147,10 +151,15 @@ internal fun ReviewContent(
 				)
 			}
 
-			ChartButton(
+			RegularButton(
 				onClick = {
 					onViewChart(question.stack, question.scenario, question.hero, question.villain)
 				},
+				text = stringResource(Res.string.quiz_view_chart),
+				textStyle = HandyTheme.typography.bold14,
+				outlined = true,
+				leadingIcon = Res.drawable.grid_3x3,
+				borderStroke = 10.dp,
 			)
 		}
 
@@ -164,21 +173,15 @@ internal fun ReviewContent(
 			) {
 				FadeAnimatedContent(state.canReviewPrev, modifier = Modifier.weight(1f)) { canPrev ->
 					if (canPrev) {
-						Box(
-							modifier = Modifier
-								.fillMaxWidth()
-								.clip(RoundedCornerShape(10.dp))
-								.background(colors.muted)
-								.clickable(onClick = onReviewPrev)
-								.padding(vertical = 10.dp),
-							contentAlignment = Alignment.Center,
-						) {
-							Text(
-								text = stringResource(Res.string.quiz_review_prev),
-								style = HandyTheme.typography.bold14,
-								color = colors.textPrimary,
-							)
-						}
+						RegularButton(
+							onClick = onReviewPrev,
+							text = stringResource(Res.string.quiz_review_prev),
+							textStyle = HandyTheme.typography.bold14,
+							containerColor = colors.muted,
+							contentColor = colors.textPrimary,
+							borderStroke = 10.dp,
+							verticalPadding = 10.dp,
+						)
 					} else {
 						Spacer(Modifier.fillMaxWidth())
 					}
@@ -187,23 +190,15 @@ internal fun ReviewContent(
 					state.hasNextReview,
 					modifier = Modifier.weight(1f),
 				) { hasNext ->
-					Box(
-						modifier = Modifier
-							.fillMaxWidth()
-							.clip(RoundedCornerShape(10.dp))
-							.background(colors.primary)
-							.clickable(onClick = if (hasNext) onReviewNext else onExitReview)
-							.padding(vertical = 10.dp),
-						contentAlignment = Alignment.Center,
-					) {
-						Text(
-							text = stringResource(
-								if (hasNext) Res.string.quiz_review_next else Res.string.quiz_review_exit,
-							),
-							style = HandyTheme.typography.bold14,
-							color = colors.onPrimary,
-						)
-					}
+					RegularButton(
+						onClick = if (hasNext) onReviewNext else onExitReview,
+						text = stringResource(
+							if (hasNext) Res.string.quiz_review_next else Res.string.quiz_review_exit,
+						),
+						textStyle = HandyTheme.typography.bold14,
+						borderStroke = 10.dp,
+						verticalPadding = 10.dp,
+					)
 				}
 			}
 		}
@@ -267,59 +262,14 @@ private fun ReviewSection(
 				textAlign = TextAlign.Center,
 				modifier = Modifier.fillMaxWidth(),
 			)
-			ReviewCtaButton(
-				text = stringResource(Res.string.quiz_review_cta),
+			RegularButton(
 				onClick = onRequestReview,
+				text = stringResource(Res.string.quiz_review_cta),
+				textStyle = HandyTheme.typography.bold14,
+				outlined = true,
+				borderStroke = 10.dp,
 			)
 		}
-	}
-}
-
-/** 리뷰 중인 스팟을 프리플랍 차트에서 여는 버튼. */
-@Composable
-private fun ChartButton(onClick: () -> Unit) {
-	val colors = HandyTheme.colorScheme
-	Row(
-		modifier = Modifier
-			.fillMaxWidth()
-			.clip(RoundedCornerShape(10.dp))
-			.border(1.dp, colors.primary, RoundedCornerShape(10.dp))
-			.clickable(onClick = onClick)
-			.padding(vertical = 12.dp),
-		horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
-		verticalAlignment = Alignment.CenterVertically,
-	) {
-		Icon(
-			painter = painterResource(Res.drawable.grid_3x3),
-			contentDescription = null,
-			tint = colors.primary,
-			modifier = Modifier.size(18.dp),
-		)
-		Text(
-			text = stringResource(Res.string.quiz_view_chart),
-			style = HandyTheme.typography.bold14,
-			color = colors.primary,
-		)
-	}
-}
-
-@Composable
-private fun ReviewCtaButton(text: String, onClick: () -> Unit) {
-	val colors = HandyTheme.colorScheme
-	Box(
-		modifier = Modifier
-			.fillMaxWidth()
-			.clip(RoundedCornerShape(10.dp))
-			.border(1.dp, colors.primary, RoundedCornerShape(10.dp))
-			.clickable(onClick = onClick)
-			.padding(vertical = 12.dp),
-		contentAlignment = Alignment.Center,
-	) {
-		Text(
-			text = text,
-			style = HandyTheme.typography.bold14,
-			color = colors.primary,
-		)
 	}
 }
 
@@ -337,6 +287,7 @@ private fun ReviewContentPreview() {
 				),
 				onReviewPrev = {},
 				onReviewNext = {},
+				onSelectReview = {},
 				onExitReview = {},
 				onRequestReview = {},
 				onViewChart = { _, _, _, _ -> },

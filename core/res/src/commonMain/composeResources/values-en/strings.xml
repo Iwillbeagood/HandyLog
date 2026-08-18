@@ -362,6 +362,10 @@
 	<string name="quiz_type_mixed_title">Mixed Quiz</string>
 	<string name="quiz_type_mixed_desc">A mix of open, vs open, and vs 3-bet</string>
 	<string name="quiz_prompt">What is your action?</string>
+	<string name="quiz_situation_rfi">HERO(%1$s) open</string>
+	<string name="quiz_situation_facing_rfi">%1$s open → HERO(%2$s)</string>
+	<string name="quiz_situation_vs_3bet">HERO(%1$s) open → %2$s 3bet</string>
+	<string name="quiz_situation_vs_limp">%1$s limp → HERO(%2$s)</string>
 	<string name="quiz_answer_plan_format">%1$s → %2$s</string>
 	<string name="quiz_plan_prompt_vs_3bet">If you get 3-bet, how do you respond?</string>
 	<string name="quiz_plan_prompt_vs_4bet">If you get 4-bet, how do you respond?</string>
@@ -404,7 +408,7 @@
 	<string name="preflop_action_raise_fold">Raise/Fold</string>
 	<string name="preflop_action_raise_call">Raise/Call</string>
 	<string name="preflop_action_raise_4bet">Raise/4-Bet</string>
-	<string name="preflop_action_raise_jam">Raise/Jam</string>
+	<string name="preflop_action_raise_jam">Raise/4-Bet Jam</string>
 	<string name="preflop_action_3bet">3-Bet</string>
 	<string name="preflop_action_3bet_bluff">3-Bet (Bluff)</string>
 	<string name="preflop_action_3bet_stackoff">3-Bet/Stack-off</string>

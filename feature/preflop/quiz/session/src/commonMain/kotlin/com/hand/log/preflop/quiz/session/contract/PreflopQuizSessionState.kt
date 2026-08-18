@@ -37,6 +37,10 @@ internal data class PreflopQuizSessionState(
 
 	val reviewTotal: Int get() = reviewQuestionIndices.size
 
+	/** 리뷰 대상 문제들 — 상단 선택 카드에서 순서대로 노출. */
+	val reviewQuestions: List<PreflopQuizQuestion>
+		get() = reviewQuestionIndices.map { questions[it] }
+
 	val reviewQuestion: PreflopQuizQuestion?
 		get() = reviewQuestionIndices.getOrNull(reviewIndex)?.let { questions[it] }
 

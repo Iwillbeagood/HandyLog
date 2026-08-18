@@ -41,6 +41,7 @@ internal fun PreflopQuizSessionScreen(
 	onStartReview: () -> Unit,
 	onReviewPrev: () -> Unit,
 	onReviewNext: () -> Unit,
+	onSelectReview: (Int) -> Unit,
 	onExitReview: () -> Unit,
 	onRequestReview: () -> Unit,
 ) {
@@ -76,6 +77,7 @@ internal fun PreflopQuizSessionScreen(
 				state = state,
 				onReviewPrev = onReviewPrev,
 				onReviewNext = onReviewNext,
+				onSelectReview = onSelectReview,
 				onExitReview = onExitReview,
 				onRequestReview = onRequestReview,
 				onViewChart = onViewChart,
@@ -113,6 +115,7 @@ private fun PreflopQuizSessionPlayingPreview() {
 			onStartReview = {},
 			onReviewPrev = {},
 			onReviewNext = {},
+			onSelectReview = {},
 			onExitReview = {},
 			onRequestReview = {},
 		)
@@ -148,6 +151,7 @@ private fun PreflopQuizSessionResultPreview() {
 			onStartReview = {},
 			onReviewPrev = {},
 			onReviewNext = {},
+			onSelectReview = {},
 			onExitReview = {},
 			onRequestReview = {},
 		)
@@ -175,6 +179,7 @@ private fun PreflopQuizSessionReviewPreview() {
 			onStartReview = {},
 			onReviewPrev = {},
 			onReviewNext = {},
+			onSelectReview = {},
 			onExitReview = {},
 			onRequestReview = {},
 		)

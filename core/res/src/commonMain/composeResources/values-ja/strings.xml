@@ -362,6 +362,10 @@
 	<string name="quiz_type_mixed_title">総合クイズ</string>
 	<string name="quiz_type_mixed_desc">オープン・vs オープン・vs 3ベットを混ぜて出題</string>
 	<string name="quiz_prompt">あなたのアクションは？</string>
+	<string name="quiz_situation_rfi">HERO(%1$s) open</string>
+	<string name="quiz_situation_facing_rfi">%1$s open → HERO(%2$s)</string>
+	<string name="quiz_situation_vs_3bet">HERO(%1$s) open → %2$s 3bet</string>
+	<string name="quiz_situation_vs_limp">%1$s limp → HERO(%2$s)</string>
 	<string name="quiz_answer_plan_format">%1$s → %2$s</string>
 	<string name="quiz_plan_prompt_vs_3bet">3ベットされたらどう対応しますか？</string>
 	<string name="quiz_plan_prompt_vs_4bet">4ベットされたらどう対応しますか？</string>
@@ -404,7 +408,7 @@
 	<string name="preflop_action_raise_fold">レイズ/フォールド</string>
 	<string name="preflop_action_raise_call">レイズ/コール</string>
 	<string name="preflop_action_raise_4bet">レイズ/4ベット</string>
-	<string name="preflop_action_raise_jam">レイズ オールイン</string>
+	<string name="preflop_action_raise_jam">レイズ/4ベット オールイン</string>
 	<string name="preflop_action_3bet">3ベット</string>
 	<string name="preflop_action_3bet_bluff">3ベット ブラフ</string>
 	<string name="preflop_action_3bet_stackoff">3ベット/スタックオフ</string>

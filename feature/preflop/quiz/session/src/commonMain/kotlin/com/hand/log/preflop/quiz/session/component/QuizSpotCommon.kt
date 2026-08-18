@@ -37,6 +37,10 @@ import handylog.core.res.generated.resources.preflop_action_3bet
 import handylog.core.res.generated.resources.preflop_action_limp
 import handylog.core.res.generated.resources.preflop_action_raise
 import handylog.core.res.generated.resources.quiz_answer_plan_format
+import handylog.core.res.generated.resources.quiz_situation_facing_rfi
+import handylog.core.res.generated.resources.quiz_situation_rfi
+import handylog.core.res.generated.resources.quiz_situation_vs_3bet
+import handylog.core.res.generated.resources.quiz_situation_vs_limp
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -95,6 +99,19 @@ internal fun answerReviewText(action: PreflopAction): String =
 	} else {
 		stringResource(action.answerLabelRes())
 	}
+
+/** 문제 상황을 압축 포커 표기로 — 예: `HERO(UTG+1) open`, `CO open → HERO(BTN)`. 테이블 시각 표현을 텍스트로 보완. */
+@Composable
+internal fun situationDescription(question: PreflopQuizQuestion): String {
+	val hero = question.hero.label
+	val villain = question.villain?.label ?: ""
+	return when (question.scenario) {
+		PreflopScenario.RFI -> stringResource(Res.string.quiz_situation_rfi, hero)
+		PreflopScenario.FACING_RFI -> stringResource(Res.string.quiz_situation_facing_rfi, villain, hero)
+		PreflopScenario.VS_3BET -> stringResource(Res.string.quiz_situation_vs_3bet, hero, villain)
+		PreflopScenario.VS_LIMP -> stringResource(Res.string.quiz_situation_vs_limp, villain, hero)
+	}
+}
 
 /** 빌런(레이저/림퍼)이 취한 액션 라벨. RFI 는 앞 액션이 없어 null. */
 @Composable
