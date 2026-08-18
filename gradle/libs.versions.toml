@@ -11,7 +11,7 @@ room = "2.8.0"
 sqlite = "2.6.0"
 googleService = "4.4.3"
 ksp = "2.3.2"
-billing = "7.1.1"
+billing = "9.1.0"
 
 ## Jetpack Compose Multiplatform Navigation 3
 multiplatform-nav3-ui = "1.0.0-alpha05"
