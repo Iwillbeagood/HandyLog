@@ -1,18 +1,21 @@
 name: Release (Play Store + App Store)
 
+# 버전·태그는 플랫폼별로 독립: Android=composeApp/build.gradle.kts versionName → android-v<ver>,
+# iOS=iosApp/iosApp/Info.plist CFBundleShortVersionString → ios-v<ver>. 두 버전은 따로 올린다.
+#
 # 트리거 2가지:
-#   1) main push        : versionName 이 올라가면(=태그 없음) android+ios 자동 배포
+#   1) main push        : 한 플랫폼 버전이 올라가면(=해당 태그 없음) 그 플랫폼만 자동 배포
 #   2) workflow_dispatch : Actions 탭에서 수동 실행. 플랫폼 선택 + 태그 무시(강제 재배포) 가능
 #                          → 한쪽 플랫폼만 실패했을 때 그 플랫폼만 골라 재실행하는 용도
 #
 # 잡 구성:
-#   prepare  : versionName 읽기, 배포 여부(should_release)·플랫폼(run_android/run_ios) 판정
+#   prepare  : 플랫폼별 버전 읽기 + 자기 태그 존재 여부로 run_android/run_ios 판정
 #   android  : 서명 AAB 빌드 → Google Play internal 업로드
 #   ios      : 서명 아카이브 → App Store Connect(TestFlight) 업로드
-#   finalize : 실행된 잡이 실패 없이 하나라도 성공하면 v<versionName> 태그(없을 때만) + GitHub Release
+#   finalize : 성공한 플랫폼만 android-v<ver>/ios-v<ver> 태그(없을 때만) + GitHub Release
 #
-# 태그는 finalize 에서만, 그것도 없을 때만 생성한다. 어느 플랫폼이 실패하면 태그가 안 생겨
-# 재실행 시 다시 배포를 시도할 수 있다(부분 실패가 태그로 가려지지 않음).
+# 태그는 finalize 에서만, 그것도 없을 때만 생성한다. 한 플랫폼이 실패하면 그 태그가 안 생겨
+# 재실행 시 그 플랫폼만 다시 배포할 수 있다(부분 실패가 태그로 가려지지 않음).
 #
 # 필요한 Repository Secrets:
 #   [Android]
@@ -53,8 +56,10 @@ jobs:
   prepare:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version.outputs.version }}
-      tag: ${{ steps.version.outputs.tag }}
+      android_version: ${{ steps.version.outputs.android_version }}
+      ios_version: ${{ steps.version.outputs.ios_version }}
+      android_tag: ${{ steps.version.outputs.android_tag }}
+      ios_tag: ${{ steps.version.outputs.ios_tag }}
       should_release: ${{ steps.gate.outputs.should_release }}
       run_android: ${{ steps.gate.outputs.run_android }}
       run_ios: ${{ steps.gate.outputs.run_ios }}
@@ -64,17 +69,25 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Read version
+      - name: Read versions
         id: version
         run: |
-          VERSION=$(grep -E 'versionName = "' composeApp/build.gradle.kts | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
-          if [ -z "$VERSION" ]; then
-            echo "::error::versionName 을 composeApp/build.gradle.kts 에서 찾지 못했습니다."
+          ANDROID_VERSION=$(grep -E 'versionName = "' composeApp/build.gradle.kts | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+          # Info.plist 는 XML 텍스트라 ubuntu 에서도 grep 으로 읽는다(plutil 은 macOS 전용).
+          IOS_VERSION=$(grep -A1 'CFBundleShortVersionString' iosApp/iosApp/Info.plist | grep -oE '<string>[^<]+</string>' | head -1 | sed -E 's/<\/?string>//g')
+          if [ -z "$ANDROID_VERSION" ]; then
+            echo "::error::Android versionName 을 composeApp/build.gradle.kts 에서 찾지 못했습니다."
             exit 1
           fi
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
-          echo "resolved version: v$VERSION"
+          if [ -z "$IOS_VERSION" ]; then
+            echo "::error::iOS 버전을 iosApp/iosApp/Info.plist(CFBundleShortVersionString)에서 찾지 못했습니다."
+            exit 1
+          fi
+          echo "android_version=$ANDROID_VERSION" >> "$GITHUB_OUTPUT"
+          echo "ios_version=$IOS_VERSION" >> "$GITHUB_OUTPUT"
+          echo "android_tag=android-v$ANDROID_VERSION" >> "$GITHUB_OUTPUT"
+          echo "ios_tag=ios-v$IOS_VERSION" >> "$GITHUB_OUTPUT"
+          echo "resolved: android-v$ANDROID_VERSION / ios-v$IOS_VERSION"
 
       - name: Resolve release gate
         id: gate
@@ -82,32 +95,39 @@ jobs:
           # workflow_dispatch 입력(수동 실행). push 이벤트에서는 비어 있으므로 기본값으로 대체한다.
           INPUT_PLATFORM: ${{ github.event.inputs.platform }}
           INPUT_SKIP_TAG: ${{ github.event.inputs.skip_tag_check }}
+          ANDROID_TAG: ${{ steps.version.outputs.android_tag }}
+          IOS_TAG: ${{ steps.version.outputs.ios_tag }}
         run: |
           PLATFORM="${INPUT_PLATFORM:-both}"
           SKIP_TAG="${INPUT_SKIP_TAG:-false}"
 
-          # 배포 여부: 강제 실행이거나, 태그가 아직 없으면 배포한다.
-          if [ "$SKIP_TAG" = "true" ]; then
-            SHOULD=true
-            echo "::notice::skip_tag_check=true — 태그 존재 여부와 무관하게 강제 실행합니다."
-          elif git rev-parse "refs/tags/${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
-            SHOULD=false
-            echo "::notice::${{ steps.version.outputs.tag }} 태그가 이미 존재합니다 — 릴리스를 건너뜁니다.(강제하려면 skip_tag_check=true)"
-          else
-            SHOULD=true
-          fi
+          # 선택된 플랫폼이면서 (강제 실행이거나 자기 태그가 아직 없으면) 배포한다.
+          gate() {
+            local selected="$1" tag="$2"
+            if [ "$selected" != "true" ]; then echo false; return; fi
+            if [ "$SKIP_TAG" = "true" ]; then echo true; return; fi
+            if git rev-parse "refs/tags/$tag" >/dev/null 2>&1; then
+              echo "::notice::$tag 태그가 이미 존재 — 건너뜀(강제하려면 skip_tag_check=true)" 1>&2
+              echo false
+            else
+              echo true
+            fi
+          }
 
           case "$PLATFORM" in
-            both)    RUN_ANDROID=true;  RUN_IOS=true ;;
-            android) RUN_ANDROID=true;  RUN_IOS=false ;;
-            ios)     RUN_ANDROID=false; RUN_IOS=true ;;
-            *)       RUN_ANDROID=true;  RUN_IOS=true ;;
+            android) SEL_A=true;  SEL_I=false ;;
+            ios)     SEL_A=false; SEL_I=true ;;
+            *)       SEL_A=true;  SEL_I=true ;;
           esac
+
+          RUN_ANDROID=$(gate "$SEL_A" "$ANDROID_TAG")
+          RUN_IOS=$(gate "$SEL_I" "$IOS_TAG")
+          if [ "$RUN_ANDROID" = "true" ] || [ "$RUN_IOS" = "true" ]; then SHOULD=true; else SHOULD=false; fi
 
           echo "should_release=$SHOULD" >> "$GITHUB_OUTPUT"
           echo "run_android=$RUN_ANDROID" >> "$GITHUB_OUTPUT"
           echo "run_ios=$RUN_IOS" >> "$GITHUB_OUTPUT"
-          echo "should_release=$SHOULD platform=$PLATFORM (android=$RUN_ANDROID ios=$RUN_IOS)"
+          echo "platform=$PLATFORM should=$SHOULD (android=$RUN_ANDROID ios=$RUN_IOS)"
 
   android:
     needs: prepare
@@ -249,9 +269,9 @@ jobs:
       - name: Set version & build number
         run: |
           BUILD_NUMBER=$((100 + ${{ github.run_number }}))
-          plutil -replace CFBundleShortVersionString -string "${{ needs.prepare.outputs.version }}" iosApp/iosApp/Info.plist
+          plutil -replace CFBundleShortVersionString -string "${{ needs.prepare.outputs.ios_version }}" iosApp/iosApp/Info.plist
           plutil -replace CFBundleVersion -string "$BUILD_NUMBER" iosApp/iosApp/Info.plist
-          echo "version=${{ needs.prepare.outputs.version }} build=$BUILD_NUMBER"
+          echo "version=${{ needs.prepare.outputs.ios_version }} build=$BUILD_NUMBER"
 
       - name: Archive
         run: |
@@ -324,23 +344,42 @@ jobs:
           name: release-aab
           path: dist
 
-      - name: Create and push tag (only if absent)
+      - name: Create and push platform tags (only if absent)
+        env:
+          ANDROID_OK: ${{ needs.android.result == 'success' }}
+          IOS_OK: ${{ needs.ios.result == 'success' }}
+          ANDROID_TAG: ${{ needs.prepare.outputs.android_tag }}
+          IOS_TAG: ${{ needs.prepare.outputs.ios_tag }}
         run: |
-          TAG="${{ needs.prepare.outputs.tag }}"
-          if git rev-parse "refs/tags/$TAG" >/dev/null 2>&1; then
-            echo "::notice::$TAG 태그가 이미 존재 — 태그 생성을 건너뜁니다."
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git tag -a "$TAG" -m "Release $TAG"
-            git push origin "$TAG"
-          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          create_tag() {
+            local tag="$1"
+            if git rev-parse "refs/tags/$tag" >/dev/null 2>&1; then
+              echo "::notice::$tag 태그가 이미 존재 — 태그 생성을 건너뜁니다."
+            else
+              git tag -a "$tag" -m "Release $tag"
+              git push origin "$tag"
+              echo "created $tag"
+            fi
+          }
+          if [ "$ANDROID_OK" = "true" ]; then create_tag "$ANDROID_TAG"; fi
+          if [ "$IOS_OK" = "true" ]; then create_tag "$IOS_TAG"; fi
 
-      - name: Create/Update GitHub Release
+      - name: Create/Update GitHub Release (Android)
+        if: needs.android.result == 'success'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.prepare.outputs.tag }}
-          name: ${{ needs.prepare.outputs.tag }}
+          tag_name: ${{ needs.prepare.outputs.android_tag }}
+          name: ${{ needs.prepare.outputs.android_tag }}
           generate_release_notes: true
           files: dist/*.aab
           fail_on_unmatched_files: false
+
+      - name: Create/Update GitHub Release (iOS)
+        if: needs.ios.result == 'success'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare.outputs.ios_tag }}
+          name: ${{ needs.prepare.outputs.ios_tag }}
+          generate_release_notes: true
