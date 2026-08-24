@@ -1,29 +1,26 @@
 name: Release (Play Store + App Store)
 
-# main 에 릴리스가 머지되면(versionName 이 올라가면) 실행:
-#   prepare  : versionName 을 읽고, v<versionName> 태그 존재 여부로 배포 여부(should_release) 판정
-#   android  : 서명 AAB 빌드 → Google Play internal 트랙 업로드
-#   ios      : 서명 아카이브 → App Store Connect(TestFlight) 업로드
-#   finalize : android·ios 가 모두 성공하면 v<versionName> 태그 + GitHub Release 생성
+# 트리거 2가지:
+#   1) main push        : versionName 이 올라가면(=태그 없음) android+ios 자동 배포
+#   2) workflow_dispatch : Actions 탭에서 수동 실행. 플랫폼 선택 + 태그 무시(강제 재배포) 가능
+#                          → 한쪽 플랫폼만 실패했을 때 그 플랫폼만 골라 재실행하는 용도
 #
-# 태그는 finalize 에서만 생성하므로, 어느 한 플랫폼이라도 실패하면 태그가 안 생겨
-# 재실행 시 다시 배포를 시도한다(부분 실패가 태그로 가려지지 않음).
+# 잡 구성:
+#   prepare  : versionName 읽기, 배포 여부(should_release)·플랫폼(run_android/run_ios) 판정
+#   android  : 서명 AAB 빌드 → Google Play internal 업로드
+#   ios      : 서명 아카이브 → App Store Connect(TestFlight) 업로드
+#   finalize : 실행된 잡이 실패 없이 하나라도 성공하면 v<versionName> 태그(없을 때만) + GitHub Release
+#
+# 태그는 finalize 에서만, 그것도 없을 때만 생성한다. 어느 플랫폼이 실패하면 태그가 안 생겨
+# 재실행 시 다시 배포를 시도할 수 있다(부분 실패가 태그로 가려지지 않음).
 #
 # 필요한 Repository Secrets:
 #   [Android]
-#   KEYSTORE_BASE64            - .signing/release.jks 를 base64 인코딩한 값
-#   KEYSTORE_STORE_PASSWORD    - keystore store 비밀번호
-#   KEYSTORE_KEY_ALIAS         - key alias
-#   KEYSTORE_KEY_PASSWORD      - key 비밀번호
-#   GOOGLE_SERVICES_JSON       - composeApp/google-services.json 을 base64 인코딩한 값
-#   PLAY_SERVICE_ACCOUNT_JSON  - Play Console 업로드용 서비스 계정 JSON(원문)
+#   KEYSTORE_BASE64 / KEYSTORE_STORE_PASSWORD / KEYSTORE_KEY_ALIAS / KEYSTORE_KEY_PASSWORD
+#   GOOGLE_SERVICES_JSON / PLAY_SERVICE_ACCOUNT_JSON
 #   [iOS]
-#   IOS_DIST_CERT_BASE64       - 배포용(Apple Distribution) .p12 를 base64 인코딩한 값
-#   IOS_DIST_CERT_PASSWORD     - 배포용 .p12 export 비밀번호
-#   IOS_PROVISION_PROFILE_BASE64 - App Store 프로비저닝 프로파일(.mobileprovision) base64
-#   ASC_KEY_ID                 - App Store Connect API Key ID
-#   ASC_ISSUER_ID              - App Store Connect API Issuer ID
-#   ASC_PRIVATE_KEY            - App Store Connect API Key(.p8) 파일 원문
+#   IOS_DIST_CERT_BASE64 / IOS_DIST_CERT_PASSWORD / IOS_PROVISION_PROFILE_BASE64
+#   ASC_KEY_ID / ASC_ISSUER_ID / ASC_PRIVATE_KEY
 #   [공통 - BuildKonfig(local.properties)]
 #   OPENAI_API_KEY / NOTION_TOKEN / SLACK_WEBHOOK_URL
 
@@ -31,6 +28,19 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      platform:
+        description: '배포할 플랫폼'
+        type: choice
+        options:
+          - both
+          - android
+          - ios
+        default: both
+      skip_tag_check:
+        description: '태그가 이미 있어도 강제 실행(재배포)'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -45,7 +55,9 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       tag: ${{ steps.version.outputs.tag }}
-      should_release: ${{ steps.tagcheck.outputs.should_release }}
+      should_release: ${{ steps.gate.outputs.should_release }}
+      run_android: ${{ steps.gate.outputs.run_android }}
+      run_ios: ${{ steps.gate.outputs.run_ios }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -64,19 +76,42 @@ jobs:
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
           echo "resolved version: v$VERSION"
 
-      - name: Check tag exists
-        id: tagcheck
+      - name: Resolve release gate
+        id: gate
+        env:
+          # workflow_dispatch 입력(수동 실행). push 이벤트에서는 비어 있으므로 기본값으로 대체한다.
+          INPUT_PLATFORM: ${{ github.event.inputs.platform }}
+          INPUT_SKIP_TAG: ${{ github.event.inputs.skip_tag_check }}
         run: |
-          if git rev-parse "refs/tags/${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
-            echo "should_release=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::${{ steps.version.outputs.tag }} 태그가 이미 존재합니다 — 릴리스를 건너뜁니다."
+          PLATFORM="${INPUT_PLATFORM:-both}"
+          SKIP_TAG="${INPUT_SKIP_TAG:-false}"
+
+          # 배포 여부: 강제 실행이거나, 태그가 아직 없으면 배포한다.
+          if [ "$SKIP_TAG" = "true" ]; then
+            SHOULD=true
+            echo "::notice::skip_tag_check=true — 태그 존재 여부와 무관하게 강제 실행합니다."
+          elif git rev-parse "refs/tags/${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            SHOULD=false
+            echo "::notice::${{ steps.version.outputs.tag }} 태그가 이미 존재합니다 — 릴리스를 건너뜁니다.(강제하려면 skip_tag_check=true)"
           else
-            echo "should_release=true" >> "$GITHUB_OUTPUT"
+            SHOULD=true
           fi
+
+          case "$PLATFORM" in
+            both)    RUN_ANDROID=true;  RUN_IOS=true ;;
+            android) RUN_ANDROID=true;  RUN_IOS=false ;;
+            ios)     RUN_ANDROID=false; RUN_IOS=true ;;
+            *)       RUN_ANDROID=true;  RUN_IOS=true ;;
+          esac
+
+          echo "should_release=$SHOULD" >> "$GITHUB_OUTPUT"
+          echo "run_android=$RUN_ANDROID" >> "$GITHUB_OUTPUT"
+          echo "run_ios=$RUN_IOS" >> "$GITHUB_OUTPUT"
+          echo "should_release=$SHOULD platform=$PLATFORM (android=$RUN_ANDROID ios=$RUN_IOS)"
 
   android:
     needs: prepare
-    if: needs.prepare.outputs.should_release == 'true'
+    if: needs.prepare.outputs.should_release == 'true' && needs.prepare.outputs.run_android == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -161,7 +196,7 @@ jobs:
 
   ios:
     needs: prepare
-    if: needs.prepare.outputs.should_release == 'true'
+    if: needs.prepare.outputs.should_release == 'true' && needs.prepare.outputs.run_ios == 'true'
     runs-on: macos-14
     env:
       TEAM_ID: MU353C72QX
@@ -266,7 +301,14 @@ jobs:
 
   finalize:
     needs: [prepare, android, ios]
-    if: needs.prepare.outputs.should_release == 'true'
+    # 실행된 잡 중 실패가 하나도 없고, 최소 하나는 성공했을 때만 태그/릴리스를 만든다.
+    # (선택 안 된 플랫폼 잡은 skipped 이며 실패로 치지 않는다.)
+    if: >
+      always() &&
+      needs.prepare.outputs.should_release == 'true' &&
+      needs.android.result != 'failure' &&
+      needs.ios.result != 'failure' &&
+      (needs.android.result == 'success' || needs.ios.result == 'success')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -275,22 +317,30 @@ jobs:
           fetch-depth: 0
 
       - name: Download AAB artifact
+        if: needs.android.result == 'success'
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: release-aab
           path: dist
 
-      - name: Create and push tag
+      - name: Create and push tag (only if absent)
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "${{ needs.prepare.outputs.tag }}" -m "Release ${{ needs.prepare.outputs.tag }}"
-          git push origin "${{ needs.prepare.outputs.tag }}"
+          TAG="${{ needs.prepare.outputs.tag }}"
+          if git rev-parse "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "::notice::$TAG 태그가 이미 존재 — 태그 생성을 건너뜁니다."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag -a "$TAG" -m "Release $TAG"
+            git push origin "$TAG"
+          fi
 
-      - name: Create GitHub Release
+      - name: Create/Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.prepare.outputs.tag }}
           name: ${{ needs.prepare.outputs.tag }}
           generate_release_notes: true
           files: dist/*.aab
+          fail_on_unmatched_files: false
