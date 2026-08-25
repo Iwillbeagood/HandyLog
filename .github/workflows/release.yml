@@ -231,6 +231,14 @@ jobs:
         with:
           xcode-version: latest-stable
 
+      # Kotlin/Native 컴파일러·플랫폼 의존성(~/.konan)은 setup-gradle 캐시(~/.gradle)에 안 들어가 매번 재다운로드된다.
+      - name: Cache Kotlin/Native (konan)
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-konan-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-konan-
+
       - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
