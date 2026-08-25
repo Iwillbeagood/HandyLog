@@ -2,15 +2,12 @@ package com.hand.log
 
 import androidx.compose.ui.window.ComposeUIViewController
 import org.koin.compose.KoinApplication
-import kotlin.experimental.ExperimentalNativeApi
-import kotlin.native.Platform
 
-@OptIn(ExperimentalNativeApi::class)
 fun mainViewController() = ComposeUIViewController {
 	KoinApplication(
 		application = handLogAppDeclaration {
-			// 디버그 바이너리에서만 Pro 권한을 강제로 켜 유료 기능을 테스트한다. 릴리스는 영향 없음.
-			if (Platform.isDebugBinary) modules(forceProModule)
+			// iOS는 App Store 선불 유료 앱이라 설치자 전원이 이미 결제한 상태 → Pro 권한을 항상 켠다(앱 내 구매·페이월 없음).
+			modules(forceProModule)
 		},
 	) {
 		App()
