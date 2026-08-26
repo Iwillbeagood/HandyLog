@@ -25,6 +25,7 @@ import com.hand.log.home.di.featureHomeModule
 import com.hand.log.local.datastore.di.dataStoreDataSourceModule
 import com.hand.log.local.datastore.di.dataStoreModule
 import com.hand.log.main.MainScreen
+import com.hand.log.main.di.featureMainModule
 import com.hand.log.designsystem.etc.LocalProStatus
 import com.hand.log.navigation.interop.LocalMainActionInterop
 import com.hand.log.navigation.interop.MainActionInterop
@@ -110,6 +111,7 @@ internal val appModule = module {
 		billingModule,
 	)
 	includes(
+		featureMainModule,
 		featureHomeModule,
 		featurePreflopHomeModule,
 		featurePreflopChartModule,
