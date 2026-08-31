@@ -1,0 +1,399 @@
+name: Release (Play Store + App Store)
+
+# 버전·태그는 플랫폼별로 독립: Android=composeApp/build.gradle.kts versionName → android-v<ver>,
+# iOS=iosApp/iosApp/Info.plist CFBundleShortVersionString → ios-v<ver>. 두 버전은 따로 올린다.
+#
+# 트리거 2가지:
+#   1) main push        : 한 플랫폼 버전이 올라가면(=해당 태그 없음) 그 플랫폼만 자동 배포
+#   2) workflow_dispatch : Actions 탭에서 수동 실행. 플랫폼 선택 + 태그 무시(강제 재배포) 가능
+#                          → 한쪽 플랫폼만 실패했을 때 그 플랫폼만 골라 재실행하는 용도
+#
+# 잡 구성:
+#   prepare  : 플랫폼별 버전 읽기 + 자기 태그 존재 여부로 run_android/run_ios 판정
+#   android  : 서명 AAB 빌드 → Google Play internal 업로드
+#   ios      : 서명 아카이브 → App Store Connect(TestFlight) 업로드
+#   finalize : 성공한 플랫폼만 android-v<ver>/ios-v<ver> 태그(없을 때만) + GitHub Release
+#
+# 태그는 finalize 에서만, 그것도 없을 때만 생성한다. 한 플랫폼이 실패하면 그 태그가 안 생겨
+# 재실행 시 그 플랫폼만 다시 배포할 수 있다(부분 실패가 태그로 가려지지 않음).
+#
+# 필요한 Repository Secrets:
+#   [Android]
+#   KEYSTORE_BASE64 / KEYSTORE_STORE_PASSWORD / KEYSTORE_KEY_ALIAS / KEYSTORE_KEY_PASSWORD
+#   GOOGLE_SERVICES_JSON / PLAY_SERVICE_ACCOUNT_JSON
+#   [iOS]
+#   IOS_DIST_CERT_BASE64 / IOS_DIST_CERT_PASSWORD / IOS_PROVISION_PROFILE_BASE64
+#   ASC_KEY_ID / ASC_ISSUER_ID / ASC_PRIVATE_KEY
+#   [공통 - BuildKonfig(local.properties)]
+#   OPENAI_API_KEY / NOTION_TOKEN / SLACK_WEBHOOK_URL
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: '배포할 플랫폼'
+        type: choice
+        options:
+          - both
+          - android
+          - ios
+        default: both
+      skip_tag_check:
+        description: '태그가 이미 있어도 강제 실행(재배포)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      android_version: ${{ steps.version.outputs.android_version }}
+      ios_version: ${{ steps.version.outputs.ios_version }}
+      android_tag: ${{ steps.version.outputs.android_tag }}
+      ios_tag: ${{ steps.version.outputs.ios_tag }}
+      should_release: ${{ steps.gate.outputs.should_release }}
+      run_android: ${{ steps.gate.outputs.run_android }}
+      run_ios: ${{ steps.gate.outputs.run_ios }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Read versions
+        id: version
+        run: |
+          ANDROID_VERSION=$(grep -E 'versionName = "' composeApp/build.gradle.kts | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+          # Info.plist 는 XML 텍스트라 ubuntu 에서도 grep 으로 읽는다(plutil 은 macOS 전용).
+          IOS_VERSION=$(grep -A1 'CFBundleShortVersionString' iosApp/iosApp/Info.plist | grep -oE '<string>[^<]+</string>' | head -1 | sed -E 's/<\/?string>//g')
+          if [ -z "$ANDROID_VERSION" ]; then
+            echo "::error::Android versionName 을 composeApp/build.gradle.kts 에서 찾지 못했습니다."
+            exit 1
+          fi
+          if [ -z "$IOS_VERSION" ]; then
+            echo "::error::iOS 버전을 iosApp/iosApp/Info.plist(CFBundleShortVersionString)에서 찾지 못했습니다."
+            exit 1
+          fi
+          echo "android_version=$ANDROID_VERSION" >> "$GITHUB_OUTPUT"
+          echo "ios_version=$IOS_VERSION" >> "$GITHUB_OUTPUT"
+          echo "android_tag=android-v$ANDROID_VERSION" >> "$GITHUB_OUTPUT"
+          echo "ios_tag=ios-v$IOS_VERSION" >> "$GITHUB_OUTPUT"
+          echo "resolved: android-v$ANDROID_VERSION / ios-v$IOS_VERSION"
+
+      - name: Resolve release gate
+        id: gate
+        env:
+          # workflow_dispatch 입력(수동 실행). push 이벤트에서는 비어 있으므로 기본값으로 대체한다.
+          INPUT_PLATFORM: ${{ github.event.inputs.platform }}
+          INPUT_SKIP_TAG: ${{ github.event.inputs.skip_tag_check }}
+          ANDROID_TAG: ${{ steps.version.outputs.android_tag }}
+          IOS_TAG: ${{ steps.version.outputs.ios_tag }}
+        run: |
+          PLATFORM="${INPUT_PLATFORM:-both}"
+          SKIP_TAG="${INPUT_SKIP_TAG:-false}"
+
+          # 선택된 플랫폼이면서 (강제 실행이거나 자기 태그가 아직 없으면) 배포한다.
+          gate() {
+            local selected="$1" tag="$2"
+            if [ "$selected" != "true" ]; then echo false; return; fi
+            if [ "$SKIP_TAG" = "true" ]; then echo true; return; fi
+            if git rev-parse "refs/tags/$tag" >/dev/null 2>&1; then
+              echo "::notice::$tag 태그가 이미 존재 — 건너뜀(강제하려면 skip_tag_check=true)" 1>&2
+              echo false
+            else
+              echo true
+            fi
+          }
+
+          case "$PLATFORM" in
+            android) SEL_A=true;  SEL_I=false ;;
+            ios)     SEL_A=false; SEL_I=true ;;
+            *)       SEL_A=true;  SEL_I=true ;;
+          esac
+
+          RUN_ANDROID=$(gate "$SEL_A" "$ANDROID_TAG")
+          RUN_IOS=$(gate "$SEL_I" "$IOS_TAG")
+          if [ "$RUN_ANDROID" = "true" ] || [ "$RUN_IOS" = "true" ]; then SHOULD=true; else SHOULD=false; fi
+
+          echo "should_release=$SHOULD" >> "$GITHUB_OUTPUT"
+          echo "run_android=$RUN_ANDROID" >> "$GITHUB_OUTPUT"
+          echo "run_ios=$RUN_IOS" >> "$GITHUB_OUTPUT"
+          echo "platform=$PLATFORM should=$SHOULD (android=$RUN_ANDROID ios=$RUN_IOS)"
+
+  android:
+    needs: prepare
+    if: needs.prepare.outputs.should_release == 'true' && needs.prepare.outputs.run_android == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Decode signing & Firebase secrets
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          KEYSTORE_STORE_PASSWORD: ${{ secrets.KEYSTORE_STORE_PASSWORD }}
+          KEYSTORE_KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
+          KEYSTORE_KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          mkdir -p .signing
+          echo "$KEYSTORE_BASE64" | base64 --decode > .signing/release.jks
+          echo "$GOOGLE_SERVICES_JSON" | base64 --decode > composeApp/google-services.json
+          {
+            echo "storeFile=.signing/release.jks"
+            echo "storePassword=$KEYSTORE_STORE_PASSWORD"
+            echo "keyAlias=$KEYSTORE_KEY_ALIAS"
+            echo "keyPassword=$KEYSTORE_KEY_PASSWORD"
+          } > keystore.properties
+          {
+            echo "openai.key=$OPENAI_API_KEY"
+            echo "notion.token=$NOTION_TOKEN"
+            echo "slack.webhook=$SLACK_WEBHOOK_URL"
+          } > local.properties
+
+      - name: Build signed release bundle
+        # versionCode = 100 + CI run number.
+        # 로컬 UI 수동 업로드로 사용한 versionCode(최대 10)보다 항상 높게 유지하기 위해 base 를 100 으로 둔다.
+        # run_number 는 main push 마다 증가하므로 값이 건너뛸 수 있으나, 단조 증가만 하면 Play 는 문제없음.
+        run: |
+          VERSION_CODE=$((100 + ${{ github.run_number }}))
+          echo "versionCode=$VERSION_CODE"
+          ./gradlew :composeApp:bundleNormalRelease -PversionCode="$VERSION_CODE" --no-daemon --stacktrace
+
+      - name: Locate AAB
+        id: aab
+        run: |
+          AAB=$(find composeApp/build/outputs/bundle/normalRelease -name "*.aab" | head -1)
+          if [ -z "$AAB" ]; then
+            echo "::error::생성된 AAB 를 찾지 못했습니다."
+            exit 1
+          fi
+          echo "path=$AAB" >> "$GITHUB_OUTPUT"
+          echo "AAB: $AAB"
+
+      - name: Upload to Google Play (internal)
+        # Google Play Developer API 는 간헐적으로 503(Service Unavailable) 을 반환한다.
+        # wretry 로 업로드 액션을 감싸 최대 5회(60초 간격) 재시도한다.
+        uses: Wandalen/wretry.action@v3
+        with:
+          action: r0adkll/upload-google-play@v1
+          with: |
+            serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+            packageName: com.hand.log
+            releaseFiles: ${{ steps.aab.outputs.path }}
+            tracks: internal
+            status: completed
+          attempt_limit: 5
+          attempt_delay: 60000
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-aab
+          path: ${{ steps.aab.outputs.path }}
+          retention-days: 7
+
+  ios:
+    needs: prepare
+    if: needs.prepare.outputs.should_release == 'true' && needs.prepare.outputs.run_ios == 'true'
+    # Apple 이 iOS 26 SDK(Xcode 26) 이상으로 빌드한 바이너리만 업로드 허용 → macos-15 러너 + Xcode 26 선택.
+    runs-on: macos-15
+    env:
+      TEAM_ID: MU353C72QX
+      BUNDLE_ID: com.hand.log
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Select Xcode 26
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      # Kotlin/Native 컴파일러·플랫폼 의존성(~/.konan)은 setup-gradle 캐시(~/.gradle)에 안 들어가 매번 재다운로드된다.
+      - name: Cache Kotlin/Native (konan)
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-konan-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-konan-
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Write local.properties (BuildKonfig)
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          {
+            echo "openai.key=$OPENAI_API_KEY"
+            echo "notion.token=$NOTION_TOKEN"
+            echo "slack.webhook=$SLACK_WEBHOOK_URL"
+          } > local.properties
+
+      - name: Import distribution certificate
+        uses: apple-actions/import-codesign-certs@v3
+        with:
+          p12-file-base64: ${{ secrets.IOS_DIST_CERT_BASE64 }}
+          p12-password: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+
+      - name: Install provisioning profile
+        id: profile
+        env:
+          IOS_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
+        run: |
+          PP_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          mkdir -p "$PP_DIR"
+          echo "$IOS_PROVISION_PROFILE_BASE64" | base64 --decode > /tmp/pp.mobileprovision
+          UUID=$(security cms -D -i /tmp/pp.mobileprovision | plutil -extract UUID raw -)
+          NAME=$(security cms -D -i /tmp/pp.mobileprovision | plutil -extract Name raw -)
+          cp /tmp/pp.mobileprovision "$PP_DIR/$UUID.mobileprovision"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "installed profile: $NAME ($UUID)"
+
+      - name: Set version & build number
+        run: |
+          BUILD_NUMBER=$((100 + ${{ github.run_number }}))
+          plutil -replace CFBundleShortVersionString -string "${{ needs.prepare.outputs.ios_version }}" iosApp/iosApp/Info.plist
+          plutil -replace CFBundleVersion -string "$BUILD_NUMBER" iosApp/iosApp/Info.plist
+          echo "version=${{ needs.prepare.outputs.ios_version }} build=$BUILD_NUMBER"
+
+      - name: Archive
+        run: |
+          xcodebuild \
+            -project iosApp/iosApp.xcodeproj \
+            -scheme iosApp \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/iosApp.xcarchive" \
+            clean archive \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="${{ steps.profile.outputs.name }}"
+
+      - name: Export IPA
+        run: |
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store</string>
+            <key>teamID</key><string>$TEAM_ID</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>$BUNDLE_ID</key><string>${{ steps.profile.outputs.name }}</string>
+            </dict>
+            <key>stripSwiftSymbols</key><true/>
+            <key>uploadSymbols</key><true/>
+          </dict>
+          </plist>
+          EOF
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/iosApp.xcarchive" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist"
+
+      - name: Upload to TestFlight
+        uses: apple-actions/upload-testflight-build@v3
+        with:
+          app-path: ${{ runner.temp }}/export/iosApp.ipa
+          issuer-id: ${{ secrets.ASC_ISSUER_ID }}
+          api-key-id: ${{ secrets.ASC_KEY_ID }}
+          api-private-key: ${{ secrets.ASC_PRIVATE_KEY }}
+
+  finalize:
+    needs: [prepare, android, ios]
+    # 실행된 잡 중 실패가 하나도 없고, 최소 하나는 성공했을 때만 태그/릴리스를 만든다.
+    # (선택 안 된 플랫폼 잡은 skipped 이며 실패로 치지 않는다.)
+    if: >
+      always() &&
+      needs.prepare.outputs.should_release == 'true' &&
+      needs.android.result != 'failure' &&
+      needs.ios.result != 'failure' &&
+      (needs.android.result == 'success' || needs.ios.result == 'success')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Download AAB artifact
+        if: needs.android.result == 'success'
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: release-aab
+          path: dist
+
+      - name: Create and push platform tags (only if absent)
+        env:
+          ANDROID_OK: ${{ needs.android.result == 'success' }}
+          IOS_OK: ${{ needs.ios.result == 'success' }}
+          ANDROID_TAG: ${{ needs.prepare.outputs.android_tag }}
+          IOS_TAG: ${{ needs.prepare.outputs.ios_tag }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          create_tag() {
+            local tag="$1"
+            if git rev-parse "refs/tags/$tag" >/dev/null 2>&1; then
+              echo "::notice::$tag 태그가 이미 존재 — 태그 생성을 건너뜁니다."
+            else
+              git tag -a "$tag" -m "Release $tag"
+              git push origin "$tag"
+              echo "created $tag"
+            fi
+          }
+          if [ "$ANDROID_OK" = "true" ]; then create_tag "$ANDROID_TAG"; fi
+          if [ "$IOS_OK" = "true" ]; then create_tag "$IOS_TAG"; fi
+
+      - name: Create/Update GitHub Release (Android)
+        if: needs.android.result == 'success'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare.outputs.android_tag }}
+          name: ${{ needs.prepare.outputs.android_tag }}
+          generate_release_notes: true
+          files: dist/*.aab
+          fail_on_unmatched_files: false
+
+      - name: Create/Update GitHub Release (iOS)
+        if: needs.ios.result == 'success'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare.outputs.ios_tag }}
+          name: ${{ needs.prepare.outputs.ios_tag }}
+          generate_release_notes: true

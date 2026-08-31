@@ -3,6 +3,7 @@ package com.hand.log.settings.main
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hand.log.common.isIos
 import com.hand.log.designsystem.etc.LocalProStatus
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.settings.main.contract.SettingsModalEffect
@@ -20,6 +21,7 @@ internal fun SettingsRoute(
 	SettingsScreen(
 		settings = settings,
 		isPro = isPro,
+		showPlanSection = !isIos,
 		onThemeChange = viewModel::updateTheme,
 		onNavigateToBetSize = {
 			if (isPro) {

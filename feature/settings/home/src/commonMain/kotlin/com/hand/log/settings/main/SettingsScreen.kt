@@ -49,6 +49,7 @@ import handylog.core.res.generated.resources.*
 internal fun SettingsScreen(
 	settings: AppSettings,
 	isPro: Boolean,
+	showPlanSection: Boolean,
 	onThemeChange: (ThemeMode) -> Unit,
 	onNavigateToBetSize: () -> Unit,
 	onPlanClick: () -> Unit,
@@ -73,11 +74,13 @@ internal fun SettingsScreen(
 					.padding(horizontal = 16.dp, vertical = 20.dp),
 				verticalArrangement = Arrangement.spacedBy(24.dp),
 			) {
-				// 플랜 섹션
-				PlanSection(
-					isPro = isPro,
-					onPlanClick = onPlanClick,
-				)
+				// 플랜 섹션 — iOS 선불 유료 앱에는 플랜 개념이 없어 노출하지 않는다.
+				if (showPlanSection) {
+					PlanSection(
+						isPro = isPro,
+						onPlanClick = onPlanClick,
+					)
+				}
 
 				// 테마 섹션
 				ThemeSection(
@@ -262,6 +265,7 @@ private fun SettingsScreenPreview() {
 		SettingsScreen(
 			settings = AppSettings(),
 			isPro = false,
+			showPlanSection = true,
 			onThemeChange = {},
 			onNavigateToBetSize = {},
 			onPlanClick = {},
