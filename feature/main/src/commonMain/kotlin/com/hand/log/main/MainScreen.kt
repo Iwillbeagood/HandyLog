@@ -1,68 +1,89 @@
 package com.hand.log.main
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hand.log.designsystem.window.LocalWindowSize
+import com.hand.log.designsystem.window.ProvideWindowSize
 import com.hand.log.main.navigation.MainBottomBar
 import com.hand.log.main.navigation.MainBottomNavItem
 import com.hand.log.main.navigation.MainNavDisplay
+import com.hand.log.main.navigation.MainNavRail
 import com.hand.log.main.navigation.MainNavigator
+import com.hand.log.main.navigation.MainUiState
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.navigation.navigation.MainTabRoute
-import com.hand.log.navigation.navigation.PlayerHands
-import com.hand.log.navigation.navigation.RouteStack
 import kotlinx.collections.immutable.toPersistentList
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun MainScreen() {
-	val navigator = remember { MainNavigator() }
-	val routeStack by navigator.routeStack.collectAsStateWithLifecycle()
+	val navigator: MainNavigator = koinViewModel()
+	val uiState by navigator.uiState.collectAsStateWithLifecycle()
 
 	CompositionLocalProvider(
 		LocalNavigateActionInterop provides navigator.navigateActionInterop,
 	) {
-		MainScreenContent(
-			routeStack = routeStack,
-			onTabSelected = navigator::navigateTab,
-			onBack = navigator::goBack,
-		)
+		ProvideWindowSize {
+			MainScreenContent(
+				uiState = uiState,
+				onTabSelected = navigator::navigateTab,
+				onBack = navigator::goBack,
+			)
+		}
 	}
 }
 
 @Composable
 private fun MainScreenContent(
-	routeStack: RouteStack,
+	uiState: MainUiState,
 	onTabSelected: (MainTabRoute) -> Unit,
 	onBack: () -> Unit,
 ) {
-	Scaffold(
-		contentWindowInsets = WindowInsets(),
-		bottomBar = {
-			val showBottomBar = routeStack.current is MainTabRoute ||
-				routeStack.current is PlayerHands
-			val currentItem = MainBottomNavItem.entries.find { it.route == routeStack.current }
-				?: when (routeStack.current) {
-					is MainTabRoute.Players -> MainBottomNavItem.Players
-					is PlayerHands -> MainBottomNavItem.Players
-					else -> null
-				}
-			MainBottomBar(
-				visible = showBottomBar,
-				bottomItems = MainBottomNavItem.entries.toPersistentList(),
-				currentItem = currentItem,
+	if (LocalWindowSize.current.isLarge) {
+		Row(modifier = Modifier.fillMaxSize()) {
+			MainNavRail(
+				visible = uiState.showBottomBar,
+				railItems = MainBottomNavItem.entries.toPersistentList(),
+				currentItem = uiState.currentBottomItem,
 				onItemClick = onTabSelected,
 			)
-		},
-		content = { paddingValues ->
-			MainNavDisplay(
-				paddingValues = paddingValues,
-				backStack = routeStack.backStack,
-				onBack = onBack,
-			)
-		},
-	)
+			Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
+				MainNavDisplay(
+					paddingValues = WindowInsets.navigationBars.asPaddingValues(),
+					backStack = uiState.backStack,
+					onBack = onBack,
+				)
+			}
+		}
+	} else {
+		Scaffold(
+			contentWindowInsets = WindowInsets(),
+			bottomBar = {
+				MainBottomBar(
+					visible = uiState.showBottomBar,
+					bottomItems = MainBottomNavItem.entries.toPersistentList(),
+					currentItem = uiState.currentBottomItem,
+					onItemClick = onTabSelected,
+				)
+			},
+			content = { paddingValues ->
+				MainNavDisplay(
+					paddingValues = paddingValues,
+					backStack = uiState.backStack,
+					onBack = onBack,
+				)
+			},
+		)
+	}
 }

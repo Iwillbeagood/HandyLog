@@ -11,6 +11,7 @@
 	<string name="btn_add">추가</string>
 	<string name="btn_reset">초기화</string>
 	<string name="btn_next">다음</string>
+	<string name="btn_prev">이전</string>
 	<string name="btn_close">닫기</string>
 	<string name="btn_undo">되돌리기</string>
 	<string name="btn_clear">지우기</string>
@@ -339,11 +340,17 @@
 	<string name="preflop_scenario_facing">vs 오픈</string>
 	<string name="preflop_scenario_vs3bet">vs 3벳</string>
 	<string name="preflop_scenario_vslimp">vs 림프</string>
+	<string name="preflop_situation_rfi">%1$s 오픈</string>
+	<string name="preflop_situation_facing">%1$s vs %2$s 오픈</string>
+	<string name="preflop_situation_vs3bet">%1$s vs %2$s 3벳</string>
 	<string name="preflop_vslimp_caption">SB 림프 → BB</string>
 	<string name="preflop_hero">포지션</string>
 	<string name="preflop_villain_label">상대</string>
 	<string name="preflop_stack_label">유형</string>
 	<string name="preflop_scenario_label">시나리오</string>
+	<string name="preflop_table_button">테이블</string>
+	<string name="preflop_table_title">테이블 레인지</string>
+	<string name="preflop_table_setup_title">유형 선택</string>
 	<string name="preflop_main_title">프리플랍</string>
 	<string name="preflop_chart_card_desc">포지션별 오프닝 레인지와\n최적의 액션을 확인하세요</string>
 	<string name="preflop_chart_card_cta">차트 보기</string>
@@ -354,6 +361,8 @@
 	<string name="preflop_recent_empty">아직 퀴즈 기록이 없어요</string>
 	<string name="preflop_quiz_coming_soon">준비 중입니다</string>
 	<string name="preflop_quiz_select">퀴즈 선택</string>
+	<string name="quiz_stack_select">스택 선택</string>
+	<string name="quiz_stack_all">전체</string>
 	<string name="quiz_type_rfi_title">오픈 레이즈</string>
 	<string name="quiz_type_rfi_desc">내가 첫 오픈일 때 어떤 핸드로 레이즈할지 연습</string>
 	<string name="quiz_type_vsopen_title">vs 오픈 레이즈</string>
@@ -368,8 +377,6 @@
 	<string name="quiz_situation_vs_3bet">HERO(%1$s) open → %2$s 3bet</string>
 	<string name="quiz_situation_vs_limp">%1$s limp → HERO(%2$s)</string>
 	<string name="quiz_answer_plan_format">%1$s → %2$s</string>
-	<string name="quiz_plan_prompt_vs_3bet">3벳을 당하면 어떻게 대응할까요?</string>
-	<string name="quiz_plan_prompt_vs_4bet">4벳을 당하면 어떻게 대응할까요?</string>
 	<string name="quiz_correct">정답!</string>
 	<string name="quiz_wrong">오답</string>
 	<string name="quiz_next">다음 문제</string>

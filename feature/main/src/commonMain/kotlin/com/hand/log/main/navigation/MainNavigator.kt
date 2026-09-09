@@ -1,5 +1,7 @@
 package com.hand.log.main.navigation
 
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.hand.log.navigation.interop.NavigateActionInterop
 import com.hand.log.navigation.navigation.LaunchMode
 import com.hand.log.navigation.navigation.MainTabRoute
@@ -10,6 +12,7 @@ import com.hand.log.navigation.navigation.HandDetail
 import com.hand.log.navigation.navigation.ProUpgrade
 import com.hand.log.navigation.navigation.PlayerHands
 import com.hand.log.navigation.navigation.PreflopChart
+import com.hand.log.navigation.navigation.PreflopChartTable
 import com.hand.log.navigation.navigation.PreflopQuiz
 import com.hand.log.navigation.navigation.PreflopQuizSession
 import com.hand.log.navigation.navigation.RecordHand
@@ -17,15 +20,24 @@ import com.hand.log.navigation.navigation.Route
 import com.hand.log.navigation.navigation.RouteStack
 import com.hand.log.navigation.navigation.Table
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
-internal class MainNavigator {
+internal class MainNavigator : ViewModel() {
 
 	private var openAddNonce = 0L
 	private val _routeStack = MutableStateFlow(RouteStack(MainTabRoute.Home))
-	val routeStack: StateFlow<RouteStack> = _routeStack.asStateFlow()
+
+	val uiState: StateFlow<MainUiState> = _routeStack
+		.map { it.toUiState() }
+		.stateIn(
+			scope = viewModelScope,
+			started = SharingStarted.WhileSubscribed(5_000),
+			initialValue = _routeStack.value.toUiState(),
+		)
 
 	val navigateActionInterop = object : NavigateActionInterop {
 		override fun popBackStack() {
@@ -65,12 +77,16 @@ internal class MainNavigator {
 			navigate(PreflopChart(stack, scenario, hero, villain))
 		}
 
+		override fun navigateToPreflopChartTable(stack: String?, hero: String?) {
+			navigate(PreflopChartTable(stack, hero))
+		}
+
 		override fun navigateToPreflopQuiz() {
 			navigate(PreflopQuiz)
 		}
 
-		override fun navigateToPreflopQuizSession(type: String, recordId: String) {
-			navigate(PreflopQuizSession(type, recordId))
+		override fun navigateToPreflopQuizSession(type: String, stack: String, recordId: String) {
+			navigate(PreflopQuizSession(type, stack, recordId))
 		}
 
 		override fun navigateToBetSizeSettings() {
@@ -88,6 +104,21 @@ internal class MainNavigator {
 		override fun navigateToLegal() {
 			navigate(Legal)
 		}
+	}
+
+	private fun RouteStack.toUiState(): MainUiState {
+		val current = current
+		val currentBottomItem = MainBottomNavItem.entries.find { it.route == current }
+			?: when (current) {
+				is MainTabRoute.Players -> MainBottomNavItem.Players
+				is PlayerHands -> MainBottomNavItem.Players
+				else -> null
+			}
+		return MainUiState(
+			backStack = backStack,
+			showBottomBar = current is MainTabRoute || current is PlayerHands,
+			currentBottomItem = currentBottomItem,
+		)
 	}
 
 	fun navigate(

@@ -11,6 +11,7 @@
 	<string name="btn_add">Add</string>
 	<string name="btn_reset">Reset</string>
 	<string name="btn_next">Next</string>
+	<string name="btn_prev">Previous</string>
 	<string name="btn_complete">Done</string>
 	<string name="btn_skip">Skip</string>
 	<string name="btn_close">Close</string>
@@ -338,11 +339,17 @@
 	<string name="preflop_scenario_facing">vs Open</string>
 	<string name="preflop_scenario_vs3bet">vs 3-Bet</string>
 	<string name="preflop_scenario_vslimp">vs Limp</string>
+	<string name="preflop_situation_rfi">%1$s Open</string>
+	<string name="preflop_situation_facing">%1$s vs %2$s Open</string>
+	<string name="preflop_situation_vs3bet">%1$s vs %2$s 3-Bet</string>
 	<string name="preflop_vslimp_caption">SB Limp → BB</string>
 	<string name="preflop_hero">Position</string>
 	<string name="preflop_villain_label">vs</string>
 	<string name="preflop_stack_label">Type</string>
 	<string name="preflop_scenario_label">Scenario</string>
+	<string name="preflop_table_button">Table</string>
+	<string name="preflop_table_title">Table Ranges</string>
+	<string name="preflop_table_setup_title">Select Stack</string>
 	<string name="preflop_main_title">Preflop</string>
 	<string name="preflop_chart_card_desc">Check opening ranges by position\nand the optimal action</string>
 	<string name="preflop_chart_card_cta">View charts</string>
@@ -353,6 +360,8 @@
 	<string name="preflop_recent_empty">No quiz results yet</string>
 	<string name="preflop_quiz_coming_soon">Coming soon</string>
 	<string name="preflop_quiz_select">Select Quiz</string>
+	<string name="quiz_stack_select">Select Stack</string>
+	<string name="quiz_stack_all">All</string>
 	<string name="quiz_type_rfi_title">Open Raise</string>
 	<string name="quiz_type_rfi_desc">Practice which hands to raise when opening first</string>
 	<string name="quiz_type_vsopen_title">vs Open Raise</string>
@@ -367,8 +376,6 @@
 	<string name="quiz_situation_vs_3bet">HERO(%1$s) open → %2$s 3bet</string>
 	<string name="quiz_situation_vs_limp">%1$s limp → HERO(%2$s)</string>
 	<string name="quiz_answer_plan_format">%1$s → %2$s</string>
-	<string name="quiz_plan_prompt_vs_3bet">If you get 3-bet, how do you respond?</string>
-	<string name="quiz_plan_prompt_vs_4bet">If you get 4-bet, how do you respond?</string>
 	<string name="quiz_correct">Correct!</string>
 	<string name="quiz_wrong">Wrong</string>
 	<string name="quiz_next">Next</string>

@@ -96,6 +96,7 @@ class PreflopChartRepository {
 		// RFI(첫 오픈)에서 "Call" 은 콜이 아니라 블라인드 컴플리트 = 림프다. (SB 전용)
 		value == "Call" -> if (scenario == PreflopScenario.RFI) PreflopAction.LIMP else PreflopAction.CALL
 		value == "Limp" -> PreflopAction.LIMP
+		value == "Check" -> PreflopAction.CHECK
 		value == "All-in" -> PreflopAction.ALL_IN
 		value.startsWith("4-bet") ->
 			if (value.contains("Bluff")) PreflopAction.FOUR_BET_BLUFF else PreflopAction.FOUR_BET

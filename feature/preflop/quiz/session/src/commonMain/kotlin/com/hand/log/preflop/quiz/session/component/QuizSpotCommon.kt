@@ -83,10 +83,6 @@ internal fun holeCardsOf(hand: PreflopHand): Pair<Card, Card> = when (hand.shape
 internal fun answerText(action: PreflopAction): String =
 	stringResource(action.answerLabelRes())
 
-@Composable
-internal fun planText(action: PreflopAction): String =
-	stringResource(action.planLabelRes())
-
 /** 리뷰용 정답·답변 표기 — 복합 라인은 "첫 액션 → 대응"(예: 레이즈 → 폴드)으로 펼쳐 보여준다. */
 @Composable
 internal fun answerReviewText(action: PreflopAction): String =
@@ -137,11 +133,11 @@ internal val previewQuestion = PreflopQuizQuestion(
 	villain = null,
 	hand = PreflopHand(Rank.ACE, Rank.KING, HandShape.SUITED),
 	correct = PreflopAction.RAISE_CALL,
-	options = listOf(PreflopAction.RAISE, PreflopAction.FOLD),
-	planOptions = listOf(
+	options = listOf(
 		PreflopAction.RAISE_FOLD,
 		PreflopAction.RAISE_CALL,
 		PreflopAction.RAISE_4BET,
+		PreflopAction.FOLD,
 	),
 )
 
@@ -164,11 +160,12 @@ internal val previewFacingQuestion = PreflopQuizQuestion(
 	villain = Position.CO,
 	hand = PreflopHand(Rank.ACE, Rank.QUEEN, HandShape.SUITED),
 	correct = PreflopAction.THREE_BET_CALL,
-	options = listOf(PreflopAction.THREE_BET, PreflopAction.CALL, PreflopAction.FOLD),
-	planOptions = listOf(
+	options = listOf(
 		PreflopAction.THREE_BET_FOLD,
 		PreflopAction.THREE_BET_CALL,
 		PreflopAction.THREE_BET_JAM,
+		PreflopAction.CALL,
+		PreflopAction.FOLD,
 	),
 )
 

@@ -168,14 +168,14 @@ private fun formatTimestamp(
 	val dateTime = kotlinx.datetime.Instant.fromEpochMilliseconds(timestamp)
 		.toLocalDateTime(TimeZone.currentSystemDefault())
 	val recordDate = dateTime.date
-	val daysDiff = recordDate.toEpochDays().toLong() - tableDate.toEpochDays().toLong()
+	val daysDiff = (recordDate.toEpochDays() - tableDate.toEpochDays()).toInt()
 
 	val h = dateTime.hour.toString().padStart(2, '0')
 	val m = dateTime.minute.toString().padStart(2, '0')
 
 	return when {
 		daysDiff <= 0 -> "$h:$m"
-		daysDiff == 1L -> "${recordDate.month.number}/${recordDate.dayOfMonth} $h:$m"
+		daysDiff == 1 -> "${recordDate.month.number}/${recordDate.dayOfMonth} $h:$m"
 		else -> laterLabel
 	}
 }

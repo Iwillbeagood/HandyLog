@@ -11,6 +11,7 @@
 	<string name="btn_add">追加</string>
 	<string name="btn_reset">リセット</string>
 	<string name="btn_next">次へ</string>
+	<string name="btn_prev">前へ</string>
 	<string name="btn_complete">完了</string>
 	<string name="btn_skip">スキップ</string>
 	<string name="btn_close">閉じる</string>
@@ -338,11 +339,17 @@
 	<string name="preflop_scenario_facing">vs オープン</string>
 	<string name="preflop_scenario_vs3bet">vs 3ベット</string>
 	<string name="preflop_scenario_vslimp">vs リンプ</string>
+	<string name="preflop_situation_rfi">%1$s オープン</string>
+	<string name="preflop_situation_facing">%1$s vs %2$s オープン</string>
+	<string name="preflop_situation_vs3bet">%1$s vs %2$s 3ベット</string>
 	<string name="preflop_vslimp_caption">SB リンプ → BB</string>
 	<string name="preflop_hero">ポジション</string>
 	<string name="preflop_villain_label">相手</string>
 	<string name="preflop_stack_label">タイプ</string>
 	<string name="preflop_scenario_label">シナリオ</string>
+	<string name="preflop_table_button">テーブル</string>
+	<string name="preflop_table_title">テーブルレンジ</string>
+	<string name="preflop_table_setup_title">スタック選択</string>
 	<string name="preflop_main_title">プリフロップ</string>
 	<string name="preflop_chart_card_desc">ポジション別のオープンレンジと\n最適なアクションを確認しましょう</string>
 	<string name="preflop_chart_card_cta">チャートを見る</string>
@@ -353,6 +360,8 @@
 	<string name="preflop_recent_empty">まだクイズ記録がありません</string>
 	<string name="preflop_quiz_coming_soon">準備中です</string>
 	<string name="preflop_quiz_select">クイズ選択</string>
+	<string name="quiz_stack_select">スタック選択</string>
+	<string name="quiz_stack_all">すべて</string>
 	<string name="quiz_type_rfi_title">オープンレイズ</string>
 	<string name="quiz_type_rfi_desc">自分が最初にオープンする時のレイズハンドを練習</string>
 	<string name="quiz_type_vsopen_title">vs オープンレイズ</string>
@@ -367,8 +376,6 @@
 	<string name="quiz_situation_vs_3bet">HERO(%1$s) open → %2$s 3bet</string>
 	<string name="quiz_situation_vs_limp">%1$s limp → HERO(%2$s)</string>
 	<string name="quiz_answer_plan_format">%1$s → %2$s</string>
-	<string name="quiz_plan_prompt_vs_3bet">3ベットされたらどう対応しますか？</string>
-	<string name="quiz_plan_prompt_vs_4bet">4ベットされたらどう対応しますか？</string>
 	<string name="quiz_correct">正解！</string>
 	<string name="quiz_wrong">不正解</string>
 	<string name="quiz_next">次の問題</string>

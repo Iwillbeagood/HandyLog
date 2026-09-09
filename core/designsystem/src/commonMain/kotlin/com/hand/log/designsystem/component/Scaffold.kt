@@ -2,23 +2,31 @@ package com.hand.log.designsystem.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.contentColorFor
 import com.hand.log.designsystem.theme.HandyTheme
+import com.hand.log.designsystem.window.LocalWindowSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+
+val DefaultContentMaxWidth: Dp = 840.dp
 
 /**
  * navigationBarPadding, background, statusBarPadding 순서 변경x
@@ -29,6 +37,7 @@ fun BaseScaffold(
 	statusBarColor: Color = HandyTheme.colorScheme.background,
 	contentPadding: PaddingValues = PaddingValues(0.dp),
 	applyNavigationBarsPadding: Boolean = true,
+	contentMaxWidth: Dp? = DefaultContentMaxWidth,
 	topBar: @Composable () -> Unit = {},
 	bottomBar: @Composable () -> Unit = {},
 	snackbarHost: @Composable () -> Unit = {},
@@ -38,6 +47,8 @@ fun BaseScaffold(
 	content: @Composable ColumnScope.() -> Unit,
 ) {
 	val focusManager = LocalFocusManager.current
+	val windowSize = LocalWindowSize.current
+	val constrainWidth = contentMaxWidth != null && windowSize.isLarge
 
 	Scaffold(
 		topBar = {
@@ -60,16 +71,28 @@ fun BaseScaffold(
 		modifier = modifier
 			.then(if (applyNavigationBarsPadding) Modifier.navigationBarsPadding() else Modifier),
 	) {
-		Column(
+		Box(
 			modifier = Modifier
 				.fillMaxSize()
 				.padding(it)
-				.padding(contentPadding)
 				.pointerInput(Unit) {
 					detectTapGestures { focusManager.clearFocus() }
 				},
+			contentAlignment = Alignment.TopCenter,
 		) {
-			content()
+			Column(
+				modifier = Modifier
+					.then(
+						if (constrainWidth) {
+							Modifier.fillMaxHeight().widthIn(max = contentMaxWidth!!)
+						} else {
+							Modifier.fillMaxSize()
+						},
+					)
+					.padding(contentPadding),
+			) {
+				content()
+			}
 		}
 	}
 }

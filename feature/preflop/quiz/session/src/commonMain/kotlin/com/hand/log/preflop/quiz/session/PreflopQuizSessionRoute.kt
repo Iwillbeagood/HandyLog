@@ -26,8 +26,7 @@ internal fun PreflopQuizSessionRoute(
 
 	PreflopQuizSessionScreen(
 		state = state,
-		onPrimarySelect = viewModel::onPrimarySelect,
-		onPlanSelect = viewModel::onPlanSelect,
+		onAnswer = viewModel::onAnswer,
 		onSkip = viewModel::onSkip,
 		onPrevious = viewModel::onPrevious,
 		onRetry = viewModel::onRetry,

@@ -15,6 +15,9 @@ internal data class PreflopChartState(
 	val scenarioOptions: List<PreflopScenario> = PreflopScenario.entries,
 	val heroOptions: List<List<Position>> = PreflopPositions.order.map { listOf(it) },
 	val villainOptions: List<List<Position>> = emptyList(),
+	val rotatableHeroes: List<Position> = PreflopPositions.rfiHeroes,
+	val openRaiserSeats: List<Position> = emptyList(),
+	val threeBettorSeats: List<Position> = emptyList(),
 	val chart: PreflopChart = PreflopChart.EMPTY,
 	val isLoading: Boolean = true,
 	val isPro: Boolean = true,
@@ -37,4 +40,10 @@ internal data class PreflopChartState(
 
 	val selectedVillainGroup: List<Position>
 		get() = villainOptions.find { it.contains(villain) } ?: villainOptions.firstOrNull().orEmpty()
+
+	val tableSeatOrder: List<Position>
+		get() = if (stack == PreflopStack.ONLINE) PreflopPositions.onlineOrder else PreflopPositions.order
+
+	val canRotateHero: Boolean
+		get() = rotatableHeroes.size > 1
 }

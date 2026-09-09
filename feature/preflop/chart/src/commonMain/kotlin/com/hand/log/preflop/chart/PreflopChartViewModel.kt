@@ -95,6 +95,52 @@ internal class PreflopChartViewModel(
 		persistSelection()
 	}
 
+	fun selectSeat(position: Position) {
+		val s = _state.value
+		if (position == s.hero) return
+		if (position == s.villain) {
+			_state.update { resolve(it.stack, PreflopScenario.RFI, it.hero, null) }
+			persistSelection()
+			return
+		}
+		val order = s.tableSeatOrder
+		val heroIdx = order.indexOf(s.hero)
+		val posIdx = order.indexOf(position)
+		if (heroIdx < 0 || posIdx < 0) return
+		val scenario = if (posIdx < heroIdx) PreflopScenario.FACING_RFI else PreflopScenario.VS_3BET
+		_state.update { resolve(it.stack, scenario, it.hero, position) }
+		persistSelection()
+	}
+
+	fun nextHero() = moveHero(-1)
+
+	fun prevHero() = moveHero(1)
+
+	private fun moveHero(direction: Int) {
+		val s = _state.value
+		val order = s.tableSeatOrder
+		if (order.size <= 1) return
+		val currentIndex = order.indexOf(s.hero).coerceAtLeast(0)
+		for (step in 1..order.size) {
+			val idx = ((currentIndex + direction * step) % order.size + order.size) % order.size
+			val candidate = order[idx]
+			val spot = spotFor(candidate, s.stack) ?: continue
+			_state.update { resolve(it.stack, spot.first, candidate, spot.second) }
+			persistSelection()
+			return
+		}
+	}
+
+	private fun spotFor(pos: Position, stack: PreflopStack): Pair<PreflopScenario, Position?>? {
+		if (hasHeroData(stack, PreflopScenario.RFI, pos)) {
+			return PreflopScenario.RFI to null
+		}
+		val opener = PreflopPositions.raisersBefore(pos).firstOrNull { v ->
+			catalog.charts.containsKey(PreflopChartQuery(stack, PreflopScenario.FACING_RFI, pos, v))
+		}
+		return opener?.let { PreflopScenario.FACING_RFI to it }
+	}
+
 	private fun persistSelection() {
 		val s = _state.value
 		viewModelScope.launch {
@@ -170,6 +216,20 @@ internal class PreflopChartViewModel(
 
 		val chart = PreflopChart(filteredActions)
 
+		val rotatableHeroes = PreflopPositions.rfiHeroes.filter { h ->
+			hasHeroData(
+				stack,
+				PreflopScenario.RFI,
+				h,
+			)
+		}
+		val openRaiserSeats = PreflopPositions.raisersBefore(resolvedHero).filter { v ->
+			catalog.charts.containsKey(PreflopChartQuery(stack, PreflopScenario.FACING_RFI, resolvedHero, v))
+		}
+		val threeBettorSeats = PreflopPositions.threeBettorsAfter(resolvedHero).filter { v ->
+			catalog.charts.containsKey(PreflopChartQuery(stack, PreflopScenario.VS_3BET, resolvedHero, v))
+		}
+
 		return PreflopChartState(
 			stack = stack,
 			scenario = resolvedScenario,
@@ -178,6 +238,9 @@ internal class PreflopChartViewModel(
 			scenarioOptions = scenarioOptions,
 			heroOptions = heroOptions,
 			villainOptions = villainOptions,
+			rotatableHeroes = rotatableHeroes,
+			openRaiserSeats = openRaiserSeats,
+			threeBettorSeats = threeBettorSeats,
 			chart = chart,
 			isLoading = loading,
 			isPro = isPro,
