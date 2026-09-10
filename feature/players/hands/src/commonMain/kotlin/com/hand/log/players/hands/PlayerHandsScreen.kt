@@ -14,8 +14,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -52,6 +54,8 @@ import com.hand.log.ui.poker.formatWithComma
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
+
+private val PlayerHandsGridMinCellWidth = 320.dp
 
 @Composable
 internal fun PlayerHandsScreen(
@@ -90,7 +94,8 @@ internal fun PlayerHandsScreen(
 						)
 					}
 				} else {
-					LazyColumn(
+					LazyVerticalGrid(
+						columns = GridCells.Adaptive(PlayerHandsGridMinCellWidth),
 						modifier = Modifier.fillMaxSize(),
 						contentPadding = PaddingValues(
 							start = 16.dp,
@@ -99,8 +104,9 @@ internal fun PlayerHandsScreen(
 							bottom = 16.dp + paddingValues.calculateBottomPadding(),
 						),
 						verticalArrangement = Arrangement.spacedBy(8.dp),
+						horizontalArrangement = Arrangement.spacedBy(8.dp),
 					) {
-						item {
+						item(span = { GridItemSpan(maxLineSpan) }) {
 							RecordSummary(
 								total = state.record.total,
 								wins = state.record.wins,

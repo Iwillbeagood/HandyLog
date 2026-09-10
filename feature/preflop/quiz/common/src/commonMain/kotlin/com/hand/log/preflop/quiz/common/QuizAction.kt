@@ -97,32 +97,12 @@ fun PreflopAction.withoutBluff(): PreflopAction = when (this) {
 	else -> this
 }
 
-/**
- * 1차 선택지 = 스팟에 등장하는 첫 액션들(대표 액션). 폴드는 항상 포함하고 정답의 1차 액션도 포함한다.
- */
-fun primaryOptionsOf(
+fun answerOptionsOf(
 	presentActions: Collection<PreflopAction>,
 	correct: PreflopAction,
 ): List<PreflopAction> {
-	val set = presentActions.mapTo(mutableSetOf()) { it.primaryAction() }
+	val set = presentActions.mapTo(mutableSetOf()) { it.withoutBluff() }
 	set.add(PreflopAction.FOLD)
-	set.add(correct.primaryAction())
-	return PreflopAction.entries.filter { it in set }
-}
-
-/**
- * 2차 선택지 = 정답의 1차 액션과 같은 계열의 리레이즈 대응 라인들(복합 액션 그대로).
- * 정답에 대응 계획이 없으면 빈 목록(=2차 없음).
- */
-fun planOptionsOf(
-	presentActions: Collection<PreflopAction>,
-	correct: PreflopAction,
-): List<PreflopAction> {
-	if (!correct.hasResponsePlan()) return emptyList()
-	val family = correct.primaryAction()
-	val set = presentActions.filterTo(mutableSetOf()) {
-		it.hasResponsePlan() && it.primaryAction() == family
-	}
 	set.add(correct)
 	return PreflopAction.entries.filter { it in set }
 }

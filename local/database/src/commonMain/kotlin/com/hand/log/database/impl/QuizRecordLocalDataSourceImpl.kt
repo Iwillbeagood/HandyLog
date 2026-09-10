@@ -24,6 +24,7 @@ internal class QuizRecordLocalDataSourceImpl(
 	private fun QuizRecordEntity.toDomain() = QuizRecord(
 		id = id,
 		quizType = quizType,
+		stack = stack,
 		score = score,
 		total = total,
 		avgResponseMs = avgResponseMs,
@@ -35,6 +36,7 @@ internal class QuizRecordLocalDataSourceImpl(
 	private fun QuizRecord.toEntity() = QuizRecordEntity(
 		id = id,
 		quizType = quizType,
+		stack = stack,
 		score = score,
 		total = total,
 		avgResponseMs = avgResponseMs,

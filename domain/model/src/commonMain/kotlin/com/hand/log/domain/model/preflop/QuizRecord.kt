@@ -4,6 +4,7 @@ package com.hand.log.domain.model.preflop
 data class QuizRecord(
 	val id: String,
 	val quizType: String,
+	val stack: String = "",
 	val score: Int,
 	val total: Int,
 	val avgResponseMs: Long,

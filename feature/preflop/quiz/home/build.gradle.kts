@@ -8,6 +8,7 @@ kotlin {
 	sourceSets {
 		commonMain.dependencies {
 			implementation(projects.feature.preflop.quiz.common)
+			implementation(projects.feature.preflop.chart)
 		}
 	}
 }

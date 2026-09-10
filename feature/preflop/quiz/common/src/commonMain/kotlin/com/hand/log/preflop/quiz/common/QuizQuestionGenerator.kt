@@ -6,6 +6,7 @@ import com.hand.log.domain.model.preflop.PreflopChartQuery
 import com.hand.log.domain.model.preflop.PreflopGrid
 import com.hand.log.domain.model.preflop.PreflopHand
 import com.hand.log.domain.model.preflop.PreflopScenario
+import com.hand.log.domain.model.preflop.PreflopStack
 import kotlin.random.Random
 
 /** 로드된 차트 카탈로그에서 랜덤 퀴즈 문제를 생성한다. */
@@ -24,20 +25,9 @@ class QuizQuestionGenerator {
 		charts: Map<PreflopChartQuery, PreflopChart>,
 		type: PreflopQuizType,
 		count: Int,
+		stack: PreflopStack? = null,
 	): List<PreflopQuizQuestion> {
-		val scenario = when (type) {
-			PreflopQuizType.RFI -> PreflopScenario.RFI
-			PreflopQuizType.VS_OPEN -> PreflopScenario.FACING_RFI
-			PreflopQuizType.VS_3BET -> PreflopScenario.VS_3BET
-			PreflopQuizType.MIXED -> null
-		}
-		// VS_LIMP(SB 림프 → BB)는 대응하는 퀴즈 유형이 없고 선택지 체계도 달라 출제 대상에서 제외한다.
-		// MIXED(scenario == null)도 3개 시나리오만 섞어야 하므로 함께 걸러진다.
-		val pool = charts.entries.filter { (query, chart) ->
-			query.scenario != PreflopScenario.VS_LIMP &&
-				(scenario == null || query.scenario == scenario) &&
-				!chart.isEmpty
-		}
+		val pool = poolOf(charts, type, stack)
 		if (pool.isEmpty()) return emptyList()
 
 		return (0 until count).map {
@@ -53,9 +43,33 @@ class QuizQuestionGenerator {
 				villain = query.villain,
 				hand = hand,
 				correct = correct,
-				options = primaryOptionsOf(chart.actions.values, correct),
-				planOptions = planOptionsOf(chart.actions.values, correct),
+				options = answerOptionsOf(chart.actions.values, correct),
 			)
+		}
+	}
+
+	fun availableTypes(
+		charts: Map<PreflopChartQuery, PreflopChart>,
+		stack: PreflopStack?,
+	): Set<PreflopQuizType> =
+		PreflopQuizType.entries.filter { poolOf(charts, it, stack).isNotEmpty() }.toSet()
+
+	private fun poolOf(
+		charts: Map<PreflopChartQuery, PreflopChart>,
+		type: PreflopQuizType,
+		stack: PreflopStack?,
+	): List<Map.Entry<PreflopChartQuery, PreflopChart>> {
+		val scenario = when (type) {
+			PreflopQuizType.RFI -> PreflopScenario.RFI
+			PreflopQuizType.VS_OPEN -> PreflopScenario.FACING_RFI
+			PreflopQuizType.VS_3BET -> PreflopScenario.VS_3BET
+			PreflopQuizType.MIXED -> null
+		}
+		return charts.entries.filter { (query, chart) ->
+			query.scenario != PreflopScenario.VS_LIMP &&
+				(scenario == null || query.scenario == scenario) &&
+				(stack == null || query.stack == stack) &&
+				!chart.isEmpty
 		}
 	}
 

@@ -3,33 +3,24 @@ package com.hand.log.preflop.chart
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.hand.log.domain.model.Position
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.preflop.chart.contract.PreflopChartModalEffect
 import com.hand.log.ui.ProPaywallSheet
 
 @Composable
-internal fun PreflopChartRoute(
+internal fun PreflopChartTableRoute(
 	viewModel: PreflopChartViewModel,
 ) {
 	val state by viewModel.state.collectAsStateWithLifecycle()
 	val modalEffect by viewModel.modalEffect.collectAsStateWithLifecycle()
 	val navAction = LocalNavigateActionInterop.current
 
-	PreflopChartScreen(
+	PreflopChartTableScreen(
 		state = state,
 		onBack = navAction::popBackStack,
-		onTableStackSelect = { stack ->
-			if (stack in state.lockedStacks) {
-				viewModel.selectStack(stack)
-			} else {
-				navAction.navigateToPreflopChartTable(stack.name, Position.UTG.name)
-			}
-		},
-		onStackSelect = viewModel::selectStack,
-		onScenarioSelect = viewModel::selectScenario,
-		onHeroSelect = viewModel::selectHero,
-		onVillainSelect = viewModel::selectVillain,
+		onSeatSelect = viewModel::selectSeat,
+		onPrev = viewModel::prevHero,
+		onNext = viewModel::nextHero,
 	)
 
 	when (val effect = modalEffect) {

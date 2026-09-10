@@ -11,12 +11,17 @@ internal fun PreflopQuizRoute(
 	viewModel: PreflopQuizViewModel = koinViewModel(),
 ) {
 	val navAction = LocalNavigateActionInterop.current
-	val records by viewModel.recentRecords.collectAsStateWithLifecycle()
+	val state by viewModel.state.collectAsStateWithLifecycle()
 
 	PreflopQuizScreen(
-		records = records,
+		state = state,
 		onBack = navAction::popBackStack,
-		onTypeSelect = { type -> navAction.navigateToPreflopQuizSession(type.name) },
-		onRecordClick = { record -> navAction.navigateToPreflopQuizSession(record.quizType, record.id) },
+		onStackSelect = viewModel::onStackSelect,
+		onTypeSelect = { type ->
+			navAction.navigateToPreflopQuizSession(type.name, state.selectedStack?.name ?: "")
+		},
+		onRecordClick = { record ->
+			navAction.navigateToPreflopQuizSession(record.quizType, recordId = record.id)
+		},
 	)
 }

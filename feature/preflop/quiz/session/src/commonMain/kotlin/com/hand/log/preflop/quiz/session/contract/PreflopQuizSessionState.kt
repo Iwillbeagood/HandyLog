@@ -13,8 +13,6 @@ internal data class PreflopQuizSessionState(
 	val questions: List<PreflopQuizQuestion> = emptyList(),
 	val index: Int = 0,
 	val answers: List<PreflopAction?> = emptyList(),
-	// 현재 문제에서 1차(첫 액션)를 고른 뒤 2차(리레이즈 대응)를 기다리는 중이면 그 1차 액션. null 이면 1차 선택 단계.
-	val pendingPrimary: PreflopAction? = null,
 	val result: QuizResult? = null,
 	val reviewIndex: Int = 0,
 	val reviewStatus: ReviewStatus = ReviewStatus.IDLE,
@@ -25,7 +23,7 @@ internal data class PreflopQuizSessionState(
 
 	val progress: Float get() = if (total == 0) 0f else (index + 1).toFloat() / total
 
-	val canGoPrevious: Boolean get() = index > 0 || pendingPrimary != null
+	val canGoPrevious: Boolean get() = index > 0
 
 	val canReviewPrev: Boolean get() = reviewIndex > 0
 

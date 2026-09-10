@@ -20,6 +20,15 @@ object PreflopPositions {
 		Position.BB,
 	)
 
+	val onlineOrder: List<Position> = listOf(
+		Position.UTG,
+		Position.HJ,
+		Position.CO,
+		Position.BTN,
+		Position.SB,
+		Position.BB,
+	)
+
 	/** RFI(먼저 오픈) 가능한 히어로 — BB 제외(폴드로 넘어오면 BB 승리). */
 	val rfiHeroes: List<Position> = order.dropLast(1)
 

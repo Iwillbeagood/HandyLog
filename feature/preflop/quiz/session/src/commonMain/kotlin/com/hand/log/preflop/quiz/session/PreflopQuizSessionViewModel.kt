@@ -10,6 +10,7 @@ import com.hand.log.domain.model.preflop.PreflopChart
 import com.hand.log.domain.model.preflop.PreflopChartQuery
 import com.hand.log.domain.model.preflop.PreflopHand
 import com.hand.log.domain.model.preflop.PreflopScenario
+import com.hand.log.domain.model.preflop.PreflopStack
 import com.hand.log.domain.model.preflop.QuizRecord
 import com.hand.log.domain.model.preflop.QuizRecordQuestion
 import com.hand.log.domain.model.preflop.QuizReviewFocus
@@ -41,6 +42,7 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
 internal class PreflopQuizSessionViewModel(
 	quizTypeName: String,
+	stackName: String,
 	recordId: String,
 	private val chartRepository: PreflopChartRepository,
 	private val generator: QuizQuestionGenerator,
@@ -50,6 +52,8 @@ internal class PreflopQuizSessionViewModel(
 
 	private val quizType = runCatching { PreflopQuizType.valueOf(quizTypeName) }
 		.getOrDefault(PreflopQuizType.RFI)
+
+	private val stack = PreflopStack.entries.find { it.name == stackName }
 
 	private val responseTimes = mutableListOf<Long>()
 	private var questionMark = TimeSource.Monotonic.markNow()
@@ -103,7 +107,7 @@ internal class PreflopQuizSessionViewModel(
 		viewModelScope.launch {
 			val charts = chartRepository.load().charts
 			loadedCharts = charts
-			val questions = generator.generate(charts, quizType, QUESTION_COUNT)
+			val questions = generator.generate(charts, quizType, QUESTION_COUNT, stack)
 			questionMark = TimeSource.Monotonic.markNow()
 			_state.value = PreflopQuizSessionState(
 				phase = if (questions.isEmpty()) QuizPhase.RESULT else QuizPhase.PLAYING,
@@ -112,40 +116,18 @@ internal class PreflopQuizSessionViewModel(
 		}
 	}
 
-	/**
-	 * 1차(첫 액션) 선택. 정답이 리레이즈 대응이 있는 복합 라인이고 그 첫 액션을 맞게 골랐을 때만
-	 * 2차 선택을 기다린다. 그 외에는 곧바로 답으로 확정한다.
-	 */
-	fun onPrimarySelect(primary: PreflopAction) {
-		val q = _state.value.current ?: return
-		if (_state.value.phase != QuizPhase.PLAYING) return
-		val needPlan = q.correct.hasResponsePlan() &&
-			primary == q.correct.primaryAction() &&
-			q.planOptions.isNotEmpty()
-		if (needPlan) {
-			_state.update { it.copy(pendingPrimary = primary) }
-		} else {
-			record(primary)
-		}
-	}
-
-	fun onPlanSelect(fullAction: PreflopAction) = record(fullAction)
+	fun onAnswer(answer: PreflopAction) = record(answer)
 
 	fun onSkip() = record(null)
 
-	/** 2차 선택 대기 중이면 1차 선택으로, 그 외에는 직전 문제로 돌아가 그 답을 지운다. */
 	fun onPrevious() {
 		val s = _state.value
 		if (s.phase != QuizPhase.PLAYING) return
-		if (s.pendingPrimary != null) {
-			_state.update { it.copy(pendingPrimary = null) }
-			return
-		}
 		if (s.index == 0) return
 		responseTimes.removeAt(responseTimes.lastIndex)
 		questionMark = TimeSource.Monotonic.markNow()
 		_state.update {
-			it.copy(index = it.index - 1, answers = it.answers.dropLast(1), pendingPrimary = null)
+			it.copy(index = it.index - 1, answers = it.answers.dropLast(1))
 		}
 	}
 
@@ -171,7 +153,7 @@ internal class PreflopQuizSessionViewModel(
 			finish(answers)
 		} else {
 			questionMark = TimeSource.Monotonic.markNow()
-			_state.update { it.copy(index = it.index + 1, answers = answers, pendingPrimary = null) }
+			_state.update { it.copy(index = it.index + 1, answers = answers) }
 		}
 	}
 
@@ -196,6 +178,7 @@ internal class PreflopQuizSessionViewModel(
 					QuizRecord(
 						id = Uuid.random().toString(),
 						quizType = quizType.name,
+						stack = stack?.name ?: "",
 						score = score,
 						total = total,
 						avgResponseMs = avg,
