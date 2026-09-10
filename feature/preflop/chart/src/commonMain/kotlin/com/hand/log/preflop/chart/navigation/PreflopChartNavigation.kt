@@ -8,7 +8,9 @@ import com.hand.log.domain.model.preflop.PreflopScenario
 import com.hand.log.domain.model.preflop.PreflopSelection
 import com.hand.log.domain.model.preflop.PreflopStack
 import com.hand.log.navigation.navigation.PreflopChart
+import com.hand.log.navigation.navigation.PreflopChartTable
 import com.hand.log.preflop.chart.PreflopChartRoute
+import com.hand.log.preflop.chart.PreflopChartTableRoute
 import com.hand.log.preflop.chart.PreflopChartViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -19,6 +21,14 @@ fun EntryProviderScope<NavKey>.preflopChartNavGraph() {
 			LaunchedEffect(initial) { viewModel.openSpot(initial) }
 		}
 		PreflopChartRoute(viewModel = viewModel)
+	}
+
+	entry<PreflopChartTable> { key ->
+		val viewModel: PreflopChartViewModel = koinViewModel()
+		key.toSelectionOrNull()?.let { initial ->
+			LaunchedEffect(initial) { viewModel.openSpot(initial) }
+		}
+		PreflopChartTableRoute(viewModel = viewModel)
 	}
 }
 
@@ -31,4 +41,10 @@ private fun PreflopChart.toSelectionOrNull(): PreflopSelection? {
 	val parsedHero = hero?.let { runCatching { Position.valueOf(it) }.getOrNull() } ?: return null
 	val parsedVillain = villain?.let { runCatching { Position.valueOf(it) }.getOrNull() }
 	return PreflopSelection(parsedStack, parsedScenario, parsedHero, parsedVillain)
+}
+
+private fun PreflopChartTable.toSelectionOrNull(): PreflopSelection? {
+	val parsedStack = stack?.let { runCatching { PreflopStack.valueOf(it) }.getOrNull() } ?: return null
+	val parsedHero = hero?.let { runCatching { Position.valueOf(it) }.getOrNull() } ?: return null
+	return PreflopSelection(parsedStack, PreflopScenario.RFI, parsedHero, null)
 }

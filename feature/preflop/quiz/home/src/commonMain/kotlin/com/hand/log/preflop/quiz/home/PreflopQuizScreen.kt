@@ -28,9 +28,12 @@ import com.hand.log.designsystem.component.TopAppbarType
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
+import com.hand.log.domain.model.preflop.PreflopStack
 import com.hand.log.domain.model.preflop.QuizRecord
 import com.hand.log.preflop.quiz.common.PreflopQuizType
 import com.hand.log.preflop.quiz.common.formatQuizPlayedAt
+import com.hand.log.preflop.quiz.home.component.QuizStackSelector
+import com.hand.log.preflop.quiz.home.contract.PreflopQuizHomeState
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.chevron_right
 import handylog.core.res.generated.resources.grid_3x3
@@ -38,6 +41,7 @@ import handylog.core.res.generated.resources.preflop_quiz_select
 import handylog.core.res.generated.resources.preflop_quiz_title
 import handylog.core.res.generated.resources.preflop_recent_empty
 import handylog.core.res.generated.resources.preflop_recent_title
+import handylog.core.res.generated.resources.quiz_stack_all
 import handylog.core.res.generated.resources.quiz_type_mixed_desc
 import handylog.core.res.generated.resources.quiz_type_mixed_title
 import handylog.core.res.generated.resources.quiz_type_rfi_desc
@@ -53,8 +57,9 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun PreflopQuizScreen(
-	records: List<QuizRecord>,
+	state: PreflopQuizHomeState,
 	onBack: () -> Unit,
+	onStackSelect: (PreflopStack?) -> Unit,
 	onTypeSelect: (PreflopQuizType) -> Unit,
 	onRecordClick: (QuizRecord) -> Unit,
 ) {
@@ -74,6 +79,12 @@ internal fun PreflopQuizScreen(
 				.padding(16.dp),
 			verticalArrangement = Arrangement.spacedBy(20.dp),
 		) {
+			QuizStackSelector(
+				options = state.stackOptions,
+				selected = state.selectedStack,
+				onSelect = onStackSelect,
+			)
+
 			SectionHeader(stringResource(Res.string.preflop_quiz_select))
 
 			Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -82,6 +93,7 @@ internal fun PreflopQuizScreen(
 					iconColor = HandyTheme.colorScheme.primary,
 					title = stringResource(Res.string.quiz_type_rfi_title),
 					description = stringResource(Res.string.quiz_type_rfi_desc),
+					enabled = state.isTypeEnabled(PreflopQuizType.RFI),
 					onClick = { onTypeSelect(PreflopQuizType.RFI) },
 				)
 				QuizTypeItem(
@@ -89,6 +101,7 @@ internal fun PreflopQuizScreen(
 					iconColor = HandyTheme.colorScheme.gold,
 					title = stringResource(Res.string.quiz_type_vsopen_title),
 					description = stringResource(Res.string.quiz_type_vsopen_desc),
+					enabled = state.isTypeEnabled(PreflopQuizType.VS_OPEN),
 					onClick = { onTypeSelect(PreflopQuizType.VS_OPEN) },
 				)
 				QuizTypeItem(
@@ -96,6 +109,7 @@ internal fun PreflopQuizScreen(
 					iconColor = HandyTheme.colorScheme.error,
 					title = stringResource(Res.string.quiz_type_vs3bet_title),
 					description = stringResource(Res.string.quiz_type_vs3bet_desc),
+					enabled = state.isTypeEnabled(PreflopQuizType.VS_3BET),
 					onClick = { onTypeSelect(PreflopQuizType.VS_3BET) },
 				)
 				QuizTypeItem(
@@ -103,12 +117,13 @@ internal fun PreflopQuizScreen(
 					iconColor = HandyTheme.colorScheme.textSecondary,
 					title = stringResource(Res.string.quiz_type_mixed_title),
 					description = stringResource(Res.string.quiz_type_mixed_desc),
+					enabled = state.isTypeEnabled(PreflopQuizType.MIXED),
 					onClick = { onTypeSelect(PreflopQuizType.MIXED) },
 				)
 			}
 
 			SectionHeader(stringResource(Res.string.preflop_recent_title))
-			RecentRecordsCard(records, onRecordClick)
+			RecentRecordsCard(state.records, onRecordClick)
 		}
 	}
 }
@@ -128,15 +143,17 @@ private fun QuizTypeItem(
 	iconColor: Color,
 	title: String,
 	description: String,
+	enabled: Boolean,
 	onClick: () -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
+	val contentAlpha = if (enabled) 1f else 0.4f
 	Row(
 		modifier = Modifier
 			.fillMaxWidth()
 			.clip(RoundedCornerShape(12.dp))
 			.background(colors.card)
-			.clickable(onClick = onClick)
+			.clickable(enabled = enabled, onClick = onClick)
 			.padding(16.dp),
 		horizontalArrangement = Arrangement.spacedBy(14.dp),
 		verticalAlignment = Alignment.CenterVertically,
@@ -145,14 +162,14 @@ private fun QuizTypeItem(
 			modifier = Modifier
 				.size(44.dp)
 				.clip(RoundedCornerShape(12.dp))
-				.background(iconColor.copy(alpha = 0.15f)),
+				.background(iconColor.copy(alpha = 0.15f * contentAlpha)),
 			contentAlignment = Alignment.Center,
 		) {
 			Icon(
 				painter = painterResource(icon),
 				contentDescription = null,
 				modifier = Modifier.size(22.dp),
-				tint = iconColor,
+				tint = iconColor.copy(alpha = contentAlpha),
 			)
 		}
 		Column(
@@ -162,19 +179,19 @@ private fun QuizTypeItem(
 			Text(
 				text = title,
 				style = HandyTheme.typography.bold16,
-				color = colors.textPrimary,
+				color = colors.textPrimary.copy(alpha = contentAlpha),
 			)
 			Text(
 				text = description,
 				style = HandyTheme.typography.regular12,
-				color = colors.textSecondary,
+				color = colors.textSecondary.copy(alpha = contentAlpha),
 			)
 		}
 		Icon(
 			painter = painterResource(Res.drawable.chevron_right),
 			contentDescription = null,
 			modifier = Modifier.size(18.dp),
-			tint = colors.textSecondary,
+			tint = colors.textSecondary.copy(alpha = contentAlpha),
 		)
 	}
 }
@@ -209,7 +226,7 @@ private fun RecentRecordsCard(records: List<QuizRecord>, onRecordClick: (QuizRec
 			) {
 				Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
 					Text(
-						text = quizTypeLabel(record.quizType),
+						text = "${quizTypeLabel(record.quizType)} · ${stackLabel(record.stack)}",
 						style = HandyTheme.typography.medium14,
 						color = colors.textPrimary,
 					)
@@ -255,6 +272,11 @@ private fun RecentRecordsCard(records: List<QuizRecord>, onRecordClick: (QuizRec
 }
 
 @Composable
+private fun stackLabel(stackName: String): String =
+	PreflopStack.entries.find { it.name == stackName }?.label
+		?: stringResource(Res.string.quiz_stack_all)
+
+@Composable
 private fun quizTypeLabel(typeName: String): String = when (typeName) {
 	PreflopQuizType.RFI.name -> stringResource(Res.string.quiz_type_rfi_title)
 	PreflopQuizType.VS_OPEN.name -> stringResource(Res.string.quiz_type_vsopen_title)
@@ -267,8 +289,16 @@ private fun quizTypeLabel(typeName: String): String = when (typeName) {
 private fun PreflopQuizScreenPreview() {
 	ThemePreview {
 		PreflopQuizScreen(
-			records = emptyList(),
+			state = PreflopQuizHomeState(
+				selectedStack = PreflopStack.BB25,
+				availableTypes = setOf(
+					PreflopQuizType.RFI,
+					PreflopQuizType.VS_OPEN,
+					PreflopQuizType.MIXED,
+				),
+			),
 			onBack = {},
+			onStackSelect = {},
 			onTypeSelect = {},
 			onRecordClick = {},
 		)

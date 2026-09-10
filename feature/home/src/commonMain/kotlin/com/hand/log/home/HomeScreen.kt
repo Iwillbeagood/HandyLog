@@ -5,8 +5,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.hand.log.designsystem.etc.ThemePreview
@@ -40,6 +41,8 @@ import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.*
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
+
+private val HomeGridMinCellWidth = 320.dp
 
 @Composable
 internal fun HomeScreen(
@@ -103,9 +106,11 @@ private fun HomeContent(
 				if (isEmpty) {
 					EmptyState(modifier = Modifier.fillMaxSize())
 				} else {
-					LazyColumn(
+					LazyVerticalGrid(
+						columns = GridCells.Adaptive(HomeGridMinCellWidth),
 						modifier = Modifier.fillMaxSize(),
 						verticalArrangement = Arrangement.spacedBy(12.dp),
+						horizontalArrangement = Arrangement.spacedBy(12.dp),
 						contentPadding = PaddingValues(
 							start = 16.dp,
 							end = 16.dp,
@@ -127,9 +132,11 @@ private fun HomeContent(
 				if (isEmpty) {
 					EmptyState(modifier = Modifier.fillMaxSize())
 				} else {
-					LazyColumn(
+					LazyVerticalGrid(
+						columns = GridCells.Adaptive(HomeGridMinCellWidth),
 						modifier = Modifier.fillMaxSize(),
 						verticalArrangement = Arrangement.spacedBy(12.dp),
+						horizontalArrangement = Arrangement.spacedBy(12.dp),
 						contentPadding = PaddingValues(
 							start = 16.dp,
 							end = 16.dp,

@@ -47,10 +47,20 @@ data class PreflopChart(
 ) : Route
 
 @Serializable
+data class PreflopChartTable(
+	val stack: String? = null,
+	val hero: String? = null,
+) : Route
+
+@Serializable
 data object PreflopQuiz : Route
 
 @Serializable
-data class PreflopQuizSession(val type: String, val recordId: String = "") : Route
+data class PreflopQuizSession(
+	val type: String,
+	val stack: String = "",
+	val recordId: String = "",
+) : Route
 
 @Serializable
 data object ProUpgrade : Route

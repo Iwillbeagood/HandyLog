@@ -8,6 +8,7 @@ import com.hand.log.domain.model.preflop.QuizRecordQuestion
 data class QuizRecordEntity(
 	@PrimaryKey val id: String,
 	val quizType: String,
+	val stack: String = "",
 	val score: Int,
 	val total: Int,
 	val avgResponseMs: Long,

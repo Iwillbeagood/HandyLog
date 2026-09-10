@@ -31,8 +31,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun PreflopQuizSessionScreen(
 	state: PreflopQuizSessionState,
-	onPrimarySelect: (PreflopAction) -> Unit,
-	onPlanSelect: (PreflopAction) -> Unit,
+	onAnswer: (PreflopAction) -> Unit,
 	onSkip: () -> Unit,
 	onPrevious: () -> Unit,
 	onRetry: () -> Unit,
@@ -59,8 +58,7 @@ internal fun PreflopQuizSessionScreen(
 			QuizPhase.PLAYING -> state.current?.let {
 				QuestionContent(
 					state = state,
-					onPrimarySelect = onPrimarySelect,
-					onPlanSelect = onPlanSelect,
+					onAnswer = onAnswer,
 					onSkip = onSkip,
 					onPrevious = onPrevious,
 				)
@@ -105,8 +103,7 @@ private fun PreflopQuizSessionPlayingPreview() {
 				phase = QuizPhase.PLAYING,
 				questions = listOf(previewQuestion),
 			),
-			onPrimarySelect = {},
-			onPlanSelect = {},
+			onAnswer = {},
 			onSkip = {},
 			onPrevious = {},
 			onRetry = {},
@@ -141,8 +138,7 @@ private fun PreflopQuizSessionResultPreview() {
 					playedAt = 1_753_800_000_000L,
 				),
 			),
-			onPrimarySelect = {},
-			onPlanSelect = {},
+			onAnswer = {},
 			onSkip = {},
 			onPrevious = {},
 			onRetry = {},
@@ -169,8 +165,7 @@ private fun PreflopQuizSessionReviewPreview() {
 				answers = listOf(PreflopAction.FOLD, null),
 				reviewIndex = 0,
 			),
-			onPrimarySelect = {},
-			onPlanSelect = {},
+			onAnswer = {},
 			onSkip = {},
 			onPrevious = {},
 			onRetry = {},

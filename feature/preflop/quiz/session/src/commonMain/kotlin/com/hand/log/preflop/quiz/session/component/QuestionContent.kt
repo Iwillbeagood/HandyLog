@@ -31,8 +31,6 @@ import com.hand.log.domain.model.preflop.PreflopAction
 import com.hand.log.preflop.quiz.session.contract.PreflopQuizSessionState
 import com.hand.log.preflop.quiz.session.contract.QuizPhase
 import handylog.core.res.generated.resources.Res
-import handylog.core.res.generated.resources.quiz_plan_prompt_vs_3bet
-import handylog.core.res.generated.resources.quiz_plan_prompt_vs_4bet
 import handylog.core.res.generated.resources.quiz_prev_question
 import handylog.core.res.generated.resources.quiz_progress
 import handylog.core.res.generated.resources.quiz_prompt
@@ -42,8 +40,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun QuestionContent(
 	state: PreflopQuizSessionState,
-	onPrimarySelect: (PreflopAction) -> Unit,
-	onPlanSelect: (PreflopAction) -> Unit,
+	onAnswer: (PreflopAction) -> Unit,
 	onSkip: () -> Unit,
 	onPrevious: () -> Unit,
 ) {
@@ -99,23 +96,12 @@ internal fun QuestionContent(
 				villainColor = colors.error,
 			)
 
-			FadeAnimatedContent(targetState = state.pendingPrimary) { pending ->
-				if (pending == null) {
-					AnswerStep(
-						prompt = stringResource(Res.string.quiz_prompt),
-						options = question.options,
-						label = { answerText(it) },
-						onSelect = onPrimarySelect,
-					)
-				} else {
-					AnswerStep(
-						prompt = stringResource(planPromptRes(pending)),
-						options = question.planOptions,
-						label = { planText(it) },
-						onSelect = onPlanSelect,
-					)
-				}
-			}
+			AnswerStep(
+				prompt = stringResource(Res.string.quiz_prompt),
+				options = question.options,
+				label = { answerText(it) },
+				onSelect = onAnswer,
+			)
 		}
 
 		Column(modifier = Modifier.fillMaxWidth().background(colors.card)) {
@@ -205,12 +191,6 @@ private fun AnswerButton(
 	}
 }
 
-/** 2차 선택 프롬프트 — 오픈 후엔 3벳, 3벳 후엔 4벳을 당한 상황을 묻는다. */
-private fun planPromptRes(primary: PreflopAction) = when (primary) {
-	PreflopAction.THREE_BET -> Res.string.quiz_plan_prompt_vs_4bet
-	else -> Res.string.quiz_plan_prompt_vs_3bet
-}
-
 @ThemePreviews
 @Composable
 private fun QuestionContentRfiPreview() {
@@ -220,8 +200,7 @@ private fun QuestionContentRfiPreview() {
 				phase = QuizPhase.PLAYING,
 				questions = listOf(previewQuestion),
 			),
-			onPrimarySelect = {},
-			onPlanSelect = {},
+			onAnswer = {},
 			onSkip = {},
 			onPrevious = {},
 		)
@@ -237,8 +216,7 @@ private fun QuestionContentSbLimpPreview() {
 				phase = QuizPhase.PLAYING,
 				questions = listOf(previewSbLimpQuestion),
 			),
-			onPrimarySelect = {},
-			onPlanSelect = {},
+			onAnswer = {},
 			onSkip = {},
 			onPrevious = {},
 		)
@@ -254,8 +232,7 @@ private fun QuestionContentFacingRfiPreview() {
 				phase = QuizPhase.PLAYING,
 				questions = listOf(previewFacingQuestion),
 			),
-			onPrimarySelect = {},
-			onPlanSelect = {},
+			onAnswer = {},
 			onSkip = {},
 			onPrevious = {},
 		)
@@ -271,26 +248,7 @@ private fun QuestionContentVs3betPreview() {
 				phase = QuizPhase.PLAYING,
 				questions = listOf(previewVs3betQuestion),
 			),
-			onPrimarySelect = {},
-			onPlanSelect = {},
-			onSkip = {},
-			onPrevious = {},
-		)
-	}
-}
-
-@ThemePreviews
-@Composable
-private fun QuestionContentPlanStepPreview() {
-	ThemePreview {
-		QuestionContent(
-			state = PreflopQuizSessionState(
-				phase = QuizPhase.PLAYING,
-				questions = listOf(previewQuestion),
-				pendingPrimary = PreflopAction.RAISE,
-			),
-			onPrimarySelect = {},
-			onPlanSelect = {},
+			onAnswer = {},
 			onSkip = {},
 			onPrevious = {},
 		)
