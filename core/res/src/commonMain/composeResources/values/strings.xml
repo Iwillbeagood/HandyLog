@@ -396,7 +396,7 @@
 	<string name="quiz_result_good">좋아요! 👍</string>
 	<string name="quiz_result_fair">조금 더 연습해요 💪</string>
 	<string name="quiz_result_desc">프리플랍 전략을 점검해 보세요</string>
-	<string name="quiz_start_review">오답 리뷰</string>
+	<string name="quiz_start_review">리뷰</string>
 	<string name="quiz_review_exit">복습 종료</string>
 	<string name="quiz_review_your_answer">내 답변</string>
 	<string name="quiz_review_correct_answer">정답</string>

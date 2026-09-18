@@ -8,15 +8,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.hand.log.designsystem.component.BaseScaffold
 import com.hand.log.designsystem.component.HandyTopAppbar
+import com.hand.log.designsystem.component.IconButton
 import com.hand.log.designsystem.component.TopAppbarType
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
-import com.hand.log.domain.model.Position
 import com.hand.log.domain.model.preflop.PreflopAction
 import com.hand.log.preflop.quiz.common.PreflopQuizType
-import com.hand.log.domain.model.preflop.PreflopScenario
-import com.hand.log.domain.model.preflop.PreflopStack
 import com.hand.log.preflop.quiz.session.component.QuestionContent
 import com.hand.log.preflop.quiz.session.component.ResultContent
 import com.hand.log.preflop.quiz.session.component.ReviewContent
@@ -25,6 +23,8 @@ import com.hand.log.preflop.quiz.session.contract.PreflopQuizSessionState
 import com.hand.log.preflop.quiz.session.contract.QuizPhase
 import com.hand.log.preflop.quiz.session.contract.QuizResult
 import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.grid_3x3
+import handylog.core.res.generated.resources.nav_chart
 import handylog.core.res.generated.resources.preflop_quiz_title
 import org.jetbrains.compose.resources.stringResource
 
@@ -36,7 +36,7 @@ internal fun PreflopQuizSessionScreen(
 	onPrevious: () -> Unit,
 	onRetry: () -> Unit,
 	onBack: () -> Unit,
-	onViewChart: (PreflopStack, PreflopScenario, Position, Position?) -> Unit,
+	onViewFullChart: () -> Unit,
 	onStartReview: () -> Unit,
 	onReviewPrev: () -> Unit,
 	onReviewNext: () -> Unit,
@@ -50,6 +50,15 @@ internal fun PreflopQuizSessionScreen(
 				title = stringResource(Res.string.preflop_quiz_title),
 				navigationType = TopAppbarType.Close,
 				onBackEvent = onBack,
+				iconButton = if (state.showChartAction) {
+					IconButton(
+						text = stringResource(Res.string.nav_chart),
+						icon = Res.drawable.grid_3x3,
+						onClick = onViewFullChart,
+					)
+				} else {
+					null
+				},
 			)
 		},
 	) {
@@ -78,7 +87,6 @@ internal fun PreflopQuizSessionScreen(
 				onSelectReview = onSelectReview,
 				onExitReview = onExitReview,
 				onRequestReview = onRequestReview,
-				onViewChart = onViewChart,
 			)
 		}
 	}
@@ -108,7 +116,7 @@ private fun PreflopQuizSessionPlayingPreview() {
 			onPrevious = {},
 			onRetry = {},
 			onBack = {},
-			onViewChart = { _, _, _, _ -> },
+			onViewFullChart = {},
 			onStartReview = {},
 			onReviewPrev = {},
 			onReviewNext = {},
@@ -143,7 +151,7 @@ private fun PreflopQuizSessionResultPreview() {
 			onPrevious = {},
 			onRetry = {},
 			onBack = {},
-			onViewChart = { _, _, _, _ -> },
+			onViewFullChart = {},
 			onStartReview = {},
 			onReviewPrev = {},
 			onReviewNext = {},
@@ -170,7 +178,7 @@ private fun PreflopQuizSessionReviewPreview() {
 			onPrevious = {},
 			onRetry = {},
 			onBack = {},
-			onViewChart = { _, _, _, _ -> },
+			onViewFullChart = {},
 			onStartReview = {},
 			onReviewPrev = {},
 			onReviewNext = {},

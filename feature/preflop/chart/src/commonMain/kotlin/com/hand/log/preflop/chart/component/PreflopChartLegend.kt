@@ -24,7 +24,7 @@ import org.jetbrains.compose.resources.stringResource
 /** 차트에 등장하는 액션의 색·라벨 범례. 차트 화면과 테이블 화면이 공유한다. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun PreflopChartLegend(actions: List<PreflopAction>) {
+fun PreflopChartLegend(actions: List<PreflopAction>) {
 	FlowRow(
 		horizontalArrangement = Arrangement.spacedBy(16.dp),
 		verticalArrangement = Arrangement.spacedBy(8.dp),

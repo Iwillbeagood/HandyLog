@@ -6,7 +6,6 @@ import com.hand.log.domain.model.Position
 import com.hand.log.domain.model.Rank
 import com.hand.log.domain.model.preflop.HandShape
 import com.hand.log.domain.model.preflop.PreflopAction
-import com.hand.log.domain.model.preflop.PreflopChart
 import com.hand.log.domain.model.preflop.PreflopChartQuery
 import com.hand.log.domain.model.preflop.PreflopHand
 import com.hand.log.domain.model.preflop.PreflopScenario
@@ -58,8 +57,6 @@ internal class PreflopQuizSessionViewModel(
 	private val responseTimes = mutableListOf<Long>()
 	private var questionMark = TimeSource.Monotonic.markNow()
 
-	private var loadedCharts: Map<PreflopChartQuery, PreflopChart> = emptyMap()
-
 	private val _state = MutableStateFlow(PreflopQuizSessionState())
 	val state: StateFlow<PreflopQuizSessionState> = _state
 
@@ -88,6 +85,7 @@ internal class PreflopQuizSessionViewModel(
 				phase = QuizPhase.RESULT,
 				questions = record.questions.map { it.toQuizQuestion() },
 				answers = record.questions.map { it.userAnswer },
+				charts = chartRepository.load().charts,
 				result = QuizResult(
 					score = record.score,
 					total = record.total,
@@ -106,12 +104,12 @@ internal class PreflopQuizSessionViewModel(
 		_state.value = PreflopQuizSessionState(phase = QuizPhase.LOADING)
 		viewModelScope.launch {
 			val charts = chartRepository.load().charts
-			loadedCharts = charts
 			val questions = generator.generate(charts, quizType, QUESTION_COUNT, stack)
 			questionMark = TimeSource.Monotonic.markNow()
 			_state.value = PreflopQuizSessionState(
 				phase = if (questions.isEmpty()) QuizPhase.RESULT else QuizPhase.PLAYING,
 				questions = questions,
+				charts = charts,
 			)
 		}
 	}
@@ -311,7 +309,7 @@ internal class PreflopQuizSessionViewModel(
 	}
 
 	private fun neighborHint(question: PreflopQuizQuestion): String {
-		val chart = loadedCharts[
+		val chart = _state.value.charts[
 			PreflopChartQuery(question.stack, question.scenario, question.hero, question.villain),
 		] ?: return ""
 		val hand = question.hand
