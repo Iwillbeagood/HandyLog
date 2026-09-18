@@ -12,6 +12,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -25,10 +29,12 @@ import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Position
 import com.hand.log.domain.model.preflop.PreflopScenario
+import com.hand.log.domain.model.preflop.PreflopStack
 import com.hand.log.preflop.chart.component.PreflopChartGrid
 import com.hand.log.preflop.chart.component.PreflopChartLegend
 import com.hand.log.preflop.chart.component.PreflopSeatTable
 import com.hand.log.preflop.chart.component.PreflopStackBadge
+import com.hand.log.preflop.chart.component.PreflopStackSheet
 import com.hand.log.preflop.chart.component.scenarioLabel
 import com.hand.log.preflop.chart.contract.PreflopChartState
 import handylog.core.res.generated.resources.Res
@@ -44,19 +50,39 @@ internal fun PreflopChartTableScreen(
 	state: PreflopChartState,
 	onBack: () -> Unit,
 	onSeatSelect: (Position) -> Unit,
+	onStackSelect: (PreflopStack) -> Unit,
 	onPrev: () -> Unit,
 	onNext: () -> Unit,
 ) {
+	var showStackSheet by remember { mutableStateOf(false) }
+
 	BaseScaffold(
 		topBar = {
 			HandyTopAppbar(
 				title = situationText(state),
 				navigationType = TopAppbarType.Close,
 				onBackEvent = onBack,
-				endContent = { PreflopStackBadge(stack = state.stack) },
+				endContent = {
+					PreflopStackBadge(
+						stack = state.stack,
+						onClick = { showStackSheet = true },
+					)
+				},
 			)
 		},
 	) {
+		if (showStackSheet) {
+			PreflopStackSheet(
+				stacks = state.stackOptions,
+				lockedStacks = state.lockedStacks,
+				onDismiss = { showStackSheet = false },
+				onSelect = { stack ->
+					showStackSheet = false
+					onStackSelect(stack)
+				},
+			)
+		}
+
 		if (state.isLoading) {
 			LoadingContent()
 			return@BaseScaffold
@@ -176,6 +202,7 @@ private fun PreflopChartTableScreenPreview() {
 			),
 			onBack = {},
 			onSeatSelect = {},
+			onStackSelect = {},
 			onPrev = {},
 			onNext = {},
 		)
