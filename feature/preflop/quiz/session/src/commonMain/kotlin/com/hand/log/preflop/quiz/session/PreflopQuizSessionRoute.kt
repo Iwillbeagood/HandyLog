@@ -33,9 +33,7 @@ internal fun PreflopQuizSessionRoute(
 		onBack = {
 			if (state.phase == QuizPhase.PLAYING) viewModel.onCloseRequest() else navAction.popBackStack()
 		},
-		onViewChart = { stack, scenario, hero, villain ->
-			navAction.navigateToPreflopChart(stack.name, scenario.name, hero.name, villain?.name)
-		},
+		onViewFullChart = { navAction.navigateToPreflopChartTable() },
 		onStartReview = viewModel::onStartReview,
 		onReviewPrev = viewModel::onReviewPrev,
 		onReviewNext = viewModel::onReviewNext,

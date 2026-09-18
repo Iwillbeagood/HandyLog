@@ -132,6 +132,8 @@ internal fun QuestionContent(
 					modifier = Modifier.weight(1f),
 					text = stringResource(Res.string.quiz_skip),
 					textStyle = HandyTheme.typography.bold14,
+					containerColor = colors.split,
+					outlined = true,
 					borderStroke = 10.dp,
 					verticalPadding = 10.dp,
 				)

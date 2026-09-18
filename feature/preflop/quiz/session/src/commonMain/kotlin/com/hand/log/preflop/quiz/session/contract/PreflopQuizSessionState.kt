@@ -1,6 +1,8 @@
 package com.hand.log.preflop.quiz.session.contract
 
 import com.hand.log.domain.model.preflop.PreflopAction
+import com.hand.log.domain.model.preflop.PreflopChart
+import com.hand.log.domain.model.preflop.PreflopChartQuery
 import com.hand.log.preflop.quiz.common.PreflopQuizQuestion
 import com.hand.log.preflop.quiz.common.PreflopQuizType
 
@@ -8,11 +10,14 @@ internal enum class QuizPhase { LOADING, PLAYING, RESULT, REVIEW }
 
 internal enum class ReviewStatus { IDLE, LOADING, LOADED, ERROR }
 
+internal enum class ReviewOutcome { CORRECT, WRONG, SKIPPED }
+
 internal data class PreflopQuizSessionState(
 	val phase: QuizPhase = QuizPhase.LOADING,
 	val questions: List<PreflopQuizQuestion> = emptyList(),
 	val index: Int = 0,
 	val answers: List<PreflopAction?> = emptyList(),
+	val charts: Map<PreflopChartQuery, PreflopChart> = emptyMap(),
 	val result: QuizResult? = null,
 	val reviewIndex: Int = 0,
 	val reviewStatus: ReviewStatus = ReviewStatus.IDLE,
@@ -29,9 +34,10 @@ internal data class PreflopQuizSessionState(
 
 	val hasNextReview: Boolean get() = reviewIndex < reviewTotal - 1
 
-	/** 오답(또는 건너뛴) 문제의 원본 인덱스 목록 — 결과 후 리뷰 대상. */
+	val showChartAction: Boolean get() = phase == QuizPhase.RESULT || phase == QuizPhase.REVIEW
+
 	val reviewQuestionIndices: List<Int>
-		get() = questions.indices.filter { answers.getOrNull(it) != questions[it].correct }
+		get() = questions.indices.sortedBy { outcomeAt(it) == ReviewOutcome.CORRECT }
 
 	val reviewTotal: Int get() = reviewQuestionIndices.size
 
@@ -39,11 +45,31 @@ internal data class PreflopQuizSessionState(
 	val reviewQuestions: List<PreflopQuizQuestion>
 		get() = reviewQuestionIndices.map { questions[it] }
 
+	val reviewOutcomes: List<ReviewOutcome>
+		get() = reviewQuestionIndices.map { outcomeAt(it) }
+
 	val reviewQuestion: PreflopQuizQuestion?
 		get() = reviewQuestionIndices.getOrNull(reviewIndex)?.let { questions[it] }
 
+	val reviewChart: PreflopChart?
+		get() = reviewQuestion?.let {
+			charts[PreflopChartQuery(it.stack, it.scenario, it.hero, it.villain)]
+		}
+
 	val reviewUserAnswer: PreflopAction?
 		get() = reviewQuestionIndices.getOrNull(reviewIndex)?.let { answers.getOrNull(it) }
+
+	val reviewOutcome: ReviewOutcome?
+		get() = reviewQuestionIndices.getOrNull(reviewIndex)?.let { outcomeAt(it) }
+
+	private fun outcomeAt(index: Int): ReviewOutcome {
+		val answer = answers.getOrNull(index)
+		return when {
+			answer == null -> ReviewOutcome.SKIPPED
+			answer == questions[index].correct -> ReviewOutcome.CORRECT
+			else -> ReviewOutcome.WRONG
+		}
+	}
 }
 
 internal data class QuizResult(

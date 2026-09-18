@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.VerticalSpacer
+import com.hand.log.designsystem.etc.LocalAiReviewAvailable
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.HandRecord
 import androidx.compose.ui.graphics.rememberGraphicsLayer
@@ -90,11 +91,13 @@ internal fun HandDetailContent(
 			memo = hand.memo.orEmpty(),
 			onClick = onMemoClick,
 		)
-		HandReviewSection(
-			status = reviewStatus,
-			text = reviewText,
-			onRequestReview = onRequestReview,
-		)
+		if (LocalAiReviewAvailable.current) {
+			HandReviewSection(
+				status = reviewStatus,
+				text = reviewText,
+				onRequestReview = onRequestReview,
+			)
+		}
 		VerticalSpacer(32.dp)
 	}
 

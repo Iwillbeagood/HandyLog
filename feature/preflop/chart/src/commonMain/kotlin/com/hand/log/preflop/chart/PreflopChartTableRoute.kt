@@ -19,6 +19,7 @@ internal fun PreflopChartTableRoute(
 		state = state,
 		onBack = navAction::popBackStack,
 		onSeatSelect = viewModel::selectSeat,
+		onStackSelect = viewModel::selectStack,
 		onPrev = viewModel::prevHero,
 		onNext = viewModel::nextHero,
 	)

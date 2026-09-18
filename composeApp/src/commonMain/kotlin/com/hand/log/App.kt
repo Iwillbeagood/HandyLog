@@ -18,6 +18,7 @@ import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.ThemeMode
 import com.hand.log.domain.model.etc.ToastDurationType
+import com.hand.log.domain.repository.AiReviewRepository
 import com.hand.log.domain.repository.AppSettingsRepository
 import com.hand.log.domain.repository.ProEntitlementRepository
 import com.hand.log.handdetail.di.featureHandDetailModule
@@ -26,6 +27,7 @@ import com.hand.log.local.datastore.di.dataStoreDataSourceModule
 import com.hand.log.local.datastore.di.dataStoreModule
 import com.hand.log.main.MainScreen
 import com.hand.log.main.di.featureMainModule
+import com.hand.log.designsystem.etc.LocalAiReviewAvailable
 import com.hand.log.designsystem.etc.LocalProStatus
 import com.hand.log.navigation.interop.LocalMainActionInterop
 import com.hand.log.navigation.interop.MainActionInterop
@@ -65,9 +67,11 @@ internal fun App() {
 
 	val appSettingsRepository: AppSettingsRepository = koinInject()
 	val proEntitlementRepository: ProEntitlementRepository = koinInject()
+	val aiReviewRepository: AiReviewRepository = koinInject()
 	LaunchedEffect(Unit) {
 		// 앱 시작 시 스토어와 엔타이틀먼트 재동기화(서버리스: 복원·구매 반영).
 		proEntitlementRepository.refresh()
+		aiReviewRepository.refreshAvailability()
 	}
 	val themeMode by appSettingsRepository.observeThemeMode()
 		.collectAsStateWithLifecycle(initialValue = ThemeMode.AUTO)
@@ -81,9 +85,13 @@ internal fun App() {
 	val isPro by proEntitlementRepository.observeIsPro()
 		.collectAsStateWithLifecycle(initialValue = false)
 
+	val aiReviewAvailable by aiReviewRepository.observeAvailable()
+		.collectAsStateWithLifecycle(initialValue = true)
+
 	CompositionLocalProvider(
 		LocalMainActionInterop provides mainActionInterop,
 		LocalProStatus provides isPro,
+		LocalAiReviewAvailable provides aiReviewAvailable,
 	) {
 		HandLogTheme(darkTheme = darkTheme) {
 			StatusBarEffect(

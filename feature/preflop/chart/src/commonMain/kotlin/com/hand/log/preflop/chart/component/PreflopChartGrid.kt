@@ -1,6 +1,7 @@
 package com.hand.log.preflop.chart.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -17,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
@@ -28,9 +30,10 @@ import com.hand.log.domain.model.preflop.PreflopHand
 private val CELL_GAP = 2.dp
 
 @Composable
-internal fun PreflopChartGrid(
+fun PreflopChartGrid(
 	chart: PreflopChart,
 	modifier: Modifier = Modifier,
+	highlightHand: PreflopHand? = null,
 ) {
 	BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
 		val cellSize = (maxWidth - CELL_GAP * 12) / 13
@@ -43,6 +46,7 @@ internal fun PreflopChartGrid(
 							hand = hand,
 							action = chart.actionFor(hand),
 							size = cellSize,
+							highlighted = hand == highlightHand,
 						)
 					}
 				}
@@ -56,6 +60,7 @@ private fun HandCell(
 	hand: PreflopHand,
 	action: PreflopAction?,
 	size: Dp,
+	highlighted: Boolean,
 ) {
 	val colors = HandyTheme.colorScheme
 
@@ -65,11 +70,14 @@ private fun HandCell(
 	} else {
 		actionColors(action)
 	}
+	val shape = RoundedCornerShape(3.dp)
 	Box(
 		modifier = Modifier
 			.size(size)
-			.clip(RoundedCornerShape(3.dp))
-			.background(background),
+			.then(if (highlighted) Modifier.zIndex(1f) else Modifier)
+			.clip(shape)
+			.background(background)
+			.then(if (highlighted) Modifier.border(2.dp, colors.gold, shape) else Modifier),
 		contentAlignment = Alignment.Center,
 	) {
 		Text(
@@ -82,20 +90,31 @@ private fun HandCell(
 	}
 }
 
+private val previewChart = PreflopChart(
+	actions = mapOf(
+		"AA" to PreflopAction.RAISE,
+		"AKs" to PreflopAction.THREE_BET,
+		"KQs" to PreflopAction.FOUR_BET,
+		"99" to PreflopAction.CALL,
+		"A2s" to PreflopAction.ALL_IN,
+	),
+)
+
 @ThemePreviews
 @Composable
 private fun PreflopChartGridPreview() {
 	ThemePreview {
+		PreflopChartGrid(chart = previewChart)
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun PreflopChartGridHighlightedPreview() {
+	ThemePreview {
 		PreflopChartGrid(
-			chart = PreflopChart(
-				actions = mapOf(
-					"AA" to PreflopAction.RAISE,
-					"AKs" to PreflopAction.THREE_BET,
-					"KQs" to PreflopAction.FOUR_BET,
-					"99" to PreflopAction.CALL,
-					"A2s" to PreflopAction.ALL_IN,
-				),
-			),
+			chart = previewChart,
+			highlightHand = PreflopGrid.rows[1][1],
 		)
 	}
 }

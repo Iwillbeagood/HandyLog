@@ -25,18 +25,18 @@ import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.FadeAnimatedContent
 import com.hand.log.designsystem.component.HandyHorizontalDivider
 import com.hand.log.designsystem.component.RegularButton
+import com.hand.log.designsystem.etc.LocalAiReviewAvailable
 import com.hand.log.designsystem.etc.ThemePreview
 import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
-import com.hand.log.domain.model.Position
 import com.hand.log.domain.model.preflop.PreflopAction
-import com.hand.log.domain.model.preflop.PreflopScenario
-import com.hand.log.domain.model.preflop.PreflopStack
+import com.hand.log.preflop.chart.component.PreflopChartGrid
+import com.hand.log.preflop.chart.component.PreflopChartLegend
 import com.hand.log.preflop.quiz.session.contract.PreflopQuizSessionState
 import com.hand.log.preflop.quiz.session.contract.QuizPhase
+import com.hand.log.preflop.quiz.session.contract.ReviewOutcome
 import com.hand.log.preflop.quiz.session.contract.ReviewStatus
 import handylog.core.res.generated.resources.Res
-import handylog.core.res.generated.resources.grid_3x3
 import handylog.core.res.generated.resources.quiz_progress
 import handylog.core.res.generated.resources.quiz_review_correct_answer
 import handylog.core.res.generated.resources.quiz_review_cta
@@ -48,7 +48,6 @@ import handylog.core.res.generated.resources.quiz_review_prev
 import handylog.core.res.generated.resources.quiz_review_skipped
 import handylog.core.res.generated.resources.quiz_review_title
 import handylog.core.res.generated.resources.quiz_review_your_answer
-import handylog.core.res.generated.resources.quiz_view_chart
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -59,18 +58,21 @@ internal fun ReviewContent(
 	onSelectReview: (Int) -> Unit,
 	onExitReview: () -> Unit,
 	onRequestReview: () -> Unit,
-	onViewChart: (PreflopStack, PreflopScenario, Position, Position?) -> Unit,
 ) {
 	val colors = HandyTheme.colorScheme
 	val question = state.reviewQuestion ?: return
+	val aiReviewAvailable = LocalAiReviewAvailable.current
 
-	LaunchedEffect(state.reviewIndex) { onRequestReview() }
+	if (aiReviewAvailable) {
+		LaunchedEffect(state.reviewIndex) { onRequestReview() }
+	}
 
 	val villainAction = villainActionLabel(question.scenario)
 
 	Column(modifier = Modifier.fillMaxSize()) {
 		ReviewSelector(
 			questions = state.reviewQuestions,
+			outcomes = state.reviewOutcomes,
 			selectedIndex = state.reviewIndex,
 			onSelect = onSelectReview,
 		)
@@ -111,6 +113,11 @@ internal fun ReviewContent(
 				val userAnswer = state.reviewUserAnswer
 				val userText = userAnswer?.let { answerReviewText(it) }
 					?: stringResource(Res.string.quiz_review_skipped)
+				val userAnswerColor = when (state.reviewOutcome) {
+					ReviewOutcome.CORRECT -> colors.primary
+					ReviewOutcome.WRONG -> colors.error
+					else -> colors.textSecondary
+				}
 				Row(
 					modifier = Modifier.fillMaxWidth(),
 					horizontalArrangement = Arrangement.SpaceBetween,
@@ -123,7 +130,7 @@ internal fun ReviewContent(
 					Text(
 						text = userText,
 						style = HandyTheme.typography.bold14,
-						color = colors.error,
+						color = userAnswerColor,
 					)
 				}
 				Row(
@@ -143,24 +150,29 @@ internal fun ReviewContent(
 				}
 			}
 
-			FadeAnimatedContent(state.reviewStatus) { status ->
-				ReviewSection(
-					status = status,
-					text = state.reviewText,
-					onRequestReview = onRequestReview,
-				)
+			if (aiReviewAvailable) {
+				FadeAnimatedContent(state.reviewStatus) { status ->
+					ReviewSection(
+						status = status,
+						text = state.reviewText,
+						onRequestReview = onRequestReview,
+					)
+				}
 			}
 
-			RegularButton(
-				onClick = {
-					onViewChart(question.stack, question.scenario, question.hero, question.villain)
-				},
-				text = stringResource(Res.string.quiz_view_chart),
-				textStyle = HandyTheme.typography.bold14,
-				outlined = true,
-				leadingIcon = Res.drawable.grid_3x3,
-				borderStroke = 10.dp,
-			)
+			state.reviewChart?.let { chart ->
+				Column(
+					modifier = Modifier
+						.fillMaxWidth()
+						.clip(RoundedCornerShape(12.dp))
+						.background(colors.card)
+						.padding(16.dp),
+					verticalArrangement = Arrangement.spacedBy(12.dp),
+				) {
+					PreflopChartGrid(chart = chart, highlightHand = question.hand)
+					PreflopChartLegend(actions = chart.presentActions)
+				}
+			}
 		}
 
 		Column(modifier = Modifier.fillMaxWidth().background(colors.card)) {
@@ -290,7 +302,6 @@ private fun ReviewContentPreview() {
 				onSelectReview = {},
 				onExitReview = {},
 				onRequestReview = {},
-				onViewChart = { _, _, _, _ -> },
 			)
 		}
 	}
