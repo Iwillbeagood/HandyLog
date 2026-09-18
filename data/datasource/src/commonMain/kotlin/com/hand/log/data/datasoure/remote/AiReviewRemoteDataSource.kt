@@ -5,4 +5,8 @@ import com.hand.log.domain.model.preflop.QuizReviewSpot
 interface AiReviewRemoteDataSource {
 	suspend fun reviewQuizSpot(spot: QuizReviewSpot): String
 	suspend fun reviewHand(handHistory: String, languageName: String): String
+
+	suspend fun isAvailable(): Boolean
 }
+
+class AiReviewUnavailableException(cause: Throwable) : Exception(cause)

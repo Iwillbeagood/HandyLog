@@ -1,12 +1,19 @@
 package com.hand.log.data.datasoure.remote.model
 
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class OpenAiChatRequest(
 	val model: String,
 	val messages: List<OpenAiMessage>,
 	val temperature: Double,
+	@EncodeDefault(EncodeDefault.Mode.NEVER)
+	@SerialName("max_tokens")
+	val maxTokens: Int? = null,
 )
 
 @Serializable
