@@ -3580,7 +3580,7 @@
 				}
 			},
 			"openraise_heuristic": {
-				"method": "same-stack modal tier of resolved RFI siblings, else Chen (<8 fold / 8-9 call / >=10 value); value pole 4bet Jam at this depth",
+				"method": "same-stack modal tier of resolved RFI siblings, else Chen (<8 fold / 8-9 call / >=10 value); value pole 4bet Jam",
 				"note": "no RYE open-raise refinement; pole by sibling/hand strength",
 				"hands": [
 					"43s",
