@@ -419,13 +419,11 @@
 	<string name="preflop_action_raise_jam">레이즈/4벳 올인</string>
 	<string name="preflop_action_3bet">3벳</string>
 	<string name="preflop_action_3bet_bluff">3벳 블러프</string>
-	<string name="preflop_action_3bet_stackoff">3벳/스택오프</string>
 	<string name="preflop_action_3bet_fold">3벳/폴드</string>
 	<string name="preflop_action_3bet_call">3벳/콜</string>
-	<string name="preflop_action_3bet_jam">3벳 올인</string>
+	<string name="preflop_action_3bet_jam">3벳/5벳 올인</string>
 	<string name="preflop_action_4bet">4벳</string>
 	<string name="preflop_action_4bet_bluff">4벳 블러프</string>
-	<string name="preflop_action_stackoff">스택오프</string>
 	<string name="preflop_action_allin">올인</string>
 	<string name="preflop_action_limp">림프</string>
 	<string name="preflop_action_check">체크</string>

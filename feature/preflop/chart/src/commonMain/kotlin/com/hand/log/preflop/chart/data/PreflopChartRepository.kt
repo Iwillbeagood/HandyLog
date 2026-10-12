@@ -28,6 +28,7 @@ data class PreflopCatalog(
 class PreflopChartRepository {
 
 	private val files = listOf(
+		"files/10bb_preflop_charts.json",
 		"files/15bb_preflop_charts.json",
 		"files/25bb_preflop_charts.json",
 		"files/40bb_preflop_charts.json",
@@ -85,31 +86,26 @@ class PreflopChartRepository {
 		else -> null // 그 외 Blind vs Blind(SB 시점·올인·잼 라인 등)는 제외
 	}
 
-	/**
-	 * 원본 액션 문자열을 [PreflopAction] 으로 매핑한다. "3-bet/Fold to 4bet", "Raise/Call 3bet" 처럼
-	 * "베이스 액션 + 대응 계획" 형태의 복합 표기는 계획 키워드(Jam/Fold/Call/4bet/Stackoff/Bluff)로 세분한다.
-	 */
 	private fun actionOf(value: String, scenario: PreflopScenario): PreflopAction? = when {
 		value == "Not in Range" -> null
 		// VS_LIMP 에서 BB 는 폴드 대신 무료로 체크한다.
 		value == "Fold" -> if (scenario == PreflopScenario.VS_LIMP) PreflopAction.CHECK else PreflopAction.FOLD
 		// RFI(첫 오픈)에서 "Call" 은 콜이 아니라 블라인드 컴플리트 = 림프다. (SB 전용)
 		value == "Call" -> if (scenario == PreflopScenario.RFI) PreflopAction.LIMP else PreflopAction.CALL
-		value == "Limp" -> PreflopAction.LIMP
+		value.startsWith("Limp") -> PreflopAction.LIMP
 		value == "Check" -> PreflopAction.CHECK
 		value == "All-in" -> PreflopAction.ALL_IN
 		value.startsWith("4-bet") ->
 			if (value.contains("Bluff")) PreflopAction.FOUR_BET_BLUFF else PreflopAction.FOUR_BET
 		value.startsWith("3-bet") -> when {
-			value.contains("Jam") -> PreflopAction.THREE_BET_JAM
+			value.contains("Jam") || value.contains("All-in") -> PreflopAction.THREE_BET_JAM
 			value.contains("Fold") -> PreflopAction.THREE_BET_FOLD
 			value.contains("Call") -> PreflopAction.THREE_BET_CALL
-			value.contains("Stackoff") -> PreflopAction.THREE_BET_STACKOFF
 			value.contains("Bluff") -> PreflopAction.THREE_BET_BLUFF
 			else -> PreflopAction.THREE_BET
 		}
 		value.startsWith("Raise") -> when {
-			value.contains("Jam") || value.contains("shove") -> PreflopAction.RAISE_JAM
+			value.contains("Jam") || value.contains("All-in") -> PreflopAction.RAISE_JAM
 			value.contains("4bet") -> PreflopAction.RAISE_4BET
 			value.contains("Fold") -> PreflopAction.RAISE_FOLD
 			value.contains("Call") -> PreflopAction.RAISE_CALL

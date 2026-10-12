@@ -7,7 +7,6 @@ import handylog.core.res.generated.resources.preflop_action_3bet_bluff
 import handylog.core.res.generated.resources.preflop_action_3bet_call
 import handylog.core.res.generated.resources.preflop_action_3bet_fold
 import handylog.core.res.generated.resources.preflop_action_3bet_jam
-import handylog.core.res.generated.resources.preflop_action_3bet_stackoff
 import handylog.core.res.generated.resources.preflop_action_4bet
 import handylog.core.res.generated.resources.preflop_action_4bet_bluff
 import handylog.core.res.generated.resources.preflop_action_allin
@@ -21,7 +20,6 @@ import handylog.core.res.generated.resources.preflop_action_raise_bluff
 import handylog.core.res.generated.resources.preflop_action_raise_call
 import handylog.core.res.generated.resources.preflop_action_raise_fold
 import handylog.core.res.generated.resources.preflop_action_raise_jam
-import handylog.core.res.generated.resources.preflop_action_stackoff
 import org.jetbrains.compose.resources.StringResource
 
 /**
@@ -37,7 +35,6 @@ fun PreflopAction.answerLabelRes(): StringResource = when (this) {
 	PreflopAction.RAISE_JAM -> Res.string.preflop_action_raise_jam
 	PreflopAction.THREE_BET -> Res.string.preflop_action_3bet
 	PreflopAction.THREE_BET_BLUFF -> Res.string.preflop_action_3bet_bluff
-	PreflopAction.THREE_BET_STACKOFF -> Res.string.preflop_action_3bet_stackoff
 	PreflopAction.THREE_BET_FOLD -> Res.string.preflop_action_3bet_fold
 	PreflopAction.THREE_BET_CALL -> Res.string.preflop_action_3bet_call
 	PreflopAction.THREE_BET_JAM -> Res.string.preflop_action_3bet_jam
@@ -64,7 +61,6 @@ fun PreflopAction.primaryAction(): PreflopAction = when (this) {
 	-> PreflopAction.RAISE
 	PreflopAction.THREE_BET,
 	PreflopAction.THREE_BET_BLUFF,
-	PreflopAction.THREE_BET_STACKOFF,
 	PreflopAction.THREE_BET_FOLD,
 	PreflopAction.THREE_BET_CALL,
 	PreflopAction.THREE_BET_JAM,
@@ -81,7 +77,6 @@ fun PreflopAction.hasResponsePlan(): Boolean = when (this) {
 	PreflopAction.RAISE_CALL,
 	PreflopAction.RAISE_4BET,
 	PreflopAction.RAISE_JAM,
-	PreflopAction.THREE_BET_STACKOFF,
 	PreflopAction.THREE_BET_FOLD,
 	PreflopAction.THREE_BET_CALL,
 	PreflopAction.THREE_BET_JAM,
@@ -113,6 +108,5 @@ fun PreflopAction.planLabelRes(): StringResource = when (this) {
 	PreflopAction.RAISE_CALL, PreflopAction.THREE_BET_CALL -> Res.string.preflop_action_call
 	PreflopAction.RAISE_4BET -> Res.string.preflop_action_4bet
 	PreflopAction.RAISE_JAM, PreflopAction.THREE_BET_JAM -> Res.string.preflop_action_allin
-	PreflopAction.THREE_BET_STACKOFF -> Res.string.preflop_action_stackoff
 	else -> answerLabelRes()
 }
