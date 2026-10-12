@@ -5,6 +5,7 @@ package com.hand.log.domain.model.preflop
  * (대소문자 무시로 매칭 — 생성 데이터의 casing 차이로 스택 전체가 조용히 누락되지 않도록).
  */
 enum class PreflopStack(val label: String) {
+	BB10("10BB"),
 	BB15("15BB"),
 	BB25("25BB"),
 	BB40("40BB"),

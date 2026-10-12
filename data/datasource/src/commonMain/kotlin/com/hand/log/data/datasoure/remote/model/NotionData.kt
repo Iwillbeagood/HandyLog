@@ -13,7 +13,7 @@ import kotlinx.serialization.json.JsonObject
 data class NotionPageRequest(
 	val parent: NotionParent,
 	val properties: JsonObject,
-	val children: JsonArray? = null,
+	val children: JsonArray = JsonArray(emptyList()),
 )
 
 @Serializable

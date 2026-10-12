@@ -17,7 +17,6 @@ enum class PreflopAction {
 	// 3벳 계열 — 3벳 후 4벳에 대한 대응 계획까지 구분.
 	THREE_BET,
 	THREE_BET_BLUFF,
-	THREE_BET_STACKOFF,
 	THREE_BET_FOLD,
 	THREE_BET_CALL,
 	THREE_BET_JAM,

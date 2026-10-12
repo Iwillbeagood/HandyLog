@@ -418,13 +418,11 @@
 	<string name="preflop_action_raise_jam">レイズ/4ベット オールイン</string>
 	<string name="preflop_action_3bet">3ベット</string>
 	<string name="preflop_action_3bet_bluff">3ベット ブラフ</string>
-	<string name="preflop_action_3bet_stackoff">3ベット/スタックオフ</string>
 	<string name="preflop_action_3bet_fold">3ベット/フォールド</string>
 	<string name="preflop_action_3bet_call">3ベット/コール</string>
-	<string name="preflop_action_3bet_jam">3ベット オールイン</string>
+	<string name="preflop_action_3bet_jam">3ベット/5ベット オールイン</string>
 	<string name="preflop_action_4bet">4ベット</string>
 	<string name="preflop_action_4bet_bluff">4ベット ブラフ</string>
-	<string name="preflop_action_stackoff">スタックオフ</string>
 	<string name="preflop_action_allin">オールイン</string>
 	<string name="preflop_action_limp">リンプ</string>
 	<string name="preflop_action_check">チェック</string>

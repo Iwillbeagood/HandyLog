@@ -418,13 +418,11 @@
 	<string name="preflop_action_raise_jam">Raise/4-Bet Jam</string>
 	<string name="preflop_action_3bet">3-Bet</string>
 	<string name="preflop_action_3bet_bluff">3-Bet (Bluff)</string>
-	<string name="preflop_action_3bet_stackoff">3-Bet/Stack-off</string>
 	<string name="preflop_action_3bet_fold">3-Bet/Fold</string>
 	<string name="preflop_action_3bet_call">3-Bet/Call</string>
-	<string name="preflop_action_3bet_jam">3-Bet Jam</string>
+	<string name="preflop_action_3bet_jam">3-Bet/5-Bet Jam</string>
 	<string name="preflop_action_4bet">4-Bet</string>
 	<string name="preflop_action_4bet_bluff">4-Bet (Bluff)</string>
-	<string name="preflop_action_stackoff">Stack-off</string>
 	<string name="preflop_action_allin">All-in</string>
 	<string name="preflop_action_limp">Limp</string>
 	<string name="preflop_action_check">Check</string>

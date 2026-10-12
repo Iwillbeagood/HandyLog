@@ -174,9 +174,8 @@ class FeedbackRemoteDataSourceImpl(
 		return uploadId
 	}
 
-	private fun List<String>.toImageBlocks(): JsonArray? {
-		if (isEmpty()) return null
-		return buildJsonArray {
+	private fun List<String>.toImageBlocks(): JsonArray =
+		buildJsonArray {
 			forEach { uploadId ->
 				add(
 					buildJsonObject {
@@ -192,7 +191,6 @@ class FeedbackRemoteDataSourceImpl(
 				)
 			}
 		}
-	}
 
 	private fun String.toFileExtension(): String = when (this) {
 		"image/png" -> "png"
