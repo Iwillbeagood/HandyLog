@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -132,9 +131,8 @@ internal class TableEditViewModel(
 
 	companion object {
 		@OptIn(ExperimentalTime::class)
-		@Suppress("DEPRECATION")
 		private fun todayString(): String =
-			Instant.fromEpochMilliseconds(Clock.System.now().toEpochMilliseconds())
+			Clock.System.now()
 				.toLocalDateTime(TimeZone.currentSystemDefault())
 				.date
 				.toString()

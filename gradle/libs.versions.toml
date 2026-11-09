@@ -32,7 +32,7 @@ kotlin = "2.4.0"
 # https://github.com/Kotlin/kotlinx.serializationw
 kotlinxSerializationJson = "1.8.1"
 # https://github.com/Kotlin/kotlinx-datetime/releases
-kotlinxDatetime = "0.6.2"
+kotlinxDatetime = "0.7.1"
 # https://github.com/Kotlin/kotlinx.collections.immutable
 kotlinxImmutable = "0.4.0"
 
