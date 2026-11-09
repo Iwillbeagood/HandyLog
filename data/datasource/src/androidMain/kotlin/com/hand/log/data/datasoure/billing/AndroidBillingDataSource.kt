@@ -17,7 +17,16 @@ import com.hand.log.domain.model.billing.PurchaseResult
 import com.hand.log.domain.repository.ProEntitlementRepository
 import com.hand.log.platform.activityProvider
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.resume
 
 /**
@@ -30,22 +39,35 @@ internal class AndroidBillingDataSource(
 
 	private val productId = ProEntitlementRepository.PRO_PRODUCT_ID
 
+	private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+	private val connectionMutex = Mutex()
+
+	private val _purchaseCompleted = MutableSharedFlow<Unit>(extraBufferCapacity = 8)
+	override val purchaseCompleted: Flow<Unit> = _purchaseCompleted.asSharedFlow()
+
 	/** 진행 중인 결제 플로우의 결과를 [PurchasesUpdatedListener] 에서 완료시키기 위한 채널. */
 	private var pendingPurchase: CompletableDeferred<PurchaseResult>? = null
 
 	private val purchasesListener = PurchasesUpdatedListener { result, purchases ->
-		val deferred = pendingPurchase
-		when (result.responseCode) {
-			BillingClient.BillingResponseCode.OK -> {
-				val purchased = purchases?.any { productId in it.products } == true
-				deferred?.complete(if (purchased) PurchaseResult.Success else PurchaseResult.Cancelled)
+		val ours = purchases.orEmpty().filter { productId in it.products }
+		if (result.responseCode == BillingClient.BillingResponseCode.OK) {
+			ours.filter { it.purchaseState == Purchase.PurchaseState.PURCHASED }.forEach { purchase ->
+				scope.launch {
+					acknowledgeIfNeeded(purchase)
+					_purchaseCompleted.emit(Unit)
+				}
 			}
+		}
+		val deferred = pendingPurchase ?: return@PurchasesUpdatedListener
+		when (result.responseCode) {
+			BillingClient.BillingResponseCode.OK -> deferred.complete(ours.toPurchaseResult())
 			BillingClient.BillingResponseCode.USER_CANCELED ->
-				deferred?.complete(PurchaseResult.Cancelled)
+				deferred.complete(PurchaseResult.Cancelled)
 			BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED ->
-				deferred?.complete(PurchaseResult.AlreadyOwned)
+				deferred.complete(PurchaseResult.AlreadyOwned)
 			else ->
-				deferred?.complete(PurchaseResult.Failure(result.debugMessage))
+				deferred.complete(PurchaseResult.Failure(result.debugMessage))
 		}
 	}
 
@@ -56,9 +78,15 @@ internal class AndroidBillingDataSource(
 		)
 		.build()
 
-	private suspend fun ensureReady(): Boolean {
-		if (billingClient.isReady) return true
-		return suspendCancellableCoroutine { cont ->
+	private fun List<Purchase>.toPurchaseResult(): PurchaseResult = when {
+		any { it.purchaseState == Purchase.PurchaseState.PURCHASED } -> PurchaseResult.Success
+		any { it.purchaseState == Purchase.PurchaseState.PENDING } -> PurchaseResult.Pending
+		else -> PurchaseResult.Cancelled
+	}
+
+	private suspend fun ensureReady(): Boolean = connectionMutex.withLock {
+		if (billingClient.isReady) return@withLock true
+		suspendCancellableCoroutine { cont ->
 			billingClient.startConnection(object : BillingClientStateListener {
 				override fun onBillingSetupFinished(result: BillingResult) {
 					if (cont.isActive) {
@@ -92,14 +120,19 @@ internal class AndroidBillingDataSource(
 		}
 	}
 
-	private suspend fun queryPurchases(): List<Purchase> {
-		if (!ensureReady()) return emptyList()
+	private suspend fun queryOwnPurchases(): List<Purchase>? {
+		if (!ensureReady()) return null
 		val params = QueryPurchasesParams.newBuilder()
 			.setProductType(BillingClient.ProductType.INAPP)
 			.build()
 		return suspendCancellableCoroutine { cont ->
-			billingClient.queryPurchasesAsync(params) { _, purchases ->
-				if (cont.isActive) cont.resume(purchases)
+			billingClient.queryPurchasesAsync(params) { result, purchases ->
+				if (!cont.isActive) return@queryPurchasesAsync
+				if (result.responseCode == BillingClient.BillingResponseCode.OK) {
+					cont.resume(purchases.filter { productId in it.products })
+				} else {
+					cont.resume(null)
+				}
 			}
 		}
 	}
@@ -123,14 +156,13 @@ internal class AndroidBillingDataSource(
 		return ProProduct(id = details.productId, formattedPrice = price)
 	}
 
-	override suspend fun isPurchased(): Boolean {
+	override suspend fun isPurchased(): Boolean? {
 		// 앱 밖에서 리딤된 구매(프로모 코드 등)도 이 경로로 처음 감지되므로 여기서 승인한다.
 		// 3일 내 미승인 시 Play 가 자동 환불하므로, restore 뿐 아니라 시작 시 동기화에서도 반드시 승인해야
 		// 재설치·기기 변경 후에도 소유가 유지된다.
-		val owned = queryPurchases().filter { purchase ->
-			productId in purchase.products &&
-				purchase.purchaseState == Purchase.PurchaseState.PURCHASED
-		}
+		val owned = queryOwnPurchases()
+			?.filter { it.purchaseState == Purchase.PurchaseState.PURCHASED }
+			?: return null
 		owned.forEach { acknowledgeIfNeeded(it) }
 		return owned.isNotEmpty()
 	}
@@ -161,21 +193,28 @@ internal class AndroidBillingDataSource(
 
 		val result = deferred.await()
 		pendingPurchase = null
-		if (result is PurchaseResult.Success || result is PurchaseResult.AlreadyOwned) {
-			queryPurchases()
-				.filter { productId in it.products }
-				.forEach { acknowledgeIfNeeded(it) }
+		return if (result == PurchaseResult.AlreadyOwned) resolveAlreadyOwned() else result
+	}
+
+	private suspend fun resolveAlreadyOwned(): PurchaseResult {
+		val purchases = queryOwnPurchases()
+			?: return PurchaseResult.Failure("Store unavailable")
+		purchases.forEach { acknowledgeIfNeeded(it) }
+		return when (purchases.toPurchaseResult()) {
+			PurchaseResult.Success -> PurchaseResult.AlreadyOwned
+			PurchaseResult.Pending -> PurchaseResult.Pending
+			else -> PurchaseResult.Failure("Owned purchase not found")
 		}
-		return result
 	}
 
 	override suspend fun restore(): PurchaseResult {
-		if (!ensureReady()) return PurchaseResult.Failure("Store unavailable")
-		val owned = queryPurchases().filter {
-			productId in it.products && it.purchaseState == Purchase.PurchaseState.PURCHASED
+		val purchases = queryOwnPurchases()
+			?: return PurchaseResult.Failure("Store unavailable")
+		purchases.forEach { acknowledgeIfNeeded(it) }
+		return when (purchases.toPurchaseResult()) {
+			PurchaseResult.Success -> PurchaseResult.Success
+			PurchaseResult.Pending -> PurchaseResult.Pending
+			else -> PurchaseResult.NothingToRestore
 		}
-		if (owned.isEmpty()) return PurchaseResult.NothingToRestore
-		owned.forEach { acknowledgeIfNeeded(it) }
-		return PurchaseResult.Success
 	}
 }

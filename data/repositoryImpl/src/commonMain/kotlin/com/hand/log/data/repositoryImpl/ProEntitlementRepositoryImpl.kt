@@ -5,21 +5,33 @@ import com.hand.log.data.datasoure.local.EntitlementLocalDataSource
 import com.hand.log.domain.model.billing.ProProduct
 import com.hand.log.domain.model.billing.PurchaseResult
 import com.hand.log.domain.repository.ProEntitlementRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 
 internal class ProEntitlementRepositoryImpl(
 	private val entitlementLocalDataSource: EntitlementLocalDataSource,
 	private val billingDataSource: BillingDataSource,
 ) : ProEntitlementRepository {
 
+	private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+	init {
+		scope.launch {
+			billingDataSource.purchaseCompleted.collect {
+				entitlementLocalDataSource.setProEntitled(true)
+			}
+		}
+	}
+
 	override fun observeIsPro(): Flow<Boolean> =
 		entitlementLocalDataSource.observeProEntitled()
 
 	override suspend fun refresh() {
-		// 서버가 없으므로 환불 회수는 불가 — 스토어가 소유를 확인해줄 때만 권한을 부여한다.
-		if (billingDataSource.isPurchased()) {
-			entitlementLocalDataSource.setProEntitled(true)
-		}
+		val purchased = billingDataSource.isPurchased() ?: return
+		entitlementLocalDataSource.setProEntitled(purchased)
 	}
 
 	override suspend fun getProduct(): ProProduct? = billingDataSource.queryProduct()
