@@ -4,25 +4,25 @@ import com.hand.log.domain.model.Player
 import com.hand.log.domain.model.SavedPlayer
 import com.hand.log.domain.repository.HandRecordRepository
 import com.hand.log.domain.repository.PokerTableRepository
-import com.hand.log.domain.repository.SavedPlayerRepository
 
 class MarkPlayerOnHandUseCase(
-	private val savedPlayerRepository: SavedPlayerRepository,
+	private val getOrCreateSavedPlayer: GetOrCreateSavedPlayerUseCase,
 	private val handRecordRepository: HandRecordRepository,
 	private val pokerTableRepository: PokerTableRepository,
 ) {
 
-	suspend operator fun invoke(player: SavedPlayer, handId: String, seat: Int) {
-		savedPlayerRepository.savePlayer(player)
-		val saved = savedPlayerRepository.getPlayerByName(player.name) ?: return
-		val hand = handRecordRepository.getHandById(handId) ?: return
+	suspend operator fun invoke(player: SavedPlayer, handId: String, seat: Int): Result {
+		val hand = handRecordRepository.getHandById(handId) ?: return Result.NotFound
+		val saved = when (val result = getOrCreateSavedPlayer(player)) {
+			is GetOrCreateSavedPlayerUseCase.Result.Found -> result.player
+			GetOrCreateSavedPlayerUseCase.Result.LimitReached -> return Result.PlayerLimitReached
+			GetOrCreateSavedPlayerUseCase.Result.Failed -> return Result.NotFound
+		}
 
-		// players 리스트 업데이트
 		val updatedPlayers = hand.players.map { p ->
 			if (p.seat == seat) p.copy(savedPlayerId = saved.id, playerName = saved.name) else p
 		}
 
-		// Action의 playerName/savedPlayerId도 업데이트 (하위 호환)
 		val updatedPreflop = hand.streets.preflop.copy(
 			actions = hand.streets.preflop.actions.map { action ->
 				if (action.playerSeat == seat) {
@@ -33,20 +33,26 @@ class MarkPlayerOnHandUseCase(
 			},
 		)
 
-		val updatedHand = hand.copy(
-			players = updatedPlayers,
-			streets = hand.streets.copy(preflop = updatedPreflop),
+		handRecordRepository.saveHand(
+			hand.copy(
+				players = updatedPlayers,
+				streets = hand.streets.copy(preflop = updatedPreflop),
+			),
 		)
-		handRecordRepository.saveHand(updatedHand)
+
+		val tableId = hand.tableId ?: return Result.Marked
+		val existingSeat = pokerTableRepository.getTableById(tableId)?.players?.find { it.seat == seat }
 		pokerTableRepository.upsertPlayer(
-			tableId = hand.tableId,
-			player = Player(
-				seat = seat,
+			tableId = tableId,
+			player = (existingSeat ?: Player(seat = seat)).copy(
 				name = saved.name,
 				savedPlayerId = saved.id,
 				tendency = saved.tendency,
 				memo = saved.memo,
 			),
 		)
+		return Result.Marked
 	}
+
+	enum class Result { Marked, PlayerLimitReached, NotFound }
 }

@@ -16,7 +16,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -31,21 +34,21 @@ internal class TableEditViewModel(
 	private val _effect = MutableSharedFlow<TableEditEffect>()
 	val effect: SharedFlow<TableEditEffect> get() = _effect.asSharedFlow()
 
-	private var editingTableId: String? = null
+	private var editingTable: PokerTable? = null
 
 	fun initialize(table: PokerTable?) {
+		editingTable = table
 		if (table != null) {
-			editingTableId = table.id
 			val cash = table.gameType as? GameType.Cash
 			val tournament = table.gameType as? GameType.Tournament
 			_state.value = TableEditState(
 				date = table.date.toString(),
 				location = table.location ?: "",
 				isCash = cash != null,
-				sbText = cash?.sb?.toLong()?.toString() ?: "",
-				bbText = cash?.bb?.toLong()?.toString() ?: "",
+				sbText = cash?.sb?.toInputText() ?: "",
+				bbText = cash?.bb?.toInputText() ?: "",
 				straddleEnabled = cash?.straddle != null,
-				straddleText = cash?.straddle?.toLong()?.toString() ?: "",
+				straddleText = cash?.straddle?.toInputText() ?: "",
 				bigBlindAnteEnabled = tournament?.isBigBlindAnte ?: true,
 				maxPlayers = table.maxPlayers.takeIf { it > 0 } ?: table.playerCount,
 				playerCount = table.playerCount,
@@ -53,7 +56,6 @@ internal class TableEditViewModel(
 				isEditMode = true,
 			)
 		} else {
-			editingTableId = null
 			_state.value = TableEditState(date = todayString())
 		}
 	}
@@ -86,32 +88,58 @@ internal class TableEditViewModel(
 		if (!s.isSubmitEnabled) return
 
 		viewModelScope.launch {
-			val players = (1..s.playerCount).map { seat -> Player(seat = seat) }
-			val table = PokerTable(
-				id = editingTableId ?: "",
-				date = LocalDate.parse(s.date),
-				location = s.location.takeIf { it.isNotBlank() },
-				gameType = s.buildGameType(),
-				maxPlayers = s.maxPlayers,
-				heroSeat = s.heroSeat,
-				players = players,
-				createdAt = 0L,
-			)
-			val savedTable = if (s.isEditMode) {
-				pokerTableRepository.updateTableInfo(table.copy(id = editingTableId!!))
-				table.copy(id = editingTableId!!)
+			val original = editingTable
+			val savedTable = if (original != null) {
+				updateTable(original, s)
 			} else {
-				createPokerTable(table)
+				createPokerTable(
+					PokerTable(
+						id = "",
+						date = LocalDate.parse(s.date),
+						location = s.location.takeIf { it.isNotBlank() },
+						gameType = s.buildGameType(),
+						maxPlayers = s.maxPlayers,
+						heroSeat = s.heroSeat,
+						players = (1..s.playerCount).map { seat -> Player(seat = seat) },
+						createdAt = 0L,
+					),
+				)
 			}
-			_effect.emit(TableEditEffect.SaveComplete(savedTable, s.isEditMode))
+			_effect.emit(TableEditEffect.SaveComplete(savedTable, original != null))
 		}
+	}
+
+	private suspend fun updateTable(editing: PokerTable, s: TableEditState): PokerTable {
+		val original = pokerTableRepository.getTableById(editing.id) ?: editing
+		val resize = original.resizeSeats(s.maxPlayers)
+		resize.removedSeats.forEach { seat -> pokerTableRepository.deletePlayer(original.id, seat) }
+		if (resize.heroSeat != original.heroSeat) {
+			val heroRow = original.players.find {
+				it.seat == original.heroSeat
+			} ?: Player(seat = original.heroSeat)
+			pokerTableRepository.upsertPlayer(original.id, heroRow.copy(seat = resize.heroSeat))
+		}
+		val updated = original.copy(
+			date = LocalDate.parse(s.date),
+			location = s.location.takeIf { it.isNotBlank() },
+			gameType = s.buildGameType(),
+			maxPlayers = s.maxPlayers,
+			heroSeat = resize.heroSeat,
+		)
+		pokerTableRepository.updateTableInfo(updated)
+		return pokerTableRepository.getTableById(original.id) ?: updated
 	}
 
 	companion object {
 		@OptIn(ExperimentalTime::class)
-		private fun todayString(): String {
-			val epochMs = Clock.System.now().toEpochMilliseconds()
-			return LocalDate.fromEpochDays((epochMs / 86400000).toInt()).toString()
-		}
+		@Suppress("DEPRECATION")
+		private fun todayString(): String =
+			Instant.fromEpochMilliseconds(Clock.System.now().toEpochMilliseconds())
+				.toLocalDateTime(TimeZone.currentSystemDefault())
+				.date
+				.toString()
+
+		private fun Double.toInputText(): String =
+			if (this % 1.0 == 0.0) toLong().toString() else toString()
 	}
 }
