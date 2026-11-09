@@ -7,13 +7,17 @@ HandyLog은 포커 핸드 트래킹 앱이다. 플레이어(=Hero)가 라이브 
 ## Table & Hand
 
 **PokerTable**:
-한 번의 테이블 착석 — 날짜·장소·게임 종류와 착석한 플레이어들. 모든 핸드는 하나의 테이블에 속해 기록된다.
+한 번의 테이블 착석 — 날짜·장소·게임 종류와 착석한 플레이어들. 핸드는 보통 하나의 테이블에 속해 기록되지만, [[Text record]]로 남긴 핸드는 테이블 없이 존재할 수 있다.
 _Avoid_: Session, Game, Room
 
 **Hand**:
 프리플랍부터 결과까지 한 판 전체. `HandRecord`로 기록되며, 사용자가 로그하고 복기하는 최소 단위.
 _Avoid_: Round, Deal, Game
 ※ "hand"는 세 가지로 쓰인다 — 한 판(이 항목), 들고 있는 두 장([[Hole cards]]), 만들어진 족보([[Hand ranking]]).
+
+**Text record** (텍스트 기록):
+테이블 없이 한 핸드를 텍스트로 바로 남기는 기록 방식. 인원·블라인드·시작 스택은 핸드 시작 시 선택 입력하며, 블라인드를 생략하면 BB 단위로 기록된다. 이렇게 남긴 핸드는 `tableId`가 없다.
+_Avoid_: Single hand(단일 핸드), Tableless hand, Standalone hand
 
 **Hero**:
 사용자 본인. 모든 핸드는 Hero의 시점에서 기록되며, 한 핸드에 Hero 좌석은 정확히 하나다.

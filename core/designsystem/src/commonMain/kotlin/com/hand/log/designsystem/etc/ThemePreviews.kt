@@ -12,7 +12,7 @@ import com.hand.log.designsystem.component.HorizontalSpacer
 import com.hand.log.designsystem.theme.HandLogTheme
 import com.hand.log.designsystem.theme.HandyTheme
 
-@Preview(name = "Dark | Light", widthDp = 720)
+@Preview(name = "Dark | Light", widthDp = 720, locale = "ko")
 @MustBeDocumented
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.FUNCTION)

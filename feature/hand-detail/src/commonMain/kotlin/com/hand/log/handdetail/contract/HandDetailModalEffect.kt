@@ -3,6 +3,7 @@ package com.hand.log.handdetail.contract
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.hand.log.domain.model.Card
+import com.hand.log.domain.model.ProFeature
 
 @Stable
 internal sealed interface HandDetailModalEffect {
@@ -28,4 +29,7 @@ internal sealed interface HandDetailModalEffect {
 		val positionName: String,
 		val selectedCards: Set<Card>,
 	) : HandDetailModalEffect
+
+	@Immutable
+	data class ShowPaywall(val feature: ProFeature) : HandDetailModalEffect
 }

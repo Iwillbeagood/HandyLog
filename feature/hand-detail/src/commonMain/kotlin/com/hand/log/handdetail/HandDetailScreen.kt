@@ -68,11 +68,13 @@ internal fun HandDetailScreen(
 						verticalAlignment = Alignment.CenterVertically,
 						horizontalArrangement = Arrangement.End,
 					) {
-						HandySwitch(
-							checked = loaded?.useBbUnit ?: false,
-							text = stringResource(Res.string.label_bb),
-							onCheckedChange = { onToggleBbUnit() },
-						)
+						FadeAnimatedVisibility(loaded?.showsUnitSwitch == true) {
+							HandySwitch(
+								checked = loaded?.useBbUnit ?: false,
+								text = stringResource(Res.string.label_bb),
+								onCheckedChange = { onToggleBbUnit() },
+							)
+						}
 					}
 				},
 				endContent = {
@@ -90,7 +92,7 @@ internal fun HandDetailScreen(
 			if (loaded != null) {
 				HandDetailContent(
 					hand = loaded.hand,
-					useBbUnit = loaded.useBbUnit,
+					useBbUnit = loaded.showsBbUnit,
 					reviewStatus = loaded.reviewStatus,
 					reviewText = loaded.reviewText,
 					onMemoClick = onMemoClick,

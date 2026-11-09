@@ -14,6 +14,10 @@ kotlin {
 			implementation(projects.core.designsystem)
 			implementation(projects.core.res)
 			implementation(projects.domain.model)
+			implementation(projects.core.utils)
+		}
+		commonTest.dependencies {
+			implementation(libs.kotlin.test)
 		}
 	}
 }

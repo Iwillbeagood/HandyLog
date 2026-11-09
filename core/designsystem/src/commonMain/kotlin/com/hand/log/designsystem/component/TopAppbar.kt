@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.etc.LocalProStatus
 import com.hand.log.designsystem.etc.clickableSingle
@@ -128,6 +129,7 @@ fun TopAppbarIcon(
 	onClick: () -> Unit,
 	modifier: Modifier = Modifier,
 	tint: Color = HandyTheme.colorScheme.textPrimary,
+	iconSize: Dp = 24.dp,
 ) {
 	Box(
 		modifier = modifier
@@ -139,7 +141,9 @@ fun TopAppbarIcon(
 			painter = painterResource(icon),
 			contentDescription = "menu Icon",
 			tint = tint,
-			modifier = Modifier.align(Alignment.Center),
+			modifier = Modifier
+				.align(Alignment.Center)
+				.size(iconSize),
 		)
 	}
 }

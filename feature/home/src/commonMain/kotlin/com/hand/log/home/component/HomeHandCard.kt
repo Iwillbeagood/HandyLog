@@ -46,6 +46,8 @@ import com.hand.log.ui.poker.formatWithComma
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.*
 import kotlinx.datetime.LocalDate
+import androidx.compose.ui.graphics.Color
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -67,80 +69,17 @@ internal fun HomeHandCard(
 			.clickable(onClick = onClick)
 			.padding(12.dp),
 	) {
-		// Row 1: Game type badge + location + chevron
-		Row(
-			modifier = Modifier.fillMaxWidth(),
-			verticalAlignment = Alignment.CenterVertically,
-			horizontalArrangement = Arrangement.SpaceBetween,
-		) {
+		if (table != null) {
 			Row(
+				modifier = Modifier.fillMaxWidth(),
 				verticalAlignment = Alignment.CenterVertically,
-				horizontalArrangement = Arrangement.spacedBy(8.dp),
-				modifier = Modifier.weight(1f),
 			) {
-				// Game type badge
-				Row(
-					verticalAlignment = Alignment.CenterVertically,
-					horizontalArrangement = Arrangement.spacedBy(4.dp),
-					modifier = Modifier
-						.clip(RoundedCornerShape(50))
-						.background(
-							if (table.gameType is GameType.Cash) {
-								colors.primary.copy(alpha = 0.15f)
-							} else {
-								colors.gold.copy(alpha = 0.15f)
-							},
-						)
-						.padding(horizontal = 8.dp, vertical = 3.dp),
-				) {
-					val badgeColor = if (table.gameType is GameType.Cash) colors.primary else colors.gold
-					Icon(
-						painter = painterResource(
-							if (table.gameType is GameType.Tournament) Res.drawable.trophy else Res.drawable.dollar_sign,
-						),
-						contentDescription = null,
-						tint = badgeColor,
-						modifier = Modifier.size(12.dp),
-					)
-					Text(
-						text = stringResource(table.gameType.stringRes()),
-						style = HandyTheme.typography.bold12,
-						color = badgeColor,
-					)
-				}
-
-				// Location
-				table.location?.takeIf { it.isNotBlank() }?.let { location ->
-					Row(
-						verticalAlignment = Alignment.CenterVertically,
-						horizontalArrangement = Arrangement.spacedBy(4.dp),
-					) {
-						Icon(
-							painter = painterResource(Res.drawable.map_pin),
-							contentDescription = null,
-							tint = colors.textSecondary,
-							modifier = Modifier.size(10.dp),
-						)
-						Text(
-							text = location,
-							style = HandyTheme.typography.regular10,
-							color = colors.textSecondary,
-						)
-					}
-				}
+				TableSourceRow(table = table, modifier = Modifier.weight(1f))
+				ChevronIcon()
 			}
-
-			Icon(
-				painter = painterResource(Res.drawable.chevron_right),
-				contentDescription = null,
-				tint = colors.textSecondary,
-				modifier = Modifier.size(20.dp),
-			)
+			Spacer(modifier = Modifier.height(8.dp))
 		}
 
-		Spacer(modifier = Modifier.height(8.dp))
-
-		// Row 2: Hero cards + details
 		Row(
 			verticalAlignment = Alignment.CenterVertically,
 			horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -165,7 +104,7 @@ internal fun HomeHandCard(
 						style = HandyTheme.typography.bold12,
 						color = colors.textSecondary,
 					)
-					hand.blinds?.let { blinds ->
+					item.displayBlinds?.let { blinds ->
 						Text(
 							text = " \u00B7 ${formatWithComma(
 								blinds.sb.toLong(),
@@ -191,6 +130,7 @@ internal fun HomeHandCard(
 					}
 				}
 			}
+			if (table == null) ChevronIcon()
 		}
 
 		// Date
@@ -206,11 +146,93 @@ internal fun HomeHandCard(
 				modifier = Modifier.size(12.dp),
 			)
 			Text(
-				text = table.date.toString(),
+				text = item.date.toString(),
 				style = HandyTheme.typography.regular10,
 				color = colors.textSecondary,
 			)
 		}
+	}
+}
+
+@Composable
+private fun TableSourceRow(
+	table: PokerTable,
+	modifier: Modifier = Modifier,
+) {
+	val colors = HandyTheme.colorScheme
+	Row(
+		verticalAlignment = Alignment.CenterVertically,
+		horizontalArrangement = Arrangement.spacedBy(8.dp),
+		modifier = modifier,
+	) {
+		when (val gameType = table.gameType) {
+			is GameType.Cash -> HandSourceBadge(
+				icon = Res.drawable.dollar_sign,
+				label = stringResource(gameType.stringRes()),
+				color = colors.primary,
+			)
+			is GameType.Tournament -> HandSourceBadge(
+				icon = Res.drawable.trophy,
+				label = stringResource(gameType.stringRes()),
+				color = colors.gold,
+			)
+		}
+		table.location?.takeIf { it.isNotBlank() }?.let { location ->
+			Row(
+				verticalAlignment = Alignment.CenterVertically,
+				horizontalArrangement = Arrangement.spacedBy(4.dp),
+			) {
+				Icon(
+					painter = painterResource(Res.drawable.map_pin),
+					contentDescription = null,
+					tint = colors.textSecondary,
+					modifier = Modifier.size(10.dp),
+				)
+				Text(
+					text = location,
+					style = HandyTheme.typography.regular10,
+					color = colors.textSecondary,
+				)
+			}
+		}
+	}
+}
+
+@Composable
+private fun ChevronIcon() {
+	Icon(
+		painter = painterResource(Res.drawable.chevron_right),
+		contentDescription = null,
+		tint = HandyTheme.colorScheme.textSecondary,
+		modifier = Modifier.size(20.dp),
+	)
+}
+
+@Composable
+private fun HandSourceBadge(
+	icon: DrawableResource,
+	label: String,
+	color: Color,
+) {
+	Row(
+		verticalAlignment = Alignment.CenterVertically,
+		horizontalArrangement = Arrangement.spacedBy(4.dp),
+		modifier = Modifier
+			.clip(RoundedCornerShape(50))
+			.background(color.copy(alpha = 0.15f))
+			.padding(horizontal = 8.dp, vertical = 3.dp),
+	) {
+		Icon(
+			painter = painterResource(icon),
+			contentDescription = null,
+			tint = color,
+			modifier = Modifier.size(12.dp),
+		)
+		Text(
+			text = label,
+			style = HandyTheme.typography.bold12,
+			color = color,
+		)
 	}
 }
 
@@ -253,6 +275,34 @@ private fun HomeHandCardPreview() {
 					heroSeat = 5,
 					createdAt = 1710000000000L,
 				),
+			),
+			onClick = {},
+		)
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun HomeHandCardWithoutTablePreview() {
+	ThemePreview {
+		HomeHandCard(
+			item = HandWithTable(
+				hand = HandRecord(
+					id = "h2",
+					tableId = null,
+					createdAt = 1710000000000L,
+					blinds = Blinds(sb = 0.5, bb = 1.0),
+					buttonSeat = 3,
+					players = listOf(
+						HandPlayer(
+							seat = 1,
+							cards = PocketCards(Card(Rank.QUEEN, Suit.HEARTS), Card(Rank.QUEEN, Suit.CLUBS)),
+							initialStack = 100.0,
+							isHero = true,
+						),
+					),
+				),
+				table = null,
 			),
 			onClick = {},
 		)

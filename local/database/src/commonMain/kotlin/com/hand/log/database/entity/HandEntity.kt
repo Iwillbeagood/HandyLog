@@ -23,7 +23,7 @@ import com.hand.log.domain.model.HandStreets
 )
 data class HandRecordEntity(
 	@PrimaryKey val id: String,
-	val tableId: String,
+	val tableId: String?,
 	val createdAt: Long,
 	val blinds: Blinds? = null,
 	val heroSeat: Int = 0,

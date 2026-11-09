@@ -25,6 +25,7 @@
 
 	<!-- Home -->
 	<string name="home_new_table">新しいテーブル</string>
+	<string name="home_new">新規作成</string>
 	<string name="home_empty_title">まだ記録がありません</string>
 	<string name="home_empty_desc">新しいテーブルを作成してハンドを記録しましょう</string>
 	<string name="home_table_deleted">テーブルが削除されました</string>
@@ -428,4 +429,47 @@
 	<string name="preflop_action_check">チェック</string>
 	<string name="preflop_action_call">コール</string>
 	<string name="preflop_action_fold">フォールド</string>
+	<string name="quick_record_title">テキスト記録</string>
+	<string name="quick_record_mode_title">記録方法を選択</string>
+	<string name="quick_record_mode_step">ステップ記録</string>
+	<string name="quick_record_mode_step_desc">テーブルを見ながら座席ごとにアクションを記録します</string>
+	<string name="quick_record_mode_text">テキスト簡単記録</string>
+	<string name="quick_record_mode_text_desc">専用キーボードで1行ずつ素早く記録します</string>
+	<string name="quick_record_new">NEW</string>
+	<string name="quick_record_hero">ヒーロー %1$s</string>
+	<string name="quick_record_hero_stack">ヒーロースタック %1$s</string>
+	<string name="quick_record_hero_select">ヒーロー指定</string>
+	<string name="quick_record_line_invalid">この行を解釈できません · ポジション・アクション・金額・カードを確認してください</string>
+	<string name="quick_record_card_conflict">すでに使われているカードがあります · カードごとにスートを入力してください</string>
+	<string name="quick_record_setup_conflict">入力済みのアクションと合わないため設定を変更できません</string>
+	<string name="quick_record_setup_hint">ブラインド・スタック設定</string>
+	<string name="quick_record_tournament">トーナメント</string>
+	<string name="quick_record_key_next_line">改行</string>
+	<string name="quick_record_key_card_picker">カード選択</string>
+	<string name="quick_record_close_hero">ヒーロー</string>
+	<string name="quick_record_key_unit_chip">Chip</string>
+	<string name="quick_record_exit_title">記録を終了しますか?</string>
+	<string name="quick_record_exit_desc">入力した内容は保存されません。</string>
+	<string name="quick_record_guide_title">表記ガイド</string>
+	<string name="quick_record_guide_desc">キーボードで押した順に1行書き、改行キーで記録に変換されます · プリフロップはポジションを先に押し、カード・アクション・金額は順不同で、数字の後にスートを押すとカードとして認識します</string>
+	<string name="quick_record_guide_hero">上部のヒーローボタンを押して自分のポジションを指定し、ハンドを入力 · スタックは入力しなくても大丈夫です</string>
+	<string name="quick_record_guide_jump">アクションするポジションを指定 · プリフロップは必須、以降のストリートは省略すると次の番に自動適用</string>
+	<string name="quick_record_guide_raise">金額・アクションどちらが先でもOK · 1/3・1/2・2/3・Potに対応</string>
+	<string name="quick_record_guide_call">コール額は自動計算</string>
+	<string name="quick_record_guide_street">ラウンド終了後に自動でボード入力へ · スートは省略可</string>
+	<string name="quick_record_guide_showdown">ハンド終了後、仕上げ画面で相手のハンドやスートをカードで入力 · 空欄は不明として保存</string>
+	<string name="quick_record_guide_result">結果と最終スタックは自動計算</string>
+	<string name="home_create_title">何を記録しますか？</string>
+	<string name="home_create_session">セッション記録</string>
+	<string name="home_create_session_desc">テーブル（場所・ブラインド・席）を作成して複数のハンドを続けて記録します</string>
+	<string name="home_create_text_record">テキスト記録</string>
+	<string name="home_create_text_record_desc">テーブルなしでハンドを1つテキストですぐに記録します</string>
+	<string name="quick_record_setup_title">ハンド設定</string>
+	<string name="quick_record_setup_edit">設定</string>
+	<string name="quick_record_setup_blinds">ブラインド</string>
+	<string name="quick_record_setup_stack">ヒーロースタック</string>
+	<string name="quick_record_finish_title">ハンドの仕上げ</string>
+	<string name="quick_record_finish_desc">カードをタップして入力 · 空欄は不明として保存されます</string>
+	<string name="quick_record_finish_hero_position">ヒーローのポジションを選択</string>
+	<string name="quick_record_finish_edit_actions">アクション修正</string>
 </resources>

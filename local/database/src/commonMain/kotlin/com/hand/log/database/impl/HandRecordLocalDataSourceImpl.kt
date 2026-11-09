@@ -37,6 +37,10 @@ internal class HandRecordLocalDataSourceImpl(
 		return handRecordDao.getHandCountByTableId(tableId)
 	}
 
+	override suspend fun getHandCountWithoutTable(): Int {
+		return handRecordDao.getHandCountWithoutTable()
+	}
+
 	override suspend fun saveHand(hand: HandRecord) {
 		handRecordDao.insertHand(hand.toEntity())
 	}

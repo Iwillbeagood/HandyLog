@@ -11,6 +11,9 @@ internal sealed interface HomeModalEffect {
 	data object Idle : HomeModalEffect
 
 	@Immutable
+	data object CreateMenu : HomeModalEffect
+
+	@Immutable
 	data object TableEditSheet : HomeModalEffect
 
 	@Immutable
@@ -25,4 +28,7 @@ internal sealed interface HomeEffect {
 
 	@Immutable
 	data class NavigateToTable(val tableId: String) : HomeEffect
+
+	@Immutable
+	data object NavigateToQuickRecord : HomeEffect
 }

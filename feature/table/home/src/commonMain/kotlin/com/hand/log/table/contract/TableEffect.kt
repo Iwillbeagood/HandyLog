@@ -15,4 +15,7 @@ internal sealed interface TableEffect {
 
 	@Immutable
 	data class NavigateToRecordHand(val tableId: String) : TableEffect
+
+	@Immutable
+	data class NavigateToQuickRecordHand(val tableId: String) : TableEffect
 }

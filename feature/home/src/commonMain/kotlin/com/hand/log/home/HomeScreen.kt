@@ -51,7 +51,7 @@ internal fun HomeScreen(
 	onTabSelect: (HomeTab) -> Unit,
 	onNavigateToTableDetail: (String) -> Unit,
 	onNavigateToHandDetail: (String) -> Unit,
-	onTableAdd: () -> Unit,
+	onCreateClick: () -> Unit,
 ) {
 	BaseScaffold(applyNavigationBarsPadding = false) {
 		Column(
@@ -60,9 +60,9 @@ internal fun HomeScreen(
 			HandyTopAppbar(
 				navigationType = TopAppbarType.Main,
 				iconButton = IconButton(
-					text = stringResource(Res.string.home_new_table),
+					text = stringResource(Res.string.home_new),
 					icon = Res.drawable.plus,
-					onClick = onTableAdd,
+					onClick = onCreateClick,
 				),
 			)
 			HandyHorizontalDivider()
@@ -168,7 +168,7 @@ private fun HomeScreenEmptyPreview() {
 			onTabSelect = {},
 			onNavigateToTableDetail = {},
 			onNavigateToHandDetail = {},
-			onTableAdd = {},
+			onCreateClick = {},
 		)
 	}
 }
@@ -235,7 +235,7 @@ private fun HomeScreenWithDataPreview() {
 			onTabSelect = {},
 			onNavigateToTableDetail = {},
 			onNavigateToHandDetail = {},
-			onTableAdd = {},
+			onCreateClick = {},
 		)
 	}
 }

@@ -264,4 +264,20 @@ class HandEvaluatorTest {
 		)
 		assertTrue(hand1 < hand2) // 풀하우스가 더 강함 (compareTo < 0)
 	}
+
+	@Test
+	fun `무늬를 모르는 카드는 플러시로 판별하지 않고 랭크로만 평가한다`() {
+		val cards = listOf(
+			Card(Rank.ACE),
+			Card(Rank.KING),
+			Card(Rank.QUEEN),
+			Card(Rank.JACK),
+			Card(Rank.NINE),
+		)
+		assertEquals(HandRanking.HIGH_CARD, HandEvaluator.evaluateBest(cards).ranking)
+
+		val straight =
+			listOf(Card(Rank.NINE), Card(Rank.EIGHT), Card(Rank.SEVEN), Card(Rank.SIX), Card(Rank.FIVE))
+		assertEquals(HandRanking.STRAIGHT, HandEvaluator.evaluateBest(straight).ranking)
+	}
 }

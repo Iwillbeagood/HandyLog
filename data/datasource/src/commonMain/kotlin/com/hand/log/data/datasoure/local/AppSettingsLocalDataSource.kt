@@ -15,4 +15,6 @@ interface AppSettingsLocalDataSource {
 	suspend fun setHomeTab(tab: String)
 	fun observePreflopSelection(): Flow<String>
 	suspend fun setPreflopSelection(value: String)
+	fun observeQuickAmountInChips(): Flow<Boolean>
+	suspend fun setQuickAmountInChips(inChips: Boolean)
 }

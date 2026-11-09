@@ -1,8 +1,10 @@
 package com.hand.log.domain.model
 
+import com.hand.log.domain.model.quick.QuickHandConfig
+
 data class HandRecord(
 	val id: String,
-	val tableId: String,
+	val tableId: String?,
 	val createdAt: Long,
 	val blinds: Blinds? = null,
 	val heroSeat: Int = 0,
@@ -14,6 +16,9 @@ data class HandRecord(
 	val memo: String? = null,
 	val results: HandResults? = null,
 ) {
+
+	val hasNoBlinds: Boolean
+		get() = tableId == null && blinds == QuickHandConfig.BB_UNIT_BLINDS
 
 	/**
 	 * Action 로그로부터 파생 결과를 계산한다. 저장 시점에 한 번 호출해 [results]에 담는다.
@@ -70,15 +75,19 @@ data class HandRecord(
 	val resolvedHeroResultType: HeroResultType
 		get() {
 			val heroPlayer = players.find { it.isHero }
-			val isWin = (result ?: 0.0) >= 0
 			return when {
-				isFoldWin && isWin -> HeroResultType.FOLD_WIN
-				isFoldWin -> HeroResultType.FOLD_LOSE
+				isHeroFolded -> HeroResultType.FOLD_LOSE
+				isFoldWin -> HeroResultType.FOLD_WIN
 				heroPlayer?.isSplit == true -> HeroResultType.SHOWDOWN_SPLIT
-				isWin -> HeroResultType.SHOWDOWN_WIN
+				heroPlayer?.isWinner == true -> HeroResultType.SHOWDOWN_WIN
+				heroPlayer?.outcome == ShowdownOutcome.LOSE -> HeroResultType.SHOWDOWN_LOSE
+				(result ?: 0.0) >= 0 -> HeroResultType.SHOWDOWN_WIN
 				else -> HeroResultType.SHOWDOWN_LOSE
 			}
 		}
+
+	private val isHeroFolded: Boolean
+		get() = heroSeat in allSeats && heroSeat !in remainingSeats
 
 	val heroRanking: HandRanking?
 		get() {
@@ -94,6 +103,7 @@ data class HandRecord(
 		get() {
 			val hero = players.find { it.isHero }
 			return when {
+				isHeroFolded -> HeroOutcome.LOSE
 				isFoldWin -> HeroOutcome.WIN
 				hero?.isSplit == true -> HeroOutcome.DRAW
 				hero?.isWinner == true -> HeroOutcome.WIN
@@ -112,7 +122,7 @@ data class HandRecord(
 				.map { it.seat }.toSet()
 			return if (fromPlayers.isNotEmpty()) {
 				fromPlayers
-			} else if (result != null && result >= 0) {
+			} else if (result != null && result >= 0 && !isHeroFolded) {
 				setOf(heroSeat)
 			} else {
 				emptySet()
@@ -121,7 +131,14 @@ data class HandRecord(
 
 	/** 프리플랍에 참여한 모든 좌석 (정렬) */
 	val allSeats: List<Int>
-		get() = streets.preflop.actions.map { it.playerSeat }.distinct().sorted()
+		get() = (
+			streets.preflop.actions.map {
+				it.playerSeat
+			} + players.map { it.seat }
+			).distinct().sorted()
+
+	val seatRing: SeatRing
+		get() = SeatRing(allSeats, buttonSeat, compactNames = tableId == null)
 
 	/** 프리플랍 참여 인원 수 */
 	val playerCount: Int
@@ -154,29 +171,7 @@ data class HandRecord(
 	val heroPosition: Position
 		get() = getPosition(heroSeat)
 
-	fun getPosition(seat: Int): Position {
-		val count = playerCount
-		val btn = buttonSeat
-		val sbSeat = (btn % count) + 1
-		val bbSeat = ((btn + 1) % count) + 1
-
-		if (seat == btn) return Position.BTN
-		if (seat == sbSeat) return Position.SB
-		if (seat == bbSeat) return Position.BB
-
-		val preflopOrder = (1..count).map { offset -> ((btn + 2 + offset - 1) % count) + 1 }
-		val utgOrder = preflopOrder.filter { it != btn && it != sbSeat && it != bbSeat }
-		val idx = utgOrder.indexOf(seat)
-		return when {
-			idx == 0 -> Position.UTG
-			idx == utgOrder.lastIndex -> Position.CO
-			count <= 6 -> Position.MP
-			idx == utgOrder.lastIndex - 1 -> Position.HJ
-			idx == utgOrder.lastIndex - 2 -> Position.LJ
-			idx == 1 -> Position.UTG1
-			else -> Position.MP
-		}
-	}
+	fun getPosition(seat: Int): Position = seatRing.positionOf(seat)
 
 	/** BB 금액 (기본값 1.0) */
 	val bbAmount: Double
@@ -188,42 +183,41 @@ data class HandRecord(
 	/** 좌석의 프리플랍 시작 스택 */
 	fun getInitialStack(seat: Int): Double? =
 		players.find { it.seat == seat }?.initialStack
-			?: streets.preflop.actions.firstOrNull { it.playerSeat == seat }?.stackBefore
+			?: streets.preflop.actions.firstOrNull { it.playerSeat == seat }?.stackBefore?.plus(anteOf(seat))
 
 	/** 좌석의 쇼다운 카드 */
 	fun getShowdownCards(seat: Int): PocketCards? =
 		players.find { it.seat == seat }?.cards
 
+	val anteAmount: Double
+		get() = if (blinds?.isBigBlindAnte == true) blinds.bb else 0.0
+
+	private fun anteOf(seat: Int): Double = if (seat == seatRing.bbSeat) anteAmount else 0.0
+
+	private val postedBlinds: Map<Int, Double>
+		get() {
+			val ring = seatRing
+			if (ring.size == 0) return emptyMap()
+			return mapOf(ring.sbSeat to (blinds?.sb ?: 0.0), ring.bbSeat to (blinds?.bb ?: 0.0))
+		}
+
+	private fun streetContributions(street: Street): Map<Int, Double> {
+		val amounts = streets.getActions(street)
+			.groupBy { it.playerSeat }
+			.mapValues { (_, actions) -> actions.maxOf { it.amount ?: 0.0 } }
+		if (street != Street.PREFLOP) return amounts
+		return amounts + postedBlinds.mapValues { (seat, blind) -> maxOf(amounts[seat] ?: 0.0, blind) }
+	}
+
 	/** 특정 스트릿까지의 누적 팟 */
 	fun getPotAtStreet(upToStreet: Street): Double {
-		val sb = blinds?.sb ?: 0.0
-		val bb = blinds?.bb ?: 0.0
-		val count = playerCount
-		val btn = buttonSeat
-		val sbSeat = if (count > 0) (btn % count) + 1 else 0
-		val bbSeat = if (count > 0) ((btn + 1) % count) + 1 else 0
-		val antePot = if (blinds?.isBigBlindAnte == true) bb else 0.0
-
-		var pot = antePot
-		val streetOrder = listOf(Street.PREFLOP, Street.FLOP, Street.TURN, Street.RIVER)
-		for (s in streetOrder) {
-			val actions = streets.getActions(s)
-			if (s == Street.PREFLOP) {
-				val seatAmounts = actions.groupBy { it.playerSeat }
-					.mapValues { (_, acts) -> acts.maxOf { it.amount ?: 0.0 } }
-				val sorted = seatAmounts.values.sortedDescending()
-				val uncalled = if (!isFoldWin && sorted.size >= 2) sorted[0] - sorted[1] else 0.0
-				pot += seatAmounts.values.sum() - uncalled
-				if ((seatAmounts[sbSeat] ?: 0.0) == 0.0) pot += sb
-				if ((seatAmounts[bbSeat] ?: 0.0) == 0.0) pot += bb
-			} else {
-				val seatAmounts = actions.groupBy { it.playerSeat }
-					.mapValues { (_, acts) -> acts.maxOf { it.amount ?: 0.0 } }
-				val sorted = seatAmounts.values.sortedDescending()
-				val uncalled = if (!isFoldWin && sorted.size >= 2) sorted[0] - sorted[1] else 0.0
-				pot += seatAmounts.values.sum() - uncalled
-			}
-			if (s == upToStreet) break
+		var pot = anteAmount
+		for (street in Street.entries) {
+			val amounts = streetContributions(street).values
+			val sorted = amounts.sortedDescending()
+			val uncalled = if (!isFoldWin && sorted.size >= 2) sorted[0] - sorted[1] else 0.0
+			pot += amounts.sum() - uncalled
+			if (street == upToStreet) break
 		}
 		return pot
 	}
@@ -261,27 +255,10 @@ data class HandRecord(
 
 	/** 각 좌석의 총 투입 금액 (블라인드 포함, 모든 스트릿 합산) */
 	val seatInvestments: Map<Int, Double>
-		get() {
-			val result = mutableMapOf<Int, Double>()
-			val count = playerCount
-			val btn = buttonSeat
-			val sbSeat = if (count > 0) (btn % count) + 1 else 0
-			val bbSeat = if (count > 0) ((btn + 1) % count) + 1 else 0
-			val sbAmount = blinds?.sb ?: 0.0
-			val bbAmount = blinds?.bb ?: 0.0
-
-			listOf(Street.PREFLOP, Street.FLOP, Street.TURN, Street.RIVER).forEach { street ->
-				streets.getActions(street)
-					.groupBy { it.playerSeat }
-					.forEach { (seat, actions) ->
-						val streetAmount = actions.maxOfOrNull { it.amount ?: 0.0 } ?: 0.0
-						result[seat] = (result[seat] ?: 0.0) + streetAmount
-					}
-			}
-			if ((result[sbSeat] ?: 0.0) == 0.0 && sbSeat in allSeats) result[sbSeat] = sbAmount
-			if ((result[bbSeat] ?: 0.0) == 0.0 && bbSeat in allSeats) result[bbSeat] = bbAmount
-			return result
-		}
+		get() = Street.entries
+			.flatMap { streetContributions(it).entries }
+			.groupBy({ it.key }, { it.value })
+			.mapValues { (_, amounts) -> amounts.sum() }
 
 	/**
 	 * 모든 플레이어의 최종 스택 (팟 분배 후).
@@ -331,7 +308,7 @@ data class HandRecord(
 		}
 
 		// 앤티 팟 분배
-		val anteCost = if (blinds?.isBigBlindAnte == true) blinds.bb else 0.0
+		val anteCost = anteAmount
 		if (anteCost > 0) {
 			val anteWinners = if (remainingSeats.size == 1) {
 				listOf(remainingSeats.first())
@@ -356,7 +333,40 @@ data class HandRecord(
 			val initial = getInitialStack(seat) ?: 0.0
 			val invested = investments[seat] ?: 0.0
 			val won = winnings[seat] ?: 0.0
-			initial - invested + won
+			initial - invested - anteOf(seat) + won
 		}
+	}
+
+	fun resolveShowdown(
+		evaluator: (List<Card>, List<ShowdownEntry>) -> List<ShowdownResult>,
+	): HandRecord {
+		val alive = remainingSeats
+		val board = streets.boardCards
+		val entries = players.filter { it.seat in alive }.mapNotNull { it.toShowdownEntry() }
+		val showdown = if (alive.size >= 2 && board.size == 5 && entries.size >= 2) {
+			evaluator(board, entries)
+		} else {
+			emptyList()
+		}
+		val resolvedPlayers = players.map { player ->
+			if (alive.size == 1) {
+				player.copy(
+					ranking = HandRanking.WIN_BY_FOLD,
+					bestCards = emptyList(),
+					outcome = if (player.seat in alive) ShowdownOutcome.WIN else ShowdownOutcome.LOSE,
+				)
+			} else {
+				val resolved = showdown.find { it.seat == player.seat }
+				player.copy(
+					ranking = resolved?.ranking,
+					bestCards = resolved?.bestCards.orEmpty(),
+					outcome = resolved?.outcome,
+				)
+			}
+		}
+		val withPlayers = copy(players = resolvedPlayers, results = null)
+		val heroFinal = withPlayers.getFinalStacks(evaluator)[heroSeat]
+		val heroProfit = heroFinal?.minus(getInitialStack(heroSeat) ?: 0.0)
+		return withPlayers.copy(result = heroProfit.takeIf { result != null })
 	}
 }

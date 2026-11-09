@@ -33,7 +33,7 @@ object HandEvaluator {
 		val values = cards.map { it.rank.value() }.sortedDescending()
 		val suits = cards.map { it.suit }
 
-		val isFlush = suits.toSet().size == 1
+		val isFlush = suits.none { it == null } && suits.toSet().size == 1
 		val isWheel = values == listOf(14, 5, 4, 3, 2)
 		val isStraight = if (isWheel) {
 			true
