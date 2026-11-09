@@ -16,6 +16,9 @@ import kotlinx.serialization.json.Json
 
 private val json = Json { ignoreUnknownKeys = true }
 
+private const val LEGACY_THREE_BET_STACKOFF = "\"THREE_BET_STACKOFF\""
+private const val THREE_BET_JAM = "\"THREE_BET_JAM\""
+
 class Converters {
 	@TypeConverter
 	fun fromGameType(value: GameType): String = json.encodeToString(GameType.serializer(), value)
@@ -95,7 +98,11 @@ class Converters {
 	fun fromQuizRecordQuestions(value: List<QuizRecordQuestion>): String = json.encodeToString(value)
 
 	@TypeConverter
-	fun toQuizRecordQuestions(value: String): List<QuizRecordQuestion> = json.decodeFromString(value)
+	fun toQuizRecordQuestions(value: String): List<QuizRecordQuestion> = runCatching {
+		json.decodeFromString<List<QuizRecordQuestion>>(
+			value.replace(LEGACY_THREE_BET_STACKOFF, THREE_BET_JAM),
+		)
+	}.getOrDefault(emptyList())
 
 	@TypeConverter
 	fun fromHandResults(value: HandResults?): String? =

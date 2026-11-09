@@ -50,6 +50,7 @@ firebaseMessaging = "25.0.0"
 firebasePerf = "21.0.4"
 firebasePerfPlugin = "1.4.2"
 firebaseCrashlytics = "19.4.3"
+firebaseAnalytics = "22.4.0"
 firebaseCrashlyticsPlugin = "3.0.3"
 
 detekt = "1.23.7"
@@ -138,6 +139,7 @@ firebase-core = { group = "com.google.firebase", name = "firebase-core", version
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging", version.ref = "firebaseMessaging" }
 firebase-perf = { group = "com.google.firebase", name = "firebase-perf", version.ref = "firebasePerf" }
 firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics", version.ref = "firebaseCrashlytics" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics", version.ref = "firebaseAnalytics" }
 
 detektFormatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 

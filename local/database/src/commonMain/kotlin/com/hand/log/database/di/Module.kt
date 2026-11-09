@@ -10,6 +10,10 @@ import com.hand.log.database.impl.HandRecordLocalDataSourceImpl
 import com.hand.log.database.impl.PokerTableLocalDataSourceImpl
 import com.hand.log.database.impl.QuizRecordLocalDataSourceImpl
 import com.hand.log.database.impl.SavedPlayerLocalDataSourceImpl
+import com.hand.log.database.migration.MIGRATION_2_3
+import com.hand.log.database.migration.MIGRATION_3_4
+import com.hand.log.database.migration.MIGRATION_4_5
+import com.hand.log.database.migration.MIGRATION_5_6
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import org.koin.core.module.dsl.singleOf
@@ -21,7 +25,8 @@ val databaseModule = module {
 		getDatabaseBuilder()
 			.setDriver(BundledSQLiteDriver())
 			.setQueryCoroutineContext(Dispatchers.IO)
-			.fallbackToDestructiveMigration(true)
+			.addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+			.fallbackToDestructiveMigrationFrom(dropAllTables = true, 1)
 			.build()
 	}
 	single { get<AppDatabase>().pokerTableDao() }

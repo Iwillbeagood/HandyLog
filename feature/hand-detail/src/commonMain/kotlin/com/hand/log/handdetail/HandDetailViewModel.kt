@@ -13,7 +13,10 @@ import com.hand.log.handdetail.contract.HandDetailEffect
 import com.hand.log.handdetail.contract.HandDetailModalEffect
 import com.hand.log.handdetail.contract.HandDetailState
 import com.hand.log.handdetail.contract.HandReviewStatus
-import com.hand.log.handdetail.model.HandHistoryFormatter
+import com.hand.log.ui.poker.HandHistoryFormatter
+import com.hand.log.ui.resultStringRes
+import com.hand.log.ui.stringRes
+import com.hand.log.utils.poker.HandEvaluator
 import com.hand.log.platform.etc.Logger
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +27,9 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
+import com.hand.log.domain.model.ProFeature
+import kotlinx.coroutines.flow.update
 
 internal class HandDetailViewModel(
 	handId: String,
@@ -86,8 +92,9 @@ internal class HandDetailViewModel(
 
 	fun onPlayerClick(seat: Int) {
 		val loaded = (state.value as? HandDetailState.Detail) ?: return
+		val tableId = loaded.hand.tableId ?: return
 		viewModelScope.launch {
-			_effect.emit(HandDetailEffect.NavigateToPlayers(loaded.hand.tableId, seat))
+			_effect.emit(HandDetailEffect.NavigateToPlayers(tableId, seat))
 		}
 	}
 
@@ -99,7 +106,10 @@ internal class HandDetailViewModel(
 		val loaded = (state.value as? HandDetailState.Detail) ?: return
 		dismissModal()
 		viewModelScope.launch {
-			markPlayerOnHandUseCase(player, loaded.hand.id, seat)
+			val result = markPlayerOnHandUseCase(player, loaded.hand.id, seat)
+			if (result == MarkPlayerOnHandUseCase.Result.PlayerLimitReached) {
+				_modalEffect.update { HandDetailModalEffect.ShowPaywall(ProFeature.UNLIMITED_PLAYERS) }
+			}
 		}
 	}
 
@@ -152,8 +162,15 @@ internal class HandDetailViewModel(
 				if (p.seat == seat) p.copy(cards = newHand) else p
 			}
 			val updated = loaded.hand.copy(players = updatedPlayers)
-			handRecordRepository.saveHand(updated)
+				.resolveShowdown(HandEvaluator::calculateShowdown)
+			handRecordRepository.saveHand(updated.copy(resultLabel = buildResultLabel(updated)))
 		}
+	}
+
+	private suspend fun buildResultLabel(hand: HandRecord): String {
+		val rankingText = hand.heroRanking?.let { getString(it.stringRes()) }.orEmpty()
+		val resultRes = hand.resolvedHeroResultType.resultStringRes(rankingText.isNotEmpty())
+		return if (rankingText.isNotEmpty()) getString(resultRes, rankingText) else getString(resultRes)
 	}
 
 	fun showMemoEdit() {

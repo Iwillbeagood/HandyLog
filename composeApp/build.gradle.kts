@@ -21,6 +21,7 @@ kotlin {
 					isStatic = true
 					binaryOption("bundleId", "com.hand.log")
 					export(projects.data.datasource)
+					export(projects.core.platform)
 				}
 			}
 		}
@@ -31,6 +32,7 @@ kotlin {
 			implementation(projects.local.datastore)
 			implementation(libs.firebase.perf)
 			implementation(libs.firebase.crashlytics)
+			implementation(libs.firebase.analytics)
 		}
 		commonMain.dependencies {
 			implementation(projects.core.common)
@@ -43,7 +45,8 @@ kotlin {
 			implementation(projects.feature.table.home)
 			implementation(projects.feature.table.tableEdit)
 			implementation(projects.feature.table.playerSetup)
-			implementation(projects.feature.record)
+			implementation(projects.feature.record.home)
+			implementation(projects.feature.record.quick)
 			implementation(projects.feature.handDetail)
 			implementation(projects.feature.players.home)
 			implementation(projects.feature.players.hands)
@@ -59,7 +62,7 @@ kotlin {
 			implementation(projects.local.datastore)
 			implementation(projects.core.designsystem)
 			implementation(projects.core.navigation)
-			implementation(projects.core.platform)
+			api(projects.core.platform)
 			implementation(projects.core.utils)
 
 			implementation(libs.androidx.lifecycle.runtime.compose)

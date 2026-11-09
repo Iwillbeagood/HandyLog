@@ -12,6 +12,7 @@ interface NavigateActionInterop {
 	fun navigateBottomNav(item: MainTabRoute)
 	fun navigateToTableDetail(tableId: String)
 	fun navigateToRecordHand(tableId: String)
+	fun navigateToQuickRecordHand(tableId: String? = null)
 	fun navigateToHandDetail(handId: String)
 	fun navigateToPlayerHands(savedPlayerId: String, playerName: String)
 	fun navigateToPlayersWithAdd()

@@ -7,6 +7,7 @@ import com.hand.log.domain.model.PlayerTendency
 import com.hand.log.domain.model.SavedPlayer
 import com.hand.log.domain.repository.PokerTableRepository
 import com.hand.log.domain.repository.SavedPlayerRepository
+import com.hand.log.domain.usecase.GetOrCreateSavedPlayerUseCase
 import com.hand.log.playersetup.contract.PlayerSetupEffect
 import com.hand.log.playersetup.contract.PlayerSetupState
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -22,6 +23,7 @@ import kotlinx.coroutines.launch
 class PlayerSetupViewModel(
 	private val savedPlayerRepository: SavedPlayerRepository,
 	private val pokerTableRepository: PokerTableRepository,
+	private val getOrCreateSavedPlayer: GetOrCreateSavedPlayerUseCase,
 ) : ViewModel() {
 
 	private val _state = MutableStateFlow(PlayerSetupState())
@@ -100,26 +102,34 @@ class PlayerSetupViewModel(
 	fun save() {
 		val current = _state.value
 		val player = current.player
+		val name = player.name
 
-		if (current.saveToMarking) {
-			if (player.name.isNullOrBlank()) {
-				viewModelScope.launch { _effect.emit(PlayerSetupEffect.NameRequired) }
-				return
-			}
-			viewModelScope.launch {
-				savedPlayerRepository.savePlayer(
-					SavedPlayer(
-						name = player.name!!,
-						tendency = player.tendency,
-						memo = player.memo,
-					),
-				)
-			}
+		if (current.saveToMarking && name.isNullOrBlank()) {
+			viewModelScope.launch { _effect.emit(PlayerSetupEffect.NameRequired) }
+			return
 		}
 
 		viewModelScope.launch {
-			pokerTableRepository.upsertPlayer(current.tableId, player)
-			_effect.emit(PlayerSetupEffect.SaveComplete(_state.value.isEditMode))
+			val toSave = if (current.saveToMarking && name != null) {
+				val saved = SavedPlayer(
+					id = player.savedPlayerId.orEmpty(),
+					name = name,
+					tendency = player.tendency,
+					memo = player.memo,
+				)
+				when (val result = getOrCreateSavedPlayer(saved)) {
+					is GetOrCreateSavedPlayerUseCase.Result.Found -> player.copy(savedPlayerId = result.player.id)
+					GetOrCreateSavedPlayerUseCase.Result.LimitReached -> {
+						_effect.emit(PlayerSetupEffect.PlayerLimitReached)
+						return@launch
+					}
+					GetOrCreateSavedPlayerUseCase.Result.Failed -> player
+				}
+			} else {
+				player
+			}
+			pokerTableRepository.upsertPlayer(current.tableId, toSave)
+			_effect.emit(PlayerSetupEffect.SaveComplete(current.isEditMode))
 		}
 	}
 

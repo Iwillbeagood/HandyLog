@@ -27,6 +27,7 @@
 
 	<!-- Home -->
 	<string name="home_new_table">새 테이블</string>
+	<string name="home_new">새로 만들기</string>
 	<string name="home_empty_title">아직 기록이 없습니다</string>
 	<string name="home_empty_desc">새 테이블을 만들어 핸드를 기록하세요</string>
 	<string name="home_table_deleted">테이블이 삭제되었습니다</string>
@@ -429,4 +430,47 @@
 	<string name="preflop_action_check">체크</string>
 	<string name="preflop_action_call">콜</string>
 	<string name="preflop_action_fold">폴드</string>
+	<string name="quick_record_title">텍스트 기록</string>
+	<string name="quick_record_mode_title">기록 방식 선택</string>
+	<string name="quick_record_mode_step">단계별 기록</string>
+	<string name="quick_record_mode_step_desc">테이블을 보며 좌석별로 액션을 기록해요</string>
+	<string name="quick_record_mode_text">텍스트 간편 기록</string>
+	<string name="quick_record_mode_text_desc">전용 키보드로 한 줄씩 빠르게 기록해요</string>
+	<string name="quick_record_new">NEW</string>
+	<string name="quick_record_hero">히어로 %1$s</string>
+	<string name="quick_record_hero_stack">히어로 스택 %1$s</string>
+	<string name="quick_record_hero_select">히어로 지정</string>
+	<string name="quick_record_line_invalid">줄을 해석할 수 없어요 · 포지션·액션·금액·카드를 확인해 주세요</string>
+	<string name="quick_record_card_conflict">이미 사용된 카드가 있어요 · 무늬를 카드마다 따로 입력해 주세요</string>
+	<string name="quick_record_setup_conflict">이미 입력한 액션과 맞지 않아 설정을 바꿀 수 없어요</string>
+	<string name="quick_record_setup_hint">블라인드·스택 설정</string>
+	<string name="quick_record_tournament">토너먼트</string>
+	<string name="quick_record_key_next_line">줄넘김</string>
+	<string name="quick_record_key_card_picker">카드 선택</string>
+	<string name="quick_record_close_hero">히어로</string>
+	<string name="quick_record_key_unit_chip">Chip</string>
+	<string name="quick_record_exit_title">기록을 종료할까요?</string>
+	<string name="quick_record_exit_desc">입력한 내용은 저장되지 않아요.</string>
+	<string name="quick_record_guide_title">표기 가이드</string>
+	<string name="quick_record_guide_desc">키보드로 누른 그대로 한 줄에 쓰고 줄넘김을 누르면 기록으로 바뀌어요 · 프리플랍은 포지션을 먼저 누르고, 카드·액션·금액은 순서와 상관없어요 · 숫자 뒤에 무늬를 누르면 카드로 인식해요</string>
+	<string name="quick_record_guide_hero">상단의 히어로 버튼을 눌러 내 포지션을 지정하고 핸드를 입력해요 · 스택은 입력하지 않아도 돼요</string>
+	<string name="quick_record_guide_jump">액션할 포지션 지정 · 프리플랍은 필수, 이후 스트리트는 생략하면 다음 차례에 자동 적용</string>
+	<string name="quick_record_guide_raise">금액 먼저·액션 먼저 모두 가능 · 1/3·1/2·2/3·Pot 팟 비율 지원</string>
+	<string name="quick_record_guide_call">콜 금액은 자동 계산</string>
+	<string name="quick_record_guide_street">라운드가 끝나면 보드 입력으로 자동 진행 · 무늬는 생략 가능</string>
+	<string name="quick_record_guide_showdown">핸드가 끝나면 마무리 화면에서 상대 핸드·무늬를 카드로 입력 · 비워두면 모름으로 저장</string>
+	<string name="quick_record_guide_result">결과와 최종 스택은 자동 계산</string>
+	<string name="home_create_title">무엇을 기록할까요?</string>
+	<string name="home_create_session">세션 기록</string>
+	<string name="home_create_session_desc">테이블(장소·블라인드·좌석)을 만들고 여러 핸드를 이어서 기록해요</string>
+	<string name="home_create_text_record">텍스트 기록</string>
+	<string name="home_create_text_record_desc">테이블 없이 핸드 하나를 텍스트로 바로 기록해요</string>
+	<string name="quick_record_setup_title">핸드 설정</string>
+	<string name="quick_record_setup_edit">설정</string>
+	<string name="quick_record_setup_blinds">블라인드</string>
+	<string name="quick_record_setup_stack">히어로 스택</string>
+	<string name="quick_record_finish_title">핸드 마무리</string>
+	<string name="quick_record_finish_desc">카드를 눌러 입력해요 · 비워두면 모름으로 저장돼요</string>
+	<string name="quick_record_finish_hero_position">히어로 포지션을 선택해요</string>
+	<string name="quick_record_finish_edit_actions">액션 수정</string>
 </resources>

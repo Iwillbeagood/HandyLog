@@ -15,16 +15,21 @@ import com.hand.log.navigation.navigation.PreflopChart
 import com.hand.log.navigation.navigation.PreflopChartTable
 import com.hand.log.navigation.navigation.PreflopQuiz
 import com.hand.log.navigation.navigation.PreflopQuizSession
+import com.hand.log.navigation.navigation.QuickRecordHand
 import com.hand.log.navigation.navigation.RecordHand
 import com.hand.log.navigation.navigation.Route
 import com.hand.log.navigation.navigation.RouteStack
 import com.hand.log.navigation.navigation.Table
+import com.hand.log.platform.etc.AppAnalytics
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 internal class MainNavigator : ViewModel() {
 
@@ -39,6 +44,15 @@ internal class MainNavigator : ViewModel() {
 			initialValue = _routeStack.value.toUiState(),
 		)
 
+	init {
+		viewModelScope.launch {
+			_routeStack
+				.mapNotNull { it.current?.screenName }
+				.distinctUntilChanged()
+				.collect(AppAnalytics::logScreenView)
+		}
+	}
+
 	val navigateActionInterop = object : NavigateActionInterop {
 		override fun popBackStack() {
 			goBack()
@@ -49,11 +63,15 @@ internal class MainNavigator : ViewModel() {
 		}
 
 		override fun navigateToTableDetail(tableId: String) {
-			navigate(Table(tableId))
+			navigate(Table(tableId), LaunchMode.CLEAR_TOP)
 		}
 
 		override fun navigateToRecordHand(tableId: String) {
 			navigate(RecordHand(tableId))
+		}
+
+		override fun navigateToQuickRecordHand(tableId: String?) {
+			navigate(QuickRecordHand(tableId))
 		}
 
 		override fun navigateToHandDetail(handId: String) {

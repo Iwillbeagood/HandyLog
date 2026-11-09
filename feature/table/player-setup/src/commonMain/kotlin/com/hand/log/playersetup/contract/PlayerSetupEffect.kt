@@ -7,4 +7,5 @@ sealed interface PlayerSetupEffect {
 	data class SaveComplete(val isEditMode: Boolean) : PlayerSetupEffect
 	data object DeleteComplete : PlayerSetupEffect
 	data object NameRequired : PlayerSetupEffect
+	data object PlayerLimitReached : PlayerSetupEffect
 }

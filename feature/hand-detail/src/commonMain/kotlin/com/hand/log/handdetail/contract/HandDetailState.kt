@@ -18,7 +18,13 @@ internal sealed interface HandDetailState {
 		val useBbUnit: Boolean = false,
 		val reviewStatus: HandReviewStatus = HandReviewStatus.IDLE,
 		val reviewText: String = "",
-	) : HandDetailState
+	) : HandDetailState {
+		val showsUnitSwitch: Boolean
+			get() = !hand.hasNoBlinds
+
+		val showsBbUnit: Boolean
+			get() = useBbUnit || !showsUnitSwitch
+	}
 
 	@Immutable
 	data object Error : HandDetailState

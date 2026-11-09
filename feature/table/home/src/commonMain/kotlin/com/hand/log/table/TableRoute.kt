@@ -9,7 +9,9 @@ import com.hand.log.navigation.interop.LocalMainActionInterop
 import com.hand.log.playersetup.PlayerSetupSheet
 import com.hand.log.table.component.HeroSeatSwapSheet
 import com.hand.log.table.component.PlayerPositionSetupSheet
+import com.hand.log.table.component.RecordModeSheet
 import com.hand.log.table.component.TableBalanceSheet
+import com.hand.log.table.contract.RecordMode
 import com.hand.log.table.contract.TableEffect
 import com.hand.log.table.contract.TableModalEffect
 import com.hand.log.designsystem.component.modal.DefaultDialog
@@ -44,12 +46,14 @@ internal fun TableRoute(
 		onDismiss = viewModel::dismissModal,
 		onPlayerSaved = viewModel::onPlayerSaved,
 		onPlayerDeleted = viewModel::onPlayerDeleted,
+		onPlayerLimitReached = viewModel::showPlayerLimitPaywall,
 		onTableSaved = viewModel::onTableSaved,
 		onDeleteTable = viewModel::deleteTable,
 		onPlayerPositionsConfirmed = viewModel::savePlayerPositions,
 		onPositionSetupDismiss = viewModel::dismissPositionSetup,
 		onBalanceConfirmed = viewModel::applyTableBalance,
 		onSwapHeroSeat = viewModel::swapHeroSeat,
+		onRecordModeSelected = viewModel::selectRecordMode,
 		onUpgrade = {
 			viewModel.dismissModal()
 			navAction.navigateToProUpgrade()
@@ -65,6 +69,7 @@ internal fun TableRoute(
 					navAction.popBackStack()
 				}
 				is TableEffect.NavigateToRecordHand -> navAction.navigateToRecordHand(effect.tableId)
+				is TableEffect.NavigateToQuickRecordHand -> navAction.navigateToQuickRecordHand(effect.tableId)
 			}
 		}
 	}
@@ -76,12 +81,14 @@ private fun TableModalContent(
 	onDismiss: () -> Unit,
 	onPlayerSaved: (Boolean) -> Unit,
 	onPlayerDeleted: () -> Unit,
+	onPlayerLimitReached: () -> Unit,
 	onTableSaved: (Boolean) -> Unit,
 	onDeleteTable: () -> Unit,
 	onPlayerPositionsConfirmed: (Set<Int>) -> Unit,
 	onPositionSetupDismiss: () -> Unit,
 	onBalanceConfirmed: (heroSeat: Int, otherSeats: Set<Int>) -> Unit,
 	onSwapHeroSeat: (Int) -> Unit,
+	onRecordModeSelected: (RecordMode) -> Unit,
 	onUpgrade: () -> Unit,
 ) {
 	when (modalEffect) {
@@ -96,6 +103,7 @@ private fun TableModalContent(
 				maxSeat = modalEffect.maxPlayers,
 				onSaved = onPlayerSaved,
 				onDeleted = onPlayerDeleted,
+				onPlayerLimitReached = onPlayerLimitReached,
 				onDismiss = onDismiss,
 			)
 		}
@@ -142,6 +150,13 @@ private fun TableModalContent(
 				playerCount = modalEffect.playerCount,
 				onConfirm = onPlayerPositionsConfirmed,
 				onDismiss = onPositionSetupDismiss,
+			)
+		}
+
+		TableModalEffect.ShowRecordMode -> {
+			RecordModeSheet(
+				onModeSelected = onRecordModeSelected,
+				onDismiss = onDismiss,
 			)
 		}
 

@@ -28,6 +28,9 @@ interface HandRecordDao {
 	@Query("SELECT COUNT(*) FROM hand_records WHERE tableId = :tableId")
 	suspend fun getHandCountByTableId(tableId: String): Int
 
+	@Query("SELECT COUNT(*) FROM hand_records WHERE tableId IS NULL")
+	suspend fun getHandCountWithoutTable(): Int
+
 	@Query("DELETE FROM hand_records WHERE id = :handId")
 	suspend fun deleteHandById(handId: String)
 }

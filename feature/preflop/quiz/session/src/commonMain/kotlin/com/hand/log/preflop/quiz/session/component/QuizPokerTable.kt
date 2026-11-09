@@ -45,7 +45,7 @@ private val CHIP_SIZE = 18.dp
 private const val CHIP_SEAT_GAP = 4f
 
 /**
- * 프리플랍 스팟을 9-max 포커 테이블로 시각화한다. 좌석·히어로(크라운)·액션(레이저)·딜러·블라인드
+ * 프리플랍 스팟을 [seatOrder] 좌석 테이블로 시각화한다. 좌석·히어로(크라운)·액션(레이저)·딜러·블라인드
  * 표현은 [com.hand.log.record.component.ActionTableView] 의 방식을 그대로 따른다.
  *
  * @param villainAction 빌런(레이저)이 취한 액션 라벨(레이즈/3벳/4벳). null 이면 앞에 레이저 없음(RFI).
@@ -57,14 +57,14 @@ internal fun QuizPokerTable(
 	villain: Position?,
 	villainAction: String?,
 	hand: PreflopHand,
+	seatOrder: List<Position>,
 	heroAction: String? = null,
 	villainColor: Color? = null,
 	modifier: Modifier = Modifier,
 ) {
 	val colors = HandyTheme.colorScheme
 	val actionColor = villainColor ?: colors.accent
-	val positions = PreflopPositions.order
-	val heroIndex = positions.indexOf(hero)
+	val heroIndex = seatOrder.indexOf(hero)
 
 	Box(
 		modifier = modifier
@@ -99,8 +99,8 @@ internal fun QuizPokerTable(
 					modifier = Modifier.align(Alignment.Center),
 				)
 
-				positions.forEachIndexed { i, pos ->
-					val angle = (-90.0 + i * 360.0 / positions.size) * (PI / 180.0)
+				seatOrder.forEachIndexed { i, pos ->
+					val angle = (-90.0 + i * 360.0 / seatOrder.size) * (PI / 180.0)
 					val x = cx + rx * cos(angle).toFloat()
 					val y = cy + ry * sin(angle).toFloat()
 
@@ -112,7 +112,7 @@ internal fun QuizPokerTable(
 						else -> null
 					}
 					val seatActionColor = if (isHero) colors.accent else actionColor
-					val isFolded = !isHero && !isVillain && positions.indexOf(pos) < heroIndex
+					val isFolded = !isHero && !isVillain && seatOrder.indexOf(pos) < heroIndex
 					// 액션 라벨은 좌석 바깥쪽(테이블 중앙 반대편)에 둔다 — 상단 좌석은 위, 하단 좌석은 아래.
 					// 그래야 중앙 쪽으로 배치되는 베팅 칩과 겹치지 않는다.
 					val labelAbove = sin(angle) < 0
@@ -283,6 +283,7 @@ private fun QuizPokerTableFacingRfiPreview() {
 				villain = Position.CO,
 				villainAction = "레이즈",
 				hand = PreflopHand(Rank.ACE, Rank.KING, HandShape.SUITED),
+				seatOrder = PreflopPositions.order,
 			)
 		}
 	}
@@ -299,6 +300,7 @@ private fun QuizPokerTableVs3betPreview() {
 				villainAction = "3벳",
 				heroAction = "레이즈",
 				hand = PreflopHand(Rank.ACE, Rank.ACE, HandShape.PAIR),
+				seatOrder = PreflopPositions.order,
 			)
 		}
 	}
@@ -314,6 +316,23 @@ private fun QuizPokerTableRfiPreview() {
 				villain = null,
 				villainAction = null,
 				hand = PreflopHand(Rank.QUEEN, Rank.QUEEN, HandShape.PAIR),
+				seatOrder = PreflopPositions.order,
+			)
+		}
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun QuizPokerTableOnlinePreview() {
+	ThemePreview {
+		Box(modifier = Modifier.background(HandyTheme.colorScheme.background).padding(16.dp)) {
+			QuizPokerTable(
+				hero = Position.BTN,
+				villain = Position.HJ,
+				villainAction = "레이즈",
+				hand = PreflopHand(Rank.ACE, Rank.QUEEN, HandShape.OFFSUIT),
+				seatOrder = PreflopPositions.onlineOrder,
 			)
 		}
 	}

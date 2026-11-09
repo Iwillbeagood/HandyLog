@@ -123,7 +123,7 @@ internal fun HandDetailTableView(
 				verticalArrangement = Arrangement.spacedBy(2.dp),
 			) {
 				// 블라인드 정보
-				BlindsLabel(blinds = hand.blinds)
+				BlindsLabel(blinds = hand.blinds.takeUnless { hand.hasNoBlinds })
 
 				// 보드 카드
 				if (boardCards.isNotEmpty()) {

@@ -3,6 +3,7 @@ package com.hand.log.preflop.quiz.common
 import com.hand.log.domain.model.Position
 import com.hand.log.domain.model.preflop.PreflopAction
 import com.hand.log.domain.model.preflop.PreflopHand
+import com.hand.log.domain.model.preflop.PreflopPositions
 import com.hand.log.domain.model.preflop.PreflopScenario
 import com.hand.log.domain.model.preflop.PreflopStack
 
@@ -14,4 +15,7 @@ data class PreflopQuizQuestion(
 	val hand: PreflopHand,
 	val correct: PreflopAction,
 	val options: List<PreflopAction>,
-)
+) {
+	val seatOrder: List<Position>
+		get() = if (stack == PreflopStack.ONLINE) PreflopPositions.onlineOrder else PreflopPositions.order
+}

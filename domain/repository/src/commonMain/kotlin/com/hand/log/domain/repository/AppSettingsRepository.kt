@@ -18,6 +18,8 @@ interface AppSettingsRepository {
 	suspend fun setSkipStepBackWarning(skip: Boolean)
 	suspend fun setHomeTab(tab: HomeTab)
 	suspend fun setPreflopSelection(selection: PreflopSelection)
+	fun observeQuickAmountInChips(): Flow<Boolean>
+	suspend fun setQuickAmountInChips(inChips: Boolean)
 
 	companion object {
 		const val MAX_PRESETS = 4

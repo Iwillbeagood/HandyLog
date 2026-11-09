@@ -20,9 +20,14 @@ class CheckFeatureLimitUseCase(
 		return tableRepository.observeAllTables().first().size < MAX_FREE_TABLES
 	}
 
-	suspend fun canRecordHand(tableId: String): Boolean {
+	suspend fun canRecordHand(tableId: String?): Boolean {
 		if (isPro()) return true
-		return handRecordRepository.getHandCountByTableId(tableId) < MAX_FREE_HANDS_PER_TABLE
+		val count = if (tableId == null) {
+			handRecordRepository.getHandCountWithoutTable()
+		} else {
+			handRecordRepository.getHandCountByTableId(tableId)
+		}
+		return count < MAX_FREE_HANDS_PER_TABLE
 	}
 
 	suspend fun canSavePlayer(): Boolean {

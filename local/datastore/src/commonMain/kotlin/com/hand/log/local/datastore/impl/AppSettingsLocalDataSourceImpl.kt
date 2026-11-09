@@ -43,4 +43,10 @@ internal class AppSettingsLocalDataSourceImpl(
 
 	override suspend fun setPreflopSelection(value: String) =
 		appSettingsDataSource.setPreflopSelection(value)
+
+	override fun observeQuickAmountInChips(): Flow<Boolean> =
+		appSettingsDataSource.observeQuickAmountInChips()
+
+	override suspend fun setQuickAmountInChips(inChips: Boolean) =
+		appSettingsDataSource.setQuickAmountInChips(inChips)
 }

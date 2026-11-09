@@ -49,5 +49,8 @@ internal sealed interface TableModalEffect {
 	) : TableModalEffect
 
 	@Immutable
+	data object ShowRecordMode : TableModalEffect
+
+	@Immutable
 	data class ShowPaywall(val feature: ProFeature) : TableModalEffect
 }

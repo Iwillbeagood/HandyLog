@@ -23,6 +23,7 @@ import com.hand.log.preflop.home.navigation.preflopHomeNavGraph
 import com.hand.log.preflop.quiz.home.navigation.preflopQuizHomeNavGraph
 import com.hand.log.preflop.quiz.session.navigation.preflopQuizSessionNavGraph
 import com.hand.log.record.navigation.recordHandNavGraph
+import com.hand.log.record.quick.navigation.quickRecordNavGraph
 import com.hand.log.settings.betsize.navigation.betSizeNavGraph
 import com.hand.log.settings.contact.navigation.contactNavGraph
 import com.hand.log.settings.legal.navigation.legalNavGraph
@@ -65,6 +66,7 @@ internal fun MainNavDisplay(
 		preflopQuizSessionNavGraph()
 		tableNavGraph()
 		recordHandNavGraph()
+		quickRecordNavGraph()
 		handDetailNavGraph()
 		playerHandsNavGraph(paddingValues)
 		betSizeNavGraph()

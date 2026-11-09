@@ -25,6 +25,7 @@
 
 	<!-- Home -->
 	<string name="home_new_table">New Table</string>
+	<string name="home_new">New</string>
 	<string name="home_empty_title">No records yet</string>
 	<string name="home_empty_desc">Create a new table to start recording hands</string>
 	<string name="home_table_deleted">Table deleted</string>
@@ -428,4 +429,47 @@
 	<string name="preflop_action_check">Check</string>
 	<string name="preflop_action_call">Call</string>
 	<string name="preflop_action_fold">Fold</string>
+	<string name="quick_record_title">Text Record</string>
+	<string name="quick_record_mode_title">Choose how to record</string>
+	<string name="quick_record_mode_step">Step-by-step</string>
+	<string name="quick_record_mode_step_desc">Record each seat's action on the table view</string>
+	<string name="quick_record_mode_text">Quick text record</string>
+	<string name="quick_record_mode_text_desc">Type the hand line by line with a dedicated keyboard</string>
+	<string name="quick_record_new">NEW</string>
+	<string name="quick_record_hero">Hero %1$s</string>
+	<string name="quick_record_hero_stack">Hero stack %1$s</string>
+	<string name="quick_record_hero_select">Set Hero</string>
+	<string name="quick_record_line_invalid">Couldn't read this line · Check the position, action, amount and cards</string>
+	<string name="quick_record_card_conflict">A card is already in use · Enter a suit for each card</string>
+	<string name="quick_record_setup_conflict">Can't apply this setup to the actions already entered</string>
+	<string name="quick_record_setup_hint">Set blinds · stack</string>
+	<string name="quick_record_tournament">Tournament</string>
+	<string name="quick_record_key_next_line">Next line</string>
+	<string name="quick_record_key_card_picker">Pick cards</string>
+	<string name="quick_record_close_hero">Hero</string>
+	<string name="quick_record_key_unit_chip">Chip</string>
+	<string name="quick_record_exit_title">Leave this record?</string>
+	<string name="quick_record_exit_desc">Your input will not be saved.</string>
+	<string name="quick_record_guide_title">Notation guide</string>
+	<string name="quick_record_guide_desc">Type a line in any order and press the new line key to convert it · On preflop pick the position first; cards, action and amount can come in any order, and a number followed by a suit is read as a card</string>
+	<string name="quick_record_guide_hero">Tap the Hero button at the top to set your position and enter your hand · Stack is optional</string>
+	<string name="quick_record_guide_jump">Pick who acts · Required on preflop, skip it later to apply to the next player</string>
+	<string name="quick_record_guide_raise">Amount or action first · Pot sizes 1/3 · 1/2 · 2/3 · Pot</string>
+	<string name="quick_record_guide_call">Call amount is calculated automatically</string>
+	<string name="quick_record_guide_street">Board entry opens automatically after each round · Suits are optional</string>
+	<string name="quick_record_guide_showdown">When the hand ends, fill in opponent hands and suits on the wrap-up view · Empty is saved as unknown</string>
+	<string name="quick_record_guide_result">Result and final stacks are calculated automatically</string>
+	<string name="home_create_title">What would you like to record?</string>
+	<string name="home_create_session">Session Log</string>
+	<string name="home_create_session_desc">Create a table (venue, blinds, seats) and log hands one after another</string>
+	<string name="home_create_text_record">Text Log</string>
+	<string name="home_create_text_record_desc">Log one hand as text right away — no table needed</string>
+	<string name="quick_record_setup_title">Hand Setup</string>
+	<string name="quick_record_setup_edit">Setup</string>
+	<string name="quick_record_setup_blinds">Blinds</string>
+	<string name="quick_record_setup_stack">Hero stack</string>
+	<string name="quick_record_finish_title">Wrap up hand</string>
+	<string name="quick_record_finish_desc">Tap cards to fill in · Empty slots are saved as unknown</string>
+	<string name="quick_record_finish_hero_position">Select your position</string>
+	<string name="quick_record_finish_edit_actions">Edit actions</string>
 </resources>

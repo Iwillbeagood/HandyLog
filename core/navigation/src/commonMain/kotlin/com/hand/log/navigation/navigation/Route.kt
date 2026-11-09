@@ -30,6 +30,9 @@ data class Table(val tableId: String) : Route
 data class RecordHand(val tableId: String) : Route
 
 @Serializable
+data class QuickRecordHand(val tableId: String? = null) : Route
+
+@Serializable
 data class HandDetail(val handId: String) : Route
 
 @Serializable

@@ -19,7 +19,7 @@ internal data class TableEditState(
 	val isEditMode: Boolean = false,
 ) {
 	val isSubmitEnabled: Boolean
-		get() = date.isNotBlank()
+		get() = date.isNotBlank() && (!isCash || (bbText.toDoubleOrNull() ?: 0.0) > 0.0)
 
 	fun buildGameType(): GameType = if (isCash) {
 		GameType.Cash(

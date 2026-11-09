@@ -93,6 +93,7 @@ private fun CardFace(card: Card, size: CardSize, selected: Boolean = false) {
 	val suitColor = when (card.suit) {
 		Suit.HEARTS, Suit.DIAMONDS -> colors.suitRed
 		Suit.CLUBS, Suit.SPADES -> colors.suitBlack
+		null -> colors.textPrimary
 	}
 
 	Column(
@@ -109,12 +110,14 @@ private fun CardFace(card: Card, size: CardSize, selected: Boolean = false) {
 			fontWeight = FontWeight.Bold,
 			lineHeight = size.fontSize,
 		)
-		Icon(
-			painter = painterResource(card.suit.iconRes()),
-			contentDescription = card.suit.symbol,
-			tint = suitColor,
-			modifier = Modifier.size(size.suitIconSize),
-		)
+		card.suit?.let { suit ->
+			Icon(
+				painter = painterResource(suit.iconRes()),
+				contentDescription = suit.symbol,
+				tint = suitColor,
+				modifier = Modifier.size(size.suitIconSize),
+			)
+		}
 	}
 }
 
@@ -194,6 +197,7 @@ private fun PlayingCardStatesPreview() {
 		Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
 			PlayingCard(card = Card(Rank.TEN, Suit.HEARTS), size = CardSize.LG)
 			PlayingCard(card = Card(Rank.TEN, Suit.HEARTS), size = CardSize.LG, selected = true)
+			PlayingCard(card = Card(Rank.FIVE), size = CardSize.LG)
 			PlayingCard(card = null, size = CardSize.LG, faceDown = true)
 			PlayingCard(card = null, size = CardSize.LG)
 		}
