@@ -99,6 +99,7 @@ internal fun ReviewContent(
 				villainAction = villainAction,
 				heroAction = heroActionLabel(question.scenario),
 				hand = question.hand,
+				seatOrder = question.seatOrder,
 				villainColor = colors.error,
 			)
 

@@ -21,7 +21,7 @@ internal fun PreflopQuizRoute(
 			navAction.navigateToPreflopQuizSession(type.name, state.selectedStack?.name ?: "")
 		},
 		onRecordClick = { record ->
-			navAction.navigateToPreflopQuizSession(record.quizType, recordId = record.id)
+			navAction.navigateToPreflopQuizSession(record.quizType, record.stack, record.id)
 		},
 	)
 }

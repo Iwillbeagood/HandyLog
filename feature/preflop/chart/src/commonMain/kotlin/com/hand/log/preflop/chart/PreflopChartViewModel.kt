@@ -12,7 +12,7 @@ import com.hand.log.domain.model.preflop.PreflopScenario
 import com.hand.log.domain.model.preflop.PreflopSelection
 import com.hand.log.domain.model.preflop.PreflopStack
 import com.hand.log.domain.repository.AppSettingsRepository
-import com.hand.log.domain.usecase.CheckFeatureLimitUseCase
+import com.hand.log.domain.repository.ProEntitlementRepository
 import com.hand.log.preflop.chart.contract.PreflopChartModalEffect
 import com.hand.log.preflop.chart.contract.PreflopChartState
 import com.hand.log.preflop.chart.data.PreflopCatalog
@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 internal class PreflopChartViewModel(
 	private val repository: PreflopChartRepository,
 	private val appSettingsRepository: AppSettingsRepository,
-	private val checkFeatureLimit: CheckFeatureLimitUseCase,
+	private val proEntitlementRepository: ProEntitlementRepository,
 ) : ViewModel() {
 
 	private var catalog: PreflopCatalog = PreflopCatalog(emptyMap(), emptyMap())
@@ -47,13 +47,18 @@ internal class PreflopChartViewModel(
 	init {
 		viewModelScope.launch {
 			catalog = repository.load()
-			isPro = checkFeatureLimit.canUseAllPreflopStacks()
+			isPro = proEntitlementRepository.observeIsPro().first()
 			catalogLoaded = true
 			// 저장된 선택을 먼저 읽은(suspend) 뒤 pendingSpot 을 확인한다. 로드 중 openSpot(리뷰의
 			// 차트 보기)이 들어오면 pendingSpot 이 반영되어, 저장된 선택이 스팟을 덮어쓰지 않는다.
 			val saved = appSettingsRepository.observePreflopSelection().first()
 			val sel = pendingSpot ?: saved
 			_state.update { resolve(sel.stack, sel.scenario, sel.hero, sel.villain) }
+			proEntitlementRepository.observeIsPro().collect { pro ->
+				if (pro == isPro) return@collect
+				isPro = pro
+				_state.update { resolve(it.stack, it.scenario, it.hero, it.villain) }
+			}
 		}
 	}
 

@@ -4,6 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.text.intl.Locale
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import com.hand.log.designsystem.component.modal.DefaultDialog
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.preflop.quiz.session.contract.PreflopQuizSessionModalEffect
@@ -24,6 +27,12 @@ internal fun PreflopQuizSessionRoute(
 	val navAction = LocalNavigateActionInterop.current
 	val languageName = languageNameFor(Locale.current.language)
 
+	NavigationBackHandler(
+		state = rememberNavigationEventState(NavigationEventInfo.None),
+		isBackEnabled = state.phase == QuizPhase.PLAYING,
+		onBackCompleted = viewModel::onCloseRequest,
+	)
+
 	PreflopQuizSessionScreen(
 		state = state,
 		onAnswer = viewModel::onAnswer,
@@ -33,7 +42,19 @@ internal fun PreflopQuizSessionRoute(
 		onBack = {
 			if (state.phase == QuizPhase.PLAYING) viewModel.onCloseRequest() else navAction.popBackStack()
 		},
-		onViewFullChart = { navAction.navigateToPreflopChartTable() },
+		onViewFullChart = {
+			val spot = state.reviewQuestion
+			if (spot == null) {
+				navAction.navigateToPreflopChartTable()
+			} else {
+				navAction.navigateToPreflopChart(
+					stack = spot.stack.name,
+					scenario = spot.scenario.name,
+					hero = spot.hero.name,
+					villain = spot.villain?.name,
+				)
+			}
+		},
 		onStartReview = viewModel::onStartReview,
 		onReviewPrev = viewModel::onReviewPrev,
 		onReviewNext = viewModel::onReviewNext,
