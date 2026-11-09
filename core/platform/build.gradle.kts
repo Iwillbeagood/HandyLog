@@ -10,11 +10,13 @@ kotlin {
 	sourceSets {
 		commonMain.dependencies {
 			implementation(projects.domain.model)
+			implementation(libs.kotlinx.coroutines.core)
 		}
 		androidMain.dependencies {
 			implementation(libs.androidx.core.ktx)
 			implementation(libs.androidx.activity.compose)
 			implementation(libs.firebase.crashlytics)
+			implementation(libs.firebase.analytics)
 		}
 	}
 }

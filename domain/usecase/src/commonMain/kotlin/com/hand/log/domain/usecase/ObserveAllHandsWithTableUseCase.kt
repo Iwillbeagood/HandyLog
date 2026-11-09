@@ -20,7 +20,8 @@ class ObserveAllHandsWithTableUseCase(
 			hands
 				.sortedByDescending { it.createdAt }
 				.mapNotNull { hand ->
-					tableMap[hand.tableId]?.let { table ->
+					val tableId = hand.tableId ?: return@mapNotNull HandWithTable(hand = hand, table = null)
+					tableMap[tableId]?.let { table ->
 						HandWithTable(hand = hand, table = table)
 					}
 				}

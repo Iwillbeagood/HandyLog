@@ -18,6 +18,7 @@ import com.hand.log.playersedit.PlayerEditSheet
 import com.hand.log.navigation.interop.LocalMainActionInterop
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.platform.share.rememberShareManager
+import com.hand.log.ui.ProPaywallSheet
 import com.hand.log.platform.share.toPngBytes
 import com.hand.log.platform.etc.Logger
 import kotlinx.coroutines.Dispatchers
@@ -64,6 +65,10 @@ internal fun HandDetailRoute(
 		onConfirmDelete = viewModel::confirmDelete,
 		onSaveAndMarkPlayer = viewModel::saveAndMarkPlayer,
 		onCardsSelected = viewModel::onCardsSelected,
+		onUpgrade = {
+			viewModel.dismissModal()
+			navAction.navigateToProUpgrade()
+		},
 		onDismiss = viewModel::dismissModal,
 	)
 
@@ -101,9 +106,15 @@ internal fun HandDetailRoute(
 						val bytes = withContext(Dispatchers.Default) {
 							bitmap.toPngBytes()
 						}
-						shareManager.saveImage(bytes, effect.fileName)
+						val saved = shareManager.saveImage(bytes, effect.fileName)
 						mainAction.onShowToast(
-							getString(Res.string.hand_detail_image_downloaded),
+							getString(
+								if (saved) {
+									Res.string.hand_detail_image_downloaded
+								} else {
+									Res.string.hand_detail_image_save_failed
+								},
+							),
 							ToastDurationType.SHORT,
 						)
 					} catch (e: Throwable) {
@@ -129,6 +140,7 @@ private fun HandDetailModalContent(
 	onConfirmDelete: () -> Unit,
 	onSaveAndMarkPlayer: (SavedPlayer, Int) -> Unit,
 	onCardsSelected: (List<Card>) -> Unit,
+	onUpgrade: () -> Unit,
 	onDismiss: () -> Unit,
 ) {
 	when (modalEffect) {
@@ -175,6 +187,13 @@ private fun HandDetailModalContent(
 				selectedCards = modalEffect.selectedCards,
 				onCardsSelected = onCardsSelected,
 				onDismiss = onDismiss,
+			)
+		}
+		is HandDetailModalEffect.ShowPaywall -> {
+			ProPaywallSheet(
+				feature = modalEffect.feature,
+				onDismiss = onDismiss,
+				onUpgrade = onUpgrade,
 			)
 		}
 	}

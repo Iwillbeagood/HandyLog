@@ -1,7 +1,9 @@
 package com.hand.log
 
 import android.app.Application
+import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
+import com.google.firebase.analytics.analytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.hand.log.platform.etc.Logger
 import org.koin.android.ext.koin.androidContext
@@ -14,6 +16,7 @@ class HandLogApplication : Application() {
 
 		if (FirebaseApp.initializeApp(this) != null) {
 			FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = !BuildConfig.DEBUG
+			Firebase.analytics.setAnalyticsCollectionEnabled(!BuildConfig.DEBUG)
 		}
 
 		setupGlobalExceptionHandlers()

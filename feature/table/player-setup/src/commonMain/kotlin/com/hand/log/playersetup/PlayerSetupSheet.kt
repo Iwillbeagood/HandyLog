@@ -60,6 +60,7 @@ fun PlayerSetupSheet(
 	maxSeat: Int,
 	onSaved: (isEditMode: Boolean) -> Unit,
 	onDeleted: () -> Unit,
+	onPlayerLimitReached: () -> Unit,
 	onDismiss: () -> Unit,
 	viewModel: PlayerSetupViewModel = koinViewModel(),
 ) {
@@ -87,6 +88,7 @@ fun PlayerSetupSheet(
 				PlayerSetupEffect.NameRequired -> {
 					warningMessage = nameRequiredMessage
 				}
+				PlayerSetupEffect.PlayerLimitReached -> onPlayerLimitReached()
 			}
 		}
 	}

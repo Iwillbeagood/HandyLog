@@ -9,6 +9,7 @@ import com.hand.log.domain.usecase.ApplyTableBalanceUseCase
 import com.hand.log.domain.usecase.CheckFeatureLimitUseCase
 import com.hand.log.domain.usecase.MarkPositionSetupShownUseCase
 import com.hand.log.domain.usecase.SavePlayerPositionsUseCase
+import com.hand.log.table.contract.RecordMode
 import com.hand.log.table.contract.TableEffect
 import com.hand.log.table.contract.TableModalEffect
 import com.hand.log.table.contract.TableState
@@ -97,6 +98,10 @@ internal class TableViewModel(
 		}
 	}
 
+	fun showPlayerLimitPaywall() {
+		_modalEffect.update { TableModalEffect.ShowPaywall(ProFeature.UNLIMITED_PLAYERS) }
+	}
+
 	fun showPlayerSetup(seat: Int) {
 		val current = state.value as? TableState.TableData ?: return
 		val table = current.table
@@ -173,13 +178,25 @@ internal class TableViewModel(
 	}
 
 	fun navigateToRecordHand() {
-		val current = state.value as? TableState.TableData ?: return
+		if (state.value !is TableState.TableData) return
 		viewModelScope.launch {
 			if (checkFeatureLimit.canRecordHand(tableId)) {
-				_effect.emit(TableEffect.NavigateToRecordHand(current.table.id))
+				_modalEffect.update { TableModalEffect.ShowRecordMode }
 			} else {
 				_modalEffect.update { TableModalEffect.ShowPaywall(ProFeature.UNLIMITED_HANDS) }
 			}
+		}
+	}
+
+	fun selectRecordMode(mode: RecordMode) {
+		val current = state.value as? TableState.TableData ?: return
+		dismissModal()
+		viewModelScope.launch {
+			val effect = when (mode) {
+				RecordMode.STEP -> TableEffect.NavigateToRecordHand(current.table.id)
+				RecordMode.QUICK -> TableEffect.NavigateToQuickRecordHand(current.table.id)
+			}
+			_effect.emit(effect)
 		}
 	}
 

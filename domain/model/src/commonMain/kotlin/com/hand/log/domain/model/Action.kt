@@ -1,5 +1,6 @@
 package com.hand.log.domain.model
 
+import com.hand.log.domain.model.quick.BetSize
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -12,4 +13,5 @@ data class Action(
 	val betLevel: Int = 0,
 	val playerName: String? = null,
 	val savedPlayerId: String? = null,
+	val potSize: BetSize? = null,
 )

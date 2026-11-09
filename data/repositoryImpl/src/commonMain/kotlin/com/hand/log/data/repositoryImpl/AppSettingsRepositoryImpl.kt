@@ -81,4 +81,10 @@ internal class AppSettingsRepositoryImpl(
 	private companion object {
 		const val SELECTION_DELIMITER = "|"
 	}
+
+	override fun observeQuickAmountInChips(): Flow<Boolean> =
+		localDataSource.observeQuickAmountInChips()
+
+	override suspend fun setQuickAmountInChips(inChips: Boolean) =
+		localDataSource.setQuickAmountInChips(inChips)
 }

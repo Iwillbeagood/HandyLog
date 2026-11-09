@@ -6,6 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.domain.model.PokerTable
+import com.hand.log.home.component.HomeCreateSheet
 import com.hand.log.home.contract.HomeEffect
 import com.hand.log.home.contract.HomeModalEffect
 import com.hand.log.navigation.interop.LocalMainActionInterop
@@ -32,6 +33,9 @@ internal fun HomeRoute(
 				is HomeEffect.NavigateToTable -> {
 					navAction.navigateToTableDetail(effect.tableId)
 				}
+				HomeEffect.NavigateToQuickRecord -> {
+					navAction.navigateToQuickRecordHand()
+				}
 				is HomeEffect.TableDeleted -> {
 					mainAction.onShowToast(Res.string.home_table_deleted)
 				}
@@ -45,12 +49,14 @@ internal fun HomeRoute(
 		onTabSelect = viewModel::selectTab,
 		onNavigateToTableDetail = navAction::navigateToTableDetail,
 		onNavigateToHandDetail = navAction::navigateToHandDetail,
-		onTableAdd = viewModel::showTableEditSheet,
+		onCreateClick = viewModel::showCreateMenu,
 	)
 
 	HomeModalContent(
 		homeModalEffect = homeModalEffect,
 		onDismissRequest = viewModel::dismissDialog,
+		onCreateTable = viewModel::showTableEditSheet,
+		onQuickRecord = viewModel::startQuickRecord,
 		onTableSaved = { table ->
 			viewModel.onTableSaved(table)
 		},
@@ -65,11 +71,20 @@ internal fun HomeRoute(
 private fun HomeModalContent(
 	homeModalEffect: HomeModalEffect,
 	onDismissRequest: () -> Unit,
+	onCreateTable: () -> Unit,
+	onQuickRecord: () -> Unit,
 	onTableSaved: (PokerTable) -> Unit,
 	onUpgrade: () -> Unit,
 ) {
 	when (homeModalEffect) {
 		HomeModalEffect.Idle -> {}
+		HomeModalEffect.CreateMenu -> {
+			HomeCreateSheet(
+				onCreateTable = onCreateTable,
+				onQuickRecord = onQuickRecord,
+				onDismiss = onDismissRequest,
+			)
+		}
 		HomeModalEffect.TableEditSheet -> {
 			TableEditSheet(
 				onSaved = { table, _ -> onTableSaved(table) },

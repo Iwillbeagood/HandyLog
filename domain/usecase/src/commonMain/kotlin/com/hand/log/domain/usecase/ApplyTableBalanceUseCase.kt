@@ -14,7 +14,7 @@ class ApplyTableBalanceUseCase(
 			pokerTableRepository.deletePlayer(table.id, seat)
 		}
 		pokerTableRepository.updateTableInfo(table.copy(heroSeat = heroSeat))
-		otherSeats.forEach { seat ->
+		(otherSeats + heroSeat).forEach { seat ->
 			pokerTableRepository.upsertPlayer(table.id, Player(seat = seat))
 		}
 	}

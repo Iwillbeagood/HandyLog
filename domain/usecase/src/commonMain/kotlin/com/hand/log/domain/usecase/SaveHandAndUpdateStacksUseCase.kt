@@ -8,6 +8,8 @@ class SaveHandAndUpdateStacksUseCase(
 ) {
 
 	suspend operator fun invoke(handRecord: HandRecord) {
-		handRecordRepository.saveHand(handRecord)
+		var isSaved = false
+		handRecordRepository.saveHand(handRecord) { isSaved = true }
+		check(isSaved) { "saveHand failed" }
 	}
 }

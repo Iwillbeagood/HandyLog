@@ -27,6 +27,9 @@ internal class HandRecordRepositoryImpl(
 	override suspend fun getHandCountByTableId(tableId: String): Int =
 		localDataSource.getHandCountByTableId(tableId)
 
+	override suspend fun getHandCountWithoutTable(): Int =
+		localDataSource.getHandCountWithoutTable()
+
 	override suspend fun saveHand(hand: HandRecord, onSuccess: () -> Unit) {
 		try {
 			// 파생 결과(팟·최종 스택·승자·투입액)를 저장 시점에 한 번 계산해 materialize한다.

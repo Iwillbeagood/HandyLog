@@ -63,6 +63,21 @@ internal class HomeViewModel(
 		}
 	}
 
+	fun showCreateMenu() {
+		_homeModalEffect.update { HomeModalEffect.CreateMenu }
+	}
+
+	fun startQuickRecord() {
+		viewModelScope.launch {
+			if (checkFeatureLimit.canRecordHand(tableId = null)) {
+				dismissDialog()
+				_homeEffect.emit(HomeEffect.NavigateToQuickRecord)
+			} else {
+				_homeModalEffect.update { HomeModalEffect.ShowPaywall(ProFeature.UNLIMITED_HANDS) }
+			}
+		}
+	}
+
 	fun showTableEditSheet() {
 		viewModelScope.launch {
 			if (checkFeatureLimit.canCreateTable()) {

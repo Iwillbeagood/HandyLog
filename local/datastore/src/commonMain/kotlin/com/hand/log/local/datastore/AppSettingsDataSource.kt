@@ -18,6 +18,7 @@ class AppSettingsDataSource(
 		val SKIP_STEP_BACK_WARNING = booleanPreferencesKey("skip_step_back_warning")
 		val HOME_TAB = stringPreferencesKey("home_tab")
 		val PREFLOP_SELECTION = stringPreferencesKey("preflop_selection")
+		val QUICK_AMOUNT_IN_CHIPS = booleanPreferencesKey("quick_amount_in_chips")
 	}
 
 	fun observeThemeMode(): Flow<String> = dataStore.data.map { prefs ->
@@ -79,6 +80,16 @@ class AppSettingsDataSource(
 	suspend fun setPreflopSelection(value: String) {
 		dataStore.edit { prefs ->
 			prefs[PREFLOP_SELECTION] = value
+		}
+	}
+
+	fun observeQuickAmountInChips(): Flow<Boolean> = dataStore.data.map { prefs ->
+		prefs[QUICK_AMOUNT_IN_CHIPS] ?: false
+	}
+
+	suspend fun setQuickAmountInChips(inChips: Boolean) {
+		dataStore.edit { prefs ->
+			prefs[QUICK_AMOUNT_IN_CHIPS] = inChips
 		}
 	}
 }
