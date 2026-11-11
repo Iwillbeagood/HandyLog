@@ -5,11 +5,15 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -32,24 +36,37 @@ import handylog.core.res.generated.resources.x
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun DrillPalette(
-	options: List<DrillBrush>,
+	paintBrushes: List<DrillBrush.Paint>,
 	selected: DrillBrush?,
 	onSelect: (DrillBrush) -> Unit,
 ) {
-	FlowRow(
+	Row(
+		modifier = Modifier
+			.fillMaxWidth()
+			.height(IntrinsicSize.Min),
 		horizontalArrangement = Arrangement.spacedBy(8.dp),
-		verticalArrangement = Arrangement.spacedBy(8.dp),
 	) {
-		options.forEach { brush ->
-			BrushItem(
-				brush = brush,
-				selected = brush == selected,
-				onClick = { onSelect(brush) },
-			)
+		Row(
+			modifier = Modifier
+				.weight(1f)
+				.horizontalScroll(rememberScrollState()),
+			horizontalArrangement = Arrangement.spacedBy(8.dp),
+		) {
+			paintBrushes.forEach { brush ->
+				BrushItem(
+					brush = brush,
+					selected = brush == selected,
+					onClick = { onSelect(brush) },
+				)
+			}
 		}
+		BrushItem(
+			brush = DrillBrush.Erase,
+			selected = selected == DrillBrush.Erase,
+			onClick = { onSelect(DrillBrush.Erase) },
+		)
 	}
 }
 
@@ -63,6 +80,7 @@ private fun BrushItem(
 	val shape = RoundedCornerShape(8.dp)
 	Row(
 		modifier = Modifier
+			.fillMaxHeight()
 			.clip(shape)
 			.background(colors.muted)
 			.border(1.5.dp, if (selected) colors.textPrimary else Color.Transparent, shape)
@@ -84,11 +102,10 @@ private fun BrushItem(
 			DrillBrush.Erase -> {
 				Icon(
 					painter = painterResource(Res.drawable.x),
-					contentDescription = null,
-					tint = colors.textSecondary,
+					contentDescription = stringResource(Res.string.preflop_drill_eraser),
+					tint = if (selected) colors.textPrimary else colors.textSecondary,
 					modifier = Modifier.size(14.dp),
 				)
-				BrushLabel(stringResource(Res.string.preflop_drill_eraser), selected)
 			}
 		}
 	}
@@ -103,10 +120,10 @@ private fun BrushLabel(text: String, selected: Boolean) {
 	)
 }
 
-private val previewOptions = listOf(
-	DrillBrush.Paint(PreflopAction.RAISE),
-	DrillBrush.Paint(PreflopAction.RAISE_BLUFF),
-	DrillBrush.Erase,
+private val previewPaintBrushes = listOf(
+	DrillBrush.Paint(PreflopAction.RAISE_FOLD),
+	DrillBrush.Paint(PreflopAction.RAISE_CALL),
+	DrillBrush.Paint(PreflopAction.RAISE_4BET),
 )
 
 @ThemePreviews
@@ -114,8 +131,8 @@ private val previewOptions = listOf(
 private fun DrillPalettePaintSelectedPreview() {
 	ThemePreview {
 		DrillPalette(
-			options = previewOptions,
-			selected = DrillBrush.Paint(PreflopAction.RAISE),
+			paintBrushes = previewPaintBrushes,
+			selected = DrillBrush.Paint(PreflopAction.RAISE_FOLD),
 			onSelect = {},
 		)
 	}
@@ -126,7 +143,7 @@ private fun DrillPalettePaintSelectedPreview() {
 private fun DrillPaletteEraseSelectedPreview() {
 	ThemePreview {
 		DrillPalette(
-			options = previewOptions,
+			paintBrushes = previewPaintBrushes,
 			selected = DrillBrush.Erase,
 			onSelect = {},
 		)

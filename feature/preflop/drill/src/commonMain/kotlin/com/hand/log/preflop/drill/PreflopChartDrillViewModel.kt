@@ -84,7 +84,13 @@ internal class PreflopChartDrillViewModel(
 	fun backToSetup() {
 		strokeMode = null
 		_state.update {
-			it.copy(phase = DrillPhase.Setup, painted = emptyMap(), brush = null, showAnswer = false)
+			it.copy(
+				phase = DrillPhase.Setup,
+				painted = emptyMap(),
+				brush = null,
+				strokeHand = null,
+				showAnswer = false,
+			)
 		}
 	}
 
@@ -108,6 +114,7 @@ internal class PreflopChartDrillViewModel(
 
 	fun strokeEnd() {
 		strokeMode = null
+		_state.update { it.copy(strokeHand = null) }
 	}
 
 	fun reset() {
@@ -133,7 +140,7 @@ internal class PreflopChartDrillViewModel(
 				is DrillBrush.Paint -> it.painted + (hand.notation to mode.action)
 				DrillBrush.Erase -> it.painted - hand.notation
 			}
-			it.copy(painted = painted)
+			it.copy(painted = painted, strokeHand = hand)
 		}
 	}
 
@@ -143,6 +150,7 @@ internal class PreflopChartDrillViewModel(
 			it.copy(
 				phase = DrillPhase.Painting(spot),
 				painted = emptyMap(),
+				strokeHand = null,
 				brush = spot.answer.presentActions.firstOrNull()?.let(DrillBrush::Paint) ?: DrillBrush.Erase,
 				showAnswer = false,
 			)

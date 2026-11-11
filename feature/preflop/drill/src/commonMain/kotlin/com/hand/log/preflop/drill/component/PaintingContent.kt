@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -20,6 +18,7 @@ import com.hand.log.domain.model.preflop.PreflopHand
 import com.hand.log.preflop.drill.contract.DrillBrush
 import com.hand.log.preflop.drill.contract.DrillCell
 import com.hand.log.preflop.drill.contract.DrillSpot
+import com.hand.log.preflop.drill.contract.DrillStrokePreview
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.preflop_drill_grade
 import handylog.core.res.generated.resources.preflop_drill_painting_desc
@@ -30,9 +29,10 @@ import org.jetbrains.compose.resources.stringResource
 internal fun PaintingContent(
 	spot: DrillSpot,
 	cells: Map<String, DrillCell>,
-	brushOptions: List<DrillBrush>,
+	paintBrushes: List<DrillBrush.Paint>,
 	brush: DrillBrush?,
 	canReset: Boolean,
+	strokePreview: DrillStrokePreview?,
 	onStackClick: () -> Unit,
 	onBrushSelect: (DrillBrush) -> Unit,
 	onStrokeStart: (PreflopHand) -> Unit,
@@ -45,11 +45,9 @@ internal fun PaintingContent(
 	Column(modifier = Modifier.fillMaxSize()) {
 		Column(
 			modifier = Modifier
-				.weight(1f)
 				.fillMaxWidth()
-				.verticalScroll(rememberScrollState())
-				.padding(horizontal = 16.dp, vertical = 16.dp),
-			verticalArrangement = Arrangement.spacedBy(16.dp),
+				.padding(start = 16.dp, top = 16.dp, end = 16.dp),
+			verticalArrangement = Arrangement.spacedBy(12.dp),
 		) {
 			DrillSpotHeader(
 				spot = spot,
@@ -57,17 +55,22 @@ internal fun PaintingContent(
 				onStackClick = onStackClick,
 			)
 			DrillPalette(
-				options = brushOptions,
+				paintBrushes = paintBrushes,
 				selected = brush,
 				onSelect = onBrushSelect,
 			)
-			DrillGrid(
-				cells = cells,
-				onStrokeStart = onStrokeStart,
-				onStrokeMove = onStrokeMove,
-				onStrokeEnd = onStrokeEnd,
-			)
 		}
+		DrillGrid(
+			cells = cells,
+			fillHeight = true,
+			strokePreview = strokePreview,
+			onStrokeStart = onStrokeStart,
+			onStrokeMove = onStrokeMove,
+			onStrokeEnd = onStrokeEnd,
+			modifier = Modifier
+				.weight(1f)
+				.padding(start = 8.dp, top = 12.dp, end = 8.dp),
+		)
 		Row(
 			modifier = Modifier
 				.fillMaxWidth()
@@ -100,9 +103,10 @@ private fun PaintingContentPreview() {
 		PaintingContent(
 			spot = previewSpot,
 			cells = previewPaintedCells,
-			brushOptions = previewSpot.answer.presentActions.map { DrillBrush.Paint(it) } + DrillBrush.Erase,
+			paintBrushes = previewSpot.answer.presentActions.map { DrillBrush.Paint(it) },
 			brush = DrillBrush.Paint(PreflopAction.RAISE),
 			canReset = true,
+			strokePreview = null,
 			onStackClick = {},
 			onBrushSelect = {},
 			onStrokeStart = {},
@@ -121,9 +125,32 @@ private fun PaintingContentEmptyPreview() {
 		PaintingContent(
 			spot = previewSpot,
 			cells = emptyMap(),
-			brushOptions = listOf(DrillBrush.Paint(PreflopAction.RAISE), DrillBrush.Erase),
+			paintBrushes = listOf(DrillBrush.Paint(PreflopAction.RAISE)),
 			brush = DrillBrush.Erase,
 			canReset = false,
+			strokePreview = null,
+			onStackClick = {},
+			onBrushSelect = {},
+			onStrokeStart = {},
+			onStrokeMove = {},
+			onStrokeEnd = {},
+			onReset = {},
+			onGrade = {},
+		)
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun PaintingContentStrokingPreview() {
+	ThemePreview {
+		PaintingContent(
+			spot = previewSpot,
+			cells = previewPaintedCells,
+			paintBrushes = previewSpot.answer.presentActions.map { DrillBrush.Paint(it) },
+			brush = DrillBrush.Paint(PreflopAction.RAISE),
+			canReset = true,
+			strokePreview = previewStrokePreview,
 			onStackClick = {},
 			onBrushSelect = {},
 			onStrokeStart = {},

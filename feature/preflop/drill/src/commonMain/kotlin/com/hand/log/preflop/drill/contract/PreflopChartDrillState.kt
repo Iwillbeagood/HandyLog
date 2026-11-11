@@ -5,6 +5,8 @@ import com.hand.log.domain.model.preflop.ChartDrillResult
 import com.hand.log.domain.model.preflop.DrillCellResult
 import com.hand.log.domain.model.preflop.PreflopAction
 import com.hand.log.domain.model.preflop.PreflopChart
+import com.hand.log.domain.model.preflop.PreflopGrid
+import com.hand.log.domain.model.preflop.PreflopHand
 import com.hand.log.domain.model.preflop.PreflopStack
 
 internal sealed interface DrillBrush {
@@ -29,12 +31,20 @@ internal data class DrillCell(
 	val mark: DrillCellResult? = null,
 )
 
+internal data class DrillStrokePreview(
+	val hand: PreflopHand,
+	val row: Int,
+	val col: Int,
+	val action: PreflopAction?,
+)
+
 internal data class PreflopChartDrillState(
 	val phase: DrillPhase = DrillPhase.Setup,
 	val selectedStack: PreflopStack = PreflopStack.FREE,
 	val isPro: Boolean = false,
 	val painted: Map<String, PreflopAction> = emptyMap(),
 	val brush: DrillBrush? = null,
+	val strokeHand: PreflopHand? = null,
 	val showAnswer: Boolean = false,
 	val isLoading: Boolean = true,
 ) {
@@ -58,7 +68,7 @@ internal data class PreflopChartDrillState(
 
 	val palette: List<PreflopAction> get() = spot?.answer?.presentActions.orEmpty()
 
-	val brushOptions: List<DrillBrush> get() = palette.map { DrillBrush.Paint(it) } + DrillBrush.Erase
+	val paintBrushes: List<DrillBrush.Paint> get() = palette.map { DrillBrush.Paint(it) }
 
 	val canReset: Boolean get() = painted.isNotEmpty()
 
@@ -69,5 +79,13 @@ internal data class PreflopChartDrillState(
 				DrillCell(action, mark)
 			}
 			else -> painted.mapValues { DrillCell(it.value) }
+		}
+
+	val strokePreview: DrillStrokePreview?
+		get() {
+			val hand = strokeHand ?: return null
+			val row = PreflopGrid.rows.indexOfFirst { hand in it }
+			if (row < 0) return null
+			return DrillStrokePreview(hand, row, PreflopGrid.rows[row].indexOf(hand), painted[hand.notation])
 		}
 }

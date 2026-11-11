@@ -18,6 +18,7 @@ import com.hand.log.preflop.drill.component.SetupContent
 import com.hand.log.preflop.drill.component.previewPainted
 import com.hand.log.preflop.drill.component.previewResult
 import com.hand.log.preflop.drill.component.previewSpot
+import com.hand.log.preflop.drill.component.previewStrokePreview
 import com.hand.log.preflop.drill.contract.DrillBrush
 import com.hand.log.preflop.drill.contract.DrillPhase
 import com.hand.log.preflop.drill.contract.PreflopChartDrillState
@@ -67,9 +68,10 @@ internal fun PreflopChartDrillScreen(
 				is DrillPhase.Painting -> PaintingContent(
 					spot = phase.spot,
 					cells = state.gridCells,
-					brushOptions = state.brushOptions,
+					paintBrushes = state.paintBrushes,
 					brush = state.brush,
 					canReset = state.canReset,
+					strokePreview = state.strokePreview,
 					onStackClick = onBackToSetup,
 					onBrushSelect = onBrushSelect,
 					onStrokeStart = onStrokeStart,
@@ -130,6 +132,22 @@ private fun PreflopChartDrillPaintingPreview() {
 				phase = DrillPhase.Painting(previewSpot),
 				painted = previewPainted,
 				brush = DrillBrush.Paint(PreflopAction.RAISE),
+				isLoading = false,
+			),
+		)
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun PreflopChartDrillStrokingPreview() {
+	ThemePreview {
+		PreviewScreen(
+			PreflopChartDrillState(
+				phase = DrillPhase.Painting(previewSpot),
+				painted = previewPainted,
+				brush = DrillBrush.Paint(PreflopAction.RAISE),
+				strokeHand = previewStrokePreview.hand,
 				isLoading = false,
 			),
 		)

@@ -21,12 +21,14 @@ import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.Position
 import com.hand.log.domain.model.preflop.PreflopAction
 import com.hand.log.domain.model.preflop.PreflopChart
+import com.hand.log.domain.model.preflop.PreflopGrid
 import com.hand.log.domain.model.preflop.PreflopStack
 import com.hand.log.domain.model.preflop.gradeChartDrill
 import com.hand.log.preflop.chart.component.PreflopStackBadge
 import com.hand.log.preflop.drill.contract.DrillCell
 import com.hand.log.preflop.drill.contract.DrillPhase
 import com.hand.log.preflop.drill.contract.DrillSpot
+import com.hand.log.preflop.drill.contract.DrillStrokePreview
 import com.hand.log.preflop.drill.contract.PreflopChartDrillState
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.crown
@@ -105,6 +107,13 @@ internal val previewPainted = mapOf(
 	"AKs" to PreflopAction.RAISE,
 	"A5s" to PreflopAction.RAISE,
 	"72o" to PreflopAction.RAISE_BLUFF,
+)
+
+internal val previewStrokePreview = DrillStrokePreview(
+	hand = PreflopGrid.rows[0][1],
+	row = 0,
+	col = 1,
+	action = PreflopAction.RAISE,
 )
 
 internal val previewPaintedCells = previewPainted.mapValues { DrillCell(it.value) }
