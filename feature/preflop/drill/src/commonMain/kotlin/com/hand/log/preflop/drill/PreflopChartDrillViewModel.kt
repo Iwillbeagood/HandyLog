@@ -92,7 +92,7 @@ internal class PreflopChartDrillViewModel(
 		_state.update { it.copy(brush = brush) }
 	}
 
-	fun onStrokeStart(hand: PreflopHand) {
+	fun strokeStart(hand: PreflopHand) {
 		val s = _state.value
 		if (s.phase !is DrillPhase.Painting) return
 		val brush = s.brush ?: return
@@ -104,9 +104,9 @@ internal class PreflopChartDrillViewModel(
 		applyStroke(hand)
 	}
 
-	fun onStrokeMove(hand: PreflopHand) = applyStroke(hand)
+	fun strokeMove(hand: PreflopHand) = applyStroke(hand)
 
-	fun onStrokeEnd() {
+	fun strokeEnd() {
 		strokeMode = null
 	}
 
