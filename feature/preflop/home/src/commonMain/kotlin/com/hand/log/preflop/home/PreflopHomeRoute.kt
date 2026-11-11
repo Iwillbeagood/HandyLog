@@ -30,6 +30,7 @@ internal fun PreflopHomeRoute(
 		quizLocked = state.quizLocked,
 		onChartClick = navAction::navigateToPreflopChart,
 		onQuizClick = viewModel::onQuizClick,
+		onDrillClick = navAction::navigateToPreflopChartDrill,
 	)
 
 	when (val effect = modalEffect) {

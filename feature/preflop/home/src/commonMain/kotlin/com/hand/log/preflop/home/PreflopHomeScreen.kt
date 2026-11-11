@@ -21,6 +21,9 @@ import com.hand.log.preflop.home.component.PreflopFeatureCard
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.preflop_chart_card_cta
 import handylog.core.res.generated.resources.preflop_chart_card_desc
+import handylog.core.res.generated.resources.preflop_drill_card_cta
+import handylog.core.res.generated.resources.preflop_drill_card_desc
+import handylog.core.res.generated.resources.preflop_drill_title
 import handylog.core.res.generated.resources.preflop_main_title
 import handylog.core.res.generated.resources.preflop_quiz_cta
 import handylog.core.res.generated.resources.preflop_quiz_desc
@@ -33,6 +36,7 @@ internal fun PreflopHomeScreen(
 	quizLocked: Boolean,
 	onChartClick: () -> Unit,
 	onQuizClick: () -> Unit,
+	onDrillClick: () -> Unit,
 ) {
 	BaseScaffold(
 		applyNavigationBarsPadding = false,
@@ -68,6 +72,14 @@ internal fun PreflopHomeScreen(
 				onClick = onQuizClick,
 				locked = quizLocked,
 			)
+			PreflopFeatureCard(
+				variant = PreflopCardVariant.DRILL,
+				title = stringResource(Res.string.preflop_drill_title),
+				description = stringResource(Res.string.preflop_drill_card_desc),
+				ctaText = stringResource(Res.string.preflop_drill_card_cta),
+				ctaColor = HandyTheme.colorScheme.accent,
+				onClick = onDrillClick,
+			)
 		}
 	}
 }
@@ -80,6 +92,7 @@ private fun PreflopHomeScreenPreview() {
 			quizLocked = true,
 			onChartClick = {},
 			onQuizClick = {},
+			onDrillClick = {},
 		)
 	}
 }
