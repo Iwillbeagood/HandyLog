@@ -68,6 +68,7 @@ include(
     ":feature:home",
     ":feature:preflop:home",
     ":feature:preflop:chart",
+    ":feature:preflop:drill",
     ":feature:preflop:quiz:common",
     ":feature:preflop:quiz:home",
     ":feature:preflop:quiz:session",

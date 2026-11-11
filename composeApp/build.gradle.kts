@@ -40,6 +40,7 @@ kotlin {
 			implementation(projects.feature.home)
 			implementation(projects.feature.preflop.home)
 			implementation(projects.feature.preflop.chart)
+			implementation(projects.feature.preflop.drill)
 			implementation(projects.feature.preflop.quiz.home)
 			implementation(projects.feature.preflop.quiz.session)
 			implementation(projects.feature.table.home)
