@@ -126,23 +126,33 @@ private fun Modifier.strokeInput(
 			val down = awaitFirstDown()
 			down.consume()
 			var last = handAt(down.position, size, gapPx)
+			var lastPosition = down.position
 			haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
 			start(last)
 			var change = awaitPointerEvent().changes.firstOrNull { it.id == down.id }
 			while (change != null && change.pressed) {
 				change.consume()
-				val hand = handAt(change.position, size, gapPx)
-				if (hand != last) {
-					last = hand
+				val crossed = handsAlong(lastPosition, change.position, size, gapPx).filter {
+					it != last
+				}.distinct()
+				crossed.forEach(move)
+				if (crossed.isNotEmpty()) {
+					last = crossed.last()
 					haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-					move(hand)
 				}
+				lastPosition = change.position
 				change = awaitPointerEvent().changes.firstOrNull { it.id == down.id }
 			}
 			change?.consume()
 			end()
 		}
 	}
+}
+
+private fun handsAlong(from: Offset, to: Offset, size: IntSize, gapPx: Float): List<PreflopHand> {
+	val step = minOf(size.width, size.height) / GRID_SIZE / 2f
+	val steps = ((to - from).getDistance() / step).toInt().coerceAtLeast(1)
+	return (1..steps).map { i -> handAt(from + (to - from) * (i / steps.toFloat()), size, gapPx) }
 }
 
 private fun handAt(position: Offset, size: IntSize, gapPx: Float): PreflopHand {
