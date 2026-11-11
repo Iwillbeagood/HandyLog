@@ -23,7 +23,7 @@ import handylog.core.res.generated.resources.chevron_down
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-internal fun PreflopStackBadge(
+fun PreflopStackBadge(
 	stack: PreflopStack,
 	onClick: (() -> Unit)? = null,
 ) {

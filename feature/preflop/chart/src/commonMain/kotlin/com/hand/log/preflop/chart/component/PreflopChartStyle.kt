@@ -52,7 +52,7 @@ private val ChartGray = Color(0xFF607D8B) // 폴드 — 슬레이트 그레이
 private val ChartText = Color(0xFFFFFFFF) // 텍스트 (모든 셀 공통 흰색)
 
 /** 액션별 (배경색, 글자색). 다크/라이트 모드 무관하게 동일한 고정 컬러를 반환한다. */
-internal fun actionColors(action: PreflopAction): Pair<Color, Color> = when (action) {
+fun actionColors(action: PreflopAction): Pair<Color, Color> = when (action) {
 	PreflopAction.RAISE -> ChartRed to ChartText
 	PreflopAction.RAISE_BLUFF -> ChartOrange to ChartText
 	PreflopAction.RAISE_FOLD -> ChartRose to ChartText
@@ -73,7 +73,7 @@ internal fun actionColors(action: PreflopAction): Pair<Color, Color> = when (act
 	PreflopAction.FOLD -> ChartGray to ChartText
 }
 
-internal fun actionLabelRes(action: PreflopAction): StringResource = when (action) {
+fun actionLabelRes(action: PreflopAction): StringResource = when (action) {
 	PreflopAction.RAISE -> Res.string.preflop_action_raise
 	PreflopAction.RAISE_BLUFF -> Res.string.preflop_action_raise_bluff
 	PreflopAction.RAISE_FOLD -> Res.string.preflop_action_raise_fold
