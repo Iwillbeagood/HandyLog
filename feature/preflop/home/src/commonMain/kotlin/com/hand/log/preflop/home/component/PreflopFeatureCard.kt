@@ -1,6 +1,7 @@
 package com.hand.log.preflop.home.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,9 +34,17 @@ import com.hand.log.ui.poker.PlayingCard
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.chevron_right
 import handylog.core.res.generated.resources.crown
+import handylog.core.res.generated.resources.pencil
 import org.jetbrains.compose.resources.painterResource
 
-internal enum class PreflopCardVariant { CHART, QUIZ }
+internal enum class PreflopCardVariant(
+	val decorationAlpha: Float,
+	val decorationRotation: Float,
+) {
+	CHART(decorationAlpha = 0.3f, decorationRotation = -10f),
+	QUIZ(decorationAlpha = 0.5f, decorationRotation = -15f),
+	DRILL(decorationAlpha = 0.4f, decorationRotation = -8f),
+}
 
 @Composable
 internal fun PreflopFeatureCard(
@@ -49,7 +58,11 @@ internal fun PreflopFeatureCard(
 	locked: Boolean = false,
 ) {
 	val colors = HandyTheme.colorScheme
-	val tint = if (variant == PreflopCardVariant.CHART) colors.primary else colors.gold
+	val tint = when (variant) {
+		PreflopCardVariant.CHART -> colors.primary
+		PreflopCardVariant.QUIZ -> colors.gold
+		PreflopCardVariant.DRILL -> colors.accent
+	}
 
 	Box(modifier = modifier.fillMaxWidth()) {
 		Box(
@@ -101,10 +114,14 @@ internal fun PreflopFeatureCard(
 			modifier = Modifier
 				.align(Alignment.CenterEnd)
 				.offset(x = (-8).dp)
-				.alpha(if (variant == PreflopCardVariant.CHART) 0.3f else 0.5f)
-				.rotate(if (variant == PreflopCardVariant.CHART) -10f else -15f),
+				.alpha(variant.decorationAlpha)
+				.rotate(variant.decorationRotation),
 		) {
-			if (variant == PreflopCardVariant.CHART) MiniGridDecoration() else QuizCardsDecoration()
+			when (variant) {
+				PreflopCardVariant.CHART -> MiniGridDecoration()
+				PreflopCardVariant.QUIZ -> QuizCardsDecoration()
+				PreflopCardVariant.DRILL -> PaintGridDecoration()
+			}
 		}
 
 		if (locked) {
@@ -150,6 +167,40 @@ private fun MiniGridDecoration() {
 				}
 			}
 		}
+	}
+}
+
+@Composable
+private fun PaintGridDecoration() {
+	val colors = HandyTheme.colorScheme
+	val painted = setOf(0, 1, 2, 4, 5, 8)
+	Box {
+		Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+			repeat(4) { row ->
+				Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+					repeat(4) { col ->
+						val filled = row * 4 + col in painted
+						Box(
+							modifier = Modifier
+								.size(18.dp)
+								.clip(RoundedCornerShape(4.dp))
+								.background(if (filled) colors.accent else colors.muted)
+								.then(
+									if (filled) Modifier else Modifier.border(1.dp, colors.accent, RoundedCornerShape(4.dp)),
+								),
+						)
+					}
+				}
+			}
+		}
+		Icon(
+			painter = painterResource(Res.drawable.pencil),
+			contentDescription = null,
+			tint = colors.textPrimary,
+			modifier = Modifier
+				.align(Alignment.Center)
+				.size(28.dp),
+		)
 	}
 }
 
@@ -220,6 +271,27 @@ private fun PreflopFeatureCardQuizLockedPreview() {
 				ctaColor = HandyTheme.colorScheme.gold,
 				onClick = {},
 				locked = true,
+			)
+		}
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun PreflopFeatureCardDrillPreview() {
+	ThemePreview {
+		Box(
+			modifier = Modifier
+				.background(HandyTheme.colorScheme.background)
+				.padding(16.dp),
+		) {
+			PreflopFeatureCard(
+				variant = PreflopCardVariant.DRILL,
+				title = "차트 채우기",
+				description = "포지션의 오픈 레인지를\n기억해서 직접 채워보세요",
+				ctaText = "연습 시작",
+				ctaColor = HandyTheme.colorScheme.accent,
+				onClick = {},
 			)
 		}
 	}

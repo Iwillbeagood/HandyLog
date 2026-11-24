@@ -23,6 +23,7 @@ interface NavigateActionInterop {
 		villain: String? = null,
 	)
 	fun navigateToPreflopChartTable(stack: String? = null, hero: String? = null)
+	fun navigateToPreflopChartDrill()
 	fun navigateToPreflopQuiz()
 	fun navigateToPreflopQuizSession(type: String, stack: String = "", recordId: String = "")
 	fun navigateToBetSizeSettings()

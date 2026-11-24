@@ -19,6 +19,7 @@ import com.hand.log.home.navigation.homeNavGraph
 import com.hand.log.players.hands.navigation.playerHandsNavGraph
 import com.hand.log.players.navigation.playersNavGraph
 import com.hand.log.preflop.chart.navigation.preflopChartNavGraph
+import com.hand.log.preflop.drill.navigation.preflopChartDrillNavGraph
 import com.hand.log.preflop.home.navigation.preflopHomeNavGraph
 import com.hand.log.preflop.quiz.home.navigation.preflopQuizHomeNavGraph
 import com.hand.log.preflop.quiz.session.navigation.preflopQuizSessionNavGraph
@@ -62,6 +63,7 @@ internal fun MainNavDisplay(
 		settingsMainNavGraph(paddingValues)
 
 		preflopChartNavGraph()
+		preflopChartDrillNavGraph()
 		preflopQuizHomeNavGraph()
 		preflopQuizSessionNavGraph()
 		tableNavGraph()

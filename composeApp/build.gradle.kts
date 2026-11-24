@@ -40,6 +40,7 @@ kotlin {
 			implementation(projects.feature.home)
 			implementation(projects.feature.preflop.home)
 			implementation(projects.feature.preflop.chart)
+			implementation(projects.feature.preflop.drill)
 			implementation(projects.feature.preflop.quiz.home)
 			implementation(projects.feature.preflop.quiz.session)
 			implementation(projects.feature.table.home)
@@ -101,7 +102,7 @@ android {
 		targetSdk = libs.versions.android.targetSdk.get().toInt()
 		// CI 에서 -PversionCode 로 주입하면 그 값을, 없으면 로컬 빌드용 기본값 1 을 사용한다.
 		versionCode = (project.findProperty("versionCode") as String?)?.toIntOrNull() ?: 1
-		versionName = "1.0.8"
+		versionName = "1.0.9"
 	}
 	buildFeatures {
 		buildConfig = true

@@ -48,6 +48,7 @@ fun HandyTopAppbar(
 	onBackEvent: () -> Unit = {},
 	iconButton: IconButton? = null,
 	endContent: @Composable (() -> Unit)? = null,
+	titleTrailing: @Composable (() -> Unit)? = null,
 	subContent: @Composable (() -> Unit)? = null,
 ) {
 	Column(
@@ -86,14 +87,20 @@ fun HandyTopAppbar(
 			}
 
 			if (navigationType != TopAppbarType.Main) {
-				Text(
-					text = title,
-					color = contentColor,
-					style = titleStyle,
-					maxLines = 1,
-					overflow = TextOverflow.Ellipsis,
+				Row(
 					modifier = Modifier.align(Alignment.Center),
-				)
+					verticalAlignment = Alignment.CenterVertically,
+					horizontalArrangement = Arrangement.spacedBy(8.dp),
+				) {
+					Text(
+						text = title,
+						color = contentColor,
+						style = titleStyle,
+						maxLines = 1,
+						overflow = TextOverflow.Ellipsis,
+					)
+					titleTrailing?.invoke()
+				}
 			}
 
 			if (iconButton != null) {
@@ -274,6 +281,24 @@ private fun CloseTopAppbarPreview() {
 		HandyTopAppbar(
 			title = "프리플랍 퀴즈",
 			navigationType = TopAppbarType.Close,
+		)
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun TitleTrailingTopAppbarPreview() {
+	ThemePreview {
+		HandyTopAppbar(
+			title = "UTG 차트 채우기",
+			navigationType = TopAppbarType.Close,
+			titleTrailing = {
+				Text(
+					text = "100BB",
+					style = HandyTheme.typography.bold12,
+					color = HandyTheme.colorScheme.primary,
+				)
+			},
 		)
 	}
 }
