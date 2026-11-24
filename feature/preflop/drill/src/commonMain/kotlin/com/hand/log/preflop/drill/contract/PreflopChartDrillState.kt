@@ -14,6 +14,43 @@ internal sealed interface DrillBrush {
 	data object Erase : DrillBrush
 }
 
+internal enum class DrillMode { RANDOM, SEQUENTIAL }
+
+internal sealed interface DrillLine {
+	data class Row(val index: Int) : DrillLine
+	data class Column(val index: Int) : DrillLine
+	data object Pairs : DrillLine
+
+	val hands: List<PreflopHand>
+		get() = when (this) {
+			is Row -> PreflopGrid.rows[index]
+			is Column -> PreflopGrid.rows.map { it[index] }
+			Pairs -> PreflopGrid.rows.mapIndexed { i, row -> row[i] }
+		}
+}
+
+internal data class DrillLineChecks(
+	val rows: List<Boolean>,
+	val columns: List<Boolean>,
+	val pairs: Boolean,
+)
+
+internal data class DrillProgress(
+	val current: Int,
+	val total: Int,
+) {
+	val isLast: Boolean get() = current >= total
+
+	val ratio: Float get() = current.toFloat() / total
+}
+
+internal data class DrillSummaryItem(
+	val hero: Position,
+	val accuracyPct: Int,
+) {
+	val accuracyRatio: Float get() = accuracyPct / 100f
+}
+
 internal data class DrillSpot(
 	val stack: PreflopStack,
 	val hero: Position,
@@ -24,6 +61,15 @@ internal sealed interface DrillPhase {
 	data object Setup : DrillPhase
 	data class Painting(val spot: DrillSpot) : DrillPhase
 	data class Graded(val spot: DrillSpot, val result: ChartDrillResult) : DrillPhase
+	data class Summary(val stack: PreflopStack, val items: List<DrillSummaryItem>) : DrillPhase {
+		val averageAccuracyPct: Int get() = if (items.isEmpty()) {
+			0
+		} else {
+			items.sumOf {
+				it.accuracyPct
+			} / items.size
+		}
+	}
 }
 
 internal data class DrillCell(
@@ -41,14 +87,28 @@ internal data class DrillStrokePreview(
 internal data class PreflopChartDrillState(
 	val phase: DrillPhase = DrillPhase.Setup,
 	val selectedStack: PreflopStack = PreflopStack.FREE,
+	val selectedMode: DrillMode = DrillMode.RANDOM,
+	val sequence: List<DrillSpot> = emptyList(),
+	val sequenceIndex: Int = 0,
+	val sequenceResults: Map<Position, ChartDrillResult> = emptyMap(),
 	val isPro: Boolean = false,
 	val painted: Map<String, PreflopAction> = emptyMap(),
-	val brush: DrillBrush? = null,
+	val checkedLines: Set<DrillLine> = emptySet(),
+	val brush: PreflopAction? = null,
 	val strokeHand: PreflopHand? = null,
 	val showAnswer: Boolean = false,
 	val isLoading: Boolean = true,
 ) {
 	val stackOptions: List<PreflopStack> get() = PreflopStack.entries
+
+	val modeOptions: List<DrillMode> get() = DrillMode.entries
+
+	val progress: DrillProgress?
+		get() = if (sequence.isEmpty()) null else DrillProgress(sequenceIndex + 1, sequence.size)
+
+	val spotProgress: DrillProgress? get() = progress?.takeIf { spot != null }
+
+	val isLastSpot: Boolean get() = progress?.isLast == true
 
 	val lockedStacks: Set<PreflopStack>
 		get() = if (isPro) {
@@ -61,14 +121,14 @@ internal data class PreflopChartDrillState(
 
 	val spot: DrillSpot?
 		get() = when (val p = phase) {
-			DrillPhase.Setup -> null
+			DrillPhase.Setup, is DrillPhase.Summary -> null
 			is DrillPhase.Painting -> p.spot
 			is DrillPhase.Graded -> p.spot
 		}
 
 	val palette: List<PreflopAction> get() = spot?.answer?.presentActions.orEmpty()
 
-	val paintBrushes: List<DrillBrush.Paint> get() = palette.map { DrillBrush.Paint(it) }
+	val canPickBrush: Boolean get() = palette.size > 1
 
 	val canReset: Boolean get() = painted.isNotEmpty()
 
@@ -80,6 +140,13 @@ internal data class PreflopChartDrillState(
 			}
 			else -> painted.mapValues { DrillCell(it.value) }
 		}
+
+	val lineChecks: DrillLineChecks
+		get() = DrillLineChecks(
+			rows = PreflopGrid.rows.indices.map { DrillLine.Row(it) in checkedLines },
+			columns = PreflopGrid.rows.indices.map { DrillLine.Column(it) in checkedLines },
+			pairs = DrillLine.Pairs in checkedLines,
+		)
 
 	val strokePreview: DrillStrokePreview?
 		get() {

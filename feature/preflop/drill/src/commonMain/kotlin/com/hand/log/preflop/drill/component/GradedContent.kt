@@ -38,11 +38,11 @@ import handylog.core.res.generated.resources.preflop_drill_accuracy
 import handylog.core.res.generated.resources.preflop_drill_answer_chart
 import handylog.core.res.generated.resources.preflop_drill_correct
 import handylog.core.res.generated.resources.preflop_drill_extra
-import handylog.core.res.generated.resources.preflop_drill_graded_desc
 import handylog.core.res.generated.resources.preflop_drill_missed
 import handylog.core.res.generated.resources.preflop_drill_my_chart
 import handylog.core.res.generated.resources.preflop_drill_next
 import handylog.core.res.generated.resources.preflop_drill_retry
+import handylog.core.res.generated.resources.preflop_drill_see_summary
 import handylog.core.res.generated.resources.preflop_drill_wrong_action
 import org.jetbrains.compose.resources.stringResource
 
@@ -52,7 +52,7 @@ internal fun GradedContent(
 	result: ChartDrillResult,
 	cells: Map<String, DrillCell>,
 	showAnswer: Boolean,
-	onStackClick: () -> Unit,
+	isLastSpot: Boolean,
 	onShowAnswer: (Boolean) -> Unit,
 	onRetry: () -> Unit,
 	onNext: () -> Unit,
@@ -69,11 +69,6 @@ internal fun GradedContent(
 				.padding(horizontal = 16.dp, vertical = 16.dp),
 			verticalArrangement = Arrangement.spacedBy(16.dp),
 		) {
-			DrillSpotHeader(
-				spot = spot,
-				description = stringResource(Res.string.preflop_drill_graded_desc),
-				onStackClick = onStackClick,
-			)
 			ScoreSummary(result)
 			HandyToggleGroup(
 				options = listOf(false, true),
@@ -106,7 +101,9 @@ internal fun GradedContent(
 			)
 			RegularButton(
 				onClick = onNext,
-				text = stringResource(Res.string.preflop_drill_next),
+				text = stringResource(
+					if (isLastSpot) Res.string.preflop_drill_see_summary else Res.string.preflop_drill_next,
+				),
 				textStyle = HandyTheme.typography.bold16,
 				modifier = Modifier.weight(1f),
 			)
@@ -183,7 +180,7 @@ private fun GradedContentMyChartPreview() {
 			result = previewResult,
 			cells = previewGradedCells,
 			showAnswer = false,
-			onStackClick = {},
+			isLastSpot = false,
 			onShowAnswer = {},
 			onRetry = {},
 			onNext = {},
@@ -200,7 +197,24 @@ private fun GradedContentAnswerPreview() {
 			result = previewResult,
 			cells = previewGradedCells,
 			showAnswer = true,
-			onStackClick = {},
+			isLastSpot = false,
+			onShowAnswer = {},
+			onRetry = {},
+			onNext = {},
+		)
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun GradedContentLastSpotPreview() {
+	ThemePreview {
+		GradedContent(
+			spot = previewSpot,
+			result = previewResult,
+			cells = previewGradedCells,
+			showAnswer = false,
+			isLastSpot = true,
 			onShowAnswer = {},
 			onRetry = {},
 			onNext = {},

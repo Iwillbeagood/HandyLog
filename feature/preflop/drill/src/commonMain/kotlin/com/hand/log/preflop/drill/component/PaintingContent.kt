@@ -1,6 +1,20 @@
 package com.hand.log.preflop.drill.component
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import handylog.core.res.generated.resources.undo
+import org.jetbrains.compose.resources.painterResource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,26 +29,25 @@ import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.designsystem.theme.HandyTheme
 import com.hand.log.domain.model.preflop.PreflopAction
 import com.hand.log.domain.model.preflop.PreflopHand
-import com.hand.log.preflop.drill.contract.DrillBrush
 import com.hand.log.preflop.drill.contract.DrillCell
-import com.hand.log.preflop.drill.contract.DrillSpot
+import com.hand.log.preflop.drill.contract.DrillLine
+import com.hand.log.preflop.drill.contract.DrillLineChecks
 import com.hand.log.preflop.drill.contract.DrillStrokePreview
 import handylog.core.res.generated.resources.Res
 import handylog.core.res.generated.resources.preflop_drill_grade
-import handylog.core.res.generated.resources.preflop_drill_painting_desc
 import handylog.core.res.generated.resources.preflop_drill_reset
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun PaintingContent(
-	spot: DrillSpot,
 	cells: Map<String, DrillCell>,
-	paintBrushes: List<DrillBrush.Paint>,
-	brush: DrillBrush?,
+	brush: PreflopAction?,
+	canPickBrush: Boolean,
+	lineChecks: DrillLineChecks,
 	canReset: Boolean,
 	strokePreview: DrillStrokePreview?,
-	onStackClick: () -> Unit,
-	onBrushSelect: (DrillBrush) -> Unit,
+	onBrushClick: () -> Unit,
+	onLineToggle: (DrillLine) -> Unit,
 	onStrokeStart: (PreflopHand) -> Unit,
 	onStrokeMove: (PreflopHand) -> Unit,
 	onStrokeEnd: () -> Unit,
@@ -43,49 +56,43 @@ internal fun PaintingContent(
 ) {
 	val colors = HandyTheme.colorScheme
 	Column(modifier = Modifier.fillMaxSize()) {
-		Column(
-			modifier = Modifier
-				.fillMaxWidth()
-				.padding(start = 16.dp, top = 16.dp, end = 16.dp),
-			verticalArrangement = Arrangement.spacedBy(12.dp),
-		) {
-			DrillSpotHeader(
-				spot = spot,
-				description = stringResource(Res.string.preflop_drill_painting_desc),
-				onStackClick = onStackClick,
-			)
-			DrillPalette(
-				paintBrushes = paintBrushes,
-				selected = brush,
-				onSelect = onBrushSelect,
-			)
-		}
 		DrillGrid(
 			cells = cells,
 			fillHeight = true,
 			strokePreview = strokePreview,
+			lineChecks = lineChecks,
+			onLineToggle = onLineToggle,
 			onStrokeStart = onStrokeStart,
 			onStrokeMove = onStrokeMove,
 			onStrokeEnd = onStrokeEnd,
 			modifier = Modifier
 				.weight(1f)
-				.padding(start = 8.dp, top = 12.dp, end = 8.dp),
+				.padding(start = 8.dp, top = 16.dp, end = 8.dp),
 		)
 		Row(
 			modifier = Modifier
 				.fillMaxWidth()
+				.height(IntrinsicSize.Min)
 				.padding(horizontal = 16.dp, vertical = 12.dp),
 			horizontalArrangement = Arrangement.spacedBy(8.dp),
 		) {
-			RegularButton(
-				onClick = onReset,
-				text = stringResource(Res.string.preflop_drill_reset),
-				textStyle = HandyTheme.typography.bold16,
-				containerColor = colors.muted,
-				contentColor = colors.textPrimary,
-				enabled = canReset,
-				modifier = Modifier.weight(1f),
-			)
+			DrillBrushButton(action = brush, onClick = onBrushClick.takeIf { canPickBrush })
+			Box(
+				modifier = Modifier
+					.fillMaxHeight()
+					.aspectRatio(1f)
+					.clip(RoundedCornerShape(8.dp))
+					.background(colors.muted)
+					.clickable(enabled = canReset, onClick = onReset),
+				contentAlignment = Alignment.Center,
+			) {
+				Icon(
+					painter = painterResource(Res.drawable.undo),
+					contentDescription = stringResource(Res.string.preflop_drill_reset),
+					tint = if (canReset) colors.textPrimary else colors.textSecondary.copy(alpha = 0.4f),
+					modifier = Modifier.size(20.dp),
+				)
+			}
 			RegularButton(
 				onClick = onGrade,
 				text = stringResource(Res.string.preflop_drill_grade),
@@ -101,14 +108,14 @@ internal fun PaintingContent(
 private fun PaintingContentPreview() {
 	ThemePreview {
 		PaintingContent(
-			spot = previewSpot,
 			cells = previewPaintedCells,
-			paintBrushes = previewSpot.answer.presentActions.map { DrillBrush.Paint(it) },
-			brush = DrillBrush.Paint(PreflopAction.RAISE),
+			brush = PreflopAction.RAISE,
+			canPickBrush = true,
+			lineChecks = previewLineChecks,
 			canReset = true,
 			strokePreview = null,
-			onStackClick = {},
-			onBrushSelect = {},
+			onBrushClick = {},
+			onLineToggle = {},
 			onStrokeStart = {},
 			onStrokeMove = {},
 			onStrokeEnd = {},
@@ -123,14 +130,14 @@ private fun PaintingContentPreview() {
 private fun PaintingContentEmptyPreview() {
 	ThemePreview {
 		PaintingContent(
-			spot = previewSpot,
 			cells = emptyMap(),
-			paintBrushes = listOf(DrillBrush.Paint(PreflopAction.RAISE)),
-			brush = DrillBrush.Erase,
+			brush = PreflopAction.RAISE,
+			canPickBrush = false,
+			lineChecks = previewLineChecks,
 			canReset = false,
 			strokePreview = null,
-			onStackClick = {},
-			onBrushSelect = {},
+			onBrushClick = {},
+			onLineToggle = {},
 			onStrokeStart = {},
 			onStrokeMove = {},
 			onStrokeEnd = {},
@@ -145,14 +152,14 @@ private fun PaintingContentEmptyPreview() {
 private fun PaintingContentStrokingPreview() {
 	ThemePreview {
 		PaintingContent(
-			spot = previewSpot,
 			cells = previewPaintedCells,
-			paintBrushes = previewSpot.answer.presentActions.map { DrillBrush.Paint(it) },
-			brush = DrillBrush.Paint(PreflopAction.RAISE),
+			brush = PreflopAction.RAISE,
+			canPickBrush = true,
+			lineChecks = previewLineChecks,
 			canReset = true,
 			strokePreview = previewStrokePreview,
-			onStackClick = {},
-			onBrushSelect = {},
+			onBrushClick = {},
+			onLineToggle = {},
 			onStrokeStart = {},
 			onStrokeMove = {},
 			onStrokeEnd = {},

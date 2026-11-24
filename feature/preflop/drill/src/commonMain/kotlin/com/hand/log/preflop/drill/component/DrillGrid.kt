@@ -2,6 +2,7 @@ package com.hand.log.preflop.drill.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,10 +44,18 @@ import com.hand.log.domain.model.preflop.PreflopGrid
 import com.hand.log.domain.model.preflop.PreflopHand
 import com.hand.log.preflop.chart.component.actionColors
 import com.hand.log.preflop.drill.contract.DrillCell
+import com.hand.log.preflop.drill.contract.DrillLine
+import com.hand.log.preflop.drill.contract.DrillLineChecks
 import com.hand.log.preflop.drill.contract.DrillStrokePreview
+import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.check
+import org.jetbrains.compose.resources.painterResource
 import kotlin.math.roundToInt
 
 private val CELL_GAP = 2.dp
+private val HEADER_SIZE = 20.dp
+private val ROW_HEADER_GAP = 8.dp
+private val CHECKBOX_SIZE = 14.dp
 private val BUBBLE_SIZE = 56.dp
 private val BUBBLE_LIFT = 12.dp
 private const val GRID_SIZE = 13
@@ -57,35 +67,78 @@ internal fun DrillGrid(
 	modifier: Modifier = Modifier,
 	fillHeight: Boolean = false,
 	strokePreview: DrillStrokePreview? = null,
+	lineChecks: DrillLineChecks? = null,
+	onLineToggle: (DrillLine) -> Unit = {},
 	onStrokeStart: ((PreflopHand) -> Unit)? = null,
 	onStrokeMove: (PreflopHand) -> Unit = {},
 	onStrokeEnd: () -> Unit = {},
 ) {
 	BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
-		val cellWidth = (maxWidth - CELL_GAP * (GRID_SIZE - 1)) / GRID_SIZE
+		val headerOffset = if (lineChecks != null) HEADER_SIZE + CELL_GAP else 0.dp
+		val rowHeaderOffset = if (lineChecks != null) HEADER_SIZE + ROW_HEADER_GAP else 0.dp
+		val cellWidth = (maxWidth - rowHeaderOffset - CELL_GAP * (GRID_SIZE - 1)) / GRID_SIZE
 		val cellHeight = if (fillHeight && constraints.hasBoundedHeight) {
-			minOf((maxHeight - CELL_GAP * (GRID_SIZE - 1)) / GRID_SIZE, cellWidth * MAX_CELL_ASPECT)
+			minOf(
+				(maxHeight - headerOffset - CELL_GAP * (GRID_SIZE - 1)) / GRID_SIZE,
+				cellWidth * MAX_CELL_ASPECT,
+			)
 		} else {
 			cellWidth
 		}
 
-		Column(
-			modifier = if (onStrokeStart != null) {
-				Modifier.strokeInput(onStrokeStart, onStrokeMove, onStrokeEnd)
-			} else {
-				Modifier
-			},
-			verticalArrangement = Arrangement.spacedBy(CELL_GAP),
-		) {
-			PreflopGrid.rows.forEach { row ->
-				Row(horizontalArrangement = Arrangement.spacedBy(CELL_GAP)) {
-					row.forEach { hand ->
-						DrillHandCell(
-							hand = hand,
-							cell = cells[hand.notation],
-							width = cellWidth,
-							height = cellHeight,
-						)
+		Column(verticalArrangement = Arrangement.spacedBy(CELL_GAP)) {
+			if (lineChecks != null) {
+				Row(horizontalArrangement = Arrangement.spacedBy(ROW_HEADER_GAP)) {
+					LineCheckCell(
+						checked = lineChecks.pairs,
+						width = HEADER_SIZE,
+						height = HEADER_SIZE,
+						onClick = { onLineToggle(DrillLine.Pairs) },
+					)
+					Row(horizontalArrangement = Arrangement.spacedBy(CELL_GAP)) {
+						lineChecks.columns.forEachIndexed { index, checked ->
+							LineCheckCell(
+								checked = checked,
+								width = cellWidth,
+								height = HEADER_SIZE,
+								onClick = { onLineToggle(DrillLine.Column(index)) },
+							)
+						}
+					}
+				}
+			}
+			Row(horizontalArrangement = Arrangement.spacedBy(ROW_HEADER_GAP)) {
+				if (lineChecks != null) {
+					Column(verticalArrangement = Arrangement.spacedBy(CELL_GAP)) {
+						lineChecks.rows.forEachIndexed { index, checked ->
+							LineCheckCell(
+								checked = checked,
+								width = HEADER_SIZE,
+								height = cellHeight,
+								onClick = { onLineToggle(DrillLine.Row(index)) },
+							)
+						}
+					}
+				}
+				Column(
+					modifier = if (onStrokeStart != null) {
+						Modifier.strokeInput(onStrokeStart, onStrokeMove, onStrokeEnd)
+					} else {
+						Modifier
+					},
+					verticalArrangement = Arrangement.spacedBy(CELL_GAP),
+				) {
+					PreflopGrid.rows.forEach { row ->
+						Row(horizontalArrangement = Arrangement.spacedBy(CELL_GAP)) {
+							row.forEach { hand ->
+								DrillHandCell(
+									hand = hand,
+									cell = cells[hand.notation],
+									width = cellWidth,
+									height = cellHeight,
+								)
+							}
+						}
 					}
 				}
 			}
@@ -98,14 +151,54 @@ internal fun DrillGrid(
 				preview = strokePreview,
 				modifier = Modifier.offset {
 					val bubblePx = BUBBLE_SIZE.roundToPx()
-					val cellCenterX = (cellWidth + CELL_GAP).toPx() * strokePreview.col + cellWidth.toPx() / 2
-					val cellTop = (cellHeight + CELL_GAP).toPx() * strokePreview.row
+					val cellCenterX = rowHeaderOffset.toPx() + (cellWidth + CELL_GAP).toPx() * strokePreview.col + cellWidth.toPx() / 2
+					val cellTop = headerOffset.toPx() + (cellHeight + CELL_GAP).toPx() * strokePreview.row
 					IntOffset(
 						x = (cellCenterX - bubblePx / 2f).roundToInt().coerceIn(0, gridWidthPx - bubblePx),
 						y = (cellTop - BUBBLE_LIFT.toPx() - bubblePx).roundToInt(),
 					)
 				},
 			)
+		}
+	}
+}
+
+@Composable
+private fun LineCheckCell(
+	checked: Boolean,
+	width: Dp,
+	height: Dp,
+	onClick: () -> Unit,
+) {
+	val colors = HandyTheme.colorScheme
+	val shape = RoundedCornerShape(3.dp)
+	Box(
+		modifier = Modifier
+			.size(width = width, height = height)
+			.clickable(onClick = onClick),
+		contentAlignment = Alignment.Center,
+	) {
+		Box(
+			modifier = Modifier
+				.size(CHECKBOX_SIZE)
+				.clip(shape)
+				.then(
+					if (checked) {
+						Modifier.background(colors.primary)
+					} else {
+						Modifier.border(1.5.dp, colors.textSecondary, shape)
+					},
+				),
+			contentAlignment = Alignment.Center,
+		) {
+			if (checked) {
+				Icon(
+					painter = painterResource(Res.drawable.check),
+					contentDescription = null,
+					tint = colors.onPrimary,
+					modifier = Modifier.size(10.dp),
+				)
+			}
 		}
 	}
 }
@@ -243,6 +336,7 @@ private fun DrillGridPaintingPreview() {
 	ThemePreview {
 		DrillGrid(
 			cells = previewPaintedCells,
+			lineChecks = previewLineChecks,
 			onStrokeStart = {},
 		)
 	}
@@ -255,9 +349,21 @@ private fun DrillGridStrokePreview() {
 		DrillGrid(
 			cells = previewPaintedCells,
 			strokePreview = previewStrokePreview,
+			lineChecks = previewLineChecks,
 			onStrokeStart = {},
 			modifier = Modifier.padding(top = 72.dp),
 		)
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun LineCheckCellPreview() {
+	ThemePreview {
+		Row(horizontalArrangement = Arrangement.spacedBy(CELL_GAP)) {
+			LineCheckCell(checked = false, width = HEADER_SIZE, height = HEADER_SIZE, onClick = {})
+			LineCheckCell(checked = true, width = HEADER_SIZE, height = HEADER_SIZE, onClick = {})
+		}
 	}
 }
 

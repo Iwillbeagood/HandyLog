@@ -12,17 +12,24 @@ import com.hand.log.designsystem.etc.ThemePreviews
 import com.hand.log.domain.model.preflop.PreflopAction
 import com.hand.log.domain.model.preflop.PreflopHand
 import com.hand.log.domain.model.preflop.PreflopStack
+import com.hand.log.preflop.chart.component.PreflopStackBadge
+import com.hand.log.preflop.drill.component.DrillProgressBar
 import com.hand.log.preflop.drill.component.GradedContent
 import com.hand.log.preflop.drill.component.PaintingContent
 import com.hand.log.preflop.drill.component.SetupContent
+import com.hand.log.preflop.drill.component.SummaryContent
+import com.hand.log.preflop.drill.component.previewProgress
+import com.hand.log.preflop.drill.component.previewSummaryItems
 import com.hand.log.preflop.drill.component.previewPainted
 import com.hand.log.preflop.drill.component.previewResult
 import com.hand.log.preflop.drill.component.previewSpot
 import com.hand.log.preflop.drill.component.previewStrokePreview
-import com.hand.log.preflop.drill.contract.DrillBrush
+import com.hand.log.preflop.drill.contract.DrillLine
+import com.hand.log.preflop.drill.contract.DrillMode
 import com.hand.log.preflop.drill.contract.DrillPhase
 import com.hand.log.preflop.drill.contract.PreflopChartDrillState
 import handylog.core.res.generated.resources.Res
+import handylog.core.res.generated.resources.preflop_drill_spot_title
 import handylog.core.res.generated.resources.preflop_drill_title
 import org.jetbrains.compose.resources.stringResource
 
@@ -31,9 +38,11 @@ internal fun PreflopChartDrillScreen(
 	state: PreflopChartDrillState,
 	onBack: () -> Unit,
 	onStackSelect: (PreflopStack) -> Unit,
+	onModeSelect: (DrillMode) -> Unit,
 	onStart: () -> Unit,
 	onBackToSetup: () -> Unit,
-	onBrushSelect: (DrillBrush) -> Unit,
+	onBrushClick: () -> Unit,
+	onLineToggle: (DrillLine) -> Unit,
 	onStrokeStart: (PreflopHand) -> Unit,
 	onStrokeMove: (PreflopHand) -> Unit,
 	onStrokeEnd: () -> Unit,
@@ -42,13 +51,21 @@ internal fun PreflopChartDrillScreen(
 	onShowAnswer: (Boolean) -> Unit,
 	onRetry: () -> Unit,
 	onNext: () -> Unit,
+	onRestartSequence: () -> Unit,
 ) {
 	BaseScaffold(
 		topBar = {
+			val spot = state.spot
 			HandyTopAppbar(
-				title = stringResource(Res.string.preflop_drill_title),
+				title = if (spot != null) {
+					stringResource(Res.string.preflop_drill_spot_title, spot.hero.label)
+				} else {
+					stringResource(Res.string.preflop_drill_title)
+				},
 				navigationType = TopAppbarType.Close,
 				onBackEvent = onBack,
+				titleTrailing = spot?.let { { PreflopStackBadge(stack = it.stack) } },
+				subContent = state.spotProgress?.let { { DrillProgressBar(progress = it) } },
 			)
 		},
 	) {
@@ -61,19 +78,22 @@ internal fun PreflopChartDrillScreen(
 					stackOptions = state.stackOptions,
 					selectedStack = state.selectedStack,
 					lockedStacks = state.lockedStacks,
+					modeOptions = state.modeOptions,
+					selectedMode = state.selectedMode,
 					isLoading = state.isLoading,
 					onStackSelect = onStackSelect,
+					onModeSelect = onModeSelect,
 					onStart = onStart,
 				)
 				is DrillPhase.Painting -> PaintingContent(
-					spot = phase.spot,
 					cells = state.gridCells,
-					paintBrushes = state.paintBrushes,
 					brush = state.brush,
+					canPickBrush = state.canPickBrush,
+					lineChecks = state.lineChecks,
 					canReset = state.canReset,
 					strokePreview = state.strokePreview,
-					onStackClick = onBackToSetup,
-					onBrushSelect = onBrushSelect,
+					onBrushClick = onBrushClick,
+					onLineToggle = onLineToggle,
 					onStrokeStart = onStrokeStart,
 					onStrokeMove = onStrokeMove,
 					onStrokeEnd = onStrokeEnd,
@@ -85,10 +105,15 @@ internal fun PreflopChartDrillScreen(
 					result = phase.result,
 					cells = state.gridCells,
 					showAnswer = state.showAnswer,
-					onStackClick = onBackToSetup,
+					isLastSpot = state.isLastSpot,
 					onShowAnswer = onShowAnswer,
 					onRetry = onRetry,
 					onNext = onNext,
+				)
+				is DrillPhase.Summary -> SummaryContent(
+					summary = phase,
+					onChangeSetup = onBackToSetup,
+					onRestart = onRestartSequence,
 				)
 			}
 		}
@@ -101,9 +126,11 @@ private fun PreviewScreen(state: PreflopChartDrillState) {
 		state = state,
 		onBack = {},
 		onStackSelect = {},
+		onModeSelect = {},
 		onStart = {},
 		onBackToSetup = {},
-		onBrushSelect = {},
+		onBrushClick = {},
+		onLineToggle = {},
 		onStrokeStart = {},
 		onStrokeMove = {},
 		onStrokeEnd = {},
@@ -112,6 +139,7 @@ private fun PreviewScreen(state: PreflopChartDrillState) {
 		onShowAnswer = {},
 		onRetry = {},
 		onNext = {},
+		onRestartSequence = {},
 	)
 }
 
@@ -131,7 +159,7 @@ private fun PreflopChartDrillPaintingPreview() {
 			PreflopChartDrillState(
 				phase = DrillPhase.Painting(previewSpot),
 				painted = previewPainted,
-				brush = DrillBrush.Paint(PreflopAction.RAISE),
+				brush = PreflopAction.RAISE,
 				isLoading = false,
 			),
 		)
@@ -146,7 +174,7 @@ private fun PreflopChartDrillStrokingPreview() {
 			PreflopChartDrillState(
 				phase = DrillPhase.Painting(previewSpot),
 				painted = previewPainted,
-				brush = DrillBrush.Paint(PreflopAction.RAISE),
+				brush = PreflopAction.RAISE,
 				strokeHand = previewStrokePreview.hand,
 				isLoading = false,
 			),
@@ -162,6 +190,37 @@ private fun PreflopChartDrillGradedPreview() {
 			PreflopChartDrillState(
 				phase = DrillPhase.Graded(previewSpot, previewResult),
 				painted = previewPainted,
+				isLoading = false,
+			),
+		)
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun PreflopChartDrillSequentialPreview() {
+	ThemePreview {
+		PreviewScreen(
+			PreflopChartDrillState(
+				phase = DrillPhase.Painting(previewSpot),
+				selectedMode = DrillMode.SEQUENTIAL,
+				sequence = List(previewProgress.total) { previewSpot },
+				sequenceIndex = previewProgress.current - 1,
+				painted = previewPainted,
+				brush = PreflopAction.RAISE,
+				isLoading = false,
+			),
+		)
+	}
+}
+
+@ThemePreviews
+@Composable
+private fun PreflopChartDrillSummaryPreview() {
+	ThemePreview {
+		PreviewScreen(
+			PreflopChartDrillState(
+				phase = DrillPhase.Summary(PreflopStack.BB100, previewSummaryItems),
 				isLoading = false,
 			),
 		)
