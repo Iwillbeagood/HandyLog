@@ -165,7 +165,7 @@ private fun formatTimestamp(
 	tableDate: LocalDate,
 	laterLabel: String,
 ): String {
-	val dateTime = kotlinx.datetime.Instant.fromEpochMilliseconds(timestamp)
+	val dateTime = kotlin.time.Instant.fromEpochMilliseconds(timestamp)
 		.toLocalDateTime(TimeZone.currentSystemDefault())
 	val recordDate = dateTime.date
 	val daysDiff = (recordDate.toEpochDays() - tableDate.toEpochDays()).toInt()

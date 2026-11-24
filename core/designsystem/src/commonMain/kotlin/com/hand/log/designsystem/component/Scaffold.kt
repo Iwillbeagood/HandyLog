@@ -84,7 +84,7 @@ fun BaseScaffold(
 				modifier = Modifier
 					.then(
 						if (constrainWidth) {
-							Modifier.fillMaxHeight().widthIn(max = contentMaxWidth!!)
+							Modifier.fillMaxHeight().widthIn(max = contentMaxWidth)
 						} else {
 							Modifier.fillMaxSize()
 						},
