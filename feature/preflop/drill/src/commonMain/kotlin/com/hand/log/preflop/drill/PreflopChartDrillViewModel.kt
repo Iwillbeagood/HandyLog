@@ -225,12 +225,15 @@ internal class PreflopChartDrillViewModel(
 		strokeMode = null
 		_state.update {
 			val palette = spot.answer.presentActions
+			val kept = painted.filterValues { action -> action in palette }
 			it.copy(
 				phase = DrillPhase.Painting(spot),
-				painted = painted,
-				checkedLines = checkedLines,
+				painted = kept,
+				checkedLines = checkedLines.filterTo(
+					mutableSetOf(),
+				) { line -> line.hands.all { hand -> hand.notation in kept } },
 				strokeHand = null,
-				brush = it.brush.takeIf { brush -> painted.isNotEmpty() && brush in palette } ?: palette.firstOrNull(),
+				brush = it.brush.takeIf { brush -> kept.isNotEmpty() && brush in palette } ?: palette.firstOrNull(),
 				showAnswer = false,
 			)
 		}

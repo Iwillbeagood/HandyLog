@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.hand.log.designsystem.component.RegularButton
 import com.hand.log.designsystem.etc.ThemePreview
@@ -123,7 +124,7 @@ private fun SummaryRow(item: DrillSummaryItem) {
 			text = item.hero.label,
 			style = HandyTheme.typography.bold14,
 			color = colors.textPrimary,
-			modifier = Modifier.widthIn(min = 52.dp),
+			modifier = Modifier.widthIn(min = 64.dp),
 		)
 		Box(
 			modifier = Modifier
@@ -144,6 +145,8 @@ private fun SummaryRow(item: DrillSummaryItem) {
 			text = "${item.accuracyPct}%",
 			style = HandyTheme.typography.bold14,
 			color = colors.textPrimary,
+			textAlign = TextAlign.End,
+			modifier = Modifier.widthIn(min = 48.dp),
 		)
 	}
 }
