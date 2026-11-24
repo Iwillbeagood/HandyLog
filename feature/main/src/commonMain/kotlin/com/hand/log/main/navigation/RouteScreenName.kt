@@ -7,6 +7,7 @@ import com.hand.log.navigation.navigation.Legal
 import com.hand.log.navigation.navigation.MainTabRoute
 import com.hand.log.navigation.navigation.PlayerHands
 import com.hand.log.navigation.navigation.PreflopChart
+import com.hand.log.navigation.navigation.PreflopChartDrill
 import com.hand.log.navigation.navigation.PreflopChartTable
 import com.hand.log.navigation.navigation.PreflopQuiz
 import com.hand.log.navigation.navigation.PreflopQuizSession
@@ -29,6 +30,7 @@ internal val Route.screenName: String
 		is PlayerHands -> "player_hands"
 		is PreflopChart -> "preflop_chart"
 		is PreflopChartTable -> "preflop_chart_table"
+		PreflopChartDrill -> "preflop_chart_drill"
 		PreflopQuiz -> "preflop_quiz"
 		is PreflopQuizSession -> "preflop_quiz_session"
 		BetSizeSettings -> "bet_size_settings"

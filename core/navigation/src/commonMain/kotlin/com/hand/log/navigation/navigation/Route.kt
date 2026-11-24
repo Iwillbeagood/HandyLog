@@ -56,6 +56,9 @@ data class PreflopChartTable(
 ) : Route
 
 @Serializable
+data object PreflopChartDrill : Route
+
+@Serializable
 data object PreflopQuiz : Route
 
 @Serializable

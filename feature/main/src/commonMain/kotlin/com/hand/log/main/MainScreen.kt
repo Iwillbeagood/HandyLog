@@ -15,12 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hand.log.designsystem.window.LocalWindowSize
 import com.hand.log.designsystem.window.ProvideWindowSize
-import com.hand.log.main.navigation.MainBottomBar
 import com.hand.log.main.navigation.MainBottomNavItem
 import com.hand.log.main.navigation.MainNavDisplay
 import com.hand.log.main.navigation.MainNavRail
 import com.hand.log.main.navigation.MainNavigator
 import com.hand.log.main.navigation.MainUiState
+import com.hand.log.main.navigation.PlatformBottomBar
 import com.hand.log.navigation.interop.LocalNavigateActionInterop
 import com.hand.log.navigation.navigation.MainTabRoute
 import kotlinx.collections.immutable.toPersistentList
@@ -70,7 +70,7 @@ private fun MainScreenContent(
 		Scaffold(
 			contentWindowInsets = WindowInsets(),
 			bottomBar = {
-				MainBottomBar(
+				PlatformBottomBar(
 					visible = uiState.showBottomBar,
 					bottomItems = MainBottomNavItem.entries.toPersistentList(),
 					currentItem = uiState.currentBottomItem,
